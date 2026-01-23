@@ -13,7 +13,7 @@ import {
   Container,
   CircularProgress
 } from "@mui/material";
-import { showLoading, hideLoading } from "../../Redux/Slices/loadingSlice.js";
+// import { showLoading, hideLoading } from "@/Redux/Slices/loadingSlice.js";
 
 import LoginPage from "@/Components/LoginPage/LoginPage.jsx"
 import Footer from "@/Components/Footers/Footer";
@@ -124,11 +124,10 @@ function RegisterHandleUser({boolean = true}) {
         <Button
           variant="contained"
           onClick={() => 
-          {   dispatch(showLoading())
+          {  
+            //  dispatch(showLoading())
             handleNavigation("/invester_register")
-            setTimeout(() => {
-              dispatch(hideLoading());
-            },  2000);
+            
           }}
           sx={{
             mb: 2,
@@ -150,11 +149,9 @@ function RegisterHandleUser({boolean = true}) {
         <Button
           variant="contained"
           onClick={() =>
-           { dispatch(showLoading());
+           { 
             handleNavigation("/brand_listing_creation_form");
-            setTimeout(() => {
-              dispatch(hideLoading());
-            }, 2000);
+            
           }}
           sx={{
             mb: 2,

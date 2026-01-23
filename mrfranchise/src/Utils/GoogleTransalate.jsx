@@ -1,3 +1,4 @@
+'use client';
 import React, { useEffect, useRef, useState } from 'react';
 import { Box, Typography } from '@mui/material';
 import GTranslateIcon from '@mui/icons-material/GTranslate';

@@ -1,4 +1,5 @@
 // src/utils/createLazyWithPreload.js
+"use client";
 import React from "react";
 
 export function createLazyWithPreload(loader) {

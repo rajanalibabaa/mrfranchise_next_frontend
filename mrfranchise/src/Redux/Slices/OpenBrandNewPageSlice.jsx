@@ -1,10 +1,11 @@
 // src/redux/slices/brandSlice.js
+"use client";
 import { createSlice } from "@reduxjs/toolkit";
-import { userId } from "../../Utils/autherId";
-import { postApi } from "../../Api/DefaultApi";
-import { api } from "../../Api/api";
+import {getUserId } from "@/Utils/autherId";
+import { postApi } from "@/Api/DefaultApi";
+import { api } from "@/Api/api";
 import { addviewBrand } from "./viewSlice.jsx";
-
+const userId = getUserId();
 const initialState = {
   openDialog: false,
   lastOpenedBrandId: null,
