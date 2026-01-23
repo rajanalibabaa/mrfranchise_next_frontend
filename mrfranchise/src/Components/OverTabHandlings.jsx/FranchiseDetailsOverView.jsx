@@ -1,0 +1,285 @@
+
+  // FranchiseDetailsTable.jsx
+
+"use client";
+
+import React, { useState, useRef } from "react";
+import {
+  Box,
+  TableContainer,
+  Table,
+  TableBody,
+  TableRow,
+  TableCell,
+  TableHead,
+  Typography,
+} from "@mui/material";
+import { Fade } from "@mui/material";
+import { keyframes } from "@emotion/react";
+
+const FranchiseDetailsTable = ({ ficoDetails, formatCurrency }) => {
+  const [selectedModel, setSelectedModel] = useState(null);
+  const containerRef = useRef(null);
+  const [isUserScrolling, setIsUserScrolling] = useState(false);
+  const [hasHoveredOnce, setHasHoveredOnce] = useState(false);
+
+  const tableRows = ficoDetails.map((model, index) => (
+    <Fade in={true} key={model._id || index} timeout={index * 100}>
+      <TableRow
+        hover
+        selected={selectedModel?._id && model._id && selectedModel._id === model._id}
+        sx={{ "&:hover": { backgroundColor: "rgba(0, 0, 0, 0.04)" } }}
+      >
+        {[
+          model.franchiseModel,
+          model.franchiseType,
+          model.investmentRange,
+          model.areaRequired,
+          model.agreementPeriod ? `${model.agreementPeriod} yrs` : "N/A",
+          model.franchiseFee ? formatCurrency(model.franchiseFee) : "N/A",
+          model.interiorCost ? formatCurrency(model.interiorCost) : "N/A",
+          model.stockInvestment ? formatCurrency(model.stockInvestment) : "N/A",
+          model.otherCost ? formatCurrency(model.otherCost) : "N/A",
+          model.requireWorkingCapital ? formatCurrency(model.requireWorkingCapital) : "N/A",
+          model.royaltyFee,
+          model.breakEven,
+          model.roi ? `${model.roi}%` : "N/A",
+          model.payBackPeriod,
+          model.marginOnSales ? `${model.marginOnSales}%` : "N/A",
+        ].map((value, j) => (
+          <TableCell
+            key={j}
+            align="center"
+            sx={{
+              borderBottom: "1px solid rgba(0,0,0,0.05)",
+              padding: "16px",
+              minWidth: j === 0 ? "180px" : "170px", // Adjust minimum widths as needed
+              maxWidth: "200px",
+              whiteSpace: "normal",
+              wordBreak: "break-word",
+              overflow: "visible",
+              textOverflow: "unset",
+              fontWeight:
+                (j === 12 && model.roi) || (j === 14 && model.marginOnSales)
+                  ? 700
+                  : "inherit",
+              color:
+                j === 12 && parseFloat(model.roi) > 20
+                  ? "success.main"
+                  : j === 14 && parseFloat(model.marginOnSales) > 30
+                  ? "success.main"
+                  : "inherit",
+            }}
+          >
+            {value || "N/A"}
+          </TableCell>
+        ))}
+      </TableRow>
+    </Fade>
+  ));
+
+  const handleUserScrollStart = () => {
+    setIsUserScrolling(true);
+  };
+
+  const handleUserScrollEnd = () => {
+    setIsUserScrolling(false);
+  };
+
+  const handleMouseEnter = () => {
+    if (!hasHoveredOnce) {
+      setHasHoveredOnce(true);
+    }
+  };
+
+  const tableData = ficoDetails.map(model => ({
+  model: model.franchiseModel,
+  type: model.franchiseType,
+  investment: model.investmentRange,
+  area: model.areaRequired,
+  agreement: model.agreementPeriod ? `${model.agreementPeriod} yrs` : "N/A",
+  franchiseFee: model.franchiseFee ? formatCurrency(model.franchiseFee) : "N/A",
+  interiorCost: model.interiorCost ? formatCurrency(model.interiorCost) : "N/A",
+  stock: model.stockInvestment ? formatCurrency(model.stockInvestment) : "N/A",
+  otherCosts: model.otherCost ? formatCurrency(model.otherCost) : "N/A",
+  workingCapital: model.requireWorkingCapital
+    ? formatCurrency(model.requireWorkingCapital)
+    : "N/A",
+  royaltyFee: model.royaltyFee || "N/A",
+  breakEven: model.breakEven || "N/A",
+  roi: model.roi ? `${model.roi}%` : "N/A",
+  payback: model.payBackPeriod || "N/A",
+  margin: model.marginOnSales ? `${model.marginOnSales}%` : "N/A",
+}));
+
+
+  const columns = [
+  { label: "Model", key: "model" },
+  { label: "Type", key: "type" },
+  { label: "Investment", key: "investment" },
+  { label: "Area", key: "area" },
+  { label: "Agreement", key: "agreement" },
+  { label: "Franchise Fee", key: "franchiseFee" },
+  { label: "Interior Cost", key: "interiorCost" },
+  { label: "Stock", key: "stock" },
+  { label: "Other Costs", key: "otherCosts" },
+  { label: "Working Capital", key: "workingCapital" },
+  { label: "Royalty Fee", key: "royaltyFee" },
+  { label: "Break Even", key: "breakEven" },
+  { label: "ROI", key: "roi" },
+  { label: "Payback", key: "payback" },
+  { label: "Margin", key: "margin" },
+];
+
+const visibleColumns = columns.filter(col =>
+  tableData.some(row =>
+    row[col.key] &&
+    row[col.key] !== "N/A"
+  )
+);
+
+
+
+  return (
+    <Box sx={{ mb: 2,mt:1 }}>
+       {/* <Typography variant="h6" fontWeight={700} sx={{ mb: 2, color: "#000000ff",background:'#ffffffff',padding:'10px',borderRadius:'5px' }}>
+       Franchise Overview Details :
+      </Typography>  */}
+      {/* <Typography variant="h6" fontWeight={700} sx={{ mb: 1.5, color: "#7ad03a" }}>
+        Franchise Details
+      </Typography> */}
+     <TableContainer
+  ref={containerRef}
+  sx={{
+    borderTopLeftRadius: "16px",
+    borderTopRightRadius: "16px",
+    borderBottomLeftRadius: "16px",
+    borderBottomRightRadius: "16px",
+    // border: "3px solid #ff9800",
+    overflowX: "auto",
+    overflowY: "auto",
+    maxHeight: "calc(100vh - 300px)",
+    WebkitOverflowScrolling: "touch", // smooth touch scroll
+    cursor: "grab",                   // show grab cursor
+    "&:active": { cursor: "grabbing" },
+    "&::-webkit-scrollbar": {
+      height: "5px",
+      backgroundColor: "#ffffffff",
+      borderRadius: "7px",
+    },
+    "&::-webkit-scrollbar-thumb": {
+      backgroundColor: "#7cd13b",
+
+      borderRadius: "7px",
+    },
+    
+  }}
+  onTouchStart={handleUserScrollStart}
+  onTouchEnd={handleUserScrollEnd}
+  onMouseEnter={handleMouseEnter}
+  onMouseDown={(e) => {
+    const el = containerRef.current;
+    el.isDown = true;
+    el.startX = e.pageX - el.offsetLeft;
+    el.scrollLeftStart = el.scrollLeft;
+  }}
+  onMouseLeave={() => {
+    const el = containerRef.current;
+    el.isDown = false;
+  }}
+  onMouseUp={() => {
+    const el = containerRef.current;
+    el.isDown = false;
+  }}
+  onMouseMove={(e) => {
+    const el = containerRef.current;
+    if (!el.isDown) return;
+    e.preventDefault();
+    const x = e.pageX - el.offsetLeft;
+    const walk = (x - el.startX) * 1; // scroll speed
+    el.scrollLeft = el.scrollLeftStart - walk;
+  }}
+>
+
+        <Table
+          stickyHeader
+          sx={{
+            minWidth: "100%",
+            tableLayout: "auto", // Changed to auto for better content-based sizing
+          }}
+        >
+          <TableHead>
+            <TableRow>
+              {/* {[
+                "Model", "Type", "Investment", "Area", "Agreement",
+                "Franchise Fee", "Interior Cost", "Stock", "Other Costs",
+                "Working Capital", "Royalty Fee", "Break Even", "ROI",
+                "Payback", "Margin"
+              ].map((header, i) => ( */}
+              {visibleColumns.map((col, i) => (
+                <TableCell
+                  key={col.key}
+                  align="center"
+                  sx={{
+                    backgroundColor: "#7cd13b",
+                    color: "black",
+                    fontWeight: 700,
+                    fontSize: "0.8rem",
+                    padding: "12px 16px",
+                    borderBottom: "none",
+                    whiteSpace: "nowrap",
+                    minWidth: i === 0 ? "180px" : "120px", // Match cell widths
+                    position: "sticky",
+                    top: 0,
+                    zIndex: 1,
+                  }}
+                >
+                  {col.label}
+                </TableCell>
+              ))}
+            </TableRow>
+          </TableHead>
+          <TableBody>
+  {tableData.map((row, index) => (
+    <Fade in key={index} timeout={index * 100}>
+      <TableRow hover>
+        {visibleColumns.map((col, j) => (
+          <TableCell
+            key={col.key}
+            align="center"
+            sx={{
+              borderBottom: "1px solid rgba(0,0,0,0.05)",
+              padding: "16px",
+              minWidth: j === 0 ? "180px" : "170px",
+              maxWidth: "200px",
+              wordBreak: "break-word",
+              // backgroundColor: "#eedbbcff",
+              backgroundColor:'#ffffffff',
+              fontWeight:
+                (col.key === "roi" && row.roi !== "N/A") ||
+                (col.key === "margin" && row.margin !== "N/A")
+                  ? 700
+                  : "inherit",
+              color:
+                col.key === "roi" && parseFloat(row.roi) > 20
+                  ? "success.main"
+                  : col.key === "margin" && parseFloat(row.margin) > 30
+                  ? "success.main"
+                  : "black",
+            }}
+          >
+            {row[col.key]}
+          </TableCell>
+        ))}
+      </TableRow>
+    </Fade>
+  ))}
+</TableBody>
+
+        </Table>
+      </TableContainer>
+    </Box>
+  );
+};
+
+export default FranchiseDetailsTable;
