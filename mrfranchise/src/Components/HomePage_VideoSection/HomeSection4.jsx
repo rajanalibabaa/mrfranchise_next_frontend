@@ -8,7 +8,6 @@ import React, {
   useLayoutEffect,
 } from "react";
 import {
- 
   useMediaQuery,
   useTheme,
 } from "@mui/material";

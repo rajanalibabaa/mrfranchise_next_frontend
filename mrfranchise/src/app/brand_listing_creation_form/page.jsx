@@ -347,7 +347,7 @@ const [activeStep, setActiveStep] = useState(0);
       const errors = {};
       let isValid = true;
 
-      // console.log("Validating step:", errors);
+      console.log("Validating step:", errors);
 
       switch (step) {
         case 0:
@@ -543,7 +543,7 @@ const [activeStep, setActiveStep] = useState(0);
           setActiveStep(0);
           setOpenPreview(false);
           setTimeout(() => {
-            router.push("/");
+            router.push("/contactus");
           }, 1500);
         } else {
           throw new Error("Submission failed. Please try again.");
@@ -565,7 +565,7 @@ const [activeStep, setActiveStep] = useState(0);
   };
 
   const handlepakagesDetails = () => {
-    const isValid = validateStep(3); // Validate uploads step
+    const isValid = validateStep(3); 
     if (isValid) {
       setMembershipPayment(true);
     }
