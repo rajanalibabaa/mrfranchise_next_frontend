@@ -408,8 +408,9 @@ const [activeStep, setActiveStep] = useState(0);
   };
 
   const handleHomeClick = () => {
-    dispatch(showLoading());
+    // dispatch(showLoading());
     router.push("/");
+    // dispatch(hideLoading())
   };
 
   const handleSubmit = async (selectedMembership, selectedListing) => {
