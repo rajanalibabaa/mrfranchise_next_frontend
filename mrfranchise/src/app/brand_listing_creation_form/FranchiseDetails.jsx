@@ -501,15 +501,16 @@ const FranchiseDetails = ({ data = {}, errors = {}, onChange = () => {} }) => {
     SustainabilityEthics: "Sustainability & Ethics",
   };
   const [selectedCategory, setSelectedCategory] = useState({
-    groupId: data.brandCategories?.groupId || "",
-    main: data.brandCategories?.main || "",
-    sub: data.brandCategories?.sub || "",
-    productTags: data.brandCategories?.productTags || [],
-    serviceTags: data.brandCategories?.serviceTags || (data.franchiseTags ? Object.entries(data.franchiseTags).map(([key, val]) => ({
+  groupId: data.brandCategories?.groupId || "",
+  main: data.brandCategories?.main || "",
+  sub: data.brandCategories?.sub || "",
+  productTags: data.brandCategories?.productTags || [],
+  serviceTags: data.brandCategories?.serviceTags || (data.franchiseTags ? 
+    Object.entries(data.franchiseTags).map(([key, val]) => ({
       parent: reverseMap[key] || key.replace(/([A-Z])/g, ' $1').trim(),
       tags: Array.isArray(val) ? val : []
     })).filter(({tags}) => tags.length > 0) : []),
-  });
+});
   const totalProductTags = selectedCategory.productTags.reduce((acc, curr) => acc + curr.tags.length, 0);
   const totalServiceTags = selectedCategory.serviceTags.reduce((acc, curr) => acc + curr.tags.length, 0);
   // Update service tag groups when industry data changes
@@ -554,17 +555,30 @@ const FranchiseDetails = ({ data = {}, errors = {}, onChange = () => {} }) => {
       return newPrev;
     });
   };
-  const handleDone = () => {
-    const updatedProductTags = tempProductTags.filter((g) => g.tags.length > 0);
-    const newCategory = {
-      ...selectedCategory,
-      productTags: updatedProductTags,
-    };
-    setSelectedCategory(newCategory);
-    onChange({ brandCategories: newCategory });
-    errors.productTags = "";
-    setDrawerOpen(false);
+
+const handleDone = () => {
+  const updatedProductTags = tempProductTags.filter((g) => g.tags.length > 0);
+  const newCategory = {
+    ...selectedCategory,
+    productTags: updatedProductTags,
   };
+  setSelectedCategory(newCategory);
+  
+  // Transform productTags to child string for validation
+  const allProductTags = updatedProductTags.flatMap(g => g.tags);
+  const childString = allProductTags.join(', ');
+  
+  onChange({ 
+    brandCategories: {
+      ...newCategory,
+      child: childString  // Add child field for validation
+    }
+  });
+  
+  errors.productTags = "";
+  setDrawerOpen(false);
+};
+
   const handleOpenServiceTagDrawer = () => {
     setTempServiceTags(selectedCategory.serviceTags || []);
     setServiceTagDrawerOpen(true);
@@ -595,55 +609,92 @@ const FranchiseDetails = ({ data = {}, errors = {}, onChange = () => {} }) => {
       return newPrev;
     });
   };
-  const handleServiceTagDone = () => {
-    const updatedServiceTags = tempServiceTags.filter((g) => g.tags.length > 0);
-    const newCategory = {
-      ...selectedCategory,
-      serviceTags: updatedServiceTags,
-    };
-    setSelectedCategory(newCategory);
-    onChange({ brandCategories: newCategory });
-    errors.serviceTags = "";
-    setServiceTagDrawerOpen(false);
+ const handleServiceTagDone = () => {
+  const updatedServiceTags = tempServiceTags.filter((g) => g.tags.length > 0);
+  const newCategory = {
+    ...selectedCategory,
+    serviceTags: updatedServiceTags,
   };
-  const handleMainCategoryChange = (e) => {
-    const mainCategory = e.target.value;
-   
-    // Fetch industry details when an industry is selected
-    fetchIndustryDetails(mainCategory);
-   
-    const newCategory = {
-      groupId: "",
-      main: mainCategory,
-      sub: "",
-      productTags: [],
-      serviceTags: [],
-    };
-    setSelectedCategory(newCategory);
-    onChange({ brandCategories: newCategory });
-    errors.mainCategory = "";
+  setSelectedCategory(newCategory);
+  
+  // Transform serviceTags to franchiseTags object for validation
+  const franchiseTags = {};
+  updatedServiceTags.forEach(({ parent, tags }) => {
+    // Map parent names to validation keys using reverseMap
+    const key = Object.keys(reverseMap).find(k => reverseMap[k] === parent);
+    if (key) {
+      franchiseTags[key] = tags;
+    }
+  });
+  
+  onChange({ 
+    brandCategories: newCategory,
+    franchiseTags: franchiseTags  // Add franchiseTags for validation
+  });
+  
+  errors.serviceTags = "";
+  setServiceTagDrawerOpen(false);
+};
+ const handleMainCategoryChange = (e) => {
+  const mainCategory = e.target.value;
+  
+  fetchIndustryDetails(mainCategory);
+  
+  const newCategory = {
+    groupId: "",
+    main: mainCategory,
+    sub: "",
+    productTags: [],
+    serviceTags: [],
   };
+  setSelectedCategory(newCategory);
+  
+  // Send both formats for validation
+  onChange({ 
+    brandCategories: {
+      ...newCategory,
+      child: ""  // Empty child for validation
+    },
+    franchiseTags: {}  // Empty franchiseTags for validation
+  });
+  
+  errors.mainCategory = "";
+};
  
-  const handleSubCategoryChange = (e) => {
-    const subCategory = e.target.value;
-   
-    const newCategory = {
-      groupId: "",
-      main: selectedCategory.main,
-      sub: subCategory,
-      productTags: selectedCategory.productTags,
-      serviceTags: selectedCategory.serviceTags,
-    };
-    setSelectedCategory(newCategory);
-    onChange({ brandCategories: newCategory });
-    errors.subCategory = "";
+ const handleSubCategoryChange = (e) => {
+  const subCategory = e.target.value;
+  
+  const newCategory = {
+    groupId: "",
+    main: selectedCategory.main,
+    sub: subCategory,
+    productTags: selectedCategory.productTags,
+    serviceTags: selectedCategory.serviceTags,
   };
-  const handleDescriptionChange = (content) => {
-    onChange({ brandDescription: content });
-    if (content.length >= 500) {
-    errors.brandDescription = "";
-  }
-  };
+  setSelectedCategory(newCategory);
+  
+  // Transform existing data for validation
+  const allProductTags = selectedCategory.productTags.flatMap(g => g.tags);
+  const childString = allProductTags.join(', ');
+  
+  const franchiseTags = {};
+  selectedCategory.serviceTags.forEach(({ parent, tags }) => {
+    const key = Object.keys(reverseMap).find(k => reverseMap[k] === parent);
+    if (key) {
+      franchiseTags[key] = tags;
+    }
+  });
+  
+  onChange({ 
+    brandCategories: {
+      ...newCategory,
+      child: childString
+    },
+    franchiseTags: franchiseTags
+  });
+  
+  errors.subCategory = "";
+};
   const handleAddUSP = () => {
     const trimmedUSP = currentUSP.trim();
     if (!trimmedUSP) return;
