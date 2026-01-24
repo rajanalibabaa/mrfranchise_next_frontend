@@ -21,7 +21,7 @@ import ArrowForward from "@mui/icons-material/ArrowForward";
 import ArrowRight from "@mui/icons-material/ArrowRight";
 import { useSelector, useDispatch } from "react-redux";
 import { homeSection5  } from '../../Redux/Slices/TopCardFetchingSlice.jsx';
-
+import slugify from "slugify";
 import LoginPage from "@/Components/LoginPage/LoginPage.jsx";
 import { motion } from "framer-motion";
 import HomePageBrandCard from "./HomePageBrandCard.jsx";
@@ -172,9 +172,16 @@ useEffect(() => {
 
 
      const brandCategoriesName = brands[0]?.brandCategories?.sub;
-const handleClickOpenBrandCategories = () => {
+  const handleClickOpenBrandCategories = () => {
+     if (!brandCategoriesName) return;
+     const slug = slugify(brandCategoriesName, {
+    lower: true,
+    strict: true,   // removes &, /, special chars
+    trim: true,
+  });
+
   const subcat = encodeURIComponent(brandCategoriesName); // encode spaces/special chars
-  const url = `/AllCategoryPage/allbrandlisting?subcat=${subcat}`;
+  const url = `/AllCategoryPage/allbrandlisting/${slug}?subcat=${subcat}`;
 
   // Open in new tab
   const newWindow = window.open(url, "_blank");

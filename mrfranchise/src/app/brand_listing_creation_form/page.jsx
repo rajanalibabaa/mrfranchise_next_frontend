@@ -28,6 +28,7 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
+  Skeleton,
 } from "@mui/material";
 import { useTheme } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
@@ -1143,7 +1144,7 @@ const [activeStep, setActiveStep] = useState(0);
                       </TableRow>
                     );
                   }
-                  return null;
+                  return <Skeleton/>;
                 })}
               </TableBody>
             </Table>
@@ -1273,7 +1274,7 @@ const [activeStep, setActiveStep] = useState(0);
                       </TableRow>
                     );
                   }
-                  return null;
+                  return <Skeleton/>;
                 })}
               </TableBody>
             </Table>

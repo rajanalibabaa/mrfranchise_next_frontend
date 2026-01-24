@@ -16,7 +16,7 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
-
+import slugify from "slugify";
 import ArrowBack from "@mui/icons-material/ArrowBack";
 import ArrowForward from "@mui/icons-material/ArrowForward";
 import ArrowRight from "@mui/icons-material/ArrowRight";
@@ -188,8 +188,15 @@ console.log('home sec1',brands);
 
   const brandCategoriesName = brands[0]?.brandCategories?.sub;
   const handleClickOpenBrandCategories = () => {
+     if (!brandCategoriesName) return;
+     const slug = slugify(brandCategoriesName, {
+    lower: true,
+    strict: true,   // removes &, /, special chars
+    trim: true,
+  });
+
   const subcat = encodeURIComponent(brandCategoriesName); // encode spaces/special chars
-  const url = `/AllCategoryPage/allbrandlisting?subcat=${subcat}`;
+  const url = `/AllCategoryPage/allbrandlisting/${slug}?subcat=${subcat}`;
 
   // Open in new tab
   const newWindow = window.open(url, "_blank");

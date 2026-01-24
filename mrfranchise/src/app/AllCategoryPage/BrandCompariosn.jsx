@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect,useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -17,27 +17,21 @@ import {
   Paper,
   Typography,
   Avatar,
-  Badge,
   Tooltip,
   Chip,
 } from "@mui/material";
-import {
-  Close,
-  ArrowBack,
-  ArrowForward,
-} from "@mui/icons-material";
+import Close from "@mui/icons-material/Close";
 import { RiBookmark3Fill } from "react-icons/ri";
 import axios from "axios";
-import Navbar from "../../Components/Navbar/NavBar";
-import { handleShortList } from "../../Api/shortListApi";
-import { toggleBrandShortList } from "../../Redux/Slices/GetAllBrandsDataUpdationFile";
+import { handleShortList } from "@/Api/shortListApi";
+import { toggleBrandShortList } from "@/Redux/Slices/GetAllBrandsDataUpdationFile";
 import { useDispatch } from "react-redux";
-import { token, userId } from "../../Utils/autherId";
-import LoginPage from "../../Components/LoginPage/LoginPage";
-import { toggleHomeCardShortlist } from "../../Redux/Slices/TopCardFetchingSlice";
-import { toggleBrandShortListfilter } from "../../Redux/Slices/FilterBrandSlice";
-import { postView } from "../../Utils/function/view.jsx";
-import { openBrandDialog } from "../../Redux/Slices/OpenBrandNewPageSlice.jsx";
+import { token, userId } from "@/Utils/autherId";
+import LoginPage from "@/Components/LoginPage/LoginPage";
+import { toggleHomeCardShortlist } from "@/Redux/Slices/TopCardFetchingSlice";
+import { toggleBrandShortListfilter } from "@/Redux/Slices/FilterBrandSlice";
+import { postView } from "@/Utils/function/view.jsx";
+import { openBrandDialog } from "@/Redux/Slices/OpenBrandNewPageSlice.jsx";
  
  
 const BrandComparison = ({
@@ -52,49 +46,92 @@ const BrandComparison = ({
   const [showLogin, setShowLogin] = useState(false);
   const dispatch = useDispatch();
  
-  useEffect(() => {
-    const fetchBrandDetails = async () => {
-      if (selectedBrands.length === 0) return;
+//   useEffect(() => {
+//     const fetchBrandDetails = async () => {
+//       if ( selectedBrands.length === 0) return;
  
-      setLoading(true);
-      try {
-        const promises = selectedBrands.map((brand) =>
-  axios.get(`https://mrfranchisebackend.mrfranchise.in/api/v1/brandlisting/getBrandListingByUUID/${brand.uuid}`, {
-    params: {
-      userId: userId
-    }
-  })
-);
+//       setLoading(true);
+//       try {
+//         const promises = selectedBrands.map((brand) =>
+//   axios.get(`https://mrfranchisebackend.mrfranchise.in/api/v1/brandlisting/getBrandListingByUUID/${brand.uuid}`, {
+//     params: {
+//       userId: userId
+//     }
+//   })
+// );
        
  
-        const responses = await Promise.all(promises);
+//         const responses = await Promise.all(promises);
  
-        // Flatten each response's data if it's an array
-        const details = responses.map((res) => {
-          const data = res.data.data;
+//         // Flatten each response's data if it's an array
+//         const details = responses.map((res) => {
+//           const data = res.data.data;
  
  
-          return Array.isArray(data) ? data[0] : data;
-        });
+//           return Array.isArray(data) ? data[0] : data;
+//         });
  
-        setBrandDetails(details); // Now this will be an array of objects, not arrays
+//         setBrandDetails(details); // Now this will be an array of objects, not arrays
  
-        // Initialize current model indexes
-        const indexes = {};
-        details.forEach((brand) => {
-          if (brand?.uuid) indexes[brand.uuid] = 0;
-        });
-        setCurrentModelIndexes(indexes);
-      } catch (error) {
-        console.error("❌ Error fetching brand details:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+//         // Initialize current model indexes
+//         const indexes = {};
+//         details.forEach((brand) => {
+//           if (brand?.uuid) indexes[brand.uuid] = 0;
+//         });
+//         setCurrentModelIndexes(indexes);
+//       } catch (error) {
+//         console.error("❌ Error fetching brand details:", error);
+//       } finally {
+//         setLoading(false);
+//       }
+//     };
  
-    fetchBrandDetails();
-  }, [selectedBrands]);
+//     fetchBrandDetails();
+//   }, [selectedBrands]);
  
+  // ...existing code...
+useEffect(() => {
+  const fetchBrandDetails = async () => {
+    if (!selectedBrands || selectedBrands.length === 0) return;
+
+    setLoading(true);
+    try {
+      const promises = selectedBrands.map((brand) =>
+        axios.get(`https://mrfranchisebackend.mrfranchise.in/api/v1/brandlisting/getBrandListingByUUID/${brand.uuid}`, {
+          params: {
+            userId: userId
+          }
+        })
+      );
+
+      const responses = await Promise.all(promises);
+
+      // Flatten each response's data if it's an array
+      const details = responses.map((res) => {
+        const data = res.data.data;
+
+        return Array.isArray(data) ? data[0] : data;
+      });
+
+      setBrandDetails(details); // Now this will be an array of objects, not arrays
+
+      // Initialize current model indexes
+      const indexes = {};
+      details.forEach((brand) => {
+        if (brand?.uuid) indexes[brand.uuid] = 0;
+      });
+      setCurrentModelIndexes(indexes);
+    } catch (error) {
+      console.error("❌ Error fetching brand details:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchBrandDetails();
+}, [selectedBrands]);
+// ...existing code...
+
   const getNestedValue = (obj, path) => {
     try {
       return (
@@ -298,7 +335,7 @@ const BrandComparison = ({
                           >
                             {brand.brandDetails?.brandName || "-"}
                           </Typography>
-                          <Typography display='flex' space='between' flexDirection='row'>
+                          <Typography display='flex' space='between' flexDirection='row' component={'div'}>
                                                       <Chip label="Apply Brand" size="small" onClick={() => handleApply(brand)} sx={{ mt: 1, bgcolor: "#ff9800", color: "white", "&:hover": { bgcolor: "#fb8c00", }, }} />
  
                           <Chip

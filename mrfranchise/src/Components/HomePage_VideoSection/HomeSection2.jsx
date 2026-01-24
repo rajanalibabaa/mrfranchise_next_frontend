@@ -24,7 +24,7 @@ import {
   homeSection2,
   toggleHomeCardLike,
 } from "../../Redux/Slices/TopCardFetchingSlice.jsx";
-
+import slugify from "slugify";
 import LoginPage from "@/Components/LoginPage/LoginPage.jsx";
 import { motion } from "framer-motion";
 import HomePageBrandCard from "./HomePageBrandCard.jsx";
@@ -208,9 +208,16 @@ const HomeSection2 = () => {
     smoothScrollTo(newScroll);
   };
   const brandCategoriesName = brands[0]?.brandCategories?.sub;
-const handleClickOpenBrandCategories = () => {
+  const handleClickOpenBrandCategories = () => {
+     if (!brandCategoriesName) return;
+     const slug = slugify(brandCategoriesName, {
+    lower: true,
+    strict: true,   // removes &, /, special chars
+    trim: true,
+  });
+
   const subcat = encodeURIComponent(brandCategoriesName); // encode spaces/special chars
-  const url = `/AllCategoryPage/allbrandlisting?subcat=${subcat}`;
+  const url = `/AllCategoryPage/allbrandlisting/${slug}?subcat=${subcat}`;
 
   // Open in new tab
   const newWindow = window.open(url, "_blank");
@@ -218,6 +225,7 @@ const handleClickOpenBrandCategories = () => {
   // Optional: focus the new tab
   if (newWindow) newWindow.focus();
 };
+
   if (isLoading) {
     return (
       <Box sx={{ textAlign: "center", p: 4 }}>

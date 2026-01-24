@@ -1,78 +1,318 @@
 import React from "react";
 
-const API_BASE = "http://localhost:5000";
-const SITE_URL = "http://localhost:5000";
 
-// Server fetch
+const API_BASE =  "http://localhost:5000";
+const SITE_URL =  "https://mrfranchise.in";
+const REVALIDATE_TIME = 3600; // 1 hour
+
+
+
+/**
+ * Fetches brand data from API
+ * @param {string} slug - Brand slug
+ * @returns {Promise<Object|null>} Brand data or null
+ */
 async function getBrandData(slug) {
   try {
     const res = await fetch(
       `${API_BASE}/api/v1/brandlisting/getBrandListingSlug/${slug}`,
-      { next: { revalidate: 3600 } }
+      { 
+        next: { revalidate: REVALIDATE_TIME },
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      }
     );
 
-    if (!res.ok) return null;
+    if (!res.ok) {
+      console.error(`Failed to fetch brand: ${slug}, Status: ${res.status}`);
+      return null;
+    }
 
     const json = await res.json();
     return Array.isArray(json?.data) ? json.data[0] : json.data;
-  } catch {
+  } catch (error) {
+    console.error(`Error fetching brand data for slug: ${slug}`, error);
     return null;
   }
 }
 
-// ✅ FIX: params must be awaited
+/**
+ * Generates SEO-optimized title for brand
+ * @param {string} brandName - Brand name
+ * @returns {string} SEO title
+ */
+function generateSEOTitle(brandName) {
+  return `${brandName} Franchise | Top Franchise Opportunities | Best Franchise Business Opportunities`;
+}
+
+/**
+ * Generates SEO-optimized description for brand
+ * @param {string} brandName - Brand name
+ * @returns {string} SEO description
+ */
+function generateSEODescription(brandName) {
+  return `Own your ${brandName} franchise. Get the ${brandName} franchising information including start-up costs, franchise fees, requirements, growth history and more. Join ${brandName} franchise and be on your way to owning and running a successful franchise business. The Startup Costs, ROI, Ideal Investor Profile and explore the franchise in ${brandName}.`;
+}
+
+/**
+ * Generates SEO keywords for brand
+ * @param {string} brandName - Brand name
+ * @returns {string} Comma-separated keywords
+ */
+function generateSEOKeywords(brandName) {
+  const keywords = [
+    `${brandName} franchise in India`,
+    `${brandName} franchise cost`,
+    `${brandName} franchise contact number`,
+    `how to get ${brandName} franchise`,
+    `${brandName} franchise profit`,
+    `${brandName} franchise enquiry`,
+    `${brandName} franchise requirements`,
+    `${brandName} franchise apply`,
+    `${brandName} franchise fee`,
+    `${brandName} franchise monthly income`,
+    `${brandName} franchise reviews`,
+    `${brandName} franchise opportunity`,
+    `${brandName} franchise business`,
+    "best franchise opportunities in India",
+    "top franchise business",
+    "franchise investment",
+  ];
+
+  return keywords.join(", ");
+}
+
+/**
+ * Formats brand name from various sources
+ * @param {Object} brand - Brand data object
+ * @returns {string} Formatted brand name
+ */
+function getBrandName(brand) {
+  return (
+    brand?.brandDetails?.brandName ||
+    brand?.brandDetails?.companyName ||
+    brand?.brandDetails?.slug ||
+    "Unknown Brand"
+  );
+}
+
+/**
+ * Gets brand logo URL
+ * @param {Object} brand - Brand data object
+ * @returns {string} Logo URL
+ */
+function getBrandLogo(brand) {
+  return brand?.uploads?.logo || DEFAULT_BRAND_IMAGE;
+}
+
+/**
+ * Gets brand location information
+ * @param {Object} brand - Brand data object
+ * @returns {string} Location string
+ */
+function getBrandLocation(brand) {
+  const city = brand?.brandDetails?.city;
+  const state = brand?.brandDetails?.state;
+  const country = brand?.brandDetails?.country;
+
+  const locations = [city, state, country].filter(Boolean);
+  return locations.length > 0 ? locations.join(", ") : "India";
+}
+
+/**
+ * Gets investment range text
+ * @param {Object} brand - Brand data object
+ * @returns {string|null} Investment range
+ */
+function getInvestmentRange(brand) {
+  return brand?.brandfranchisedetails?.investmentRange || null;
+}
+
+/**
+ * Generates structured data (JSON-LD) for SEO
+ * @param {Object} brand - Brand data
+ * @param {string} slug - Brand slug
+ * @returns {Object} Structured data object
+ */
+function generateStructuredData(brand, slug) {
+  const brandName = getBrandName(brand);
+  const logo = getBrandLogo(brand);
+  const location = getBrandLocation(brand);
+  const investment = getInvestmentRange(brand);
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    "name": brandName,
+    "image": logo,
+    "description": generateSEODescription(brandName),
+    "url": `${SITE_URL}/brands/${slug}`,
+    "logo": logo,
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": location,
+      "addressCountry": "IN"
+    },
+    "priceRange": investment || "$$",
+    "aggregateRating": brand?.rating ? {
+      "@type": "AggregateRating",
+      "ratingValue": brand.rating,
+      "reviewCount": brand.reviewCount || 1
+    } : undefined,
+  };
+}
+
+
+/**
+ * Generates metadata for brand pages
+ * @param {Object} params - Route parameters
+ * @returns {Promise<Object>} Next.js metadata object
+ */
 export async function generateMetadata({ params }) {
-  const { slug } = await params; // ⭐ THIS IS THE FIX
-//   const decodedSlug = slug;
+  const { slug } = await params;
 
   const brand = await getBrandData(slug);
-  const brandName = brand?.
-brandDetails?.slug
-console.log(brand
-);
 
+  // Handle brand not found
   if (!brand) {
     return {
       title: "Brand Not Found | Mr Franchise",
-      description: "This franchise brand does not exist.",
-      robots: "noindex",
+      description: "This franchise brand does not exist or is no longer available.",
+      robots: {
+        index: false,
+        follow: false,
+      },
     };
   }
 
-  const title = `${brandName} Franchise Opportunity | Mr Franchise`;
-  const description =`Start your own ${brandName} franchise. Investment, ROI & expansion details.`;
-  const keywords = [
-    brandName,
-    `${brandName} franchise`,
-    "franchise business",
-    "franchise opportunity",
-  ]
+  const brandName = getBrandName(brand);
+  const logo = getBrandLogo(brand);
+  const location = getBrandLocation(brand);
+  const investment = getInvestmentRange(brand);
+
+  // SEO optimized metadata
+  const title = generateSEOTitle(brandName);
+  const description = generateSEODescription(brandName);
+  const keywords = generateSEOKeywords(brandName);
+  const canonicalUrl = `${SITE_URL}/brands/${slug}`;
 
   return {
     title,
     description,
     keywords,
+    
+    // Canonical URL
     alternates: {
-      canonical: `${SITE_URL}/brands/${slug}`,
+      canonical: canonicalUrl,
     },
+
+    // Open Graph
     openGraph: {
       title,
       description,
-      url: `${SITE_URL}/brands/${slug}`,
+      url: canonicalUrl,
       siteName: "Mr Franchise",
+      locale: "en_IN",
+      type: "website",
       images: [
         {
-          url: brand?.uploads?.logo || "/default-brand.png",
+          url: logo,
           width: 1200,
           height: 630,
-          alt: brandName,
+          alt: `${brandName} Franchise Logo`,
         },
       ],
-      type: "website",
+    },
+
+    // Twitter Card
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [logo],
+      creator: "@mrfranchise",
+    },
+
+    // Additional metadata
+    other: {
+      "franchise-name": brandName,
+      "franchise-location": location,
+      "franchise-investment": investment || "Contact for details",
+    },
+
+    // Robots
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        "max-video-preview": -1,
+        "max-image-preview": "large",
+        "max-snippet": -1,
+      },
     },
   };
 }
 
-export default function BrandLayout({ children }) {
-  return <>{children}</>;
+
+
+/**
+ * Brand layout component with structured data
+ * @param {Object} props - Component props
+ * @param {React.ReactNode} props.children - Child components
+ * @param {Object} props.params - Route parameters
+ * @returns {JSX.Element} Layout component
+ */
+export default async function BrandLayout({ children, params }) {
+  const { slug } = await params;
+  const brand = await getBrandData(slug);
+
+  // Generate structured data for SEO
+  const structuredData = brand ? generateStructuredData(brand, slug) : null;
+
+  return (
+    <>
+      {/* Structured Data (JSON-LD) */}
+      {structuredData && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(structuredData),
+          }}
+        />
+      )}
+
+      {/* Page Content */}
+      {children}
+    </>
+  );
+}
+
+
+
+/**
+ * Generates static params for pre-rendering popular brands
+ * Uncomment and customize if you want static generation
+ */
+export async function generateStaticParams() {
+  try {
+    const res = await fetch(`${API_BASE}/api/v1/brandlisting/getAllBrands`, {
+      next: { revalidate: 86400 }, // 24 hours
+    });
+
+    if (!res.ok) return [];
+
+    const json = await res.json();
+    const brands = Array.isArray(json?.data) ? json.data : [];
+
+    // Generate params for top 100 brands (or all if you prefer)
+    return brands.slice(0, 100).map((brand) => ({
+      slug: brand?.brandDetails?.slug || brand?.slug,
+    }));
+  } catch (error) {
+    console.error("Error generating static params:", error);
+    return [];
+  }
 }

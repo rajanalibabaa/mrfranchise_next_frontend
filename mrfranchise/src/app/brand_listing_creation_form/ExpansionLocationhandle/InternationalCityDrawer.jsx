@@ -14,6 +14,7 @@ import {
   AccordionDetails,
   Chip,
   FormControlLabel,
+  Skeleton,
 } from "@mui/material";
 import { ChevronDown, Search } from "lucide-react";
 
@@ -28,7 +29,7 @@ const InternationalCityDrawer = ({
   handleSearchChange,
   toggleDrawer,
 }) => {
-  if (Object.keys(selections.selectedStates).length === 0) return null;
+  if (Object.keys(selections.selectedStates).length === 0) return <Skeleton/>;
 
   // Calculate total cities
   const totalCities = Object.entries(selections.selectedStates).reduce(
@@ -171,7 +172,7 @@ const InternationalCityDrawer = ({
                   selectedCities.includes(city)
                 );
 
-                if (filteredCities.length === 0) return null;
+                if (filteredCities.length === 0) return <Skeleton/>;
 
                 return (
                   <Box key={`cities-section-${stateKey}`} sx={{ mb: 4 }}>
