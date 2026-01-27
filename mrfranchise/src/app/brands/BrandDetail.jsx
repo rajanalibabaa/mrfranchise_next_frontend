@@ -307,8 +307,10 @@ const handleSubmit = useCallback(
  
       if (response.data && response.data.success) {
         setSubmitSuccess(true);
-        alert("✅ Success! Your application has been submitted.");
         setDrawerOpen(false);
+          const whatsappNumber = selectedBrand[0]?.brandDetails?.whatsappnumber;
+        const brandName = selectedBrand[0]?.brandDetails?.brandName || "Franchise";
+
         // Reset form
         setFormData({
           fullName: "",
@@ -321,6 +323,14 @@ const handleSubmit = useCallback(
           planToInvest: "",
           readyToInvest: "",
         });
+                alert("✅ Success! Your application has been submitted.");
+ if (whatsappNumber) {
+          const cleanNumber = whatsappNumber.replace(/[\s()-]/g, "");
+          const message = encodeURIComponent(
+            `Hi, I just submitted an application for the ${brandName} franchise. I'm interested in discussing this opportunity further.`
+          );
+          window.open(`https://wa.me/${cleanNumber}?text=${message}`, "_blank");
+        }
       } else {
         throw new Error(response.data?.message || "Unknown error occurred");
       }
