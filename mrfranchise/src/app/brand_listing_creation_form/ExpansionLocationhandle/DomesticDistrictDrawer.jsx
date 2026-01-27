@@ -14,6 +14,7 @@ import {
   AccordionDetails,
   Chip,
   FormControlLabel,
+  Skeleton,
 } from "@mui/material";
 import { ChevronDown, Search } from "lucide-react";
 
@@ -28,7 +29,7 @@ const DomesticDistrictDrawer = ({
   handleSelectAllDistricts,
   toggleDrawer,
 }) => {
-  if (selections.selectedStates.length === 0) return null;
+  if (selections.selectedStates.length === 0) return <Skeleton/>;
 
   // Group selected districts by state
   const districtsByState = selections.selectedDistricts.reduce(
@@ -154,7 +155,7 @@ const DomesticDistrictDrawer = ({
               )
               .sort((a, b) => a.localeCompare(b));
 
-            if (stateDistricts.length === 0) return null;
+            if (stateDistricts.length === 0) return <Skeleton/>;
 
             const selectedDistrictsForState = selections.selectedDistricts
               .filter((d) => d.state === stateName)

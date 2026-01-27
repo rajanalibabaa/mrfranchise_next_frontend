@@ -68,6 +68,7 @@ function Footer() {
         color: "#fff",
         pt: 2.5,
         pb: 3,
+        mt:1,
         position: "relative",
         "&::before": {
           content: '""',

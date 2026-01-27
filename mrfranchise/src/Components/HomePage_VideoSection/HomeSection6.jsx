@@ -23,7 +23,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { homeSection6} from '../../Redux/Slices/TopCardFetchingSlice.jsx';
 import { motion } from "framer-motion";
 import HomePageBrandCard from "./HomePageBrandCard.jsx";
-
+import slugify from "slugify";
 // Breakpoints
 const CARD_DIMENSIONS = {
   mobile: { width: 280, height: 520 },
@@ -174,9 +174,16 @@ const HomeSection6 = () => {
    };
  
       const brandCategoriesName = brands[0]?.brandCategories?.sub;
-const handleClickOpenBrandCategories = () => {
+  const handleClickOpenBrandCategories = () => {
+     if (!brandCategoriesName) return;
+     const slug = slugify(brandCategoriesName, {
+    lower: true,
+    strict: true,   // removes &, /, special chars
+    trim: true,
+  });
+
   const subcat = encodeURIComponent(brandCategoriesName); // encode spaces/special chars
-  const url = `/AllCategoryPage/allbrandlisting?subcat=${subcat}`;
+  const url = `/AllCategoryPage/allbrandlisting/${slug}?subcat=${subcat}`;
 
   // Open in new tab
   const newWindow = window.open(url, "_blank");

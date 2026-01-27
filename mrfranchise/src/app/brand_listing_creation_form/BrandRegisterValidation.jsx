@@ -81,37 +81,30 @@ const validateBrandDetails = (data) => {
 
 // Validation for Franchise Details
 const validateFranchiseDetails = (data) => {
-  // console.log("Validating Franchise Details:", data);
   const errors = {};
 
-//   // Brand Categories Validation
+  // Brand Categories Validation
   if (!data.brandCategories?.main) {
     errors.mainCategory = "Industry is required";
   }
+  
   if (!data.brandCategories?.sub) {
     errors.subCategory = "Main category is required";
   }
- // Correct childCategory validation
-  if (
-    !data.brandCategories?.child ||
-    data.brandCategories.child.length === 0
-  ) {
-    errors.childCategory = "Please select at least one product tag from any category.";
+  
+  // Updated: Check productTags instead of child
+  if (!data.brandCategories?.productTags || data.brandCategories.productTags.length === 0) {
+    errors.productTags = "Please select at least one product tag from any category.";
   }
 
-
-
-  // Convert all arrays to one combined list of counts
-  const totalSelected = Object.values(data.franchiseTags)
-    .map((arr) => arr.length)
-    .reduce((a, b) => a + b, 0);
-
-  // If all 8 arrays empty → throw error
-  if (totalSelected === 0) {
-    errors.franchiseTags =
-      "Please select at least one service tag from any category.";
-  }
-
+  // Updated: Check serviceTags instead of franchiseTags
+ const totalSelected = data.brandCategories?.serviceTags?.reduce(
+  (total, group) => total + (group.tags?.length || 0), 0
+) || 0;
+  
+ if (totalSelected === 0) {
+  errors.franchiseTags = "Please select at least one service tag from any category.";
+}
 
   // Establishment & Franchise Year Validation
   if (!data.establishedYear) {
@@ -232,9 +225,9 @@ if (!data.trainingSupport || data.trainingSupport.length === 0) {
     data.uniqueSellingPoints.forEach((usp, index) => {
       if (!usp.trim()) {
         errors[`uniqueSellingPoints[${index}]`] = "USP cannot be empty";
-      } else if (usp.length < 10) {
+      } else if (usp.length < 5) {
         errors[`uniqueSellingPoints[${index}]`] = "USP is too short (min 10 chars)";
-      } else if (usp.length > 100) {
+      } else if (usp.length > 1000) {
         errors[`uniqueSellingPoints[${index}]`] = "USP is too long (max 100 chars)";
       }
     });

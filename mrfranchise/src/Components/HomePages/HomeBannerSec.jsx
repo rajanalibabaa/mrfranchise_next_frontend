@@ -19,13 +19,10 @@ import PopupModal from "@/Components/PopUpModal/PopUpModal";
 import FilterDropdowns from "@/Components/Navbar/FilterDropdownsData";
 import { useDispatch } from "react-redux";
 import Footer from "@/Components/Footers/Footer";
-import { hideLoading, showLoading } from "../../Redux/Slices/loadingSlice";
+import { hideLoading, showLoading } from "@/Redux/Slices/loadingSlice";
 import Navbar from "@/Components/Navbar/NavBar";
-// import SEO from "../../Components/SEO/Seo";
-// import HomeBanner from "../../assets/Images/HomeBanner.avif";
 import CompareButton from "./CompareButtonsCompenents";
-import BrandComparison from "../../app/AllCategoryPage/BrandCompariosn";
-// import img1 from "../../assets/Images/bg25.jpeg";
+import BrandComparison from "@/app/AllCategoryPage/BrandCompariosn";
 
 // --- ErrorBoundary ---
 class ErrorBoundary extends React.Component {
@@ -489,11 +486,11 @@ const HomeBannerSec = () => {
         performance.getEntriesByType("navigation")[0]?.type === "reload";
       const shown = sessionStorage.getItem("popup-shown");
       
-      dispatch(showLoading());
+      // dispatch(showLoading());
       
       const t = setTimeout(() => {
         setIsLoading(false);
-        dispatch(hideLoading());
+        // dispatch(hideLoading());
         if (!shown || nav) {
           setIsPopupOpen(true);
           sessionStorage.setItem("popup-shown", "true");
@@ -536,20 +533,20 @@ const HomeBannerSec = () => {
   const handlePopupClose = useCallback(() => setIsPopupOpen(false), []);
   const currentText = bannerTexts[bannerIndex];
 
-  if (isLoading) {
-    return (
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "100vh",
-        }}
-      >
-        <CircularProgress color="secondary" size={60} />
-      </Box>
-    );
-  }
+  // if (isLoading) {
+  //   return (
+  //     <Box
+  //       sx={{
+  //         display: "flex",
+  //         justifyContent: "center",
+  //         alignItems: "center",
+  //         height: "100vh",
+  //       }}
+  //     >
+  //       <CircularProgress color="secondary" size={60} />
+  //     </Box>
+  //   );
+  // }
 
   return (
     <>
