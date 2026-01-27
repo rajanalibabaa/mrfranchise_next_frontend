@@ -1,24 +1,18 @@
 "use client";
-import React from "react";
+import React,{useEffect} from "react";
 
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
 import Grid from "@mui/material/Grid";
-import Link from "@mui/material/Link";
 import IconButton from "@mui/material/IconButton";
 import Button from "@mui/material/Button";
-// import brandlogo from "/Images/brandLogo.jpg";
-
-
 import Facebook from "@mui/icons-material/Facebook";
 import Twitter from "@mui/icons-material/Twitter";
 import LinkedIn from "@mui/icons-material/LinkedIn";
 import Instagram from "@mui/icons-material/Instagram";
 import ArrowUpward from "@mui/icons-material/ArrowUpward";
-
 import axios from "axios";
-// import { useNavigate } from "react-router-dom";
 import { useRouter } from "next/navigation";
 
 
@@ -59,6 +53,39 @@ function Footer() {
       }, 2000);
     }
   };
+
+
+  const footerLinks = [
+  {
+    text: "Expand Your Brand",
+    title: "Expand Your Brand in India",
+    path: "/expandyourbrand",
+  },
+  {
+    text: "Invest in a Franchise",
+    title: "Invest in Profitable Franchise Opportunities",
+    path: "/investfranchise",
+  },
+  {
+    text: "Advertise With Us",
+    title: "Advertise With Us for Franchises in India",
+    path: "/advertisewithus",
+  },
+  {
+    text: "Blogs",
+    title: "Franchise Blogs",
+    path: "/",
+  },
+];
+ 
+
+const supportLinks = [
+  { text: "About Us", path: "/aboutpage" },
+  { text: "Contact Us", path: "/contactus" },
+  { text: "FAQs", path: "/faq" },
+  { text: "Help Center", path: "/help" },
+  { text: "Terms & Conditions", path: "/termsandconditions" },
+];
 
   return (
     <Box
@@ -150,42 +177,37 @@ function Footer() {
             >
               Quick Links
             </Typography>
-            <Box
-              component="nav"
-              aria-label="Footer Quick Links"
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                gap: 1.2,
-              }}
-            >
-              {[
-                { text: "Expand Your Brand",titleheader: "Expand Your Brand in India", href: "/expandyourbrand" },
-                { text: "Invest in a Franchise",titleheader: " Invest in Profitable Franchise Opportunities", href: "/investfranchise" },
-                { text: "Advertise With Us", titleheader: "Advertise With Us for Franchises in India",   href: "/advertisewithus" },
-                // { text: "Lead Distribution", href: "/franchisepromotion" },
-                // { text: "Other Industries", href: "/otherindustries" },
-                { text: "Blogs", href: "/" },
-              ].map((item, index) => (
-                <Link
-                  key={index}
-                  href={item.href}
-                  title={item.titleheader}
-                  color="#b0bec5"
-                  underline="none"
-                  sx={{
-                    transition: "all 0.3s ease",
-                    "&:hover": {
-                      color: "#ffba00",
-                      transform: "translateX(5px)",
-                    },
-                    fontSize: "0.95rem",
-                  }}
-                >
-                  {item.text}
-                </Link>
-              ))}
-            </Box>
+             <Box
+      component="nav"
+      aria-label="Footer Quick Links"
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        gap: 1.2,
+      }}
+    >
+      {footerLinks.map((item, index) => (
+        <Typography
+          key={index}
+          component="span"
+          role="link"
+          title={item.title}
+          onClick={() => router.push(item.path)}
+          sx={{
+            cursor: "pointer",
+            color: "#b0bec5",
+            fontSize: "0.95rem",
+            transition: "all 0.3s ease",
+            "&:hover": {
+              color: "#ffba00",
+              transform: "translateX(5px)",
+            },
+          }}
+        >
+          {item.text}
+        </Typography>
+      ))}
+    </Box>
           </Grid>
 
           {/* Support Column */}
@@ -211,41 +233,37 @@ function Footer() {
             >
               Support
             </Typography>
-            <Box
-              component="nav"
-              aria-label="Footer Support"
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                gap: 1.2,
-              }}
-            >
-              {[
-                { text: "About Us", href: "/aboutpage" },
-                { text: "Contact Us", href: "/contactus" },
-                { text: "FAQs", href: "/faq" },
-                { text: "Help Center", href: "/help" },
-                { text: "Terms & Conditions", href: "/termsandconditions" },
-              ].map((item, index) => (
-                <Link
-                  key={index}
-                  href={item.href}
-                  title={item.text}
-                  color="#b0bec5"
-                  underline="none"
-                  sx={{
-                    transition: "all 0.3s ease",
-                    "&:hover": {
-                      color: "#ffba00",
-                      transform: "translateX(5px)",
-                    },
-                    fontSize: "0.95rem",
-                  }}
-                >
-                  {item.text}
-                </Link>
-              ))}
-            </Box>
+             <Box
+      component="nav"
+      aria-label="Footer Support"
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        gap: 1.2,
+      }}
+    >
+      {supportLinks.map((item, index) => (
+        <Typography
+          key={index}
+          component="span"
+          role="link"
+          title={item.text}
+          onClick={() => router.push(item.path)}
+          sx={{
+            cursor: "pointer",
+            color: "#b0bec5",
+            fontSize: "0.95rem",
+            transition: "all 0.3s ease",
+            "&:hover": {
+              color: "#ffba00",
+              transform: "translateX(5px)",
+            },
+          }}
+        >
+          {item.text}
+        </Typography>
+      ))}
+    </Box>
           </Grid>
 
          

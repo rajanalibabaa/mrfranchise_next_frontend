@@ -222,8 +222,31 @@ const [ID, setId] = useState(null);
     //   dispatch(showLoading());
     //   navigate("/");
     // }
-    dispatch(showLoading());
+    // dispatch(showLoading());
     router.push("/");
+  };
+
+
+  const menuItems = [
+  { label: "Expand Your Franchise", path: "/expandyourbrand", external: false },
+  { label: "Investor", path: "/investfranchise", external: false },
+  { label: "Advertise", path: "/advertisewithus", external: false },
+  { label: "Blogs", path: "/", external: false },
+  {
+    label: "Franchise Consultant",
+    path: "https://franchiseconsulting.mrfranchise.in",
+    external: true,
+  },
+];
+
+  const handleNavigation = (item) => {
+    if (item.external) {
+      // ✅ open external site in new tab
+      window.open(item.path, "_blank", "noopener,noreferrer");
+    } else {
+      // ✅ super fast client-side navigation
+      router.push(item.path);
+    }
   };
 
   return (
@@ -258,7 +281,7 @@ const [ID, setId] = useState(null);
           position: 'relative',
           zIndex: 1
         }}>
-          {['Expand Your Franchise', 'Investor', 'Advertise',"Blogs","Franchise Consultant"].map((text) => (
+          {/* {['Expand Your Franchise', 'Investor', 'Advertise',"Blogs","Franchise Consultant"].map((text) => (
             <motion.div
               key={text}
               whileHover={{ scale: 1.05 }}
@@ -296,7 +319,30 @@ const [ID, setId] = useState(null);
 </Button>
 
             </motion.div>
-          ))}
+          ))} */}
+          {menuItems.map((item) => (
+        <motion.div
+          key={item.label}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          <Button
+            size="small"
+            onClick={() => handleNavigation(item)}
+            sx={{
+              fontSize: isMobile ? "0.75rem" : "0.875rem",
+              textTransform: "none",
+              color: "black",
+              "&:hover": {
+                color: "#ff9800",
+                backgroundColor: "rgba(255, 255, 255, 0.1)",
+              },
+            }}
+          >
+            {item.label}
+          </Button>
+        </motion.div>
+      ))}
         </Box>
         <Toolbar
           sx={{

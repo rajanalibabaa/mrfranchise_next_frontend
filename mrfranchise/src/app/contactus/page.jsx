@@ -121,10 +121,10 @@ const ContactUs = () => {
       details: ["Mon - Sat: 9:00 AM - 7:00 PM", "Sunday: Closed"],
       address: [
         "Mr Franchise New No 76/18, Old No 22, B-8,",
-        <br />,
+        // <br />,
         "TRB Complex, Near Ashok Pillar Signal",
         "100 Feet Road, Ashok Nagar",
-        <br />,
+        // <br />,
         "Chennai – 600083, Tamil Nadu",
       ],
       color: "#ff9800",
