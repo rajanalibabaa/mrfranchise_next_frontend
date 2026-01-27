@@ -1,6 +1,27 @@
-import ContactForm from "./contactus_client.jsx";
+"use client"
+import React,{useState} from "react";
+import {useTheme,useMediaQuery} from "@mui/material";
+import Box from "@mui/material/Box";
+import Container from "@mui/material/Container";
+import Typography from "@mui/material/Typography";
+import TextField from "@mui/material/TextField";
+import Button from "@mui/material/Button";
+import Paper from "@mui/material/Paper";
+import Snackbar from "@mui/material/Snackbar";
+import Alert from "@mui/material/Alert";
+import InputAdornment from "@mui/material/InputAdornment";
+import Stack from "@mui/material/Stack";
+import Grid from "@mui/material/Grid";
+import Chip from "@mui/material/Chip";
+import Fade from "@mui/material/Fade";
+import Zoom from "@mui/material/Zoom";
+import Phone from "@mui/icons-material/Phone";
+import Email from "@mui/icons-material/Email";
+import Person from "@mui/icons-material/Person";
+import AccessTime from "@mui/icons-material/AccessTime";
+import ArrowForward from "@mui/icons-material/ArrowForward";
+import CheckCircle from "@mui/icons-material/CheckCircle";
 
-<<<<<<< HEAD
 import Navbar from "@/Components/Navbar/NavBar";
 import Footer from "@/Components/Footers/Footer"
 // import img1 from '../../../assets/Images/bg23.jpeg'
@@ -42,30 +63,38 @@ const ContactUs = () => {
     return Object.keys(err).length === 0;
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!validate()) return;
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+  if (!validate()) return;
 
-    setLoading(true);
+  setLoading(true);
 
-    try {
-      const submitData = new FormData();
-      submitData.append("firstName", formData.firstName);
-      submitData.append("lastName", formData.lastName);
-      submitData.append("email", formData.email);
-      submitData.append("phone", formData.phone);
-      submitData.append("subject", formData.subject);
-      submitData.append("message", formData.message);
+  try {
+    const submitData = new FormData();
+    submitData.append("firstName", formData.firstName);
+    submitData.append("lastName", formData.lastName);
+    submitData.append("email", formData.email);
+    submitData.append("phone", formData.phone);
+    submitData.append("subject", formData.subject);
+    submitData.append("message", formData.message);
+    
+    // ADD THIS LINE - redirect URL after submission
+    submitData.append("_next", window.location.origin + "/thank-you"); // Optional
 
-      const response = await fetch(
-        "https://formsubmit.co/support@.mrfranchise.in",
-        {
-          method: "POST",
-          body: submitData,
+    const response = await fetch(
+      "https://formsubmit.co/ajax/support@mrfranchise.in",  // Use /ajax/ endpoint
+      {
+        method: "POST",
+        body: submitData,
+        headers: {
+          'Accept': 'application/json'
         }
-      );
+      }
+    );
 
-      if (response.ok) {
+    if (response.ok) {
+      const data = await response.json();
+      if (data.success) {
         setSnackbar(true);
         setFormData({
           firstName: "",
@@ -76,15 +105,18 @@ const ContactUs = () => {
           message: "",
         });
       } else {
-        alert("Failed to submit form. Please try again.");
+        alert("Failed to send email. Please try again.");
       }
-    } catch (error) {
-      console.error("Error submitting form:", error);
-      alert("Network error. Please try again.");
-    } finally {
-      setLoading(false);
+    } else {
+      alert("Failed to submit form. Please try again.");
     }
-  };
+  } catch (error) {
+    console.error("Error submitting form:", error);
+    alert("Network error. Please try again.");
+  } finally {
+    setLoading(false);
+  }
+};
 
   const contactInfo = [
     // {
@@ -98,14 +130,14 @@ const ContactUs = () => {
       icon: <AccessTime />,
       title: "Visit Our Office",
       details: ["Mon - Sat: 9:00 AM - 7:00 PM", "Sunday: Closed"],
-      address: [
-        "Mr Franchise New No 76/18, Old No 22, B-8,",
-        // <br />,
-        "TRB Complex, Near Ashok Pillar Signal",
-        "100 Feet Road, Ashok Nagar",
-        // <br />,
-        "Chennai – 600083, Tamil Nadu",
-      ],
+     address: [
+  "Mr Franchise New No 76/18, Old No 22, B-8,",
+  <br key="br1" />,
+  "TRB Complex, Near Ashok Pillar Signal",
+  "100 Feet Road, Ashok Nagar",
+  <br key="br2" />,
+  "Chennai – 600083, Tamil Nadu",
+],
       color: "#ff9800",
       bg: "linear-gradient(135deg, #f9b652ff 0%, #f3bc69e3 100%)",
     },
@@ -856,40 +888,6 @@ const ContactUs = () => {
       </Snackbar>
     </>
   );
-=======
-export const metadata = {
-  title: "Contact MrFranchise | Franchise Consulting Company in Chennai",
-  description: "Get in touch with MrFranchise, a leading franchise consulting company in Chennai. Contact us for franchise expansion, investor onboarding, and expert franchise consultation across India.",
-  keywords: [
-    "contact mrfranchise",
-    "franchise consulting company in chennai contact",
-    "franchise consultants chennai",
-    "franchise business enquiry",
-    "mr franchise contact",
-  ],
-  alternates: {
-    canonical: "https://mrfranchise.in/contactus",
-  },
-  robots: {  
-    index: true,
-    follow: true,
-  },
-  openGraph: {
-    title: "Contact MrFranchise | Franchise Consulting Company in Chennai",
-    description: "Reach out to MrFranchise for franchise consulting, expansion strategy, and investor onboarding services across India.",
-    url: "https://mrfranchise.in/contactus",
-    siteName: "MrFranchise",
-    type: "website",
-    locale: "en_IN",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Contact MrFranchise – Franchise Consulting Experts",
-    description: "Talk to our franchise experts today. Fast response, free consultation.",
-  },
->>>>>>> 8bfffcca6f70fc02b4a84ec4618098a2b000a419
 };
 
-export default function ContactPage() {
-  return <ContactForm />;
-}
+export default ContactUs;
