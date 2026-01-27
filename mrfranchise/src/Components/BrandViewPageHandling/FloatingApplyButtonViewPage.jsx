@@ -17,20 +17,18 @@ const bounce = keyframes`
   50% { transform: translateY(-10px); }
 `;
 
-const FloatingApplyButton = ({
-  isMobile,
-  brand,
-  toggleDrawer,
-}) => {
-  console.log('vvvvv',brand);
-  
-  const brandName = brand[0]?.brandDetails?.brandName || "Brand";
-  const whatsappNumber =
-    brand[0]?.brandDetails?.whatsappnumber || "";
+const FloatingApplyButton = ({ isMobile, brand, toggleDrawer }) => {
+
+  ;
+const currentUrl = window.location.href;
+  const brandName = brand?.[0]?.brandDetails?.brandName || "Brand";
+  const whatsappNumber = brand?.[0]?.brandDetails?.whatsappnumber || "";
+
+  const shareText = `${currentUrl}\n\n#MrFranchise.in`;
 
   const whatsappLink = whatsappNumber
     ? `https://wa.me/${whatsappNumber.replace(/\D/g, "")}?text=${encodeURIComponent(
-        "Hi, I am interested in your franchise."
+        `Hi, I am interested in your"${brandName}" franchise business.\n\n${shareText} \n\n `
       )}`
     : null;
 
@@ -39,42 +37,39 @@ const FloatingApplyButton = ({
     <Box
       sx={{
         position: "fixed",
-        bottom: isMobile ? 10 : 280,
-        right: isMobile ? 0 : 20,
-        left: isMobile ? 0 : "auto",
+        right: 20,                     // ✅ always right
+        bottom: isMobile ? 90 : 350,   // ✅ responsive spacing
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
         gap: 1.5,
-        zIndex: 1000,
+        zIndex: 1200,
       }}
     >
-      {/* 🔶 APPLY NOW BUTTON */}
+      {/* 🔶 APPLY NOW */}
       <motion.div
-        initial={{ scale: 0.9 }}
-        animate={{ scale: 1, y: [0, -10, 0] }}
+        initial={{ scale: 0.95 }}
+        animate={{ scale: 1, y: [0, -8, 0] }}
         transition={{
-          y: { repeat: Infinity, duration: 2, ease: "easeOut" },
-          scale: { type: "spring", stiffness: 100, damping: 10 },
+          y: { repeat: Infinity, duration: 2 },
+          scale: { type: "spring", stiffness: 120, damping: 12 },
         }}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
       >
         <Button
           variant="contained"
-          size="large"
           onClick={toggleDrawer(true)}
           sx={{
             display: "flex",
             flexDirection: "column",
-            alignItems: "center",
-            backgroundColor: "#ff9800",
-            color: "white",
-            borderRadius: 4,
             px: 3,
-            boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
+            py: 1,
+            backgroundColor: "#ff9800",
+            borderRadius: 3,
+            boxShadow: "0 6px 14px rgba(0,0,0,0.25)",
             "&:hover": { backgroundColor: "#e65100" },
-            animation: `${bounce} 2s infinite ease-in-out`,
+            animation: `${bounce} 2s infinite`,
           }}
         >
           <Typography fontWeight={600}>Apply Now</Typography>
@@ -84,18 +79,17 @@ const FloatingApplyButton = ({
 
       
     </Box>
-    <Box sx={{
+    <Box  sx={{
         position: "fixed",
-        bottom: isMobile ? 10 : 100,
-        right: isMobile ? 0 : 40,
-        left: isMobile ? 0 : "auto",
+        right: 20,                     // ✅ always right
+        bottom: isMobile ? 90 : 100,   // ✅ responsive spacing
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
         gap: 1.5,
-        zIndex: 1000,
+        zIndex: 1200,
       }}>
-      {/* 🟢 WHATSAPP BUTTON BELOW */}
+      {/* 🟢 WHATSAPP ICON */}
       {whatsappLink && (
         <Tooltip title="Chat on WhatsApp" placement="left">
           <IconButton
@@ -106,12 +100,12 @@ const FloatingApplyButton = ({
             sx={{
               backgroundColor: "#25D366",
               color: "#fff",
-              width: 62,
-              height: 62,
-              boxShadow: "0 4px 14px rgba(0,0,0,0.25)",
+              width: 66,
+              height: 66,
+              boxShadow: "0 4px 14px rgba(0,0,0,0.3)",
               "&:hover": {
                 backgroundColor: "#1ebe5d",
-                transform: "scale(1.08)",
+                transform: "scale(1.1)",
               },
               transition: "all 0.25s ease",
             }}

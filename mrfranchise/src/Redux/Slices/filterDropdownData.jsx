@@ -1,9 +1,9 @@
 "use client";
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import axios from 'axios';
-
+ 
 const API_BASE_URL = 'http://localhost:5000/api/v1/';
-
+ 
 // Async thunk for fetching all filter options
 export const fetchFilterOptions = createAsyncThunk(
   'filterDropdown/fetchFilterOptions',
@@ -11,27 +11,27 @@ export const fetchFilterOptions = createAsyncThunk(
     try {
       const { sub, state, district, main, areaRequired   } = params;
       const queryParams = new URLSearchParams();
-
+ 
       if (sub) queryParams.append('sub', sub);
       if (state) queryParams.append('state', state);
             if (areaRequired) queryParams.append('areaRequired', areaRequired);
-
+ 
       if (district) queryParams.append('district', district);
       if (main) queryParams.append('main', main);
       else queryParams.append('main', "Food & Beverages")
             if (areaRequired) queryParams.append('areaRequired', areaRequired);
-
-
+ 
+ 
       const response = await axios.post(`${API_BASE_URL}filter/getAllBrandFiltersdata?${queryParams.toString()}`);
 console.log("===response=== ",response.data.data)
-
+ 
       return response.data.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.message);
     }
   }
 );
-
+ 
 const initialState = {
   // Main filter options
   mainCategories: [],
@@ -43,22 +43,22 @@ const initialState = {
   states: [],
   districts: [],
   cities: [],
-
+ 
   // Loading states
   loading: false,
   loadingChildCategories: false,
   loadingDistricts: false,
   loadingCities: false,
-
+ 
   // Error states
   error: null,
   childCategoriesError: null,
   districtsError: null,
   citiesError: null,
 };
-
+ 
 console.log("===initialState=== ",initialState)
-
+ 
 const filterDropdownSlice = createSlice({
   name: 'filterDropdown',
   initialState,
@@ -108,7 +108,7 @@ const filterDropdownSlice = createSlice({
       })
       .addCase(fetchFilterOptions.fulfilled, (state, action) => {
         const params = action.meta.arg || {};
-
+ 
         if (params.sub) {
           // Child categories response
           state.childCategories = action.payload;
@@ -126,8 +126,8 @@ const filterDropdownSlice = createSlice({
           state.areaRequired =
             action.payload.areaRequired || action.payload || [];
           state.loading = false;
-        } 
-        
+        }
+       
         else if (params.main) {
           // Subcategories and other filtered options for selected main category
           state.subCategories = action.payload.subcat || [];
@@ -147,13 +147,13 @@ const filterDropdownSlice = createSlice({
           state.states = action.payload.states || [];
           state.areaRequired = action.payload.areaRequired || [];
           state.loading = false;
-
+ 
           // console.log("Fetched all filter options:", action.payload);
         }
       })
       .addCase(fetchFilterOptions.rejected, (state, action) => {
         const params = action.meta.arg || {};
-
+ 
         if (params.sub) {
           state.childCategoriesError = action.payload;
           state.loadingChildCategories = false;
@@ -167,7 +167,7 @@ const filterDropdownSlice = createSlice({
           state.error = action.payload;
           state.loading = false;
         }
-        
+       
         else if (params.main) {
           state.error = action.payload;
           state.loading = false;
@@ -178,12 +178,13 @@ const filterDropdownSlice = createSlice({
       });
   }
 });
-
+ 
 export const {
   resetChildCategories,
   resetDistricts,
   resetCities,
   clearErrors
 } = filterDropdownSlice.actions;
-
+ 
 export default filterDropdownSlice.reducer;
+ 

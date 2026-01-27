@@ -326,9 +326,12 @@ const handleSubmit = useCallback(
                 alert("✅ Success! Your application has been submitted.");
  if (whatsappNumber) {
           const cleanNumber = whatsappNumber.replace(/[\s()-]/g, "");
+          const currentUrl = window.location.href;
           const message = encodeURIComponent(
-            `Hi, I just submitted an application for the ${brandName} franchise. I'm interested in discussing this opportunity further.`
-          );
+    `Hi, I just submitted an application for the ${brandName} franchise.\n\n` +
+    `I'm interested in discussing this opportunity further.\n\n` +
+    `Page Link:\n${currentUrl}`
+  );
           window.open(`https://wa.me/${cleanNumber}?text=${message}`, "_blank");
         }
       } else {

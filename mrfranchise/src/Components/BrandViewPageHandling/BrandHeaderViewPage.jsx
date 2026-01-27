@@ -18,7 +18,7 @@ import {
 } from "@mui/material";
 import { Phone, Favorite, ShareOutlined, Label } from "@mui/icons-material";
 import { motion } from "framer-motion";
-import ShareDialogActions from "../../app/brands/ShareDialogActions";
+import ShareDialogActions from "@/app/brands/ShareDialogActions";
 import { RiBookmark3Fill } from "react-icons/ri";
 import { useRef } from "react";
 import confetti from "canvas-confetti";
