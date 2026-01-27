@@ -20,10 +20,9 @@ import {
 import { motion } from "framer-motion";
 import axios from "axios";
 
-import { useToggleLike } from "../../Hooks/Fetchbrands.jsx";
-import { handleShortList } from "../../Api/shortListApi.jsx";
-import { toggleBrandLike, toggleBrandShortList } from "../../Redux/Slices/GetAllBrandsDataUpdationFile.jsx";
-import { toggleHomeCardLike, toggleHomeCardShortlist } from "../../Redux/Slices/TopCardFetchingSlice.jsx";
+import { handleShortList } from "@/Api/shortListApi.jsx";
+import { toggleBrandLike, toggleBrandShortList } from "@/Redux/Slices/GetAllBrandsDataUpdationFile.jsx";
+import { toggleHomeCardLike, toggleHomeCardShortlist } from "@/Redux/Slices/TopCardFetchingSlice.jsx";
 import { likeApiFunction } from "@/Api/likeApi.jsx";
 import { useDispatch } from "react-redux";
 import { token } from "@/Utils/autherId.jsx";
@@ -40,7 +39,7 @@ const OverviewTab = lazy(() => import("./OverviewTab.jsx"));
 const ExpansionLocationTags = lazy(() => import("@/Components/BrandViewPageHandling/ExpansionLocationTags.jsx"));
 const ImageDialog = lazy(() => import("@/Components/BrandViewPageHandling/ImageDialogBoxViewPage.jsx"));
 const ApplyDrawer = lazy(() => import("@/Components/BrandViewPageHandling/ApplyDrawerFormViewPage.jsx"));
-const BackToTopButton = lazy(() => import("@/Components/BrandViewPageHandling/BackToTopButtonViewPage.jsx"));
+// const BackToTopButton = lazy(() => import("@/Components/BrandViewPageHandling/BackToTopButtonViewPage.jsx"));
 const FloatingApplyButton = lazy(() => import("@/Components/BrandViewPageHandling/FloatingApplyButtonViewPage.jsx"));
 const SimilarBrands = lazy(() => import("@/Components/HomePage_VideoSection/SimilarBrands.jsx"));
 const LikedBrands = lazy(() => import("@/Components/HomePage_VideoSection/LikedBrands.jsx"));
@@ -626,10 +625,10 @@ const handleSubmit = useCallback(
       </Box> 
     
       <Disclaimer isMobile={isMobile} />
-
+{/* 
       <Suspense fallback={null}>
         <BackToTopButton show={showBackToTop} isMobile={isMobile} />
-      </Suspense>
+      </Suspense> */}
       <Suspense fallback={<div style={{height: 300, background: "#eee"}} />}>
         <Footer />
       </Suspense>

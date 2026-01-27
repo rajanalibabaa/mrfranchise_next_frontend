@@ -8,8 +8,8 @@ const CompareButton = () => {
   const isTablet = useMediaQuery(theme.breakpoints.between("sm", "md")); // 600 - 900px
 
   // Sizes based on device
-  const buttonWidth = isMobile ? "35px" : isTablet ? "40px" : "50px";
-  const buttonHeight = isMobile ? "120px" : isTablet ? "150px" : "180px";
+  const buttonWidth = isMobile ? "35px" : isTablet ? "40px" : "44px";
+  const buttonHeight = isMobile ? "120px" : isTablet ? "150px" : "160px";
   const buttonFontSize = isMobile ? "12px" : isTablet ? "14px" : "16px";
 
   const handleClick = () => {

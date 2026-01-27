@@ -390,10 +390,10 @@ const HomePageBrandCard = React.memo(
                 </Box>
               </Stack>
 
-              <Divider sx={{ my: 1 }} />
+              {/* <Divider sx={{ my: 1 }} /> */}
             </CardContent>
 
-            <Box sx={{ px: 2, pb: 2 }}>
+            <Box sx={{ px: 2, pb: 2.5 }}>
               <Button
                 variant="contained"
                 aria-label="view details"
@@ -405,7 +405,9 @@ const HomePageBrandCard = React.memo(
                     backgroundColor: "#000000ff",
                     boxShadow: 2,
                   },
-                  py: 1,
+                  // py: 1,
+                  maxWidth: 200,
+                  ml:6,
                   borderRadius: 1,
                   textTransform: "none",
                   fontWeight: 600,
