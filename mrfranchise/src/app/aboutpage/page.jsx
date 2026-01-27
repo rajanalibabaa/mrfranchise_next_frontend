@@ -37,6 +37,7 @@ const fadeInUp = {
   }),
 };
 
+
 const AboutUs = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
