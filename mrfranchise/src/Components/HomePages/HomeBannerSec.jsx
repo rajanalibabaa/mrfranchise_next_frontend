@@ -533,20 +533,20 @@ const HomeBannerSec = () => {
   const handlePopupClose = useCallback(() => setIsPopupOpen(false), []);
   const currentText = bannerTexts[bannerIndex];
 
-  // if (isLoading) {
-  //   return (
-  //     <Box
-  //       sx={{
-  //         display: "flex",
-  //         justifyContent: "center",
-  //         alignItems: "center",
-  //         height: "100vh",
-  //       }}
-  //     >
-  //       <CircularProgress color="secondary" size={60} />
-  //     </Box>
-  //   );
-  // }
+  if (isLoading) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
+      >
+        <CircularProgress color="warning" size={60} />
+      </Box>
+    );
+  }
 
   return (
     <>
