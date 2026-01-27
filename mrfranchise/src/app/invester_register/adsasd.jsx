@@ -50,6 +50,8 @@ const InvestorRegisterPreferences = ({
   setSelectedMainCategory,
   selectedSubCategory,
   setSelectedSubCategory,
+  selectedChild,
+  setSelectedChild,
   selectedCategories,
   setSelectedCategories,
   categories,
@@ -153,12 +155,13 @@ const InvestorRegisterPreferences = ({
     }
   };
 
-  // Handle industry change - FIXED: Now allows selecting from all industries
+  // Handle industry change
   const handleIndustryChange = (e) => {
-    const industryName = e.target.value;
+    const industryName = "Food & Beverages";
     setSelectedMainCategory(industryName);
     setValue("industry", industryName);
     setSelectedSubCategory("");
+    setSelectedChild("");
     setCategoryOptions([]); // Clear categories until new ones are loaded
     
     // Fetch categories for the selected industry
@@ -226,6 +229,7 @@ const InvestorRegisterPreferences = ({
     setSelectedCategories([]);
     setSelectedMainCategory("");
     setSelectedSubCategory("");
+    setSelectedChild("");
     clearErrors([
       "preferredState",
       "preferredDistrict",
@@ -260,6 +264,7 @@ const InvestorRegisterPreferences = ({
       const selectedCat = pref.category[0];
       setSelectedMainCategory(selectedCat.main || "");
       setSelectedSubCategory(selectedCat.sub || "");
+      setSelectedChild(selectedCat.child || "");
       setSelectedCategories(pref.category);
       setValue("category", pref.category);
     }
@@ -333,54 +338,48 @@ const InvestorRegisterPreferences = ({
           spacing={2}
           sx={{
             display: "grid",
-            gridTemplateColumns: { md: "repeat(2, 1fr)", xs: "1fr" },
+            gridTemplateColumns: { md: "repeat(3, 1fr)", xs: "1fr" },
             gap: 2,
           }}
         >
           {/* Main Category Dropdown - Industry */}
-          <FormControl fullWidth sx={{ minWidth: 120 }}>
-            <InputLabel>Industry</InputLabel>
-            <Select
-              value={selectedMainCategory || "Food & Beverages"}
-              onChange={handleIndustryChange}
-              label="Industry"
-              sx={{ borderRadius: "8px" }}
-              disabled={loadingIndustries}
-            >
-              <MenuItem value="Food & Beverages">Food & Beverages</MenuItem>
-        
-            </Select>
-          
-          </FormControl>
+      <FormControl fullWidth sx={{ minWidth: 120 }}>
+  <InputLabel>Industry</InputLabel>
+  <Select
+    value={selectedMainCategory}
+    onChange={handleIndustryChange}
+    label="Industry"
+    sx={{ borderRadius: "8px" }}
+    // disabled={loadingIndustries}
+ 
+  >
+    <MenuItem value="Food & Beverages">Food & Beverages</MenuItem>
+
+  </Select>
+
+</FormControl>
+
 
           {/* Subcategory Dropdown - Category */}
           <FormControl
             fullWidth
             sx={{ minWidth: 120 }}
-            // disabled={!selectedMainCategory}
+          
           >
             <InputLabel>Category</InputLabel>
             <Select
               value={selectedSubCategory || ""}
               onChange={(e) => {
                 setSelectedSubCategory(e.target.value);
-                // When category is selected, add to selectedCategories
-                if (selectedMainCategory && e.target.value) {
-                  const newCategory = {
-                    main: selectedMainCategory,
-                    sub: e.target.value
-                  };
-                  setSelectedCategories([newCategory]);
-                  setValue("category", [newCategory]);
-                }
+                setSelectedChild("");
               }}
               label="Category"
               sx={{ borderRadius: "8px" }}
-              // endAdornment={
-              //   loadingIndustryDetails ? (
-              //     <CircularProgress size={20} sx={{ mr: 2 }} />
-              //   ) : null
-              // }
+              endAdornment={
+                loadingIndustryDetails ? (
+                  <CircularProgress size={20} sx={{ mr: 2 }} />
+                ) : null
+              }
             >
               <MenuItem value="">Select Category</MenuItem>
               {categoryOptions.map((category, index) => (
@@ -1188,3 +1187,4 @@ const InvestorRegisterPreferences = ({
 };
 
 export default InvestorRegisterPreferences;
+

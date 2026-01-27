@@ -92,6 +92,7 @@ const InvestorRegister = () => {
 
   // Domestic country
   const [indiaData, setIndiaData] = useState([]);
+
   const [preferredStates, setPreferredStates] = useState([]);
   const [preferredCities, setPreferredCities] = useState([]);
   const [preferredDistricts, setPreferredDistricts] = useState([]);
@@ -107,10 +108,13 @@ const InvestorRegister = () => {
   const preferredLocationType = watch("preferredLocationType");
   const [loginOpen, setLoginOpen] = useState(false);
   const [preferences, setPreferences] = useState([]);
-  const [selectedMainCategory, setSelectedMainCategory] = useState("");
+  const [selectedMainCategory, setSelectedMainCategory] = useState("Food & Beverages");
   const [selectedSubCategory, setSelectedSubCategory] = useState("");
   const [selectedChild, setSelectedChild] = useState("");
   const propertyTypeValue = useWatch({ control, name: "propertyType" });
+
+  console.log("Selected Main Category:", selectedMainCategory);
+  console.log("Selected Sub Category:", selectedSubCategory);
 
   // OTP verification state
   const [otpModal, setOtpModal] = useState({
@@ -177,6 +181,7 @@ const InvestorRegister = () => {
     preferredCity: "",
     terms: false,
   };
+  console.log(propertyCountry)
 
   useEffect(() => {
     fetch("https://countriesnow.space/api/v0.1/countries/positions")
@@ -677,87 +682,111 @@ const InvestorRegister = () => {
   };
 
   const onSubmit = async (data) => {
-    if (!preferences.length) {
-      showSnackbar(
-        "Please add at least one preference before submitting.",
-        "error"
-      );
-      return;
-    }
+  if (!preferences.length) {
+    showSnackbar(
+      "Please add at least one preference before submitting.",
+      "error"
+    );
+    return;
+  }
 
-    if (!verificationState.email.verified) {
-      showSnackbar("Please verify your email before submitting.", "error");
-      return;
-    }
-    const formatNumber = (num) => {
-      if (!num) return "";
-      const trimmed = num.trim();
-      return trimmed.startsWith(phonePrefix)
-        ? trimmed
-        : `${phonePrefix}${trimmed}`;
-    };
+  if (!verificationState.email.verified) {
+    showSnackbar("Please verify your email before submitting.", "error");
+    return;
+  }
+  
+  const formatNumber = (num) => {
+    if (!num) return "";
+    const trimmed = num.trim();
+    return trimmed.startsWith(phonePrefix)
+      ? trimmed
+      : `${phonePrefix}${trimmed}`;
+  };
 
-    const formattedData = {
-      firstName: data.firstName || "",
-      email: data.email || "",
-      mobileNumber: formatNumber(data.mobileNumber),
-      whatsappNumber: formatNumber(data.whatsappNumber),
-      address: data.address || "",
-      pincode: data.pincode || "",
-      country: data.country || "India",
-      state: data.state || "",
-      city: data.city || "",
-      occupation: data.occupation || "",
-      ...(data.occupation === "Other" && {
-        specifyOccupation: data.otherOccupation || "",
-      }),
-      preferences: preferences.map((pref) => {
-        const isInternational = pref.locationType === "international";
-        return {
-          category: Array.isArray(pref.category)
-            ? pref.category.map((c) => ({
-                main: c.main || "",
-                sub: c.sub || "",
-                child: c.child || "",
-              }))
-            : typeof pref.category === "string"
-            ? [
-                (() => {
-                  const [main, sub, child] = pref.category
-                    .split(">")
-                    .map((s) => s.trim());
-                  return { main, sub, child };
-                })(),
-              ]
-            : [],
-          investmentRange: pref.investmentRange,
-          investmentAmount: pref.investmentAmount,
-          propertyPreferred: [
-            {
-              propertyType: pref.propertyType,
-              ...(pref.propertyType === "Own Property" && {
-                propertySize: pref.propertySize,
-                propertyCountry: pref.propertyCountry || "",
-                propertyState: pref.propertyState || "",
-                propertyCity: pref.propertyCity || "",
-              }),
-            },
-          ],
-          ...(isInternational
-            ? {
-                preferredCountry: pref.preferredState,
-                preferredState: pref.preferredDistrict,
-                preferredCity: pref.preferredCity,
-              }
-            : {
-                preferredState: pref.preferredState,
-                preferredDistrict: pref.preferredDistrict,
-                preferredCity: pref.preferredCity,
-              }),
-          locationType: pref.locationType,
-        };
-      }),
-    };
+  const formattedData = {
+    firstName: data.firstName || "",
+    email: data.email || "",
+    mobileNumber: formatNumber(data.mobileNumber),
+    whatsappNumber: formatNumber(data.whatsappNumber),
+    address: data.address || "",
+    pincode: data.pincode || "",
+    country: data.country || "India",
+    state: data.state || "",
+    city: data.city || "",
+    occupation: data.occupation || "",
+    ...(data.occupation === "Other" && {
+      specifyOccupation: data.otherOccupation || "",
+    }),
+    preferences: preferences.map((pref) => {
+      const isInternational = pref.locationType === "international";
+      
+      // Determine what to use based on location type
+      let preferredCountry = "";
+      let preferredState = "";
+      let preferredDistrict = "";
+      let preferredCity = "";
+      
+      if (isInternational) {
+        // For international locations
+        preferredCountry = pref.preferredCountry || ""; // This contains country name for international
+        preferredState =pref.preferredState || ""; // This contains state name for international
+        preferredCity = pref.preferredCity || "";
+      } else {
+        // For domestic (India) locations
+        preferredCountry = "India"; // Always India for domestic
+        preferredState = pref.preferredState || "";
+        preferredDistrict = pref.preferredDistrict || "";
+        preferredCity = pref.preferredCity || "";
+      }
+      
+      return {
+        category: Array.isArray(pref.category)
+          ? pref.category.map((c) => ({
+              main: c.main || "",
+              sub: c.sub || "",
+            }))
+          : typeof pref.category === "string"
+          ? [
+              (() => {
+                const [main, sub] = pref.category
+                  .split(">")
+                  .map((s) => s.trim());
+                return { main, sub };
+              })(),
+            ]
+          : [],
+        investmentRange: pref.investmentRange,
+        investmentAmount: pref.investmentAmount,
+        propertyPreferred: [
+          {
+            propertyType: pref.propertyType,
+            ...(pref.propertyType === "Own Property" && {
+              propertySize: pref.propertySize,
+              propertyCountry: pref.propertyCountry || "",
+              propertyState: pref.propertyState || "",
+              propertyCity: pref.propertyCity || "",
+            }),
+          },
+        ],
+        // Send proper location data based on type
+        ...(isInternational
+          ? {
+              preferredCountry: preferredCountry,
+              preferredState: preferredState,
+              preferredCity: preferredCity,
+              locationType: "international",
+            }
+          : {
+              preferredCountry: preferredCountry, // Will be "India"
+              preferredState: preferredState,
+              preferredDistrict: preferredDistrict,
+              preferredCity: preferredCity,
+              locationType: "domestic",
+            }),
+      };
+    }),
+  };
+
 
     try {
       dispatch(showLoading());
