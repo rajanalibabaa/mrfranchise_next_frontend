@@ -14,6 +14,7 @@ import {
   AccordionDetails,
   Chip,
   FormControlLabel,
+  Skeleton,
 } from "@mui/material";
 import { ChevronDown, Search } from "lucide-react";
 
@@ -28,7 +29,7 @@ const InternationalStateDrawer = ({
   handleSearchChange,
   toggleDrawer,
 }) => {
-  if (selections.selectedCountries.length === 0) return null;
+  if (selections.selectedCountries.length === 0) return <Skeleton/>;
 
   // Group selected states by country
   const statesByCountry = selections.selectedStates;
@@ -152,7 +153,7 @@ const InternationalStateDrawer = ({
               )
               .sort((a, b) => a.name.localeCompare(b.name));
 
-            if (filteredStates.length === 0) return null;
+            if (filteredStates.length === 0) return <Skeleton/>;
 
             const selectedStates = statesByCountry[country] || [];
             const allSelected = filteredStates.every((s) =>

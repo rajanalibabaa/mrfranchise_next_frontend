@@ -1,5 +1,6 @@
 "use client"; 
 import { useState, useEffect } from "react";
+
 import { useTheme, alpha } from "@mui/material";
 import Box from "@mui/material/Box";
 import Container from "@mui/material/Container";
@@ -63,7 +64,7 @@ const MembershipSelection = ({
   submitSuccess,
 }) => {
   const theme = useTheme();
-  const navigate = useRouter();
+ const router = useRouter();
   const [selectedMembership, setSelectedMembership] = useState(null);
   const [selectedListing, setSelectedListing] = useState(null);
   const [selectedPlan, setSelectedPlan] = useState(null);
@@ -561,28 +562,27 @@ const MembershipSelection = ({
                   >
                     Back to Plans
                   </Button>
-                  <Button
-                    variant="contained"
-                    size="medium"
-                    // onClick={handleContinueToPayment}
-                    onClick={()=> navigate('/contactus')}
-                    sx={{
-                      background: "linear-gradient(135deg, #ffffff, #f0f0f0)",
-                      color: selectedPlan.color,
-                      fontWeight: "bold",
-                      boxShadow: `0 4px 15px ${alpha("#000000", 0.2)}`,
-                      flex: 1,
-                      py: 1,
-                      "&:hover": {
-                        background: "linear-gradient(135deg, #f0f0f0, #e0e0e0)",
-                        transform: "translateY(-2px)",
-                        boxShadow: `0 6px 20px ${alpha("#000000", 0.3)}`,
-                      },
-                      transition: "all 0.3s ease",
-                    }}
-                  >
-                    Continue to Payment
-                  </Button>
+                 <Button
+  variant="contained"
+  size="medium"
+  onClick={handleContinueToPayment}
+  sx={{
+    background: "linear-gradient(135deg, #ffffff, #f0f0f0)",
+    color: selectedPlan.color,
+    fontWeight: "bold",
+    boxShadow: `0 4px 15px ${alpha("#000000", 0.2)}`,
+    flex: 1,
+    py: 1,
+    "&:hover": {
+      background: "linear-gradient(135deg, #f0f0f0, #e0e0e0)",
+      transform: "translateY(-2px)",
+      boxShadow: `0 6px 20px ${alpha("#000000", 0.3)}`,
+    },
+    transition: "all 0.3s ease",
+  }}
+>
+  Continue to Payment
+</Button>
                 </Stack>
               </Box>
             </Box>

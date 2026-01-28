@@ -1,3 +1,4 @@
+"use client"
 export const dateFilterOptions = [
   { value: 'all', label: 'All Time' },
   { value: '7', label: 'Last 7 Days' },

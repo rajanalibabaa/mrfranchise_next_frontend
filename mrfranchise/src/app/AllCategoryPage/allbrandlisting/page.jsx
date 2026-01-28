@@ -1,116 +1,3 @@
-// "use client"
-// import React, { lazy, Suspense, useEffect,useRef } from "react";
-// // import SEO from "../../Components/SEO/Seo";
-// import Navbar from "@/Components/Navbar/NavBar";
-// import { Box, CircularProgress } from "@mui/material";
-// import { useMediaQuery } from "@mui/material";
-// import { useTheme } from "@mui/material/styles";
-// // import { useLocation, useNavigate } from 'react-router-dom';
-// // 
-// import {useRouter,useSearchParams} from 'next/navigation'
-// import { useDispatch } from 'react-redux';
-// import { setFilter } from '@/Redux/Slices/FilterBrandSlice';
-// import Footer from "@/Components/Footers/Footer.jsx";
-
-// // Lazy load the BrandList component
-// const BrandListNew = lazy(() => import("@/app/AllCategoryPage/BrandListAllbrands.jsx").then((module) => ({ default: module.default })));
-
-// function BrandCategoryViewPage() {
-//   const theme = useTheme();
-//   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-//   const searchParams = useSearchParams();
-//   const dispatch = useDispatch();
-//   const router = useRouter();
-//   const hasDispatched  = useRef(false);
-
- 
-//  useEffect(() => {
-//     if (!searchParams || hasDispatched .current) return;
-// const params = Object.fromEntries(searchParams.entries());
-//     const filtersMap = [
-//       "subcat",
-//       "state",
-//       "investmentRange",
-//       "maincat",
-//       "childcat",
-//       "searchTerm",
-//     ];
-// let hasAnyFilter = false;
-
-//     filtersMap.forEach((key) => {
-//       const value = searchParams.get(key);
-//       if (value) {
-//         dispatch(setFilter({ filterName: key, value:params[key] }));
-//         hasAnyFilter = true;
-//       }
-//     });
-// hasDispatched .current = true;
-
-//     // ✅ OPTIONAL: clean URL AFTER storing in Redux
-//     const queryString = new URLSearchParams(params).toString();
-
-// router.replace(
-//   `/AllCategoryPage/allbrandlisting?${queryString}`
-// );
-//   }, [searchParams, dispatch, router]);
-
- 
-
-//   return (
-//     <>
-      
-
-//       {isMobile && (
-//         <Box
-//           style={{
-//             position: "fixed",
-//             top: 0,
-//             left: 0,
-//             right: 0,
-//             zIndex: 1000,
-//             backgroundColor: "#fff",
-//           }}
-//         >
-//           <Navbar />
-//         </Box>
-//       )}
-
-//       {!isMobile && <Navbar />}
-      
-//       <Box
-//         component="main"
-//         sx={{
-//           mt: "12px",
-//           ml: "12px",
-//           minHeight: "calc(100vh - 64px)",
-//           position: "relative",
-//         }}
-//       >
-//         <Suspense
-//           fallback={
-//             <Box
-//               sx={{
-//                 display: "flex",
-//                 justifyContent: "center",
-//                 alignItems: "center",
-//                 height: "200px",
-//               }}
-//             >
-//               <CircularProgress />
-//             </Box>
-//           }
-//         >
-//           <BrandListNew />
-//         </Suspense>
-//       </Box>
-//       <Footer />
-//     </>
-//   );
-// }
-
-// export default BrandCategoryViewPage
-
-// app/AllCategoryPage/allbrandlisting/page.js
 
 
 //server side rendering 
@@ -131,6 +18,9 @@ const BrandListNew = dynamic(
     ssr: true,
   }
 );
+
+
+
 
 
 

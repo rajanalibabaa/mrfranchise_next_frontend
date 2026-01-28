@@ -22,6 +22,7 @@ import { useSnackbar } from "notistack";
 import debounce from "lodash/debounce";
 import axios from "axios";
 import indianStatesData from "./data/IndiaStateDistrictFile.json";
+import { Skeleton } from "@mui/material";
 
 const apiCache = {
   countries: null,
@@ -1329,7 +1330,7 @@ const DomesticDistrictDrawer = ({
   isEditing,
   removeLocationItems,
 }) => {
-  if (selections.selectedStates.length === 0) return null;
+  if (selections.selectedStates.length === 0) return <Skeleton/>;
 
   const districtsByState = selections.selectedDistricts.reduce((acc, { state, district }) => {
     if (!acc[state]) acc[state] = [];
@@ -1416,7 +1417,7 @@ const DomesticDistrictDrawer = ({
               .filter((d) => d.toLowerCase().includes(searchFilters.districts.toLowerCase()))
               .sort((a, b) => a.localeCompare(b));
 
-            if (stateDistricts.length === 0) return null;
+            if (stateDistricts.length === 0) return <Skeleton/>;
 
             const selectedDistrictsForState = selections.selectedDistricts
               .filter((d) => d.state === stateName)
@@ -1643,7 +1644,7 @@ const InternationalStateDrawer = ({
   isEditing,
   removeLocationItems,
 }) => {
-  if (selections.selectedCountries.length === 0) return null;
+  if (selections.selectedCountries.length === 0) return <Skeleton/>;
 
   const statesByCountry = selections.selectedStates;
   const totalStates = selections.selectedCountries.reduce(
@@ -1727,7 +1728,7 @@ const InternationalStateDrawer = ({
               .filter((s) => s.name.toLowerCase().includes(searchFilters.intStates.toLowerCase()))
               .sort((a, b) => a.name.localeCompare(b.name));
 
-            if (filteredStates.length === 0) return null;
+            if (filteredStates.length === 0) return <Skeleton/>;
 
             const selectedStates = statesByCountry[country] || [];
             const allSelected = filteredStates.every((s) => selectedStates.includes(s.name));
@@ -1821,7 +1822,7 @@ const InternationalCityDrawer = ({
   removeLocationItems,
   handleSelectAllStateCities,
 }) => {
-  if (Object.keys(selections.selectedStates).length === 0) return null;
+  if (Object.keys(selections.selectedStates).length === 0) return <Skeleton/>;
 
   const totalCities = Object.entries(selections.selectedStates).reduce(
     (total, [country, states]) =>
@@ -1918,7 +1919,7 @@ const InternationalCityDrawer = ({
               const selectedCities = selections.selectedCities[stateKey] || [];
               const allSelected = filteredCities.every((city) => selectedCities.includes(city));
 
-              if (filteredCities.length === 0) return null;
+              if (filteredCities.length === 0) return <Skeleton/>;
 
               return (
                 <Box key={`cities-section-${stateKey}`} sx={{ mb: 4 }}>

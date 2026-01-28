@@ -1,3 +1,4 @@
+"use client"
 import { filterByDate } from "./filterByDate";
 
 export const filterByInvestmentRange = (items, range) => {

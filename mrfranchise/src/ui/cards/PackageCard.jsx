@@ -1,3 +1,4 @@
+"use client";
 import { Card, CardContent, Typography, Box } from "@mui/material";
 
 const PackageCard = ({ data, color = "black", background = "#dddddd4e" }) => {

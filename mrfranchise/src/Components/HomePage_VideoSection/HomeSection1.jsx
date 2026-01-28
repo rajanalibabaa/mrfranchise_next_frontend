@@ -12,14 +12,14 @@ import {
   useMediaQuery,
   useTheme,
 } from "@mui/material";
-import Box from "@mui/material/Box/index.js";
-import Typography from "@mui/material/Typography/index.js";
-import Button from "@mui/material/Button/index.js";
-import CircularProgress from "@mui/material/CircularProgress/index.js";
-
-import ArrowBack from "@mui/icons-material/ArrowBack.js";
-import ArrowForward from "@mui/icons-material/ArrowForward.js";
-import ArrowRight from "@mui/icons-material/ArrowRight.js";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Button from "@mui/material/Button";
+import CircularProgress from "@mui/material/CircularProgress";
+import slugify from "slugify";
+import ArrowBack from "@mui/icons-material/ArrowBack";
+import ArrowForward from "@mui/icons-material/ArrowForward";
+import ArrowRight from "@mui/icons-material/ArrowRight";
 import { useSelector, useDispatch } from "react-redux";
 import LoginPage from "@/Components/LoginPage/LoginPage.jsx";
 import { motion } from "framer-motion";
@@ -188,8 +188,15 @@ console.log('home sec1',brands);
 
   const brandCategoriesName = brands[0]?.brandCategories?.sub;
   const handleClickOpenBrandCategories = () => {
+     if (!brandCategoriesName) return;
+     const slug = slugify(brandCategoriesName, {
+    lower: true,
+    strict: true,   // removes &, /, special chars
+    trim: true,
+  });
+
   const subcat = encodeURIComponent(brandCategoriesName); // encode spaces/special chars
-  const url = `/AllCategoryPage/allbrandlisting?subcat=${subcat}`;
+  const url = `/AllCategoryPage/allbrandlisting/${slug}?subcat=${subcat}`;
 
   // Open in new tab
   const newWindow = window.open(url, "_blank");

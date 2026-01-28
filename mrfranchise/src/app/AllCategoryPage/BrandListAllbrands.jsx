@@ -630,6 +630,7 @@ import {
   resetFilters,
   fetchFilteredBrands,
   setPage,
+  
 } from "@/Redux/Slices/FilterBrandSlice";
 import { fetchFilterOptions } from "@/Redux/Slices/filterDropdownData";
 
@@ -684,12 +685,12 @@ const FilterPanel = dynamic(() => import("./FillterPannel"), {
 });
 
 const BrandComparison = dynamic(() => import("./BrandCompariosn"), {
-  loading: () => null,
+  loading: () => <Skeleton/>,
   ssr: false,
 });
 
 const LoginPage = dynamic(() => import("@/Components/LoginPage/LoginPage"), {
-  loading: () => null,
+  loading: () => <Skeleton/>,
   ssr: false,
 });
 

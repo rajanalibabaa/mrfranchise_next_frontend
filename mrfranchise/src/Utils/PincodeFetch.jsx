@@ -1,4 +1,5 @@
 // Utils/PincodeFetch.jsx
+"use client";
 import axios from 'axios';
 
 const SUPPORTED_COUNTRIES = [

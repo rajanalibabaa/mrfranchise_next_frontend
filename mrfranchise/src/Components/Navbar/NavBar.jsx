@@ -2,19 +2,19 @@
 import React, { useEffect, useRef, useState } from "react";
 import Link from 'next/link.js';
 import {useRouter } from "next/navigation.js";
-import AppBar from "@mui/material/AppBar/index.js";
-import Toolbar from "@mui/material/Toolbar/index.js";
-import IconButton from "@mui/material/IconButton/index.js";
-import Drawer from "@mui/material/Drawer/index.js";
-import Avatar from "@mui/material/Avatar/index.js";
-import Box from "@mui/material/Box/index.js";
-import Typography from "@mui/material/Typography/index.js";
-import Button from "@mui/material/Button/index.js";
-import MenuItem from "@mui/material/MenuItem/index.js";
-import Divider from "@mui/material/Divider/index.js";
+import AppBar from "@mui/material/AppBar";
+import Toolbar from "@mui/material/Toolbar";
+import IconButton from "@mui/material/IconButton";
+import Drawer from "@mui/material/Drawer";
+import Avatar from "@mui/material/Avatar";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Button from "@mui/material/Button";
+import MenuItem from "@mui/material/MenuItem";
+import Divider from "@mui/material/Divider";
 import { useMediaQuery, useTheme } from "@mui/material";
-import Menu from "@mui/material/Menu/index.js";
-import MenuIcon from "@mui/icons-material/Menu.js";
+import Menu from "@mui/material/Menu";
+import MenuIcon from "@mui/icons-material/Menu";
 import { User, LogOut, LogIn, UserPlus, Home, Plus, Search } from "lucide-react";
 import SideViewContent from "../SideViewContentMenu/SideHoverMenu.jsx";
 import LoginPage from "@/Components/LoginPage/LoginPage.jsx";
@@ -222,8 +222,31 @@ const [ID, setId] = useState(null);
     //   dispatch(showLoading());
     //   navigate("/");
     // }
-    dispatch(showLoading());
+    // dispatch(showLoading());
     router.push("/");
+  };
+
+
+  const menuItems = [
+  { label: "Expand Your Franchise", path: "/expandyourbrand", external: false },
+  { label: "Investor", path: "/investfranchise", external: false },
+  { label: "Advertise", path: "/advertisewithus", external: false },
+  { label: "Blogs", path: "/", external: false },
+  {
+    label: "Franchise Consultant",
+    path: "https://franchiseconsulting.mrfranchise.in",
+    external: true,
+  },
+];
+
+  const handleNavigation = (item) => {
+    if (item.external) {
+      // ✅ open external site in new tab
+      window.open(item.path, "_blank", "noopener,noreferrer");
+    } else {
+      // ✅ super fast client-side navigation
+      router.push(item.path);
+    }
   };
 
   return (
@@ -258,7 +281,7 @@ const [ID, setId] = useState(null);
           position: 'relative',
           zIndex: 1
         }}>
-          {['Expand Your Franchise', 'Investor', 'Advertise',"Blogs","Franchise Consultant"].map((text) => (
+          {/* {['Expand Your Franchise', 'Investor', 'Advertise',"Blogs","Franchise Consultant"].map((text) => (
             <motion.div
               key={text}
               whileHover={{ scale: 1.05 }}
@@ -296,7 +319,30 @@ const [ID, setId] = useState(null);
 </Button>
 
             </motion.div>
-          ))}
+          ))} */}
+          {menuItems.map((item) => (
+        <motion.div
+          key={item.label}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          <Button
+            size="small"
+            onClick={() => handleNavigation(item)}
+            sx={{
+              fontSize: isMobile ? "0.75rem" : "0.875rem",
+              textTransform: "none",
+              color: "black",
+              "&:hover": {
+                color: "#ff9800",
+                backgroundColor: "rgba(255, 255, 255, 0.1)",
+              },
+            }}
+          >
+            {item.label}
+          </Button>
+        </motion.div>
+      ))}
         </Box>
         <Toolbar
           sx={{

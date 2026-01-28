@@ -161,7 +161,7 @@ const allDocs = appliedRes.data?.data?.results?.flatMap(result => result.data) |
 
   useEffect(() => {
     fetchData();
-  }, [fetchData]);
+  }, []);
 
   const toggleLike = useCallback(async (brandId) => {
     if (!brandId) return;

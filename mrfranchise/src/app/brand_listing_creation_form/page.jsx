@@ -28,6 +28,7 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
+  Skeleton,
 } from "@mui/material";
 import { useTheme } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
@@ -347,7 +348,7 @@ const [activeStep, setActiveStep] = useState(0);
       const errors = {};
       let isValid = true;
 
-      // console.log("Validating step:", errors);
+      console.log("Validating step:", errors);
 
       switch (step) {
         case 0:
@@ -407,8 +408,9 @@ const [activeStep, setActiveStep] = useState(0);
   };
 
   const handleHomeClick = () => {
-    dispatch(showLoading());
+    // dispatch(showLoading());
     router.push("/");
+    // dispatch(hideLoading())
   };
 
   const handleSubmit = async (selectedMembership, selectedListing) => {
@@ -543,7 +545,7 @@ const [activeStep, setActiveStep] = useState(0);
           setActiveStep(0);
           setOpenPreview(false);
           setTimeout(() => {
-            router.push("/");
+            router.push("/contactus");
           }, 1500);
         } else {
           throw new Error("Submission failed. Please try again.");
@@ -565,7 +567,7 @@ const [activeStep, setActiveStep] = useState(0);
   };
 
   const handlepakagesDetails = () => {
-    const isValid = validateStep(3); // Validate uploads step
+    const isValid = validateStep(3); 
     if (isValid) {
       setMembershipPayment(true);
     }
@@ -1143,7 +1145,7 @@ const [activeStep, setActiveStep] = useState(0);
                       </TableRow>
                     );
                   }
-                  return null;
+                  return <Skeleton/>;
                 })}
               </TableBody>
             </Table>
@@ -1273,7 +1275,7 @@ const [activeStep, setActiveStep] = useState(0);
                       </TableRow>
                     );
                   }
-                  return null;
+                  return <Skeleton/>;
                 })}
               </TableBody>
             </Table>

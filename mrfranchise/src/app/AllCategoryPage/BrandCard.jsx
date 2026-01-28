@@ -521,7 +521,7 @@ const DetailItem = memo(({ icon, label, value }) => {
   );
 
   return (
-    <Box display="flex" alignItems="center">
+    <Box display="flex" alignItems="center" >
       {clonedIcon}
       <Typography variant="caption" noWrap>
         <span style={{ fontWeight: 400 }}>{label}:</span> {value || "N/A"}

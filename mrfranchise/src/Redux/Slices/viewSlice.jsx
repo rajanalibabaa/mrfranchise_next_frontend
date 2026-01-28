@@ -1,3 +1,4 @@
+"use client";
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { getToken,getUserId } from "@/Utils/autherId";
 import { api } from "@/Api/api";
