@@ -1,5 +1,5 @@
 // File: ./Api/autologout.jsx
-import { logout } from "@/Redux/Slices/AuthSlice/authSlice";
+import { logout } from "@/redux/Slices/AuthSlice/authSlice";
 import { api } from "./api";
 import { postApi } from "./DefaultApi";
 

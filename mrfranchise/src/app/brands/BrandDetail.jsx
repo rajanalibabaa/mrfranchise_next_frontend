@@ -14,19 +14,17 @@ import {
   useTheme,
   useMediaQuery,
   CircularProgress,
-  Divider,
-  Typography,
+  
 } from "@mui/material";
 import { motion } from "framer-motion";
 import axios from "axios";
 
-import { useToggleLike } from "../../Hooks/Fetchbrands.jsx";
-import { handleShortList } from "../../Api/shortListApi.jsx";
-import { toggleBrandLike, toggleBrandShortList } from "../../Redux/Slices/GetAllBrandsDataUpdationFile.jsx";
-import { toggleHomeCardLike, toggleHomeCardShortlist } from "../../Redux/Slices/TopCardFetchingSlice.jsx";
+import { handleShortList } from "@/Api/shortListApi.jsx";
+import { toggleBrandLike, toggleBrandShortList } from "@/redux/Slices/GetAllBrandsDataUpdationFile.jsx";
+import { toggleHomeCardLike, toggleHomeCardShortlist } from "@/redux/Slices/TopCardFetchingSlice.jsx";
 import { likeApiFunction } from "@/Api/likeApi.jsx";
 import { useDispatch } from "react-redux";
-import { token } from "@/Utils/autherId.jsx";
+import { getToken } from "@/Utils/autherId.jsx";
 import LoginPage from "@/Components/LoginPage/LoginPage.jsx";
 
 import BrandHeader from "@/Components/BrandViewPageHandling/BrandHeaderViewPage.jsx";
@@ -40,13 +38,13 @@ const OverviewTab = lazy(() => import("./OverviewTab.jsx"));
 const ExpansionLocationTags = lazy(() => import("@/Components/BrandViewPageHandling/ExpansionLocationTags.jsx"));
 const ImageDialog = lazy(() => import("@/Components/BrandViewPageHandling/ImageDialogBoxViewPage.jsx"));
 const ApplyDrawer = lazy(() => import("@/Components/BrandViewPageHandling/ApplyDrawerFormViewPage.jsx"));
-const BackToTopButton = lazy(() => import("@/Components/BrandViewPageHandling/BackToTopButtonViewPage.jsx"));
+// const BackToTopButton = lazy(() => import("@/Components/BrandViewPageHandling/BackToTopButtonViewPage.jsx"));
 const FloatingApplyButton = lazy(() => import("@/Components/BrandViewPageHandling/FloatingApplyButtonViewPage.jsx"));
 const SimilarBrands = lazy(() => import("@/Components/HomePage_VideoSection/SimilarBrands.jsx"));
 const LikedBrands = lazy(() => import("@/Components/HomePage_VideoSection/LikedBrands.jsx"));
 const ViewBrands = lazy(() => import("@/Components/HomePage_VideoSection/ViewBrands.jsx"));
 const ShortListedBrands = lazy(() => import("@/Components/HomePage_VideoSection/ShortlistBrands.jsx"));
-
+const token = getToken();
 // Lazy-load OverviewTab only when visible
 function LazyOverviewTab({ brand }) {
   const ref = useRef();
@@ -293,7 +291,7 @@ const handleSubmit = useCallback(
  
       // Make API request
       const response = await axios.post(
-        "http://localhost:5000/api/v1/instantapply/postApplication",
+        "https://mrfranchisebackend.mrfranchise.in/api/v1/instantapply/postApplication",
         payload,
         {
           headers: {
@@ -308,8 +306,10 @@ const handleSubmit = useCallback(
  
       if (response.data && response.data.success) {
         setSubmitSuccess(true);
-        alert("✅ Success! Your application has been submitted.");
         setDrawerOpen(false);
+          const whatsappNumber = selectedBrand[0]?.brandDetails?.whatsappnumber;
+        const brandName = selectedBrand[0]?.brandDetails?.brandName || "Franchise";
+
         // Reset form
         setFormData({
           fullName: "",
@@ -322,6 +322,17 @@ const handleSubmit = useCallback(
           planToInvest: "",
           readyToInvest: "",
         });
+                alert("✅ Success! Your application has been submitted.");
+ if (whatsappNumber) {
+          const cleanNumber = whatsappNumber.replace(/[\s()-]/g, "");
+          const currentUrl = window.location.href;
+          const message = encodeURIComponent(
+    `Hi, I just submitted an application for the ${brandName} franchise.\n\n` +
+    `I'm interested in discussing this opportunity further.\n\n` +
+    `Page Link:\n${currentUrl}`
+  );
+          window.open(`https://wa.me/${cleanNumber}?text=${message}`, "_blank");
+        }
       } else {
         throw new Error(response.data?.message || "Unknown error occurred");
       }
@@ -374,7 +385,7 @@ const handleSubmit = useCallback(
     if (!investorUUID || !AccessToken) return;
     try {
       const response = await axios.get(
-        `http://localhost:5000/api/v1/investor/getInvestorByUUID/${investorUUID}`,
+        `https://mrfranchisebackend.mrfranchise.in/api/v1/investor/getInvestorByUUID/${investorUUID}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -626,10 +637,10 @@ const handleSubmit = useCallback(
       </Box> 
     
       <Disclaimer isMobile={isMobile} />
-
+{/* 
       <Suspense fallback={null}>
         <BackToTopButton show={showBackToTop} isMobile={isMobile} />
-      </Suspense>
+      </Suspense> */}
       <Suspense fallback={<div style={{height: 300, background: "#eee"}} />}>
         <Footer />
       </Suspense>

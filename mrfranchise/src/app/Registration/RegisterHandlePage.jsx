@@ -14,7 +14,7 @@ import {
   Container,
   CircularProgress
 } from "@mui/material";
-import { showLoading, hideLoading } from "../../Redux/Slices/loadingSlice.js";
+import { showLoading, hideLoading } from "../../redux/Slices/LoadingSlice.jsx";
 import businessLogo from "../../assets/images/Business_logo.png";
 import FacebookIcon from "../../Assets/Images/FacebookIcon.png";
 // import LinkedInIcon from "../../Assets/Images/LinkedinIcon.png";
@@ -54,7 +54,7 @@ function RegisterHandleUser({boolean = true}) {
   };
   const handleSocialLogin = (provider) => {
     setIsSubmitting(true);
-    window.location.href = `http://localhost:5000/api/v1/auth/${provider}`;
+    window.location.href = `https://mrfranchisebackend.mrfranchise.in/api/v1/auth/${provider}`;
   };
 
   return (

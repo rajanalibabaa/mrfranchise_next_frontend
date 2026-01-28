@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState, useEffect, Suspense, useCallback } from "react";
+import React, { useState, useEffect, Suspense, useCallback,memo } from "react";
 import { useInView } from "react-intersection-observer";
-import { FixedSizeList as List } from "react-window";
-import AutoSizer from "react-virtualized-auto-sizer";
+// import { FixedSizeList as List } from "react-window";
+import {AutoSizer} from "react-virtualized-auto-sizer";
 import { useRouter } from "next/navigation";
 import {
   Box,
@@ -19,10 +19,14 @@ import PopupModal from "@/Components/PopUpModal/PopUpModal";
 import FilterDropdowns from "@/Components/Navbar/FilterDropdownsData";
 import { useDispatch } from "react-redux";
 import Footer from "@/Components/Footers/Footer";
-import { hideLoading, showLoading } from "@/Redux/Slices/loadingSlice";
 import Navbar from "@/Components/Navbar/NavBar";
 import CompareButton from "./CompareButtonsCompenents";
 import BrandComparison from "@/app/AllCategoryPage/BrandCompariosn";
+
+const FixedSizeList = dynamic(
+  () => import("react-window").then((mod) => mod.FixedSizeList),
+  { ssr: false }
+);
 
 // --- ErrorBoundary ---
 class ErrorBoundary extends React.Component {
@@ -50,72 +54,79 @@ class ErrorBoundary extends React.Component {
   }
 }
 
-// --- LazyCard and VirtualizedCardList for scalable, virtualized sections ---
-const LazyCard = React.memo(({ component: CardComponent, index, style }) => {
-  const [ref, inView] = useInView({
-    triggerOnce: true,
-    rootMargin: "400px",
-  });
+// // --- LazyCard and VirtualizedCardList for scalable, virtualized sections ---
+// const LazyCard = React.memo(({ component: CardComponent, index, style }) => {
+//   const [ref, inView] = useInView({
+//     triggerOnce: true,
+//     rootMargin: "400px",
+//   });
   
-  return (
-    <div ref={ref} style={style}>
-      {inView ? (
-        <Suspense
-          fallback={
-            <Box
-              minHeight={100}
-              display="flex"
-              alignItems="center"
-              justifyContent="center"
-            >
-              <CircularProgress size={24} color="success" />
-            </Box>
-          }
-        >
-          <CardComponent key={index} />
-        </Suspense>
-      ) : (
-        <div style={{ height: "100%", backgroundColor: "#f5f5f5" }} />
-      )}
+//   return (
+//     <div ref={ref} style={style}>
+//       {inView ? (
+//         <Suspense
+//           fallback={
+//             <Box
+//               minHeight={100}
+//               display="flex"
+//               alignItems="center"
+//               justifyContent="center"
+//             >
+//               <CircularProgress size={24} color="success" />
+//             </Box>
+//           }
+//         >
+//           <CardComponent key={index} />
+//         </Suspense>
+//       ) : (
+//         <div style={{ height: "100%", backgroundColor: "#f5f5f5" }} />
+//       )}
+//     </div>
+//   );
+// });
+
+// LazyCard.displayName = "LazyCard";
+
+const VirtualizedCardList = memo(({ items, itemHeight = 440 }) => {
+  const Row = ({ index, style }) => (
+    <div style={style}>
+      <Suspense
+        fallback={
+          <Box
+            height={itemHeight}
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+            bgcolor="#fafafa"
+          >
+            <CircularProgress size={32} />
+          </Box>
+        }
+      >
+        {React.createElement(items[index])}
+      </Suspense>
     </div>
+  );
+
+  return (
+    <AutoSizer>
+      {({ height, width }) => (
+        <FixedSizeList
+          height={height}
+          width={width}
+          itemCount={items.length}
+          itemSize={itemHeight}
+          overscanCount={5}
+        >
+          {Row}
+        </FixedSizeList>
+      )}
+    </AutoSizer>
   );
 });
 
-LazyCard.displayName = "LazyCard";
-
-const VirtualizedCardList = React.memo(
-  ({ items, itemHeight = 400, componentProps }) => {
-    const CardRow = ({ index, style }) => (
-      <LazyCard
-        component={items[index]}
-        index={index}
-        style={style}
-        {...componentProps}
-      />
-    );
-    
-    return (
-      <AutoSizer>
-        {({ height, width }) => (
-          <List
-            height={height}
-            itemCount={items.length}
-            itemSize={itemHeight}
-            width={width}
-            style={{ overflowX: "hidden" }}
-          >
-            {CardRow}
-          </List>
-        )}
-      </AutoSizer>
-    );
-  }
-);
-
-VirtualizedCardList.displayName = "VirtualizedCardList";
-
 // --- ComponentLoader to fully wrap lazy components with error and suspense ---
-const ComponentLoader = React.memo(({ Component, ...props }) => (
+const ComponentLoader = memo(({ Component, ...props }) => (
   <ErrorBoundary>
     <Suspense
       fallback={
@@ -134,7 +145,56 @@ const ComponentLoader = React.memo(({ Component, ...props }) => (
   </ErrorBoundary>
 ));
 
-ComponentLoader.displayName = "ComponentLoader";
+
+
+// Dynamic imports for Next.js
+const useDynamicComponents = () => {
+  return React.useMemo(() => ({
+    TopBrandThreevdocards: dynamic(() => import("@/Components/HomePage_VideoSection/TopBrandThreeVdoCards"), { ssr: false }),
+    LikedBrands: dynamic(() => import("@/Components/HomePage_VideoSection/LikedBrands"), { ssr: false }),
+    ShortlistBrands: dynamic(() => import("@/Components/HomePage_VideoSection/ShortlistBrands"), { ssr: false }),
+    ViewBrands: dynamic(() => import("@/Components/HomePage_VideoSection/ViewBrands"), { ssr: false }),
+    HomeSection1: dynamic(() => import("@/Components/HomePage_VideoSection/HomeSection1"), { ssr: false }),
+    HomeSection2: dynamic(() => import("@/Components/HomePage_VideoSection/HomeSection2"), { ssr: false }),
+    HomeSection3: dynamic(() => import("@/Components/HomePage_VideoSection/HomeSection3"), { ssr: false }),
+    HomeSection4: dynamic(() => import("@/Components/HomePage_VideoSection/HomeSection4"), { ssr: false }),
+    HomeSection5: dynamic(() => import("@/Components/HomePage_VideoSection/HomeSection5"), { ssr: false }),
+    HomeSection6: dynamic(() => import("@/Components/HomePage_VideoSection/HomeSection6"), { ssr: false }),
+    HomeSection7: dynamic(() => import("@/Components/HomePage_VideoSection/HomeSection7"), { ssr: false }),
+    HomeSection8: dynamic(() => import("@/Components/HomePage_VideoSection/HomeSection8"), { ssr: false }),
+    ToTrendingBrands: dynamic(() => import("@/Components/HomePage_VideoSection/ToTrendingBrands"), { ssr: false }),
+    FindFranchiseLocations: dynamic(() => import("@/Components/HomePage_VideoSection/FindFranchiseLocations"), { ssr: false }),
+  }), []);
+};
+
+// --- Section that lazy loads content on scroll-in-view ---
+const LazySection = memo(({ componentKey, dynamicComponents, background, isMobile }) => {
+  const Component = dynamicComponents[componentKey];
+  const { ref, inView } = useInView({ triggerOnce: true, rootMargin: "300px" });
+
+  if (!Component) return null;
+
+  return (
+    <Box
+      ref={ref}
+      sx={{
+        ...background,
+        minHeight: "80vh",
+        backgroundAttachment: "fixed",
+      }}
+    >
+      <Container maxWidth="xl">
+        {inView ? (
+          <ComponentLoader Component={Component} VirtualizedCardList={VirtualizedCardList} isMobile={isMobile} />
+        ) : (
+          <Box minHeight={200} />
+        )}
+      </Container>
+    </Box>
+  );
+});
+
+
 
 // --- Banner texts configuration ---
 const bannerTexts = [
@@ -359,124 +419,27 @@ const pageConfig = {
   },
 };
 
-// Dynamic imports for Next.js
-const useDynamicComponents = () => {
-  return React.useMemo(() => {
-    const componentMap = {
-      TopBrandThreevdocards: dynamic(
-        () => import("@/Components/HomePage_VideoSection/TopBrandThreeVdoCards"),
-        { ssr: false }
-      ),
-      LikedBrands: dynamic(
-        () => import("@/Components/HomePage_VideoSection/LikedBrands"),
-        { ssr: false }
-      ),
-      ShortlistBrands: dynamic(
-        () => import("@/Components/HomePage_VideoSection/ShortlistBrands"),
-        { ssr: false }
-      ),
-      ViewBrands: dynamic(
-        () => import("@/Components/HomePage_VideoSection/ViewBrands"),
-        { ssr: false }  
-      ),
-      HomeSection1: dynamic(
-        () => import("@/Components/HomePage_VideoSection/HomeSection1"),
-        { ssr: false }
-      ),
-      HomeSection2: dynamic(
-        () => import("@/Components/HomePage_VideoSection/HomeSection2"),
-        { ssr: false }
-      ),
-      HomeSection3: dynamic(
-        () => import("@/Components/HomePage_VideoSection/HomeSection3"),
-        { ssr: false }
-      ),
-      HomeSection4: dynamic(
-        () => import("@/Components/HomePage_VideoSection/HomeSection4"),
-        { ssr: false }
-      ),
-      HomeSection5: dynamic(
-        () => import("@/Components/HomePage_VideoSection/HomeSection5"),
-        { ssr: false }
-      ),
-      HomeSection6: dynamic(
-        () => import("@/Components/HomePage_VideoSection/HomeSection6"),
-        { ssr: false }
-      ),
-      HomeSection7: dynamic(
-        () => import("@/Components/HomePage_VideoSection/HomeSection7"),
-        { ssr: false }
-      ),
-      HomeSection8: dynamic(
-        () => import("@/Components/HomePage_VideoSection/HomeSection8"),
-        { ssr: false }
-      ),
-      ToTrendingBrands: dynamic(
-        () => import("@/Components/HomePage_VideoSection/ToTrendingBrands"),
-        { ssr: false }
-      ),
-      FindFranchiseLocations: dynamic(
-        () => import("@/Components/HomePage_VideoSection/FindFranchiseLocations"),
-        { ssr: false }
-      ),
-    };
-
-    return componentMap;
-  }, []);
-};
-
-// --- Section that lazy loads content on scroll-in-view ---
-const LazySection = ({
-  componentKey,
-  dynamicComponents,
-  background,
-  ...props
-}) => {
-  const Component = dynamicComponents[componentKey];
-  const [ref, inView] = useInView({
-    triggerOnce: true,
-    rootMargin: "200px",
-  });
-
-  if (!Component) {
-    return null;
-  }
-
-  return (
-    <Box ref={ref} py={0} sx={background}>
-      <Container maxWidth="xl">
-        {inView ? (
-          <ComponentLoader
-            Component={Component}
-            VirtualizedCardList={VirtualizedCardList}
-            LazyCard={LazyCard}
-            {...props}
-          />
-        ) : (
-          <Box minHeight={100} />
-        )}
-      </Container>
-    </Box>
-  );
-};
 
 // --- Main component ---
-const HomeBannerSec = () => {
+export default memo(function HomeBannerSec() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const dispatch = useDispatch();
   const router = useRouter();
   const dynamicComponents = useDynamicComponents();
+
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [bannerIndex, setBannerIndex] = useState(0);
   const [showPopup, setShowPopup] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const controls = useAnimation();
+  const currentText = bannerTexts[bannerIndex];
 
   // Check login status on client side
+ // Login check
   useEffect(() => {
-    setIsLoggedIn(Boolean(localStorage.getItem("accessToken")));
+    setIsLoggedIn(!!localStorage.getItem("accessToken"));
   }, []);
 
   useEffect(() => {
@@ -531,7 +494,6 @@ const HomeBannerSec = () => {
   }, [isPopupOpen]);
 
   const handlePopupClose = useCallback(() => setIsPopupOpen(false), []);
-  const currentText = bannerTexts[bannerIndex];
 
   if (isLoading) {
     return (
@@ -550,67 +512,7 @@ const HomeBannerSec = () => {
 
   return (
     <>
-      {/* <SEO
-        title={`${currentText.title.text} | Top Franchise Opportunities in India 2025`}
-        description={`${currentText.subtitle.text} Start your journey with the best franchise opportunities in India.`}
-        keywords="franchise opportunities in India, top franchises India, food franchise India, low investment franchise India, cafe franchise, restaurant franchise, F&B business opportunities"
-        canonical="https://mrfranchise.in/"
-        url="https://mrfranchise.in/"
-        image={
-          currentText.images || "https://mrfranchise.in/images/hero-banner.jpg"
-        }
-        schema={{
-          "@context": "https://schema.org",
-          "@type": "Organization",
-          "@id": "https://mrfranchise.in/#organization",
-          name: "Mr Franchise",
-          url: "https://mrfranchise.in",
-          logo: "https://mrfranchise.in/images/logo.png",
-          sameAs: [
-            "https://www.facebook.com/mrfranchise",
-            "https://www.instagram.com/mrfranchise",
-            "https://www.linkedin.com/company/mrfranchise",
-          ],
-          contactPoint: {
-            "@type": "ContactPoint",
-            telephone: "+91-XXXXXXXXXX",
-            contactType: "customer service",
-            areaServed: "IN",
-            availableLanguage: ["English", "Hindi"],
-          },
-        }}
-        og={{
-          type: "website",
-          title: `${currentText.title.text} | Mr Franchise`,
-          description: `${currentText.subtitle.text} Explore 1000+ franchise opportunities.`,
-          image: "https://mrfranchise.in/images/social-share.jpg",
-          imageWidth: "1200",
-          imageHeight: "630",
-        }}
-        twitter={{
-          card: "summary_large_image",
-          site: "@MrFranchise",
-          creator: "@MrFranchise",
-          title: `${currentText.title.text} | Mr Franchise`,
-          description: `${currentText.subtitle.text} India's #1 F&B Franchise Marketplace`,
-          image: "https://mrfranchise.in/images/twitter-card.jpg",
-        }}
-        additionalMeta={[
-          {
-            name: "viewport",
-            content: "width=device-width, initial-scale=1, maximum-scale=1",
-          },
-          {
-            name: "theme-color",
-            content: "#FF5722",
-          },
-          {
-            name: "apple-mobile-web-app-title",
-            content: "Mr Franchise",
-          },
-        ]}
-      /> */}
-
+      
       <Navbar />
 
       {showPopup && (
@@ -721,7 +623,7 @@ background: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${page
         </Container>
       </Box>
 
-      {pageConfig.sections
+      {/* {pageConfig.sections
         .filter((section) => {
           if (
             !isLoggedIn &&
@@ -748,6 +650,23 @@ background: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${page
             }}
             isMobile={isMobile}
           />
+        ))} */}
+
+           {pageConfig.sections
+        .filter((s) => isLoggedIn || !["LikedBrands", "ShortlistBrands", "ViewBrands"].includes(s.component))
+        .map((section, i) => (
+          <LazySection
+            key={i}
+            componentKey={section.component}
+            dynamicComponents={dynamicComponents}
+            background={{
+              backgroundImage: "url(/bg25.jpeg)",
+              backgroundAttachment: "fixed",
+              backgroundSize: "400px",
+              backgroundRepeat: "repeat",
+            }}
+            isMobile={isMobile}
+          />
         ))}
 
       <CompareButton />
@@ -756,6 +675,5 @@ background: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${page
       <Footer />
     </>
   );
-};
+});
 
-export default React.memo(HomeBannerSec);

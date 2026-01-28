@@ -13,11 +13,11 @@ import  Favorite  from "@mui/icons-material/Favorite";
 import { motion } from "framer-motion";
 import { RiBookmark3Fill } from "react-icons/ri";
 // import img from "../../../assets/Images/logo.png";
-import { openBrandDialog } from "@/Redux/Slices/OpenBrandNewPageSlice.jsx";
+import { openBrandDialog } from "@/redux/Slices/OpenBrandNewPageSlice.jsx";
 import { useDispatch } from "react-redux";
-import { removeLikedBrand } from "@/Redux/Slices/likeSlice.jsx";
+import { removeLikedBrand } from "@/redux/Slices/likeSlice.jsx";
 import { likeApiFunction } from "@/Api/likeApi.jsx";
-import { removeSortList } from "@/Redux/Slices/shortlistslice.jsx";
+import { removeSortList } from "@/redux/Slices/shortlistslice.jsx";
 import { handleShortList } from "@/Api/shortListApi.jsx";
 
 const BrandCard = memo(({ 

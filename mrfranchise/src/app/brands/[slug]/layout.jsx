@@ -1,7 +1,7 @@
 import React from "react";
 
 
-const API_BASE =  "http://localhost:5000";
+const API_BASE =  "https://mrfranchisebackend.mrfranchise.in";
 const SITE_URL =  "https://mrfranchise.in";
 const REVALIDATE_TIME = 3600; // 1 hour
 
@@ -298,7 +298,7 @@ export default async function BrandLayout({ children, params }) {
  */
 export async function generateStaticParams() {
   try {
-    const res = await fetch(`${API_BASE}/api/v1/brandlisting/getAllBrands`, {
+    const res = await fetch(`${API_BASE}/api/v1/filter/getAllBrandsAndFilter`, {
       next: { revalidate: 86400 }, // 24 hours
     });
 

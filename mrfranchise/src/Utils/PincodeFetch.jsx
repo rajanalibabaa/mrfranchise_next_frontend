@@ -1,19 +1,23 @@
 // Utils/PincodeFetch.jsx
 "use client";
 import axios from 'axios';
+import {SUPPORTED_COUNTRIES} from './countries'
 
-const SUPPORTED_COUNTRIES = [
-  { code: 'IN', name: 'India' },
-  { code: 'US', name: 'United States' },
-  { code: 'GB', name: 'United Kingdom' },
-  { code: 'CA', name: 'Canada' },
-  { code: 'AU', name: 'Australia' },
-  // Add more countries as needed
-];
+// const SUPPORTED_COUNTRIES = [
+//   { code: 'IN', name: 'India' },
+//   { code: 'US', name: 'United States' },
+//   { code: 'GB', name: 'United Kingdom' },
+//   { code: 'CA', name: 'Canada' },
+//   { code: 'AU', name: 'Australia' },
+//   // Add more countries as needed
+// ];
 
-export const getSupportedCountries = () => {
-  return SUPPORTED_COUNTRIES;
-};
+// export const getSupportedCountries = () => {
+//   return SUPPORTED_COUNTRIES;
+// };
+
+
+export { SUPPORTED_COUNTRIES }; // re-export for client use
 
 export const fetchGlobalLocationByPostalCode = async (postalCode, countryCode = 'IN') => {
   try {

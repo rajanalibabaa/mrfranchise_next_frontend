@@ -3,7 +3,7 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
 // Backend base URL — adjust if needed
-const BASE_URL = "http://localhost:5000/api/v1/brandlisting";
+const BASE_URL = "https://mrfranchisebackend.mrfranchise.in/api/v1/brandlisting";
 
 // ----------------------
 // Async Thunks (Direct API Calls)

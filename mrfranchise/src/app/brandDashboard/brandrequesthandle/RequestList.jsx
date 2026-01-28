@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useMemo, useCallback } from "react";
+import React, { useEffect, useMemo, useCallback, useState } from "react";
 
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -25,20 +25,21 @@ import {
   fetchRequestById,
   removeRequest,
   addRealtimeRequest,
-} from "@/Redux/Slices/userRequestSlice.jsx";
+} from "@/redux/Slices/userRequestSlice.jsx";
 import io from "socket.io-client";
 
 const RequestTable = () => {
   const dispatch = useDispatch();
   const { singleRequest, loading } = useSelector((state) => state.requests);
-  console.log("Single Request:", singleRequest);
-
-  const brandUUID = localStorage.getItem("brandUUID");
-
+const [brandUUID, setBrandUUID] = useState(null);
+useEffect(() => {
+    const id = localStorage.getItem("brandUUID");
+    setBrandUUID(id);
+  }, []);
   // Socket connection
   const socket = useMemo(() => {
     if (brandUUID) {
-      return io("http://localhost:5000", {
+      return io("https://mrfranchisebackend.mrfranchise.in", {
         transports: ["websocket"],
         upgrade: false,
       });

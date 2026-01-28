@@ -1,8 +1,8 @@
 // app/AllCategoryPage/allbrandlisting/[slug]/page.js
 
-import ClientPage from "./ClientPage";
+import ClientPage from "../brandlistClient";
 
-const API_BASE =  "http://localhost:5000";
+const API_BASE =  "https://mrfranchisebackend.mrfranchise.in";
 const SITE_URL ="https://mrfranchise.in";
 const SITE_NAME = "Mr Franchise";
 

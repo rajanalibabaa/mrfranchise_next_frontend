@@ -1,9 +1,7 @@
 // api/brands.js
 import axios from "axios"
 import { api, API_BASE_URL } from "./api";
-import { useDispatch } from "react-redux";
 import { use, useState } from "react";
-// import { initializeShortlist } from "../Redux/Slices/shortlistslice";
 
 // Create a single axios instance with default headers
 const apiClient = axios.create({
