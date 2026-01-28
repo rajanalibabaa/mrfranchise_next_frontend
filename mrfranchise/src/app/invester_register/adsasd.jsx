@@ -41,7 +41,7 @@ import {
 import { categories } from "./BrandCategories";
 import LoginPage from "@/Components/LoginPage/LoginPage";
 import { useDispatch } from "react-redux";
-import { showLoading, hideLoading } from "../../Redux/Slices/loadingSlice";
+import { showLoading, hideLoading } from "../../redux/Slices/LoadingSlice";
 import RegisterationMediaHandling from "../Registration/RegisterationMediaHandling";
 import FlagIcon from "@mui/icons-material/Flag";
 import Navbar from "../../Components/Navbar/NavBar";
@@ -791,7 +791,7 @@ const InvestorRegister = () => {
     try {
       dispatch(showLoading());
       const response = await axios.post(
-        `http://localhost:5000/api/v1/investor/createInvestor`,
+        `https://mrfranchisebackend.mrfranchise.in/api/v1/investor/createInvestor`,
         formattedData,
         { headers: { "Content-Type": "application/json" } }
       );

@@ -24,26 +24,26 @@ import {
 import LoginPage from "@/Components/LoginPage/LoginPage";
 import { postView } from "@/Utils/function/view";
 import { useDispatch, useSelector } from "react-redux";
-import { openBrandDialog } from "@/Redux/Slices/OpenBrandNewPageSlice.jsx";
+import { openBrandDialog } from "@/redux/Slices/OpenBrandNewPageSlice.jsx";
 import {
   toggleBrandLikefilter,
   toggleBrandShortListfilter,
-} from "@/Redux/Slices/FilterBrandSlice.jsx";
+} from "@/redux/Slices/FilterBrandSlice.jsx";
 import { likeApiFunction } from "@/Api/likeApi";
 import { handleShortList } from "@/Api/shortListApi";
 import {
   toggleBrandLike,
   toggleBrandShortList,
-} from "@/Redux/Slices/GetAllBrandsDataUpdationFile.jsx";
+} from "@/redux/Slices/GetAllBrandsDataUpdationFile.jsx";
 import {
   toggleHomeCardLike,
   toggleHomeCardShortlist,
-} from "@/Redux/Slices/TopCardFetchingSlice.jsx";
+} from "@/redux/Slices/TopCardFetchingSlice.jsx";
 import {
   addSortlist,
   removeSortList,
   toggleSortlistBrandLike,
-} from "@/Redux/Slices/shortlistslice.jsx";
+} from "@/redux/Slices/shortlistslice.jsx";
 import { RiBookmark3Fill } from "react-icons/ri";
 import { VideoPlayer } from "@/services/VideoControllerMedia/VideoPlayercomponents.jsx";
 import confetti from "canvas-confetti";

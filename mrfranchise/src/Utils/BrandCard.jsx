@@ -24,7 +24,7 @@ import Business from "@mui/icons-material/Business";
 import MonetizationOn from "@mui/icons-material/MonetizationOn";
 import AreaChart from "@mui/icons-material/AreaChart";
 import { useDispatch } from "react-redux";
-import { toggleShortlist } from "../Redux/Slices/brandSlice";
+import { toggleShortlist } from "../redux/Slices/brandSlice";
 
 const BrandCard = ({
   brand,

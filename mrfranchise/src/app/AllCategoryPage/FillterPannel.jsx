@@ -27,7 +27,7 @@ import {
   resetChildCategories,
   resetDistricts,
   resetCities,
-} from "@/Redux/Slices/filterDropdownData";
+} from "@/redux/Slices/filterDropdownData";
 
 // Define the correct order for investment ranges
 const INVESTMENT_RANGE_ORDER = [

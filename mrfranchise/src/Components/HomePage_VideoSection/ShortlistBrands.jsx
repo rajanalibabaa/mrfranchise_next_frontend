@@ -26,7 +26,7 @@ import ArrowRight from "@mui/icons-material/ArrowRight";
 
 import { motion } from "framer-motion";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchShortListedById } from "../../Redux/Slices/shortlistslice.jsx";
+import { fetchShortListedById } from "../../redux/Slices/shortlistslice.jsx";
 import HomePageBrandCard from "./HomePageBrandCard.jsx";
 import LoginPage from "@/Components/LoginPage/LoginPage.jsx";
 const ShortlistBrands = () => {
@@ -242,7 +242,7 @@ const ShortlistBrands = () => {
       boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
     },
   }}
-  onClick={() => window.open("/brandviewpage", "_blank")}
+  onClick={() => window.open("/AllCategoryPage/allbrandlisting", "_blank")}
 >
   View More
 </Button>

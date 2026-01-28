@@ -19,7 +19,7 @@ import ArrowBack from "@mui/icons-material/ArrowBack";
 import ArrowForward from "@mui/icons-material/ArrowForward";
 import ArrowRight from "@mui/icons-material/ArrowRight";
 import { useSelector, useDispatch } from "react-redux";
-import { homeSection4  } from '../../Redux/Slices/TopCardFetchingSlice.jsx';
+import { homeSection4  } from '../../redux/Slices/TopCardFetchingSlice.jsx';
 import slugify from "slugify";
 import LoginPage from "@/Components/LoginPage/LoginPage.jsx";
 import { motion } from "framer-motion";

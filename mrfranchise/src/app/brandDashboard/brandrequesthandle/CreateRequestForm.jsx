@@ -1,5 +1,5 @@
 'use client'
-import React, { useState } from "react";
+import React, { useState ,useEffect} from "react";
 import { useDispatch } from "react-redux";
 
 import Box from "@mui/material/Box";
@@ -17,12 +17,12 @@ import Divider from "@mui/material/Divider";
 
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
-import { addRequest } from "@/Redux/Slices/userRequestSlice.jsx";
+import { addRequest } from "@/redux/Slices/userRequestSlice.jsx";
 
 const CreateRequestForm = () => {
   const dispatch = useDispatch();
-  const brandId = localStorage.getItem("brandUUID") || "";
 
+  const [brandId, setBrandId] = useState("");
   const [expanded, setExpanded] = useState("requestDetails");
   const [formData, setFormData] = useState({
     brandId,
@@ -36,6 +36,17 @@ const CreateRequestForm = () => {
       },
     ],
   });
+
+
+   // ✅ SAFE: runs only in browser
+  useEffect(() => {
+    const storedBrandId = localStorage.getItem("brandUUID");
+    if (storedBrandId) {
+      setBrandId(storedBrandId);
+      setFormData((prev) => ({ ...prev, brandId: storedBrandId }));
+    }
+  }, []);
+
 
   const handleAccordionChange = (panel) => (_, isExpanded) =>
     setExpanded(isExpanded ? panel : false);

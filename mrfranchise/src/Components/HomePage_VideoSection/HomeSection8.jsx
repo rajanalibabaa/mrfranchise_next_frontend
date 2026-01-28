@@ -20,7 +20,7 @@ import ArrowBack from "@mui/icons-material/ArrowBack";
 import ArrowForward from "@mui/icons-material/ArrowForward";
 import ArrowRight from "@mui/icons-material/ArrowRight";
 import { useSelector, useDispatch } from "react-redux";
-import {homeSection8} from '../../Redux/Slices/TopCardFetchingSlice.jsx';
+import {homeSection8} from '../../redux/Slices/TopCardFetchingSlice.jsx';
 import { motion } from "framer-motion";
 import HomePageBrandCard from "./HomePageBrandCard.jsx";
 import slugify from "slugify";

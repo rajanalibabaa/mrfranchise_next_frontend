@@ -14,18 +14,17 @@ import {
   useTheme,
   useMediaQuery,
   CircularProgress,
-  Divider,
-  Typography,
+  
 } from "@mui/material";
 import { motion } from "framer-motion";
 import axios from "axios";
 
 import { handleShortList } from "@/Api/shortListApi.jsx";
-import { toggleBrandLike, toggleBrandShortList } from "@/Redux/Slices/GetAllBrandsDataUpdationFile.jsx";
-import { toggleHomeCardLike, toggleHomeCardShortlist } from "@/Redux/Slices/TopCardFetchingSlice.jsx";
+import { toggleBrandLike, toggleBrandShortList } from "@/redux/Slices/GetAllBrandsDataUpdationFile.jsx";
+import { toggleHomeCardLike, toggleHomeCardShortlist } from "@/redux/Slices/TopCardFetchingSlice.jsx";
 import { likeApiFunction } from "@/Api/likeApi.jsx";
 import { useDispatch } from "react-redux";
-import { token } from "@/Utils/autherId.jsx";
+import { getToken } from "@/Utils/autherId.jsx";
 import LoginPage from "@/Components/LoginPage/LoginPage.jsx";
 
 import BrandHeader from "@/Components/BrandViewPageHandling/BrandHeaderViewPage.jsx";
@@ -45,7 +44,7 @@ const SimilarBrands = lazy(() => import("@/Components/HomePage_VideoSection/Simi
 const LikedBrands = lazy(() => import("@/Components/HomePage_VideoSection/LikedBrands.jsx"));
 const ViewBrands = lazy(() => import("@/Components/HomePage_VideoSection/ViewBrands.jsx"));
 const ShortListedBrands = lazy(() => import("@/Components/HomePage_VideoSection/ShortlistBrands.jsx"));
-
+const token = getToken();
 // Lazy-load OverviewTab only when visible
 function LazyOverviewTab({ brand }) {
   const ref = useRef();
@@ -292,7 +291,7 @@ const handleSubmit = useCallback(
  
       // Make API request
       const response = await axios.post(
-        "http://localhost:5000/api/v1/instantapply/postApplication",
+        "https://mrfranchisebackend.mrfranchise.in/api/v1/instantapply/postApplication",
         payload,
         {
           headers: {
@@ -386,7 +385,7 @@ const handleSubmit = useCallback(
     if (!investorUUID || !AccessToken) return;
     try {
       const response = await axios.get(
-        `http://localhost:5000/api/v1/investor/getInvestorByUUID/${investorUUID}`,
+        `https://mrfranchisebackend.mrfranchise.in/api/v1/investor/getInvestorByUUID/${investorUUID}`,
         {
           headers: {
             "Content-Type": "application/json",

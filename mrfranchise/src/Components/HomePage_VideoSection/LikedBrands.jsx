@@ -23,7 +23,7 @@ import ArrowRight from "@mui/icons-material/ArrowRight";
 
 import { motion } from "framer-motion";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchLikedBrandsById } from "@/Redux/Slices/likeSlice.jsx";
+import { fetchLikedBrandsById } from "@/redux/Slices/likeSlice.jsx";
 import HomePageBrandCard from "./HomePageBrandCard.jsx";
 import LoginPage from "@/Components/LoginPage/LoginPage.jsx";
 
@@ -249,7 +249,7 @@ const LikedBrands = () => {
       boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
     },
   }}
-  onClick={() => window.open("/brandviewpage", "_blank")}
+  onClick={() => window.open("/AllCategoryPage/allbrandlisting", "_blank")}
 >
   View More
 </Button>

@@ -21,7 +21,7 @@ import Visibility from "@mui/icons-material/Visibility";
 import AssignmentTurnedIn from "@mui/icons-material/AssignmentTurnedIn";
 
 import { useDispatch } from "react-redux";
-import { openBrandDialog } from "../../../Redux/Slices/OpenBrandNewPageSlice";
+import { openBrandDialog } from "../../../redux/Slices/OpenBrandNewPageSlice";
 
 const AppliedTab = ({
   items = [],

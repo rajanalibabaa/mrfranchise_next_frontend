@@ -51,12 +51,12 @@ import {
 } from "@mui/icons-material";
 import { Link as RouterLink } from "next/link";
 import { useDispatch } from "react-redux";
-import { showLoading, hideLoading } from "../../Redux/Slices/loadingSlice";
+// import { showLoading, hideLoading } from "@/Redux/Slices/loadingSlice";
 import RegisterationMediaHandling from "../Registration/RegisterationMediaHandling";
 import FlagIcon from "@mui/icons-material/Flag";
-import Navbar from "../../Components/Navbar/NavBar";
-import Footer from "../../Components/Footers/Footer";
-import { API_BASE_URL } from "../../Api/api";
+import Navbar from "@/Components/Navbar/NavBar";
+import Footer from "@/Components/Footers/Footer";
+import { API_BASE_URL } from "@/Api/api";
 
 const initialFormState = {
   // Personal Details
@@ -547,7 +547,7 @@ const InvestorRegister = () => {
     try {
       setLoadingIndustries(true);
       const response = await fetch(
-        `http://localhost:5000/api/v1/admin/getIndustryByIndustryName`,
+        `https://mrfranchisebackend.mrfranchise.in/api/v1/admin/getIndustryByIndustryName`,
       );
       const result = await response.json();
 
@@ -579,7 +579,7 @@ const InvestorRegister = () => {
     try {
       setLoadingIndustryDetails(true);
       const response = await fetch(
-        `http://localhost:5000/api/v1/admin/getIndustryByIndustryName?industry=${encodeURIComponent(industryName)}`,
+        `https://mrfranchisebackend.mrfranchise.in/api/v1/admin/getIndustryByIndustryName?industry=${encodeURIComponent(industryName)}`,
       );
       const result = await response.json();
 
@@ -985,9 +985,9 @@ const InvestorRegister = () => {
     console.log("Submitting data:", formattedData);
 
     try {
-      dispatch(showLoading());
+      // dispatch(showLoading());
       const response = await axios.post(
-        `http://localhost:5000/api/v1/investor/createInvestor`,
+        `https://mrfranchisebackend.mrfranchise.in/api/v1/investor/createInvestor`,
         formattedData,
         { headers: { "Content-Type": "application/json" } },
       );
@@ -1007,11 +1007,9 @@ const InvestorRegister = () => {
           localStorage.setItem("investorEmail", formattedData.email);
         }
 
-        setTimeout(() => {
-          dispatch(hideLoading());
-        }, 2000);
+        
       } else {
-        dispatch(hideLoading());
+        // dispatch(hideLoading());
         showSnackbar(
           "An unexpected error occurred. Please try again.",
           "error",
@@ -1019,7 +1017,7 @@ const InvestorRegister = () => {
       }
     } catch (error) {
       console.error("Registration error:", error);
-      dispatch(hideLoading());
+      // dispatch(hideLoading());
 
       if (error.response?.status === 409) {
         showSnackbar(

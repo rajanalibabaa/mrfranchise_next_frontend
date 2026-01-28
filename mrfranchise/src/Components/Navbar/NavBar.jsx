@@ -1,6 +1,5 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
-import Link from 'next/link.js';
 import {useRouter } from "next/navigation.js";
 import AppBar from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
@@ -23,12 +22,11 @@ import {
   loginSuccess,
   toggleSidebar,
   toggleMenu,
-} from "@/Redux/Slices/navbarSlice";
-import { logout } from "@/Redux/Slices/AuthSlice/authSlice";
+} from "@/redux/Slices/navbarSlice.jsx";
+import { logout } from "@/redux/Slices/AuthSlice/authSlice.jsx";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 // import logo from "@/assets/Images/logo.png";
-import { showLoading } from "@/Redux/Slices/loadingSlice";
 import NavbarSearch from "./NavbarSearch.jsx";
 import Image from "next/image.js";
 
@@ -112,7 +110,7 @@ const [ID, setId] = useState(null);
   //   setlogoutLoading(true);
   //   try {
   //     const response = await axios.post(
-  //       `http://localhost:5000/api/v1/logout/${ID}`,
+  //       `https://mrfranchisebackend.mrfranchise.in/api/v1/logout/${ID}`,
   //       {},
   //       {
   //         headers: {

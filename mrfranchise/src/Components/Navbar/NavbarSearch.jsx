@@ -15,8 +15,8 @@ import Chip from "@mui/material/Chip";
 import CircularProgress from "@mui/material/CircularProgress";
 import Autocomplete from "@mui/material/Autocomplete";
 import CloseIcon from "@mui/icons-material/Close";
-import { fetchFilterOptions } from "@/Redux/Slices/filterDropdownData";
-import { resetFilters } from "@/Redux/Slices/FilterBrandSlice";
+import { fetchFilterOptions } from "@/redux/Slices/filterDropdownData";
+import { resetFilters } from "@/redux/Slices/FilterBrandSlice";
 import Search from "./Search";
 
 const NavbarSearch = ({ open, handleClose }) => {

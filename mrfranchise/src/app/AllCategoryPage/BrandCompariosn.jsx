@@ -24,16 +24,17 @@ import Close from "@mui/icons-material/Close";
 import { RiBookmark3Fill } from "react-icons/ri";
 import axios from "axios";
 import { handleShortList } from "@/Api/shortListApi";
-import { toggleBrandShortList } from "@/Redux/Slices/GetAllBrandsDataUpdationFile";
+import { toggleBrandShortList } from "@/redux/Slices/GetAllBrandsDataUpdationFile";
 import { useDispatch } from "react-redux";
-import { token, userId } from "@/Utils/autherId";
+import { getToken,getUserId } from "@/Utils/autherId";
 import LoginPage from "@/Components/LoginPage/LoginPage";
-import { toggleHomeCardShortlist } from "@/Redux/Slices/TopCardFetchingSlice";
-import { toggleBrandShortListfilter } from "@/Redux/Slices/FilterBrandSlice";
+import { toggleHomeCardShortlist } from "@/redux/Slices/TopCardFetchingSlice";
+import { toggleBrandShortListfilter } from "@/redux/Slices/FilterBrandSlice";
 import { postView } from "@/Utils/function/view.jsx";
-import { openBrandDialog } from "@/Redux/Slices/OpenBrandNewPageSlice.jsx";
+import { openBrandDialog } from "@/redux/Slices/OpenBrandNewPageSlice.jsx";
  
- 
+ const token = getToken();
+ const userId = getUserId();
 const BrandComparison = ({
   open,
   onClose,

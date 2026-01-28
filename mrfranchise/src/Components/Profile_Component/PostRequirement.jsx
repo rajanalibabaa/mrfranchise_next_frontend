@@ -55,7 +55,7 @@ const PostRequirement = () => {
       // console.log("Sending cleaned data:", cleanData);
 
       const response = await axios.post(
-        "http://localhost:5000/api/v1/post/createPostRequirement",
+        "https://mrfranchisebackend.mrfranchise.in/api/v1/post/createPostRequirement",
         cleanData,
         { headers: { "Content-Type": "application/json" } }
       );
