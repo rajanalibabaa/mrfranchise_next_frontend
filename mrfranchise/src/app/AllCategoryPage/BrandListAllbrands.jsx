@@ -684,7 +684,7 @@ const FilterPanel = dynamic(() => import("./FillterPannel"), {
   ssr: false,
 });
 
-const BrandComparison = dynamic(() => import("./BrandCompariosn"), {
+const BrandComparison = dynamic(() => import("./brandCompariosn"), {
   loading: () => <Skeleton/>,
   ssr: false,
 });

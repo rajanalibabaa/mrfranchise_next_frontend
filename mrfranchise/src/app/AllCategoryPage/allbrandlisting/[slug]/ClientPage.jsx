@@ -11,7 +11,7 @@ import BrandListClient from "../brandlistClient";
  
 // Dynamic import for better code splitting
 const BrandListNew = dynamic(
-  () => import("@/app/allcategorypage/BrandListAllbrands"),
+  () => import("@/app/allcategorypage/brandListAllbrands"),
   {
     loading: () => <Loading />,
     ssr: true,
