@@ -14,7 +14,7 @@ import {
   Container,
   CircularProgress
 } from "@mui/material";
-import { showLoading, hideLoading } from "../../redux/Slices/LoadingSlice.jsx";
+import { showLoading, hideLoading } from "../../Redux/Slices/LoadingSlice.jsx";
 import businessLogo from "../../assets/images/Business_logo.png";
 import FacebookIcon from "../../Assets/Images/FacebookIcon.png";
 // import LinkedInIcon from "../../Assets/Images/LinkedinIcon.png";

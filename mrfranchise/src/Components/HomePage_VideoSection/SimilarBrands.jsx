@@ -20,11 +20,11 @@ import Close from "@mui/icons-material/Close";
 
 import { useSelector, useDispatch } from 'react-redux';
 import HomePageBrandCard from './HomePageBrandCard';
-import { openBrandDialog } from "@/redux/Slices/OpenBrandNewPageSlice.jsx";
-import { fetchBrandsBySubCategory } from "@/redux/Slices/SideMenuHoverBrandSlices.jsx";
+import { openBrandDialog } from "@/Redux/Slices/OpenBrandNewPageSlice.jsx";
+import { fetchBrandsBySubCategory } from "@/Redux/Slices/SideMenuHoverBrandSlices.jsx";
 import LoginPage from "@/Components/LoginPage/LoginPage.jsx";
-import { toggleHomeCardLike } from '@/redux/Slices/TopCardFetchingSlice.jsx';
-import { toggleBrandLike } from "@/redux/Slices/GetAllBrandsDataUpdationFile.jsx";
+import { toggleHomeCardLike } from '@/Redux/Slices/TopCardFetchingSlice.jsx';
+import { toggleBrandLike } from "@/Redux/Slices/GetAllBrandsDataUpdationFile.jsx";
 import { likeApiFunction } from "@/Api/likeApi.jsx";
 import { getToken } from "@/Utils/autherId.jsx";
 const token = getToken();

@@ -18,13 +18,13 @@ import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import { postView } from "@/Utils/function/view";
 import LoginPage from "@/Components/LoginPage/LoginPage";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchBrands, toggleBrandLike, toggleBrandShortList } from "@/redux/Slices/GetAllBrandsDataUpdationFile";
+import { fetchBrands, toggleBrandLike, toggleBrandShortList } from "@/Redux/Slices/GetAllBrandsDataUpdationFile";
 import { likeApiFunction } from "@/Api/likeApi";
-import { toggleHomeCardLike, toggleHomeCardShortlist } from "@/redux/Slices/TopCardFetchingSlice";
+import { toggleHomeCardLike, toggleHomeCardShortlist } from "@/Redux/Slices/TopCardFetchingSlice";
 import {  getToken } from "@/Utils/autherId";
 import { handleShortList } from "@/Api/shortListApi";
-import { openBrandDialog } from "@/redux/Slices/OpenBrandNewPageSlice.jsx";
-import { addSortlist, removeSortList, toggleSortlistBrandLike } from "@/redux/Slices/shortlistslice.jsx";
+import { openBrandDialog } from "@/Redux/Slices/OpenBrandNewPageSlice.jsx";
+import { addSortlist, removeSortList, toggleSortlistBrandLike } from "@/Redux/Slices/shortlistslice.jsx";
 import confetti from "canvas-confetti";
 import { useRouter } from "next/navigation";
 

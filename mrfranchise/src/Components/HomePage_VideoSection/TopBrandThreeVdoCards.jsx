@@ -30,32 +30,32 @@ import {
   resetBrands,
   toggleBrandLike,
   toggleBrandShortList,
-} from "@/redux/Slices/GetAllBrandsDataUpdationFile";
-import { openBrandDialog } from "@/redux/Slices/OpenBrandNewPageSlice.jsx";
+} from "@/Redux/Slices/GetAllBrandsDataUpdationFile";
+import { openBrandDialog } from "@/Redux/Slices/OpenBrandNewPageSlice.jsx";
 import { likeApiFunction } from "@/Api/likeApi";
 import {
   toggleHomeCardLike,
   toggleHomeCardShortlist,
-} from "@/redux/Slices/TopCardFetchingSlice";
+} from "@/Redux/Slices/TopCardFetchingSlice";
 import { getToken } from "@/Utils/autherId";
 import { RiBookmark3Fill } from "react-icons/ri";
-import { VideoPlayer } from "@/services/VideoControllerMedia/VideoPlayercomponents.jsx";
+import { VideoPlayer } from "@/Services/VideoControllerMedia/VideoPlayercomponents.jsx";
 import { handleShortList } from "@/Api/shortListApi.jsx";
 import {
   addSortlist,
   removeSortList,
   toggleSortlistBrandLike,
-} from "@/redux/Slices/shortlistslice.jsx";
+} from "@/Redux/Slices/shortlistslice.jsx";
 import {
   addLikedBrand,
   removeLikedBrand,
   toggleLikedSliceShortList,
-} from "@/redux/Slices/likeSlice.jsx";
+} from "@/Redux/Slices/likeSlice.jsx";
 import {
   toggleviewSliceShortList,
   toggleviewSliceLiked,
-} from "@/redux/Slices/viewSlice.jsx";
-import { toggleBrandShortListfilter } from "@/redux/Slices/FilterBrandSlice.jsx";
+} from "@/Redux/Slices/viewSlice.jsx";
+import { toggleBrandShortListfilter } from "@/Redux/Slices/FilterBrandSlice.jsx";
 import { useInView } from 'react-intersection-observer';
 import confetti from "canvas-confetti";
 const token = getToken();

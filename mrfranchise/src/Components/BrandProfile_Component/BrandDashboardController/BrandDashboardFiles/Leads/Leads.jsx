@@ -7,10 +7,10 @@ import Typography from "@mui/material/Typography";
 import CircularProgress from "@mui/material/CircularProgress";
 import { GetApiCall } from "@/Api/DefaultApi";
 import { api } from "@/Api/api";
-import PackageCard from "@/ui/cards/PackageCard";
-import LeadsTableOutlet from "@/ui/tables/LeadsTableOutlet";
+import PackageCard from "@/Ui/cards/PackageCard";
+import LeadsTableOutlet from "@/Ui/tables/LeadsTableOutlet";
 import { getUserId } from "@/Utils/autherId";
-import ErrorPopup from "@/ui/popup/ErrorPopup";
+import ErrorPopup from "@/Ui/popup/ErrorPopup";
 const userId = getUserId();
 const Leads = () => {
   const { search } = useParams();

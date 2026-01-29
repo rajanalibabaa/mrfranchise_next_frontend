@@ -41,7 +41,7 @@ import {
 import { categories } from "./BrandCategories";
 import LoginPage from "@/Components/LoginPage/LoginPage";
 import { useDispatch } from "react-redux";
-import { showLoading, hideLoading } from "../../redux/Slices/LoadingSlice";
+import { showLoading, hideLoading } from "../../Redux/Slices/LoadingSlice";
 import RegisterationMediaHandling from "../Registration/RegisterationMediaHandling";
 import FlagIcon from "@mui/icons-material/Flag";
 import Navbar from "../../Components/Navbar/NavBar";

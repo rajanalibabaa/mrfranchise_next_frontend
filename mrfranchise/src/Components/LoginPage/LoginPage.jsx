@@ -19,7 +19,7 @@ import {
 // import illustration from "../../assets/Images/LoginImage.png";
 import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
-import { setUUIDandTOKEN, logout } from "@/redux/Slices/AuthSlice/authSlice";
+import { setUUIDandTOKEN, logout } from "@/Redux/Slices/AuthSlice/authSlice";
 import CloseIcon from "@mui/icons-material/Close";
 // import { showLoading, hideLoading } from "@/Redux/Slices/loadingSlice";
 import { useMediaQuery, useTheme } from "@mui/system";

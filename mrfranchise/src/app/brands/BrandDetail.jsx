@@ -26,7 +26,7 @@ import { toggleBrandLike, toggleBrandShortList } from "../../Redux/Slices/GetAll
 import { toggleHomeCardLike, toggleHomeCardShortlist } from "../../Redux/Slices/TopCardFetchingSlice.jsx";
 import { likeApiFunction } from "@/Api/likeApi.jsx";
 import { useDispatch } from "react-redux";
-import { token } from "@/Utils/autherId.jsx";
+import { getToken } from "@/Utils/autherId.jsx";
 import LoginPage from "@/Components/LoginPage/LoginPage.jsx";
  
 import BrandHeader from "@/Components/BrandViewPageHandling/BrandHeaderViewPage.jsx";
@@ -80,7 +80,7 @@ function LazyOverviewTab({ brand }) {
 }
  
  
- 
+ const token = getToken();
  
 const BrandDetails = ({ brandData }) => {
   const theme = useTheme();

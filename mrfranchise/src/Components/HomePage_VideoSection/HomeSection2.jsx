@@ -23,15 +23,15 @@ import { useSelector, useDispatch } from "react-redux";
 import {
   homeSection2,
   toggleHomeCardLike,
-} from "@/redux/Slices/TopCardFetchingSlice.jsx";
+} from "@/Redux/Slices/TopCardFetchingSlice.jsx";
 import slugify from "slugify";
 import LoginPage from "@/Components/LoginPage/LoginPage.jsx";
 import { motion } from "framer-motion";
 import HomePageBrandCard from "./HomePageBrandCard.jsx";
 import { getToken } from "@/Utils/autherId.jsx";
-import { toggleBrandLike } from "@/redux/Slices/GetAllBrandsDataUpdationFile.jsx";
+import { toggleBrandLike } from "@/Redux/Slices/GetAllBrandsDataUpdationFile.jsx";
 import { likeApiFunction } from "@/Api/likeApi.jsx";
-import { openBrandDialog } from "@/redux/Slices/OpenBrandNewPageSlice.jsx";
+import { openBrandDialog } from "@/Redux/Slices/OpenBrandNewPageSlice.jsx";
 const token = getToken();
 // Breakpoints
 const CARD_DIMENSIONS = {
