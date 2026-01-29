@@ -1,7 +1,7 @@
 import ContactForm from "./contactus_client.jsx";
 
-import Navbar from "@/Components/Navbar/NavBar";
-import Footer from "@/Components/Footers/Footer"
+import Navbar from "@/Components/Navbar/NavBar.jsx";
+import Footer from "@/Components/Footers/Footer.jsx"
 // import img1 from '../../../assets/Images/bg23.jpeg'
 const ContactUs = () => {
   const theme = useTheme();
