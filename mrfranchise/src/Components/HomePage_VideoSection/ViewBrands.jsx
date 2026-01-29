@@ -22,7 +22,7 @@ import ArrowRight from "@mui/icons-material/ArrowRight";
 
 import { motion } from "framer-motion";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchViewBrandsById } from "@/redux/Slices/viewSlice.jsx";
+import { fetchViewBrandsById } from "@/Redux/Slices/viewSlice.jsx";
 import HomePageBrandCard from "./HomePageBrandCard.jsx";
 import LoginPage from "@/Components/LoginPage/LoginPage.jsx";
 import { getUserId } from "@/Utils/autherId.jsx"

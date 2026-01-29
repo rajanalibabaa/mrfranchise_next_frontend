@@ -17,7 +17,7 @@ import Divider from "@mui/material/Divider";
 
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
-import { addRequest } from "@/redux/Slices/userRequestSlice.jsx";
+import { addRequest } from "@/Redux/Slices/userRequestSlice.jsx";
 
 const CreateRequestForm = () => {
   const dispatch = useDispatch();

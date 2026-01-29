@@ -23,7 +23,7 @@ import ArrowRight from "@mui/icons-material/ArrowRight";
 
 import { motion } from "framer-motion";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchLikedBrandsById } from "@/redux/Slices/likeSlice.jsx";
+import { fetchLikedBrandsById } from "@/Redux/Slices/likeSlice.jsx";
 import HomePageBrandCard from "./HomePageBrandCard.jsx";
 import LoginPage from "@/Components/LoginPage/LoginPage.jsx";
 

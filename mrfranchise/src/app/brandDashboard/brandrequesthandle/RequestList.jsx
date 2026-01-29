@@ -25,7 +25,7 @@ import {
   fetchRequestById,
   removeRequest,
   addRealtimeRequest,
-} from "@/redux/Slices/userRequestSlice.jsx";
+} from "@/Redux/Slices/userRequestSlice.jsx";
 import io from "socket.io-client";
 
 const RequestTable = () => {

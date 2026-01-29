@@ -28,7 +28,7 @@ import ErrorIcon from "@mui/icons-material/Error";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useDispatch } from "react-redux";
-import { openBrandDialog } from "@/redux/Slices/OpenBrandNewPageSlice";
+import { openBrandDialog } from "@/Redux/Slices/OpenBrandNewPageSlice";
 // Create axios instance with base config
 const api = axios.create({
   baseURL: "https://mrfranchisebackend.mrfranchise.in/api/v1/",

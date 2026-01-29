@@ -22,8 +22,8 @@ import {
   loginSuccess,
   toggleSidebar,
   toggleMenu,
-} from "@/redux/Slices/navbarSlice.jsx";
-import { logout } from "@/redux/Slices/AuthSlice/authSlice.jsx";
+} from "@/Redux/Slices/navbarSlice.jsx";
+import { logout } from "@/Redux/Slices/AuthSlice/authSlice.jsx";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 // import logo from "@/assets/Images/logo.png";

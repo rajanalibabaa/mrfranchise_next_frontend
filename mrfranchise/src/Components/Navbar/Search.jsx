@@ -13,7 +13,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import { GetApiCall } from "@/Api/DefaultApi";
 import { api } from "@/Api/api";
 import SuggestionList from "./SuggestionList";
-import { fetchFilteredBrands } from "@/redux/Slices/FilterBrandSlice";
+import { fetchFilteredBrands } from "@/Redux/Slices/FilterBrandSlice";
 
 const Search = ({ handleClose }) => {
   const [query, setQuery] = useState("");

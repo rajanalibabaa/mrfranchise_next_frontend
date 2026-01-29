@@ -24,28 +24,28 @@ import {
 import LoginPage from "@/Components/LoginPage/LoginPage";
 import { postView } from "@/Utils/function/view";
 import { useDispatch, useSelector } from "react-redux";
-import { openBrandDialog } from "@/redux/Slices/OpenBrandNewPageSlice.jsx";
+import { openBrandDialog } from "@/Redux/Slices/OpenBrandNewPageSlice.jsx";
 import {
   toggleBrandLikefilter,
   toggleBrandShortListfilter,
-} from "@/redux/Slices/FilterBrandSlice.jsx";
+} from "@/Redux/Slices/FilterBrandSlice.jsx";
 import { likeApiFunction } from "@/Api/likeApi";
 import { handleShortList } from "@/Api/shortListApi";
 import {
   toggleBrandLike,
   toggleBrandShortList,
-} from "@/redux/Slices/GetAllBrandsDataUpdationFile.jsx";
+} from "@/Redux/Slices/GetAllBrandsDataUpdationFile.jsx";
 import {
   toggleHomeCardLike,
   toggleHomeCardShortlist,
-} from "@/redux/Slices/TopCardFetchingSlice.jsx";
+} from "@/Redux/Slices/TopCardFetchingSlice.jsx";
 import {
   addSortlist,
   removeSortList,
   toggleSortlistBrandLike,
-} from "@/redux/Slices/shortlistslice.jsx";
+} from "@/Redux/Slices/shortlistslice.jsx";
 import { RiBookmark3Fill } from "react-icons/ri";
-import { VideoPlayer } from "@/services/VideoControllerMedia/VideoPlayercomponents.jsx";
+import { VideoPlayer } from "@/Services/VideoControllerMedia/VideoPlayercomponents.jsx";
 import confetti from "canvas-confetti";
 
 const cardStyles = {

@@ -23,7 +23,7 @@ import {
   fetchFilterOptions,
  
   clearErrors,
-} from "@/redux/Slices/filterDropdownData";
+} from "@/Redux/Slices/filterDropdownData";
 
 const FilterDropdowns = ({ onFilterChange }) => {
   const theme = useTheme();
