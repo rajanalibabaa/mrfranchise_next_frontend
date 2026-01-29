@@ -2,7 +2,7 @@
 
 import ClientPage from "./ClientPage";
 
-const API_BASE =  "http://localhost:5000";
+const API_BASE =  "https://mrfranchisebackend.mrfranchise.in";
 const SITE_URL ="https://mrfranchise.in";
 const SITE_NAME = "Mr Franchise";
 
@@ -544,7 +544,7 @@ export default async function Page({ params }) {
 
 //     while (hasMore) {
 //       const res = await fetch(
-//         `http://localhost:5000/api/v1/filter/getAllBrandsAndFilter?page=${page}&limit=${limit}`,
+//         `https://mrfranchisebackend.mrfranchise.in/api/v1/filter/getAllBrandsAndFilter?page=${page}&limit=${limit}`,
 //         { cache: "no-store" }
 //       );
 
