@@ -144,3 +144,4 @@ const brandName = useMemo(() => {
 }
 
 export default BrandDetailsPage;
+

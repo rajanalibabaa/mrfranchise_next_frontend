@@ -24,7 +24,7 @@ function Footer() {
   const [email, setEmail] = React.useState("");
   const [successMsg, setSuccessMsg] = React.useState("");
   const [response, setresponse] = React.useState("");
-  const navigate = useRouter();
+  const router = useRouter();
   
   const handleSubscribe = async () => {
     try {
