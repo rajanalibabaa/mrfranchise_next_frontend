@@ -249,7 +249,7 @@ const LikedBrands = () => {
       boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
     },
   }}
-  onClick={() => window.open("/AllCategoryPage/allbrandlisting", "_blank")}
+  onClick={() => window.open("/allcategorypage/allbrandlisting", "_blank")}
 >
   View More
 </Button>

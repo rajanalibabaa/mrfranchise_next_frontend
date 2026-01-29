@@ -307,7 +307,7 @@ export async function generateStaticParams() {
 
     while (hasMore) {
       const res = await fetch(
-        `https://mrfranchisebackend.mrfranchise.in/api/v1/filter/getAllBrandsAndFilter?page=${page}&limit=${limit}`,
+        `http://localhost:5000/api/v1/filter/getAllBrandsAndFilter?page=${page}&limit=${limit}`,
         { cache: "no-store" }
       );
 

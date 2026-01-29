@@ -1,8 +1,8 @@
-// app/AllCategoryPage/allbrandlisting/[slug]/page.js
+// app/allcategorypage/allbrandlisting/[slug]/page.js
 
 import ClientPage from "./ClientPage";
 
-const API_BASE =  "https://mrfranchisebackend.mrfranchise.in";
+const API_BASE =  "http://localhost:5000";
 const SITE_URL ="https://mrfranchise.in";
 const SITE_NAME = "Mr Franchise";
 
@@ -266,7 +266,7 @@ function generateSEOKeywords(categoryName, slug, config) {
 
 
 function generateStructuredData(categoryName, slug, config, brandCount) {
-  const canonicalUrl = `${SITE_URL}/AllCategoryPage/allbrandlisting/${slug}`;
+  const canonicalUrl = `${SITE_URL}/allcategorypage/allbrandlisting/${slug}`;
   
   return {
     "@context": "https://schema.org",
@@ -302,13 +302,13 @@ function generateStructuredData(categoryName, slug, config, brandCount) {
             "@type": "ListItem",
             "position": 2,
             "name": "All Categories",
-            "item": `${SITE_URL}/AllCategoryPage`,
+            "item": `${SITE_URL}/allcategorypage`,
           },
           {
             "@type": "ListItem",
             "position": 3,
             "name": "All Brands",
-            "item": `${SITE_URL}/AllCategoryPage/allbrandlisting`,
+            "item": `${SITE_URL}/allcategorypage/allbrandlisting`,
           },
           {
             "@type": "ListItem",
@@ -413,7 +413,7 @@ export async function generateMetadata({ params }) {
   const categoryData = await getCategoryData(slug);
   const brandCount = categoryData?.brands?.length || categoryData?.total || 0;
   
-  const canonicalUrl = `${SITE_URL}/AllCategoryPage/allbrandlisting/${slug}`;
+  const canonicalUrl = `${SITE_URL}/allcategorypage/allbrandlisting/${slug}`;
   
   // Generate SEO content
   const title = generateSEOTitle(categoryName, config, brandCount);
@@ -544,7 +544,7 @@ export async function generateStaticParams() {
 
     while (hasMore) {
       const res = await fetch(
-        `https://mrfranchisebackend.mrfranchise.in/api/v1/filter/getAllBrandsAndFilter?page=${page}&limit=${limit}`,
+        `http://localhost:5000/api/v1/filter/getAllBrandsAndFilter?page=${page}&limit=${limit}`,
         { cache: "no-store" }
       );
 

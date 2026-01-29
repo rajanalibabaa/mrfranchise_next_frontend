@@ -39,7 +39,7 @@ useEffect(() => {
   // Socket connection
   const socket = useMemo(() => {
     if (brandUUID) {
-      return io("https://mrfranchisebackend.mrfranchise.in", {
+      return io("http://localhost:5000", {
         transports: ["websocket"],
         upgrade: false,
       });

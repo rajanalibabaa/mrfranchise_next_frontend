@@ -22,7 +22,7 @@ export const fetchBrandsBySubCategory = createAsyncThunk(
       }
 
       const response = await axios.get(
-        `https://mrfranchisebackend.mrfranchise.in/api/v1/brandlisting/getBrandsByChildCategory`,
+        `http://localhost:5000/api/v1/brandlisting/getBrandsByChildCategory`,
         {
           params: { subCategory, id, page, limit },
         }

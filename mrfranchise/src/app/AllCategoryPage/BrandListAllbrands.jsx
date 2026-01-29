@@ -631,8 +631,8 @@ import {
   fetchFilteredBrands,
   setPage,
   
-} from "@/Redux/Slices/FilterBrandSlice";
-import { fetchFilterOptions } from "@/Redux/Slices/filterDropdownData";
+} from "@/redux/Slices/FilterBrandSlice";
+import { fetchFilterOptions } from "@/redux/Slices/filterDropdownData";
 
 // ============================================
 // SKELETON COMPONENTS (Inline for fast load)

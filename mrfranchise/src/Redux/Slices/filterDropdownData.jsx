@@ -2,7 +2,7 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import axios from 'axios';
  
-const API_BASE_URL = 'https://mrfranchisebackend.mrfranchise.in/api/v1/';
+const API_BASE_URL = 'http://localhost:5000/api/v1/';
  
 // Async thunk for fetching all filter options
 export const fetchFilterOptions = createAsyncThunk(

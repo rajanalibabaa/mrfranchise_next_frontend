@@ -89,7 +89,7 @@ const InvestorRegisterPreferences = ({
     try {
       setLoadingIndustries(true);
       const response = await fetch(
-        `https://mrfranchisebackend.mrfranchise.in/api/v1/admin/getIndustryByIndustryName`
+        `http://localhost:5000/api/v1/admin/getIndustryByIndustryName`
       );
       const result = await response.json();
       
@@ -126,7 +126,7 @@ const InvestorRegisterPreferences = ({
     try {
       setLoadingIndustryDetails(true);
       const response = await fetch(
-        `https://mrfranchisebackend.mrfranchise.in/api/v1/admin/getIndustryByIndustryName?industry=${encodeURIComponent(industryName)}`
+        `http://localhost:5000/api/v1/admin/getIndustryByIndustryName?industry=${encodeURIComponent(industryName)}`
       );
       const result = await response.json();
      

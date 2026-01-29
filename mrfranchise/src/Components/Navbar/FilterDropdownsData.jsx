@@ -150,7 +150,7 @@ const handleFindBrands = useCallback(() => {
   }
 
  // 🔹 Open in a new browser tab instead of same tab
-  window.open(`/AllCategoryPage/allbrandlisting?${queryParams.toString()}`, "_blank", "noopener,noreferrer");
+  window.open(`/allcategorypage/allbrandlisting?${queryParams.toString()}`, "_blank", "noopener,noreferrer");
 }, [filters, router]);
 
 

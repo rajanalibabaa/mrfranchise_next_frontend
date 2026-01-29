@@ -520,7 +520,7 @@ const [activeStep, setActiveStep] = useState(0);
         // console.log("sending form data", formDataSend);
 
         const response = await axios.post(
-          "https://mrfranchisebackend.mrfranchise.in/api/v1/brandlisting/createBrandListing",
+          "http://localhost:5000/api/v1/brandlisting/createBrandListing",
           formDataSend,
           {
             headers: {

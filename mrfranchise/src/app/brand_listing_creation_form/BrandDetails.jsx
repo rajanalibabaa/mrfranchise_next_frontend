@@ -318,7 +318,7 @@ const BrandDetails = ({ data = {}, errors = {}, onChange }) => {
 
     try {
       const response = await axios.post(
-        "https://mrfranchisebackend.mrfranchise.in/api/v1/otpverify/send-otp-email",
+        "http://localhost:5000/api/v1/otpverify/send-otp-email",
         {
           [field === "email" ? "email" : "phone"]: data[field],
           type: field,
@@ -401,7 +401,7 @@ const BrandDetails = ({ data = {}, errors = {}, onChange }) => {
     try {
 
       const response = await axios.post(
-        "https://mrfranchisebackend.mrfranchise.in/api/v1/otpverify/verify-otp",
+        "http://localhost:5000/api/v1/otpverify/verify-otp",
         {
           identifier: data[field],
           otp: otpInput,
