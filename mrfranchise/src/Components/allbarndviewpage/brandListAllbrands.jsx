@@ -631,8 +631,8 @@ import {
   fetchFilteredBrands,
   setPage,
   
-} from "@/redux/Slices/FilterBrandSlice";
-import { fetchFilterOptions } from "@/redux/Slices/filterDropdownData";
+} from "@/Redux/Slices/FilterBrandSlice";
+import { fetchFilterOptions } from "@/Redux/Slices/filterDropdownData";
 
 // ============================================
 // SKELETON COMPONENTS (Inline for fast load)
@@ -679,7 +679,7 @@ const BrandCard = dynamic(() => import("./brandCard"), {
   ssr: false,
 });
 
-const FilterPanel = dynamic(() => import("./FillterPannel"), {
+const FilterPanel = dynamic(() => import("../../app/allcategorypage/FillterPannel"), {
   loading: () => <FilterPanelSkeleton />,
   ssr: false,
 });

@@ -1,5 +1,5 @@
 "use client";
- 
+
 import { Suspense } from "react";
 import { Box } from "@mui/material";
 import dynamic from "next/dynamic";
@@ -8,19 +8,19 @@ import Navbar from "@/Components/Navbar/NavBar";
 import Footer from "@/Components/Footers/Footer";
 import Loading from "../loading";
 import BrandListClient from "../brandlistClient";
- 
+
 // Dynamic import for better code splitting
 const BrandListNew = dynamic(
-  () => import("../../brandListAllbrands"),
+  () => import("../../../../Components/allbarndviewpage/brandListAllbrands"),
   {
     loading: () => <Loading />,
     ssr: true,
   }
 );
- 
- 
- 
- 
+
+
+
+
 export default function BrandCategoryViewPage() {
   const params = useParams();
   const slug = params?.slug || "all"; // fallback slug
@@ -28,7 +28,7 @@ export default function BrandCategoryViewPage() {
   const categoryName = slug
     .replace(/-/g, " ")
     .replace(/\b\w/g, (l) => l.toUpperCase()); // optional capitalization
- 
+
   // Prepare initial filters for BrandListClient
   const initialFilters = {
     subcat: categoryName !== "All" ? categoryName : "",
@@ -40,14 +40,14 @@ export default function BrandCategoryViewPage() {
     page: 1,
     limit: 20,
   };
- 
+
   return (
     <>
-   
- 
+    
+
       {/* Navbar */}
       <NavbarWrapper />
- 
+
       {/* Main Content */}
       <Box
         component="main"
@@ -63,15 +63,14 @@ export default function BrandCategoryViewPage() {
           </BrandListClient>
         </Suspense>
       </Box>
- 
+
       {/* Footer */}
       <Footer />
     </>
   );
 }
- 
+
 // Separate client wrapper for Navbar (handles responsive logic)
 function NavbarWrapper() {
   return <Navbar />;
 }
- 
