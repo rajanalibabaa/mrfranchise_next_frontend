@@ -10,7 +10,7 @@ import LeadDetailDialog from "@/Components/BrandProfile_Component/BrandDashboard
 import {  getUserId } from "@/Utils/autherId";
 import Sidebar from "./Sidebar_page";
 
-const API_BASE_URL = "http://localhost:5000/api/v1";
+const API_BASE_URL = "https://mrfranchisebackend.mrfranchise.in/api/v1";
 const userId = getUserId();
 const BrandDashboard = ({ selectedSection, sectionContent }) => {
   const theme = useTheme();

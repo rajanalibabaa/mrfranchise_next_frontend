@@ -1,7 +1,7 @@
 import React from "react";
 
 
-const API_BASE =  "http://localhost:5000";
+const API_BASE =  "https://mrfranchisebackend.mrfranchise.in";
 const SITE_URL =  "https://mrfranchise.in";
 
 // export const dynamic = "force-static";
@@ -307,7 +307,7 @@ export default async function BrandLayout({ children, params }) {
 
 //     while (hasMore) {
 //       const res = await fetch(
-//         `http://localhost:5000/api/v1/filter/getAllBrandsAndFilter?page=${page}&limit=${limit}`,
+//         `https://mrfranchisebackend.mrfranchise.in/api/v1/filter/getAllBrandsAndFilter?page=${page}&limit=${limit}`,
 //         { cache: "no-store" }
 //       );
 

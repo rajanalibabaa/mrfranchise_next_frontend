@@ -547,7 +547,7 @@ const InvestorRegister = () => {
     try {
       setLoadingIndustries(true);
       const response = await fetch(
-        `http://localhost:5000/api/v1/admin/getIndustryByIndustryName`,
+        `https://mrfranchisebackend.mrfranchise.in/api/v1/admin/getIndustryByIndustryName`,
       );
       const result = await response.json();
 
@@ -579,7 +579,7 @@ const InvestorRegister = () => {
     try {
       setLoadingIndustryDetails(true);
       const response = await fetch(
-        `http://localhost:5000/api/v1/admin/getIndustryByIndustryName?industry=${encodeURIComponent(industryName)}`,
+        `https://mrfranchisebackend.mrfranchise.in/api/v1/admin/getIndustryByIndustryName?industry=${encodeURIComponent(industryName)}`,
       );
       const result = await response.json();
 
@@ -987,7 +987,7 @@ const InvestorRegister = () => {
     try {
       // dispatch(showLoading());
       const response = await axios.post(
-        `http://localhost:5000/api/v1/investor/createInvestor`,
+        `https://mrfranchisebackend.mrfranchise.in/api/v1/investor/createInvestor`,
         formattedData,
         { headers: { "Content-Type": "application/json" } },
       );

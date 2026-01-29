@@ -130,7 +130,7 @@ function LoginPage({ open, onClose }) {
           : otpRequestPayload;
 
         const response = await axios.post(
-          `http://localhost:5000/api/v1/login/generateOTPforLogin`,
+          `https://mrfranchisebackend.mrfranchise.in/api/v1/login/generateOTPforLogin`,
           payload,
           { headers: { "Content-Type": "application/json" } }
         );
@@ -177,7 +177,7 @@ function LoginPage({ open, onClose }) {
     setIsLoading(true);
     try {
       const response = await axios.post(
-        `http://localhost:5000/api/v1/login/`,
+        `https://mrfranchisebackend.mrfranchise.in/api/v1/login/`,
         otpVerifyPayload,
         { headers: { "Content-Type": "application/json" } }
       );
