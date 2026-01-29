@@ -674,7 +674,7 @@ FilterPanelSkeleton.displayName = "FilterPanelSkeleton";
 // ============================================
 // DYNAMIC IMPORTS WITH LOADING STATES
 // ============================================
-const BrandCard = dynamic(() => import("./BrandCard"), {
+const BrandCard = dynamic(() => import("./brandCard"), {
   loading: () => <BrandCardSkeleton />,
   ssr: false,
 });

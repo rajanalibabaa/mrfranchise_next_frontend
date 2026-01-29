@@ -26,7 +26,7 @@ import {
   toggleHomeCardShortlist,
 } from "@/Redux/Slices/TopCardFetchingSlice";
 import { getToken } from "@/Utils/autherId.jsx";
-import { VideoPlayer } from "@/Services/VideoControllerMedia/VideoPlayercomponents.jsx";
+import { VideoPlayer } from "@/services/VideoControllerMedia/VideoPlayercomponents.jsx";
 import { postView } from "@/Utils/function/view.jsx";
 import { openBrandDialog } from "@/Redux/Slices/OpenBrandNewPageSlice.jsx";
 import { useDispatch } from "react-redux";
