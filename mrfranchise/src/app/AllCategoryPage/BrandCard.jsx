@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useCallback, memo, useMemo, useRef } from "react";
+import React, { useState, useCallback, memo, useMemo, useRef, useEffect } from "react";
 import {
   Box,
   Button,
@@ -122,7 +122,10 @@ const BrandCard = memo(
     const videoRef = useRef(null);
     const likeButtonRef = useRef(null);
     const shortlistButtonRef = useRef(null);
-
+const [token, setToken] = useState(null);
+useEffect(() => {
+  setToken(localStorage.getItem("accessToken"));
+}, []);
     // 🎉 Updated confetti effect to use element position
     const triggerCelebration = (color, buttonRef) => {
       if (buttonRef && buttonRef.current) {
@@ -172,7 +175,6 @@ const BrandCard = memo(
 
     const handleLike = useCallback(async () => {
       if (likeProcessing) return;
-      const token = localStorage.getItem("accessToken");
 
       if (!token) {
         onShowLogin(true);
@@ -207,7 +209,6 @@ const BrandCard = memo(
 
     const handleToggleShortList = useCallback(async () => {
       if (shortlistProcessing) return;
-      const token = localStorage.getItem("accessToken");
 
       if (!token) {
         onShowLogin(true);

@@ -24,7 +24,7 @@ import { useSelector, useDispatch } from "react-redux";
 import LoginPage from "@/Components/LoginPage/LoginPage.jsx";
 import { motion } from "framer-motion";
 import HomePageBrandCard from "./HomePageBrandCard.jsx";
-import { homeSection1   } from '@/redux/Slices/TopCardFetchingSlice.jsx';
+import { homeSection1   } from '@/Redux/Slices/TopCardFetchingSlice.jsx';
 
 const CARD_DIMENSIONS = {
   mobile: { width: 280, height: 520 },

@@ -1,6 +1,6 @@
 // app/AllCategoryPage/allbrandlisting/[slug]/page.js
 
-import ClientPage from "../brandlistClient";
+import ClientPage from "./ClientPage";
 
 const API_BASE =  "https://mrfranchisebackend.mrfranchise.in";
 const SITE_URL ="https://mrfranchise.in";
@@ -536,10 +536,24 @@ export default async function Page({ params }) {
 
 
 export async function generateStaticParams() {
-  // Return all configured categories
-  return Object.keys(CATEGORY_CONFIG).map((slug) => ({
-    slug,
-  }));
+  try {
+    const res = await fetch(`${API_BASE}/api/v1/brandlisting/getAllBrands`, {
+      next: { revalidate: 86400 }, // 24 hours
+    });
+
+    if (!res.ok) return [];
+
+    const json = await res.json();
+    const brands = Array.isArray(json?.data) ? json.data : [];
+
+    // Generate params for top 100 brands (or all if you prefer)
+    return brands.slice(0, 100).map((brand) => ({
+      slug: brand?.brandDetails?.brandCategories?.sub || brand?.slug,
+    }));
+  } catch (error) {
+    console.error("Error generating static params:", error);
+    return [];
+  }
 }
 
 

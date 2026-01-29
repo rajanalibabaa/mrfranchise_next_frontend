@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useDispatch } from "react-redux";
-import { setFilter } from "@/redux/Slices/FilterBrandSlice";
+import { setFilter } from "@/Redux/Slices/FilterBrandSlice";
 
 const FILTER_KEYS = [
   "maincat",
