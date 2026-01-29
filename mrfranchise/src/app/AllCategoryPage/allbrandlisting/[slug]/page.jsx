@@ -535,52 +535,52 @@ export default async function Page({ params }) {
 
 
 
-export async function generateStaticParams() {
-  try {
-    let allBrands = [];
-    let page = 1;
-    const limit = 20; // backend default
-    let hasMore = true;
+// export async function generateStaticParams() {
+//   try {
+//     let allBrands = [];
+//     let page = 1;
+//     const limit = 20; // backend default
+//     let hasMore = true;
 
-    while (hasMore) {
-      const res = await fetch(
-        `http://localhost:5000/api/v1/filter/getAllBrandsAndFilter?page=${page}&limit=${limit}`,
-        { cache: "no-store" }
-      );
+//     while (hasMore) {
+//       const res = await fetch(
+//         `http://localhost:5000/api/v1/filter/getAllBrandsAndFilter?page=${page}&limit=${limit}`,
+//         { cache: "no-store" }
+//       );
 
-      const json = await res.json();
+//       const json = await res.json();
 
-      const brands = Array.isArray(json?.data?.brands)
-        ? json.data.brands
-        : [];
+//       const brands = Array.isArray(json?.data?.brands)
+//         ? json.data.brands
+//         : [];
 
-      allBrands.push(...brands);
+//       allBrands.push(...brands);
 
-      // STOP when API returns less than limit
-      if (brands.length < limit) {
-        hasMore = false;
-      } else {
-        page++;
-      }
-    }
+//       // STOP when API returns less than limit
+//       if (brands.length < limit) {
+//         hasMore = false;
+//       } else {
+//         page++;
+//       }
+//     }
 
-    console.log("Total brands exported:", allBrands.length);
+//     console.log("Total brands exported:", allBrands.length);
 
-    return allBrands.map((brand) => ({
-      slug:
-        brand.slug ||
-        brand.brandname
-          ?.toLowerCase()
-          .replace(/\s+/g, "-")
-          .replace(/[^a-z0-9-]/g, "") ||
-        String(brand.uuid),
-    }));
-  } catch (error) {
-    console.error("Failed to generate static params:", error);
-    return [];
-  }
-}
+//     return allBrands.map((brand) => ({
+//       slug:
+//         brand.slug ||
+//         brand.brandname
+//           ?.toLowerCase()
+//           .replace(/\s+/g, "-")
+//           .replace(/[^a-z0-9-]/g, "") ||
+//         String(brand.uuid),
+//     }));
+//   } catch (error) {
+//     console.error("Failed to generate static params:", error);
+//     return [];
+//   }
+// }
 
 
-export const dynamic = "force-static";
+// export const dynamic = "force-static";
 export const revalidate = 3600; // Revalidate every hour

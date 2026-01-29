@@ -679,7 +679,7 @@ const BrandCard = dynamic(() => import("./brandCard"), {
   ssr: false,
 });
 
-const FilterPanel = dynamic(() => import("../../app/allcategorypage/FillterPannel"), {
+const FilterPanel = dynamic(() => import("./FillterPannel"), {
   loading: () => <FilterPanelSkeleton />,
   ssr: false,
 });
