@@ -3,6 +3,8 @@ import React from "react";
 
 const API_BASE =  "http://localhost:5000";
 const SITE_URL =  "https://mrfranchise.in";
+
+export const dynamic = "force-static";
 const REVALIDATE_TIME = 3600; // 1 hour
 
 
@@ -298,21 +300,46 @@ export default async function BrandLayout({ children, params }) {
  */
 export async function generateStaticParams() {
   try {
-    const res = await fetch(`${API_BASE}/api/v1/brandlisting/getAllBrands`, {
-      next: { revalidate: 86400 }, // 24 hours
-    });
+    let allBrands = [];
+    let page = 1;
+    const limit = 20; // backend default
+    let hasMore = true;
 
-    if (!res.ok) return [];
+    while (hasMore) {
+      const res = await fetch(
+        `https://mrfranchisebackend.mrfranchise.in/api/v1/filter/getAllBrandsAndFilter?page=${page}&limit=${limit}`,
+        { cache: "no-store" }
+      );
 
-    const json = await res.json();
-    const brands = Array.isArray(json?.data) ? json.data : [];
+      const json = await res.json();
 
-    // Generate params for top 100 brands (or all if you prefer)
-    return brands.slice(0, 100).map((brand) => ({
-      slug: brand?.brandDetails?.slug || brand?.slug,
+      const brands = Array.isArray(json?.data?.brands)
+        ? json.data.brands
+        : [];
+
+      allBrands.push(...brands);
+
+      // STOP when API returns less than limit
+      if (brands.length < limit) {
+        hasMore = false;
+      } else {
+        page++;
+      }
+    }
+
+    console.log("Total brands exported:", allBrands.length);
+
+    return allBrands.map((brand) => ({
+      slug:
+        brand.slug ||
+        brand.brandname
+          ?.toLowerCase()
+          .replace(/\s+/g, "-")
+          .replace(/[^a-z0-9-]/g, "") ||
+        String(brand.uuid),
     }));
   } catch (error) {
-    console.error("Error generating static params:", error);
+    console.error("Failed to generate static params:", error);
     return [];
   }
 }
