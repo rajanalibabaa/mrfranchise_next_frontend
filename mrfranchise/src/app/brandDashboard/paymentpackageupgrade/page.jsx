@@ -118,7 +118,7 @@ const MembershipSelection = ({}) => {
         setLoading(true);
         setError(null);
         const response = await fetch(
-          "https://mrfranchisebackend.mrfranchise.in/api/v1/brandadvertise/payment",
+          "http://localhost:5000/api/v1/brandadvertise/payment",
           {
             method: "GET",
             headers: {

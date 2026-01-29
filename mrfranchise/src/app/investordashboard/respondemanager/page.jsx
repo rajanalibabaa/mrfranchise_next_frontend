@@ -130,7 +130,7 @@ const FeedbackForm = ({ showSnackbar, isMobile }) => {
 
     try {
       const response = await axios.post(
-        `https://mrfranchisebackend.mrfranchise.in/api/v1/feedback/createFeedback/${investorUUID}`,
+        `http://localhost:5000/api/v1/feedback/createFeedback/${investorUUID}`,
         { topic: category, rating, feedback },
         { headers: { "Content-Type": "application/json", Authorization: `Bearer ${AccessToken}` } }
       );
@@ -226,7 +226,7 @@ const ComplaintForm = ({ showSnackbar, isMobile }) => {
 
     try {
       const response = await axios.post(
-        `https://mrfranchisebackend.mrfranchise.in/api/v1/complaint/createComplaint/${investorUUID}`,
+        `http://localhost:5000/api/v1/complaint/createComplaint/${investorUUID}`,
         { topic: category, complaint },
         { headers: { "Content-Type": "application/json", Authorization: `Bearer ${AccessToken}` } }
       );

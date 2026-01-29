@@ -47,7 +47,7 @@ export default async function BrandCategoryViewPage({ searchParams }) {
             "@type": "CollectionPage",
             name: "Franchise Brands Directory",
             description: "Explore all franchise opportunities across India",
-            url: "https://mrfranchise.in/AllCategoryPage/allbrandlisting",
+            url: "https://mrfranchise.in/allcategorypage/allbrandlisting",
             mainEntity: {
               "@type": "ItemList",
               name: "Franchise Brands",
@@ -66,7 +66,7 @@ export default async function BrandCategoryViewPage({ searchParams }) {
                   "@type": "ListItem",
                   position: 2,
                   name: "All Brands",
-                  item: "https://mrfranchise.in/AllCategoryPage/allbrandlisting",
+                  item: "https://mrfranchise.in/allcategorypage/allbrandlisting",
                 },
               ],
             },

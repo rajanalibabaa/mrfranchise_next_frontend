@@ -297,7 +297,7 @@ const SimilarBrands = ({ brandData }) => {
               },
             }}
             onClick={() => {
-              window.open(`/AllCategoryPage/allbrandlisting?category=${currentSubCategory}&subCategory=${currentChildCategory}`, "_blank");
+              window.open(`/allcategorypage/allbrandlisting?category=${currentSubCategory}&subCategory=${currentChildCategory}`, "_blank");
             }}
           >
             View More
