@@ -23,7 +23,7 @@ import {
 } from "@mui/icons-material";
 import LoginPage from "@/Components/LoginPage/LoginPage";
 import { postView } from "@/Utils/function/view";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { openBrandDialog } from "@/Redux/Slices/OpenBrandNewPageSlice.jsx";
 import {
   toggleBrandLikefilter,
@@ -424,21 +424,7 @@ useEffect(() => {
                 )}
               </IconButton>
             </Box>
-            {/* {brandCategories?.main ? (
-              <Chip
-                label={brandCategories?.main}
-                size="small"
-                sx={{
-                  bgcolor: "rgba(255, 152, 0, 0.1)",
-                  color: "orange.dark",
-                  fontWeight: 200,
-                }}
-              />
-            ) : (
-              <Typography variant="body2" color="text.secondary">
-                N/A
-              </Typography>
-            )} */}
+            
           </Box>
 
           <Box
