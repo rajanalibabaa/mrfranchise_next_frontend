@@ -21,7 +21,7 @@ import { useDispatch } from "react-redux";
 import Footer from "@/Components/Footers/Footer";
 import Navbar from "@/Components/Navbar/NavBar";
 import CompareButton from "./CompareButtonsCompenents";
-import BrandComparison from "@/app/allcategorypage/BrandCompariosn";
+import BrandComparison from "@/app/allcategorypage/brandCompariosn";
 
 const FixedSizeList = dynamic(
   () => import("react-window").then((mod) => mod.FixedSizeList),
