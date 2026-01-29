@@ -1,5 +1,5 @@
 import { Providers } from "@/Redux/Providers";
-import { VideoControllerProvider } from "@/Services/VideoControllerMedia/VideHandlingFunctions";
+import { VideoControllerProvider } from "@/services/VideoControllerMedia/VideHandlingFunctions";
 import GlobalLoader from "@/Components/GLobalLoader";
 import ReactQueryProvider from "@/providers/ReactQueryProvider";
 import Script from "next/script";

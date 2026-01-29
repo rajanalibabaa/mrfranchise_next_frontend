@@ -39,7 +39,7 @@ import {
 } from "@/Redux/Slices/TopCardFetchingSlice";
 import { getToken } from "@/Utils/autherId";
 import { RiBookmark3Fill } from "react-icons/ri";
-import { VideoPlayer } from "@/Services/VideoControllerMedia/VideoPlayercomponents.jsx";
+import { VideoPlayer } from "@/services/VideoControllerMedia/VideoPlayercomponents.jsx";
 import { handleShortList } from "@/Api/shortListApi.jsx";
 import {
   addSortlist,

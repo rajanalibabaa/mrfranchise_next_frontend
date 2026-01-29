@@ -7,11 +7,11 @@ import { useParams } from "next/navigation";
 import Navbar from "@/Components/Navbar/NavBar";
 import Footer from "@/Components/Footers/Footer";
 import Loading from "../loading";
-import BrandListClient from "../BrandListClient";
+import BrandListClient from "../brandlistClient";
  
 // Dynamic import for better code splitting
 const BrandListNew = dynamic(
-  () => import("@/app/AllCategoryPage/BrandListAllbrands"),
+  () => import("@/app/allcategorypage/BrandListAllbrands"),
   {
     loading: () => <Loading />,
     ssr: true,

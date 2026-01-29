@@ -45,7 +45,7 @@ import {
   toggleSortlistBrandLike,
 } from "@/Redux/Slices/shortlistslice.jsx";
 import { RiBookmark3Fill } from "react-icons/ri";
-import { VideoPlayer } from "@/Services/VideoControllerMedia/VideoPlayercomponents.jsx";
+import { VideoPlayer } from "@/services/VideoControllerMedia/VideoPlayercomponents.jsx";
 import confetti from "canvas-confetti";
 
 const cardStyles = {
