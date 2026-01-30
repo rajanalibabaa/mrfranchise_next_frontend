@@ -489,6 +489,7 @@ export default function Home() {
           __html: JSON.stringify(structuredData),
         }}
       />
+  <link rel="icon" href="/logo.png" type="image/jpeg" />
 
       {/* Preconnect for Performance */}
       <link rel="preconnect" href="https://fonts.googleapis.com" />

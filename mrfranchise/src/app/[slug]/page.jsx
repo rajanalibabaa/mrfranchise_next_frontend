@@ -525,6 +525,7 @@ export default async function Page({ params }) {
           __html: JSON.stringify(structuredData),
         }}
       />
+  <link rel="icon" href="/logo.png" type="image/jpeg" />
 
       {/* Page Content */}
       <ClientPage slug={slug} />
@@ -537,36 +538,22 @@ export default async function Page({ params }) {
 
 export async function generateStaticParams() {
   try {
-    let allBrands = [];
-    let page = 1;
-    const limit = 20; // backend default
-    let hasMore = true;
-
-    while (hasMore) {
-      const res = await fetch(
-        `https://mrfranchisebackend.mrfranchise.in/api/v1/filter/getAllBrandsAndFilter?page=${page}&limit=${limit}`,
-        { cache: "no-store" }
-      );
-
-      const json = await res.json();
-
-      const brands = Array.isArray(json?.data?.brands)
-        ? json.data.brands
-        : [];
-
-      allBrands.push(...brands);
-
-      // STOP when API returns less than limit
-      if (brands.length < limit) {
-        hasMore = false;
-      } else {
-        page++;
+    const res = await fetch(
+      "https://mrfranchisebackend.mrfranchise.in/api/v1/filter/getAllBrandsAndFilter?page=1&limit=50",
+      {
+        next: { revalidate: 3600 }, // ✅ cache for build + ISR
       }
-    }
+    );
 
-    console.log("Total brands exported:", allBrands.length);
+    if (!res.ok) throw new Error("Failed to fetch brands");
 
-    return allBrands.map((brand) => ({
+    const json = await res.json();
+
+    const brands = Array.isArray(json?.data?.brands)
+      ? json.data.brands
+      : [];
+
+    return brands.map((brand) => ({
       slug:
         brand.slug ||
         brand.brandname
@@ -576,11 +563,7 @@ export async function generateStaticParams() {
         String(brand.uuid),
     }));
   } catch (error) {
-    console.error("Failed to generate static params:", error);
-    return [];
+    console.error("generateStaticParams failed:", error);
+    return []; // 🚑 DO NOT crash build
   }
 }
-
-
-// export const dynamic = "force-static";
-export const revalidate = 3600; // Revalidate every hour

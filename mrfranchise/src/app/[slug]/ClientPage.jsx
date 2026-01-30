@@ -6,12 +6,11 @@ import dynamic from "next/dynamic";
 import { useParams } from "next/navigation";
 import Navbar from "@/Components/Navbar/NavBar";
 import Footer from "@/Components/Footers/Footer";
-import Loading from "../loading";
-import BrandListClient from "../brandlistClient";
+import Loading from "../allcategorypage/allbrandlisting/loading";
 
 // Dynamic import for better code splitting
 const BrandListNew = dynamic(
-  () => import("../../../../Components/allbarndviewpage/brandListAllbrands"),
+  () => import("../../Components/allbarndviewpage/brandListAllbrands"),
   {
     loading: () => <Loading />,
     ssr: true,
@@ -23,23 +22,15 @@ const BrandListNew = dynamic(
 
 export default function BrandCategoryViewPage() {
   const params = useParams();
-  const slug = params?.slug || "all"; // fallback slug
-  // Convert slug back to readable category
-  const categoryName = slug
-    .replace(/-/g, " ")
-    .replace(/\b\w/g, (l) => l.toUpperCase()); // optional capitalization
+  const slug = params.slug;
+  
+   
 
-  // Prepare initial filters for BrandListClient
-  const initialFilters = {
-    subcat: categoryName !== "All" ? categoryName : "",
-    state: "",
-    investmentRange: "",
-    maincat: "",
-    childcat: "",
-    searchTerm: "",
-    page: 1,
-    limit: 20,
-  };
+  const slugToEncoded = decodeURIComponent(slug);
+
+  
+
+ 
 
   return (
     <>
@@ -58,9 +49,7 @@ export default function BrandCategoryViewPage() {
         }}
       >
         <Suspense fallback={<Loading />}>
-          <BrandListClient initialFilters={initialFilters}>
             <BrandListNew />
-          </BrandListClient>
         </Suspense>
       </Box>
 

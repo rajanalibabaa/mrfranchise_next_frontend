@@ -44,18 +44,18 @@ const NavbarSearch = ({ open, handleClose }) => {
   } = filterState;
 
   // Debug logging
-  useEffect(() => {
-    console.log("=== Redux Store State ===");
-    console.log("mainCategories:", mainCategories);
-    console.log("subCategories:", subCategories);
-    console.log("childCategories:", childCategories);
-    console.log("states:", states);
-    console.log("districts:", districts);
-    console.log("cities:", cities);
-    console.log("investmentRanges:", investmentRanges);
-    console.log("dropdownLoading:", dropdownLoading);
-    console.log("dropdownError:", dropdownError);
-  }, [filterState]);
+  // useEffect(() => {
+  //   console.log("=== Redux Store State ===");
+  //   console.log("mainCategories:", mainCategories);
+  //   console.log("subCategories:", subCategories);
+  //   console.log("childCategories:", childCategories);
+  //   console.log("states:", states);
+  //   console.log("districts:", districts);
+  //   console.log("cities:", cities);
+  //   console.log("investmentRanges:", investmentRanges);
+  //   console.log("dropdownLoading:", dropdownLoading);
+  //   console.log("dropdownError:", dropdownError);
+  // }, [filterState]);
 
   // Selected filters state
   const [selectedMainCategory, setSelectedMainCategory] = useState("");
@@ -90,7 +90,7 @@ const NavbarSearch = ({ open, handleClose }) => {
   // Fetch initial filter options when component mounts
   useEffect(() => {
     if (open) {
-      console.log("Dialog opened, fetching initial filters...");
+      // console.log("Dialog opened, fetching initial filters...");
       dispatch(fetchFilterOptions());
     }
   }, [dispatch, open]);
@@ -98,7 +98,7 @@ const NavbarSearch = ({ open, handleClose }) => {
   // Fetch sub-categories when main category is selected
   useEffect(() => {
     if (selectedMainCategory) {
-      console.log("Main category selected, fetching sub-categories:", selectedMainCategory);
+      // console.log("Main category selected, fetching sub-categories:", selectedMainCategory);
       dispatch(fetchFilterOptions({ main: selectedMainCategory }));
       setSelectedSubCategory("");
       setSelectedChildCategory("");
@@ -108,7 +108,7 @@ const NavbarSearch = ({ open, handleClose }) => {
   // Fetch child-categories when sub-category is selected
   useEffect(() => {
     if (selectedSubCategory) {
-      console.log("Sub-category selected, fetching child-categories:", selectedSubCategory);
+      // console.log("Sub-category selected, fetching child-categories:", selectedSubCategory);
       dispatch(fetchFilterOptions({ sub: selectedSubCategory }));
       setSelectedChildCategory("");
     }
@@ -117,7 +117,7 @@ const NavbarSearch = ({ open, handleClose }) => {
   // Fetch districts when state is selected
   useEffect(() => {
     if (selectedState) {
-      console.log("State selected, fetching districts:", selectedState);
+      // console.log("State selected, fetching districts:", selectedState);
       dispatch(fetchFilterOptions({ state: selectedState }));
       setSelectedDistrict("");
       setSelectedCity("");
@@ -127,7 +127,7 @@ const NavbarSearch = ({ open, handleClose }) => {
   // Fetch cities when district is selected
   useEffect(() => {
     if (selectedDistrict) {
-      console.log("District selected, fetching cities:", selectedDistrict);
+      // console.log("District selected, fetching cities:", selectedDistrict);
       dispatch(fetchFilterOptions({ district: selectedDistrict }));
       setSelectedCity("");
     }
@@ -136,7 +136,7 @@ const NavbarSearch = ({ open, handleClose }) => {
   // Filter main categories based on search term
   const filteredMainCategories = useMemo(() => {
     const term = searchTerms.mainCategory.toLowerCase();
-    console.log("Filtering main categories. Term:", term, "Total:", mainCategories.length);
+    // console.log("Filtering main categories. Term:", term, "Total:", mainCategories.length);
     
     // Ensure we're working with an array
     const categories = Array.isArray(mainCategories) ? mainCategories : [];
@@ -145,7 +145,7 @@ const NavbarSearch = ({ open, handleClose }) => {
       .filter((cat) => cat && cat.toString().toLowerCase().includes(term))
       .slice(0, 100);
     
-    console.log("Filtered main categories:", filtered.length);
+    // console.log("Filtered main categories:", filtered.length);
     return filtered;
   }, [mainCategories, searchTerms.mainCategory]);
 
@@ -154,13 +154,13 @@ const NavbarSearch = ({ open, handleClose }) => {
     const term = searchTerms.subCategory.toLowerCase();
     const subs = Array.isArray(subCategories) ? subCategories : [];
     
-    console.log("Filtering sub categories. Term:", term, "Total:", subs.length);
+    // console.log("Filtering sub categories. Term:", term, "Total:", subs.length);
     
     const filtered = subs
       .filter((sub) => sub && sub.toString().toLowerCase().includes(term))
       .slice(0, 100);
     
-    console.log("Filtered sub categories:", filtered.length);
+    // console.log("Filtered sub categories:", filtered.length);
     return filtered;
   }, [subCategories, searchTerms.subCategory]);
 

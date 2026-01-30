@@ -1,5 +1,5 @@
 
-
+;
 //server side rendering 
 
 import { Suspense } from "react";
@@ -8,7 +8,6 @@ import dynamic from "next/dynamic";
 import Navbar from "@/Components/Navbar/NavBar";
 import Footer from "@/Components/Footers/Footer";
 import Loading from "./loading";
-import BrandListClient from "./brandlistClient";
 
 // Dynamic import for better code splitting
 const BrandListNew = dynamic(
@@ -26,14 +25,14 @@ const BrandListNew = dynamic(
 
 export default async function BrandCategoryViewPage({ searchParams }) {
   // Extract filters from URL
-  const initialFilters = {
-    subcat: searchParams?.subcat || "",
-    state: searchParams?.state || "",
-    investmentRange: searchParams?.investmentRange || "",
-    maincat: searchParams?.maincat || "",
-    childcat: searchParams?.childcat || "",
-    searchTerm: searchParams?.searchTerm || "",
-  };
+  // const initialFilters = {
+  //   subcat: searchParams?.subcat || "",
+  //   state: searchParams?.state || "",
+  //   investmentRange: searchParams?.investmentRange || "",
+  //   maincat: searchParams?.maincat || "",
+  //   childcat: searchParams?.childcat || "",
+  //   searchTerm: searchParams?.searchTerm || "",
+  // };
 
   
   return (
@@ -87,9 +86,7 @@ export default async function BrandCategoryViewPage({ searchParams }) {
         }}
       >
         <Suspense fallback={<Loading />}>
-          <BrandListClient initialFilters={initialFilters}>
             <BrandListNew />
-          </BrandListClient>
         </Suspense>
       </Box>
 

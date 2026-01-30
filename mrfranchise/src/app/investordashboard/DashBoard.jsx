@@ -35,7 +35,7 @@ const Dashboard = () => {
   const [tabValue, setTabValue] = useState(0);
   const [appliedBrands, setAppliedBrands] = useState([]);
   // console.log("Applied brands data view",appliedBrands);
-  console.log("viewedBrands",fetchViewBrandsById);
+  // console.log("viewedBrands",fetchViewBrandsById);
   
   const [likedStates, setLikedStates] = useState({});
   const [shortlistedStates, setShortlistedStates] = useState({});
@@ -112,8 +112,8 @@ const Dashboard = () => {
       dispatch(fetchViewBrandsById({ userId: investorUUID, page: 1, limit: 10 })),
     ]);
 
-    console.log("📌 Applied Response:", appliedRes.data);
-    console.log("📌 User Response:", userRes.data);
+    // console.log("📌 Applied Response:", appliedRes.data);
+    // console.log("📌 User Response:", userRes.data);
 
 const allDocs = appliedRes.data?.data?.results?.flatMap(result => result.data) || [];
     // Enhance applied brands

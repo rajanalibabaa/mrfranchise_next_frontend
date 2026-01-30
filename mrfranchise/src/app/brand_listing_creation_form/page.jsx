@@ -347,7 +347,7 @@ const [activeStep, setActiveStep] = useState(0);
       const errors = {};
       let isValid = true;
 
-      console.log("Validating step:", errors);
+      // console.log("Validating step:", errors);
 
       switch (step) {
         case 0:
@@ -1731,3 +1731,4 @@ const [activeStep, setActiveStep] = useState(0);
   );
 };
 export default BrandRegisterForm;
+
