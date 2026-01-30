@@ -6,13 +6,13 @@ import dynamic from "next/dynamic";
 import { useParams } from "next/navigation";
 import Navbar from "@/Components/Navbar/NavBar";
 import Footer from "@/Components/Footers/Footer";
-import Loading from "../allcategorypage/allbrandlisting/loading";
+// import Loading from "../allcategorypage/allbrandlisting/loading";
 //chaged
 // Dynamic import for better code splitting
 const BrandListNew = dynamic(
   () => import("../../Components/allbarndviewpage/brandListAllbrands"),
   {
-    loading: () => <Loading />,
+    // loading: () => <Loading />,
     ssr: true,
   }
 );
@@ -21,12 +21,9 @@ const BrandListNew = dynamic(
 
 
 export default function BrandCategoryViewPage() {
-  const params = useParams();
-  const slug = params.slug;
   
    
 
-  const slugToEncoded = decodeURIComponent(slug);
 
   
 
@@ -48,7 +45,7 @@ export default function BrandCategoryViewPage() {
           minHeight: "calc(100vh - 64px)",
         }}
       >
-        <Suspense fallback={<Loading />}>
+        <Suspense fallback={<div>Loading...</div>}>
             <BrandListNew />
         </Suspense>
       </Box>
