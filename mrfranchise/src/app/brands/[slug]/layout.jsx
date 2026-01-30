@@ -273,17 +273,20 @@ export default async function BrandLayout({ children, params }) {
 
   // Generate structured data for SEO
   const structuredData = brand ? generateStructuredData(brand, slug) : null;
-
+const logo = brand?.uploads?.logo
   return (
     <>
       {/* Structured Data (JSON-LD) */}
       {structuredData && (
+        <>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify(structuredData),
           }}
         />
+          <link rel="icon" href={logo} type="image/jpeg" />
+</>
       )}
 
       {/* Page Content */}

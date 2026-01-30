@@ -178,7 +178,7 @@ useEffect(() => {
   });
 
   const subcat = encodeURIComponent(brandCategoriesName); // encode spaces/special chars
-  const url = `/allcategorypage/allbrandlisting/${slug}?subcat=${subcat}`;
+  const url = `${slug}?subcat=${subcat}`;
 
   // Open in new tab
   const newWindow = window.open(url, "_blank");

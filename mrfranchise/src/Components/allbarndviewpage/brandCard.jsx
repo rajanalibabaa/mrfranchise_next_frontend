@@ -168,7 +168,7 @@ useEffect(() => {
         setTimeout(() => postView(uuid), 0);
       }
       dispatch(openBrandDialog(brand));
-      console.log('brndssssss',brand);
+      // console.log('brndssssss',brand);
       
       
     }, [uuid, brand, dispatch]);

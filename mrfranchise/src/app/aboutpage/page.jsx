@@ -2,6 +2,7 @@
 import AboutUs from "./aboutus_client";
 
 export const metadata = {
+  
   title:
     "About MrFranchise – Leading Franchise Consulting Company in Chennai, India",
 

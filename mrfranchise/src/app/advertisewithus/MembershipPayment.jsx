@@ -138,7 +138,7 @@ const MembershipSelection = ({
               }))
             );
           }
-          console.log("Processed Membership Packages:", membershipPkgs);
+          // console.log("Processed Membership Packages:", membershipPkgs);
           // console.log("Processed Listing Packages:", listingPkgs);
           setPackages(membershipPkgs);
           setListingPackages(listingPkgs);
@@ -281,7 +281,7 @@ const MembershipSelection = ({
   };
   const handleContinueToPayment = () => {
     if (selectedPlan) {
-      console.log("Opening payment page with plan:", selectedPlan);
+      // console.log("Opening payment page with plan:", selectedPlan);
       setShowPaymentPage(true);
     } else {
       console.error("No plan selected");

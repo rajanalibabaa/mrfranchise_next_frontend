@@ -231,52 +231,48 @@
  
 // export default filterBrandSlice.reducer;
  
- 
-"use client";
+ "use client";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import { getUserId } from "@/Utils/autherId";
- 
+
 const API_BASE_URL = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/`;
 const userId = getUserId();
- 
+
 /* ============================
-   THUNK: Fetch Filtered Brands
+   FAST THUNK: Fetch Filtered Brands
 ============================ */
 export const fetchFilteredBrands = createAsyncThunk(
   "filterBrands/fetchFilteredBrands",
   async (filters, { signal, rejectWithValue }) => {
     try {
-      const params = new URLSearchParams();
- 
-      // Pagination (always safe)
-      params.append("page", filters.page ?? 1);
-      params.append("limit", filters.limit ?? 20);
- 
+      // Build query params dynamically
+      const params = new URLSearchParams({
+        page: filters.page ?? 1,
+        limit: filters.limit ?? 20,
+      });
+
       if (userId) params.append("id", userId);
- 
-      // Optional filters (ONLY when present)
       if (filters.maincat) params.append("maincat", filters.maincat);
       if (filters.subcat) params.append("subcat", filters.subcat);
       if (filters.childcat) params.append("childcat", filters.childcat);
-      if (filters.searchTerm)
-        params.append("serchterm", filters.searchTerm);
+      if (filters.searchTerm) params.append("serchterm", filters.searchTerm);
       if (filters.country) params.append("country", filters.country);
       if (filters.state) params.append("state", filters.state);
       if (filters.district) params.append("district", filters.district);
       if (filters.city) params.append("city", filters.city);
       if (filters.investmentRange)
         params.append("investmentRange", filters.investmentRange);
-      if (filters.modelType)
-        params.append("modelType", filters.modelType);
-      if (filters.areaRequired)
-        params.append("areaRequired", filters.areaRequired);
- 
+      if (filters.modelType) params.append("modelType", filters.modelType);
+      if (filters.areaRequired) params.append("areaRequired", filters.areaRequired);
+
+      // 🔥 Fast API call with Axios
       const response = await axios.get(
-        `${API_BASE_URL}filter/getAllBrandsAndFilter?${params.toString()}`,
-        { signal }
+        `${API_BASE_URL}filter/getAllBrandsAndFilter`,
+        { params, signal, timeout: 10000 } // 10s timeout for fast fail
       );
- 
+
+      // Normalize brands for fast UI updates
       const brands =
         response.data?.data?.brands?.map((brand) => ({
           ...brand,
@@ -300,7 +296,7 @@ export const fetchFilteredBrands = createAsyncThunk(
           isLiked: Boolean(brand?.isLiked),
           isShortListed: Boolean(brand?.isShortListed),
         })) || [];
- 
+
       return {
         brands,
         pagination:
@@ -314,14 +310,14 @@ export const fetchFilteredBrands = createAsyncThunk(
           },
       };
     } catch (error) {
-      if (axios.isCancel(error)) return;
+      if (axios.isCancel(error)) return; // request cancelled
       return rejectWithValue(
         error?.response?.data?.message || "Failed to fetch brands"
       );
     }
   }
 );
- 
+
 /* ============================
    INITIAL STATE
 ============================ */
@@ -329,7 +325,6 @@ const initialState = {
   brands: [],
   loading: false,
   error: null,
- 
   pagination: {
     currentPage: 1,
     totalPages: 1,
@@ -338,7 +333,6 @@ const initialState = {
     hasNext: false,
     hasPrevious: false,
   },
- 
   filters: {
     maincat: null,
     subcat: null,
@@ -355,7 +349,7 @@ const initialState = {
     limit: 20,
   },
 };
- 
+
 /* ============================
    SLICE
 ============================ */
@@ -366,7 +360,7 @@ const filterBrandSlice = createSlice({
     setFilter(state, action) {
       const { filterName, value } = action.payload;
       state.filters[filterName] = value;
- 
+
       // Reset dependent filters
       if (filterName === "maincat") {
         state.filters.subcat = null;
@@ -382,32 +376,32 @@ const filterBrandSlice = createSlice({
       if (filterName === "district") {
         state.filters.city = null;
       }
- 
+
       state.filters.page = 1;
       state.pagination.currentPage = 1;
     },
- 
+
     resetFilters(state) {
       state.filters = initialState.filters;
       state.pagination.currentPage = 1;
     },
- 
+
     setPage(state, action) {
       state.filters.page = action.payload;
       state.pagination.currentPage = action.payload;
     },
- 
+
     clearError(state) {
       state.error = null;
     },
- 
+
     toggleBrandLikefilter(state, action) {
       const id = action.payload;
       state.brands = state.brands.map((b) =>
         b.uuid === id ? { ...b, isLiked: !b.isLiked } : b
       );
     },
- 
+
     toggleBrandShortListfilter(state, action) {
       const id = action.payload;
       state.brands = state.brands.map((b) =>
@@ -415,7 +409,7 @@ const filterBrandSlice = createSlice({
       );
     },
   },
- 
+
   extraReducers: (builder) => {
     builder
       .addCase(fetchFilteredBrands.pending, (state) => {
@@ -424,13 +418,14 @@ const filterBrandSlice = createSlice({
       })
       .addCase(fetchFilteredBrands.fulfilled, (state, action) => {
         state.loading = false;
- 
+
+        // Sort brands: video first for fast visual load
         state.brands = action.payload.brands.sort((a, b) => {
           const av = a.uploads?.video ? 1 : 0;
           const bv = b.uploads?.video ? 1 : 0;
           return bv - av;
         });
- 
+
         state.pagination = action.payload.pagination;
       })
       .addCase(fetchFilteredBrands.rejected, (state, action) => {
@@ -439,7 +434,7 @@ const filterBrandSlice = createSlice({
       });
   },
 });
- 
+
 export const {
   setFilter,
   resetFilters,
@@ -448,5 +443,5 @@ export const {
   toggleBrandLikefilter,
   toggleBrandShortListfilter,
 } = filterBrandSlice.actions;
- 
+
 export default filterBrandSlice.reducer;

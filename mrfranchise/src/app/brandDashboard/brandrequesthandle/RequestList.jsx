@@ -54,7 +54,7 @@ useEffect(() => {
     socket.emit("joinBrand", brandUUID);
 
     const handleRealtimeUpdate = (data) => {
-      console.log("🔄 Realtime Request Update:", data);
+      // console.log("🔄 Realtime Request Update:", data);
       dispatch(addRealtimeRequest(data));
     };
 

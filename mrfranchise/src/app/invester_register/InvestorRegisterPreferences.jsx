@@ -143,7 +143,7 @@ const InvestorRegisterPreferences = ({
           setValue("industry", industryName);
         }
         
-        console.log("Fetched industry details:", industryData);
+        // console.log("Fetched industry details:", industryData);
       }
     } catch (error) {
       console.error('Error fetching industry details:', error);

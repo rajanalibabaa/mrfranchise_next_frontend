@@ -23,7 +23,7 @@ export const fetchFilterOptions = createAsyncThunk(
  
  
       const response = await axios.post(`${API_BASE_URL}filter/getAllBrandFiltersdata?${queryParams.toString()}`);
-console.log("===response=== ",response.data.data)
+// console.log("===response=== ",response.data.data)
  
       return response.data.data;
     } catch (error) {
@@ -57,7 +57,7 @@ const initialState = {
   citiesError: null,
 };
  
-console.log("===initialState=== ",initialState)
+// console.log("===initialState=== ",initialState)//
  
 const filterDropdownSlice = createSlice({
   name: 'filterDropdown',

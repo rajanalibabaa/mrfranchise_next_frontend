@@ -136,7 +136,7 @@ const formattedInvestmentRanges = useMemo(() => {
 // In your FilterDropdowns component
 const handleFindBrands = useCallback(() => {
   const queryParams = new URLSearchParams();
-  console.log('query params ',queryParams);
+  // console.log('query params ',queryParams);
   
   
   if (filters.selectedSubCategory) {

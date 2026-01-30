@@ -34,7 +34,6 @@ import {
   Clear as ClearIcon,
   Compare,
 } from "@mui/icons-material";
-import { useSearchParams } from "next/navigation";
 import dynamic from "next/dynamic";
 import { useDispatch, useSelector, shallowEqual } from "react-redux";
 import {
@@ -186,7 +185,6 @@ LazyBrandCard.displayName = "LazyBrandCard";
 function BrandList() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
-  const searchParams = useSearchParams();
   const dispatch = useDispatch();
 
   // ============================================

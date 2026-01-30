@@ -982,7 +982,7 @@ const InvestorRegister = () => {
       }),
     };
 
-    console.log("Submitting data:", formattedData);
+    // console.log("Submitting data:", formattedData);
 
     try {
       // dispatch(showLoading());

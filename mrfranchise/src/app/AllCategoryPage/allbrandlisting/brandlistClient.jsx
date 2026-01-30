@@ -15,7 +15,8 @@ const FILTER_KEYS = [
 ];
 
 export default function BrandListClient({ children, initialFilters }) {
-  console.log('initialfilters',initialFilters);
+  
+  console.log('initialfilters click in allbrandlisting',initialFilters);
   
   const dispatch = useDispatch();
   const router = useRouter();

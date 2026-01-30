@@ -113,8 +113,8 @@ const InvestorRegister = () => {
   const [selectedChild, setSelectedChild] = useState("");
   const propertyTypeValue = useWatch({ control, name: "propertyType" });
 
-  console.log("Selected Main Category:", selectedMainCategory);
-  console.log("Selected Sub Category:", selectedSubCategory);
+  // console.log("Selected Main Category:", selectedMainCategory);
+  // console.log("Selected Sub Category:", selectedSubCategory);
 
   // OTP verification state
   const [otpModal, setOtpModal] = useState({
@@ -181,7 +181,7 @@ const InvestorRegister = () => {
     preferredCity: "",
     terms: false,
   };
-  console.log(propertyCountry)
+  // console.log(propertyCountry)
 
   useEffect(() => {
     fetch("https://countriesnow.space/api/v0.1/countries/positions")
