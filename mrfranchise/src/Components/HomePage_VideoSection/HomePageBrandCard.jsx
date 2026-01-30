@@ -407,7 +407,7 @@ const HomePageBrandCard = React.memo(
                   },
                   // py: 1,
                   maxWidth: 200,
-                  ml:6,
+                  ml:{xs:"auto",sm:"auto",md:2,lg:6},
                   borderRadius: 1,
                   textTransform: "none",
                   fontWeight: 600,
