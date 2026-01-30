@@ -6,7 +6,7 @@ import dynamic from "next/dynamic";
 import { useParams } from "next/navigation";
 import Navbar from "@/Components/Navbar/NavBar";
 import Footer from "@/Components/Footers/Footer";
-// import Loading from "../allcategorypage/allbrandlisting/loading";
+// import Loading from "../all-franchise-brands/loading";
 //chaged
 // Dynamic import for better code splitting
 const BrandListNew = dynamic(

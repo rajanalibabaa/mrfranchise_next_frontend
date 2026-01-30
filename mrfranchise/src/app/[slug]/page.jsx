@@ -1,4 +1,4 @@
-// app/allcategorypage/allbrandlisting/[slug]/page.js
+// app/all-franchise-brands/[slug]/page.js
 
 import ClientPage from "./ClientPage";
 
@@ -266,7 +266,7 @@ function generateSEOKeywords(categoryName, slug, config) {
 
 
 function generateStructuredData(categoryName, slug, config, brandCount) {
-  const canonicalUrl = `${SITE_URL}/allcategorypage/allbrandlisting/${slug}`;
+  const canonicalUrl = `${SITE_URL}/all-franchise-brands/${slug}`;
   
   return {
     "@context": "https://schema.org",
@@ -308,7 +308,7 @@ function generateStructuredData(categoryName, slug, config, brandCount) {
             "@type": "ListItem",
             "position": 3,
             "name": "All Brands",
-            "item": `${SITE_URL}/allcategorypage/allbrandlisting`,
+            "item": `${SITE_URL}/all-franchise-brands`,
           },
           {
             "@type": "ListItem",
@@ -413,7 +413,7 @@ export async function generateMetadata({ params }) {
   const categoryData = await getCategoryData(slug);
   const brandCount = categoryData?.brands?.length || categoryData?.total || 0;
   
-  const canonicalUrl = `${SITE_URL}/allcategorypage/allbrandlisting/${slug}`;
+  const canonicalUrl = `${SITE_URL}/all-franchise-brands/${slug}`;
   
   // Generate SEO content
   const title = generateSEOTitle(categoryName, config, brandCount);

@@ -1,7 +1,7 @@
 
 const SITE_URL ="https://mrfranchise.in";
 const SITE_NAME = "Mr Franchise";
-const PAGE_PATH = "/allcategorypage/allbrandlisting";
+const PAGE_PATH = "/all-franchise-brands";
 const CANONICAL_URL = `${SITE_URL}${PAGE_PATH}`;
 
 

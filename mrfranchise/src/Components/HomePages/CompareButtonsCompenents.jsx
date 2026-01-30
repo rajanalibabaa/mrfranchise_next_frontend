@@ -16,7 +16,7 @@ const CompareButton = () => {
     // Set flag to enable comparison on the target page
     localStorage.setItem('enableComparison', 'true');
     // Open in a new tab
-    window.open("/allcategorypage/allbrandlisting", "_blank", "noopener,noreferrer");
+    window.open("/all-franchise-brands", "_blank", "noopener,noreferrer");
   };
 
   return (
