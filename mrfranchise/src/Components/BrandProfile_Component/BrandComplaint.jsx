@@ -27,7 +27,7 @@ function BrandComplaint() {
 
     try {
       const response = await axios.post(
-        "https://mrfranchisebackend.mrfranchise.in/api/v1/complaint/createComplaint",
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/complaint/createComplaint`,
         formattedData,
         {
           headers: {

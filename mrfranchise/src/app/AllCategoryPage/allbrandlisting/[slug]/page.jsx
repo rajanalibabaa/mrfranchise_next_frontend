@@ -2,7 +2,7 @@
 
 import ClientPage from "./ClientPage";
 
-const API_BASE =  "https://mrfranchisebackend.mrfranchise.in";
+const API_BASE =  `${process.env.NEXT_PUBLIC_API_URL}`;
 const SITE_URL ="https://mrfranchise.in";
 const SITE_NAME = "Mr Franchise";
 

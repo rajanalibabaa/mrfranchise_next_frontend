@@ -120,7 +120,7 @@ const FranchiseDetails = ({ data = {}, errors = {}, onChange = () => {} }) => {
   const fetchIndustries = async () => {
     try {
       setLoading(true);
-      const response = await fetch('https://mrfranchisebackend.mrfranchise.in/api/v1/admin/getIndustryByIndustryName');
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/getIndustryByIndustryName`);
       const result = await response.json();
      
       if (result.success && result.data.Industry) {
@@ -140,7 +140,7 @@ const FranchiseDetails = ({ data = {}, errors = {}, onChange = () => {} }) => {
     try {
       setLoadingIndustryDetails(true);
       const response = await fetch(
-        `https://mrfranchisebackend.mrfranchise.in/api/v1/admin/getIndustryByIndustryName?industry=${encodeURIComponent(industry)}`
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/getIndustryByIndustryName?industry=${encodeURIComponent(industry)}`
       );
       const result = await response.json();
      

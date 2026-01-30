@@ -59,7 +59,7 @@ export const fetchLikedBrandsById = createAsyncThunk(
     
 
       const query = { page, limit, main: "Food & Beverages" };
-      const baseUrl = "https://mrfranchisebackend.mrfranchise.in/api/v1/like";
+      const baseUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/like`;
 
       const queryString = new URLSearchParams(query).toString();
 

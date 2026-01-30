@@ -25,7 +25,7 @@ export const removeFromShortlist = createAsyncThunk(
       if (!userId || !brandId) throw new Error("Missing user ID or brand ID");
 
       const baseUrl =
-        api.shortListApi.base || "https://mrfranchisebackend.mrfranchise.in/api/v1/shortList";
+        api.shortListApi.base || `${process.env.NEXT_PUBLIC_API_URL}/api/v1/shortList`;
       const url = `${baseUrl}/removeFromShortlist/${userId}/${brandId}`;
 
       await axios.delete(url, {
@@ -48,7 +48,7 @@ export const fetchShortListedById = createAsyncThunk(
 
       const query = { page, limit ,main: "Food & Beverages" };
 const baseUrl =
-  api.shortListApi.base || "https://mrfranchisebackend.mrfranchise.in/api/v1/shortList";
+  api.shortListApi.base || `${process.env.NEXT_PUBLIC_API_URL}/api/v1/shortList`;
 
 const queryString = new URLSearchParams(query).toString();
 

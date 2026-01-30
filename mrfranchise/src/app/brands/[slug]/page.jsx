@@ -46,7 +46,7 @@ const brandName = useMemo(() => {
     (async () => {
       try {
         const res = await axios.get(
-          `https://mrfranchisebackend.mrfranchise.in/api/v1/brandlisting/getBrandListingSlug/${brandName}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/api/v1/brandlisting/getBrandListingSlug/${brandName}`,
           { 
             params: { 
               userId,
