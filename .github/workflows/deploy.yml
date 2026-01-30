@@ -31,6 +31,7 @@ jobs:
             git fetch origin
             git reset --hard origin/main
             git clean -fd
+            cd mrfranchise
             npm install
             npm run build
             pm2 restart mrfranchise-frontend || pm2 start npm --name "mrfranchise-frontend" -- start
