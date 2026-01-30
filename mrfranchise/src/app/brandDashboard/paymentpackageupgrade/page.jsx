@@ -118,7 +118,7 @@ const MembershipSelection = ({}) => {
         setLoading(true);
         setError(null);
         const response = await fetch(
-          "https://mrfranchisebackend.mrfranchise.in/api/v1/brandadvertise/payment",
+          `${process.env.NEXT_PUBLIC_API_URL}/api/v1/brandadvertise/payment`,
           {
             method: "GET",
             headers: {

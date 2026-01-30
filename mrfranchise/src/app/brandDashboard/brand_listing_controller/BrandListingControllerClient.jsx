@@ -218,7 +218,7 @@ const router = useRouter();
       }
 
       try {
-        const url = `https://mrfranchisebackend.mrfranchise.in/api/v1/brandlisting/getBrandById/${uuid}`;
+        const url = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/brandlisting/getBrandById/${uuid}`;
         const response = await getApi(url);
         const brand = response?.data?.data;
 
@@ -392,7 +392,7 @@ const router = useRouter();
   const sendOtp = async () => {
     try {
       const response = await axios.post(
-        `https://mrfranchisebackend.mrfranchise.in/api/v1/otpverify/send-otp-email`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/otpverify/send-otp-email`,
         {
           email: formData.email,
         },
@@ -422,7 +422,7 @@ const router = useRouter();
 
     try {
       const response = await axios.post(
-        `https://mrfranchisebackend.mrfranchise.in/api/v1/otpverify/verify-otp`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/otpverify/verify-otp`,
         {
           identifier: formData.email,
           otp: otp,
@@ -565,7 +565,7 @@ const router = useRouter();
       // First update the brand details
       // console.log("Sending data to API:", { uuid, formDataToSend });
       const detailsResponse = await axios.patch(
-        `https://mrfranchisebackend.mrfranchise.in/api/v1/brandlisting/updateBrandListingByUUID/${uuid}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/brandlisting/updateBrandListingByUUID/${uuid}`,
         formDataToSend,
         {
           headers: {
@@ -639,7 +639,7 @@ const router = useRouter();
       // Only make the upload request if there are files to upload or delete
       if (hasFilesToUpload) {
         const uploadResponse = await axios.patch(
-          `https://mrfranchisebackend.mrfranchise.in/api/v1/brandlisting/updateBrandImageById/${uuid}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/api/v1/brandlisting/updateBrandImageById/${uuid}`,
           uploadFormData,
           {
             headers: {
@@ -657,7 +657,7 @@ const router = useRouter();
 
       // Refresh the data after successful update
       const refreshResponse = await getApi(
-        `https://mrfranchisebackend.mrfranchise.in/api/v1/brandlisting/getBrandById/${uuid}`
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/brandlisting/getBrandById/${uuid}`
       );
       const updatedBrand = refreshResponse?.data?.data;
 

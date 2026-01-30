@@ -237,7 +237,7 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import { getUserId } from "@/Utils/autherId";
  
-const API_BASE_URL = "https://mrfranchisebackend.mrfranchise.in/api/v1/";
+const API_BASE_URL = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/`;
 const userId = getUserId();
  
 /* ============================

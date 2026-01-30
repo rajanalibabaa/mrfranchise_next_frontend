@@ -98,7 +98,7 @@ useEffect(() => {
     setLoading(true);
     try {
       const promises = selectedBrands.map((brand) =>
-        axios.get(`https://mrfranchisebackend.mrfranchise.in/api/v1/brandlisting/getBrandListingByUUID/${brand.uuid}`, {
+        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/brandlisting/getBrandListingByUUID/${brand.uuid}`, {
           params: {
             userId: userId
           }

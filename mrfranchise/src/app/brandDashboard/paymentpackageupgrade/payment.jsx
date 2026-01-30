@@ -99,7 +99,7 @@ const PaymentPage = ({ selectedMembership, selectedListing, selectedPlan }) => {
     // console.log("Brand ID:", Id);
 
     axios
-      .put(`https://mrfranchisebackend.mrfranchise.in/api/v1/leadPackageUpdate/${Id}`, {
+      .put(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/leadPackageUpdate/${Id}`, {
         packageName: PackageName,
       })
       .then((res) => {

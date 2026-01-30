@@ -293,7 +293,7 @@ const handleSubmit = useCallback(
  
       // Make API request
       const response = await axios.post(
-        "https://mrfranchisebackend.mrfranchise.in/api/v1/instantapply/postApplication",
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/instantapply/postApplication`,
         payload,
         {
           headers: {
@@ -384,7 +384,7 @@ const handleSubmit = useCallback(
     if (!investorUUID || !AccessToken) return;
     try {
       const response = await axios.get(
-        `https://mrfranchisebackend.mrfranchise.in/api/v1/investor/getInvestorByUUID/${investorUUID}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/investor/getInvestorByUUID/${investorUUID}`,
         {
           headers: {
             "Content-Type": "application/json",
