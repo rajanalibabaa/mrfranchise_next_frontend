@@ -44,6 +44,8 @@ import {
   
 } from "@/Redux/Slices/FilterBrandSlice";
 import { fetchFilterOptions } from "@/Redux/Slices/filterDropdownData";
+import AdSlot from "../ads/GoogleAd";
+import { ADS } from "@/config/ads.config";
 
 
 const BrandCardSkeleton = React.memo(() => (
@@ -540,6 +542,7 @@ function BrandList() {
             />
           </Box>
         )}
+        <AdSlot {...ADS.HOME.MID_RECTANGLE}/>
       </>
     );
   }, [

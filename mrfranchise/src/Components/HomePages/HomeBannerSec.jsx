@@ -22,6 +22,9 @@ import Footer from "@/Components/Footers/Footer";
 import Navbar from "@/Components/Navbar/NavBar";
 import CompareButton from "./CompareButtonsCompenents";
 import BrandComparison from "./brandCompariosn";
+import AdSlot from "../ads/GoogleAd";
+import {ADS} from '@/config/ads.config.js';
+import { Fragment } from "react";
 
 const FixedSizeList = dynamic(
   () => import("react-window").then((mod) => mod.FixedSizeList),
@@ -654,8 +657,38 @@ background: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${page
 
            {pageConfig.sections
         .filter((s) => isLoggedIn || !["LikedBrands", "ShortlistBrands", "ViewBrands"].includes(s.component))
-        .map((section, i) => (
-          <LazySection
+        .map((section, i) => {
+          const addIndex = Math.floor(i / 3);
+
+           const adSlots = [
+      ADS.HOME.INLINE_1,
+      ADS.HOME.INLINE_2,
+      ADS.HOME.INLINE_3,
+    ];
+return (
+      <Fragment key={i}>
+        {/* SECTION */}
+        <LazySection
+          componentKey={section.component}
+          dynamicComponents={dynamicComponents}
+          background={{
+            backgroundImage: "url(/bg25.jpeg)",
+            backgroundAttachment: "fixed",
+            backgroundSize: "400px",
+            backgroundRepeat: "repeat",
+          }}
+          isMobile={isMobile}
+        />
+
+        {/* AD AFTER EVERY 3rd SECTION */}
+        {(i + 1) % 3 === 0 && adSlots[addIndex] && (
+          <AdSlot {...adSlots[addIndex]} />
+        )}
+      </Fragment>
+    );
+  })}
+
+          {/* <LazySection
             key={i}
             componentKey={section.component}
             dynamicComponents={dynamicComponents}
@@ -667,11 +700,11 @@ background: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${page
             }}
             isMobile={isMobile}
           />
-        ))}
+        })} */}
 
       <CompareButton />
       <BrandComparison />
-
+<AdSlot {...ADS.HOME.FOOTER_RECTANGLE}/>
       <Footer />
     </>
   );
