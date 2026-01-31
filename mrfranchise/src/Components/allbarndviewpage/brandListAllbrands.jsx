@@ -542,7 +542,7 @@ function BrandList() {
             />
           </Box>
         )}
-        <AdSlot {...ADS.HOME.MID_RECTANGLE}/>
+        <AdSlot {...ADS.HOME.TOP_LEADERBOARD}/>
       </>
     );
   }, [
