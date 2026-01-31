@@ -18,6 +18,8 @@ import FranchiseDetailsTable from "@/Components/OverTabHandlings.jsx/FranchiseDe
 import BrandDescription from "@/Components/OverTabHandlings.jsx/BrandDescriptionsOverView.jsx";
 import SupportProvided from "@/Components/OverTabHandlings.jsx/SupportProvidedOverView.jsx";
 import FranchiseTagsOverView from "@/Components/OverTabHandlings.jsx/FranchiseTagsOverView.jsx";
+import AdSlot from "@/Components/ads/GoogleAd";
+import { ADS } from "@/config/ads.config";
 
 // Lazy loading heavy/offscreen/large sections
 const ExpansionLocationGrid = React.lazy(() => import("@/Components/OverTabHandlings.jsx/BrandOverViewExpansionLocationDomestic.jsx"));
@@ -92,6 +94,8 @@ const serviceTags=brand?.[0]?.brandfranchisedetails?.franchiseDetails?.brandCate
           formatCurrency={formatCurrency}
         />
       )}
+
+      <AdSlot {...ADS.HOME.TOP_LEADERBOARD}/>
       {hasData(serviceTags) && (
         <FranchiseTagsOverView 
 

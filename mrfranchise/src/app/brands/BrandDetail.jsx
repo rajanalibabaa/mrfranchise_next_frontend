@@ -32,6 +32,8 @@ import LoginPage from "@/Components/LoginPage/LoginPage.jsx";
 import BrandHeader from "@/Components/BrandViewPageHandling/BrandHeaderViewPage.jsx";
 import MediaSection from "@/Components/BrandViewPageHandling/MediaSectionViewPage.jsx";
 import Disclaimer from "@/Components/OverTabHandlings.jsx/DisclimerPage.jsx";
+import AdSlot from "@/Components/ads/GoogleAd.jsx";
+import { ADS } from "@/config/ads.config.js";
  
 // LAZY load (secondary) components
 const Navbar = lazy(() => import("@/Components/Navbar/NavBar.jsx"));
@@ -636,7 +638,7 @@ const handleSubmit = useCallback(
       </Box>
    
       <Disclaimer isMobile={isMobile} />
- 
+ <AdSlot {...ADS.HOME.TOP_BILLBOARD} />
       <Suspense fallback={null}>
         <BackToTopButton show={showBackToTop} isMobile={isMobile} />
       </Suspense>

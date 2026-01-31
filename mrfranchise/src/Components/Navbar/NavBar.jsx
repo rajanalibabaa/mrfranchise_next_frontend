@@ -29,7 +29,8 @@ import { motion, AnimatePresence } from "framer-motion";
 // import logo from "@/assets/Images/logo.png";
 import NavbarSearch from "./NavbarSearch.jsx";
 import Image from "next/image.js";
-
+import AdSlot from "../ads/GoogleAd.jsx";
+import { ADS } from "@/config/ads.config.js";
 function Navbar() {
   const router = useRouter();
   const dispatch = useDispatch();
@@ -231,7 +232,7 @@ const [ID, setId] = useState(null);
   { label: "Advertise", path: "/advertisewithus", external: false },
   { label: "Blogs", path: "/", external: false },
   {
-    label: "Franchise Consultant",
+    label: "Franchise Consulting",
     path: "https://franchiseconsulting.mrfranchise.in",
     external: true,
   },
@@ -271,6 +272,7 @@ const [ID, setId] = useState(null);
           },
         }}
       >
+        <AdSlot {...ADS.HOME.TOP_BILLBOARD} />
         <Box sx={{ 
           display:{ xs: "none", sm: "flex"}, 
           flexWrap: "wrap",
