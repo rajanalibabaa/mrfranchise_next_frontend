@@ -413,9 +413,9 @@ const allDocs = appliedRes.data?.data?.results?.flatMap(result => result.data) |
         <Typography variant="h5" fontWeight={600}>
           {userData?.firstName || "Investor"} {userData?.lastName || ""}
         </Typography>
-        <Typography variant="body2" color="text.secondary">
+        {/* <Typography variant="body2" color="text.secondary">
           {userData?.inveterID || ""}
-        </Typography>
+        </Typography> */}
       </Box>
     </>
   ) : (
