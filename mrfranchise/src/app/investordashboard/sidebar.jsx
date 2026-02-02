@@ -1,9 +1,9 @@
 'use client'
 
-import React, { memo, useMemo } from 'react'
+import React, { memo, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Box, Tooltip } from '@mui/material'
+import { Box, Tooltip, useMediaQuery, useTheme } from '@mui/material'
 
 // Import icons directly (already tree-shaken)
 import DashboardIcon from '@mui/icons-material/Dashboard'
@@ -11,11 +11,16 @@ import ProfileIcon from '@mui/icons-material/Person'
 import ReachUsIcon from '@mui/icons-material/Email'
 
 /* ------------------ Sidebar Item ------------------ */
-const SidebarItem = memo(function SidebarItem({ item, active }) {
+const SidebarItem = memo(function SidebarItem({ item, active, collapsed }) {
   const Icon = item.icon
 
   return (
-    <Tooltip title={item.tooltip} placement="right" arrow>
+    <Tooltip 
+      title={collapsed ? item.tooltip : ''} 
+      placement="right" 
+      arrow
+      disableHoverListener={!collapsed}
+    >
       <Box
         component={Link}
         href={item.path}
@@ -23,19 +28,40 @@ const SidebarItem = memo(function SidebarItem({ item, active }) {
         sx={{
           display: 'flex',
           alignItems: 'center',
-          gap: 1.5,
-          px: 2,
+          gap: collapsed ? 0 : 1.5,
+          px: collapsed ? 1.5 : 2,
           py: 1.2,
           borderRadius: 2,
           textDecoration: 'none',
           color: 'inherit',
           bgcolor: active ? 'rgba(0,0,0,0.06)' : 'transparent',
-          transition: 'background-color 0.2s ease',
-          '&:hover': { bgcolor: 'rgba(0,0,0,0.04)' }
+          transition: 'all 0.2s ease',
+          minHeight: 44,
+          justifyContent: collapsed ? 'center' : 'flex-start',
+          '&:hover': { 
+            bgcolor: 'rgba(0,0,0,0.08)',
+            transform: collapsed ? 'scale(1.05)' : 'none'
+          }
         }}
       >
-        <Icon fontSize="small" />
-        <span>{item.text}</span>
+        <Icon 
+          fontSize="small"
+          sx={{ 
+            minWidth: collapsed ? 'auto' : 20,
+            transition: 'all 0.2s ease'
+          }}
+        />
+        <Box
+          sx={{
+            opacity: collapsed ? 0 : 1,
+            transform: `translateX(${collapsed ? -12 : 0}px)`,
+            transition: 'all 0.2s ease',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden'
+          }}
+        >
+          {item.text}
+        </Box>
       </Box>
     </Tooltip>
   )
@@ -44,6 +70,9 @@ const SidebarItem = memo(function SidebarItem({ item, active }) {
 /* ------------------ Layout ------------------ */
 export default function InvestorDashboardLayout({ children }) {
   const pathname = usePathname()
+  const theme = useTheme()
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'))
+  const [isCollapsed, setIsCollapsed] = useState(false)
 
   const navItems = useMemo(() => [
     {
@@ -66,17 +95,26 @@ export default function InvestorDashboardLayout({ children }) {
     }
   ], [])
 
-  return (
-    <Box sx={{ display: 'flex', minHeight: '100vh' }}>
-      {/* Sidebar */}
+  const sidebarWidth = isCollapsed || isMobile ? 50 : 260
+
+ return (
+  <Box
+    sx={{
+      display: isMobile ? 'block' : 'flex',
+      minHeight: '100vh'
+    }}
+  >
+    {/* ✅ MOBILE TOP MENU */}
+    {isMobile && (
       <Box
         sx={{
-          width: 260,
-          borderRight: '1px solid rgba(0,0,0,0.08)',
-          p: 2,
           display: 'flex',
-          flexDirection: 'column',
-          gap: 1
+          gap: 0.5,
+          px: 1,
+          py: 1,
+          borderBottom: '1px solid rgba(0,0,0,0.08)',
+          bgcolor: 'background.paper',
+          overflowX: 'auto'
         }}
       >
         {navItems.map(item => (
@@ -84,14 +122,44 @@ export default function InvestorDashboardLayout({ children }) {
             key={item.path}
             item={item}
             active={pathname === item.path}
+            collapsed={false}
           />
         ))}
       </Box>
+    )}
 
-      {/* Main content */}
-      <Box sx={{ flex: 1, p: 3 }}>
-        {children}
+    {/* ✅ DESKTOP SIDEBAR */}
+    {!isMobile && (
+      <Box
+        sx={{
+          width: sidebarWidth,
+          borderRight: '1px solid rgba(0,0,0,0.08)',
+          p: 1.5,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 1,
+          position: 'sticky',
+          top: 0,
+          height: '100vh',
+          bgcolor: 'background.paper'
+        }}
+      >
+        {navItems.map(item => (
+          <SidebarItem
+            key={item.path}
+            item={item}
+            active={pathname === item.path}
+            collapsed={isCollapsed}
+          />
+        ))}
       </Box>
+    )}
+
+    {/* Main Content */}
+    <Box sx={{ flex: 1, p: { xs: 2, sm: 3 } }}>
+      {children}
     </Box>
-  )
+  </Box>
+)
+
 }

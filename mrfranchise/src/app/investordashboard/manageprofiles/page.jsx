@@ -1974,9 +1974,9 @@ const ManageProfile = () => {
                         />
                       )}
                     </Box>
-                    <Typography variant="h6">
+                    {/* <Typography variant="h6">
                       {investorData.investorID}
-                    </Typography>
+                    </Typography> */}
                   </Box>
                 )}
               </Box>

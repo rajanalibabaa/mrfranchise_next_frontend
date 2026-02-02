@@ -999,8 +999,8 @@ const InvestorRegister = () => {
         localStorage.removeItem(FORM_DATA_KEY);
         setFormData(initialFormState);
         setRegistrationSuccess(true);
-        showSnackbar("Registration successful! You can now login.", "success");
-
+        // alert("Registration successful! You can now login.", "success");
+        
         // Store user info if needed
         if (formattedData.firstName) {
           localStorage.setItem("investorName", formattedData.firstName);
@@ -1054,6 +1054,10 @@ const InvestorRegister = () => {
   const closeLoginPopup = () => {
     setLoginOpen(false);
     setRegistrationSuccess(false);
+  };
+   const handleSuccessRedirect = () => {
+    setRegistrationSuccess(false);
+    navigate.push('/');
   };
 
   return (
@@ -1119,9 +1123,19 @@ const InvestorRegister = () => {
               <PersonOutlined color="primary" /> Personal Details
             </Typography>
 
-            <Grid container spacing={3}>
-              {/* First Name */}
-              <Grid item xs={12} md={6}>
+<Box
+  sx={{
+    display: "grid",
+    gridTemplateColumns: {
+      xs: "1fr",
+      sm: "repeat(2, 1fr)",
+      md: "repeat(3, 1fr)",
+    },
+    gap: 3,
+    mb: 4,
+  }}
+>              {/* First Name */}
+              <Box sx={{ gridColumn: { xs: "span 1", sm: "span 2", md: "span 3" } }}>
                 <TextField
                   label="First Name"
                   fullWidth
@@ -1144,19 +1158,11 @@ const InvestorRegister = () => {
                     },
                   }}
                 />
-              </Grid>
+              </Box>
 
               {/* Email with verification */}
-              <Grid
-                container
-                spacing={2}
-                sx={{
-                  display: "grid",
-                  gridTemplateColumns: { md: "repeat(3, 1fr)", xs: "1fr" },
-                  gap: 2,
-                }}
-              >
-                <Grid item xs={12} md={6}>
+            
+                <Box>
                   <TextField
                     label="Email"
                     type="email"
@@ -1216,10 +1222,10 @@ const InvestorRegister = () => {
                       },
                     }}
                   />
-                </Grid>
+                </Box>
 
                 {/* Mobile Number */}
-                <Grid item xs={12} md={6}>
+                <Box>
                   <TextField
                     label="Mobile Number"
                     fullWidth
@@ -1257,10 +1263,10 @@ const InvestorRegister = () => {
                       },
                     }}
                   />
-                </Grid>
+                </Box>
 
                 {/* WhatsApp Number */}
-                <Grid item xs={12} md={6}>
+                <Box>
                   <TextField
                     label="WhatsApp Number"
                     fullWidth
@@ -1292,21 +1298,13 @@ const InvestorRegister = () => {
                       },
                     }}
                   />
-                </Grid>
-              </Grid>
+                </Box>
+            
 
               {/* Country */}
 
-              <Grid
-                container
-                spacing={2}
-                sx={{
-                  display: "flex",
-                  gap: 2,
-                  alignItems: "flex-start",
-                }}
-              >
-                <Grid item xs={12} md={4}>
+             
+                <Box >
                   <Autocomplete
                     options={countries.map((c) => c.name)}
                     value={formData.country}
@@ -1331,11 +1329,10 @@ const InvestorRegister = () => {
                       backgroundColor: "background.paper",
                     }}
                   />
-                </Grid>
-
-                {/* Address */}
-                <Grid item xs={12} md={8}>
-                  <TextField
+                </Box>
+                  {/* Address */}
+<Box sx={{ gridColumn: { xs: "span 1", sm: "span 2", md: "span 2" } }}>
+                    <TextField
                     label="Address"
                     fullWidth
                     variant="outlined"
@@ -1357,20 +1354,11 @@ const InvestorRegister = () => {
                       },
                     }}
                   />
-                </Grid>
-              </Grid>
+                </Box>
 
-              <Grid
-                container
-                spacing={2}
-                sx={{
-                  display: "grid",
-                  gridTemplateColumns: { md: "repeat(3, 1fr)", xs: "1fr" },
-                  gap: 2,
-                }}
-              >
-                {/* Pincode */}
-                <Grid item xs={12} md={4}>
+              
+                 {/* Pincode */}
+                <Box>
                   <TextField
                     label={
                       formData.country === "India" ? "Pincode" : "Postal Code"
@@ -1411,11 +1399,13 @@ const InvestorRegister = () => {
                       },
                     }}
                   />
-                </Grid>
-              </Grid>
+                </Box>
+
+
+           
 
               {/* State */}
-              <Grid item xs={12} md={4}>
+              <Box>
                 <TextField
                   label="State"
                   fullWidth
@@ -1429,10 +1419,10 @@ const InvestorRegister = () => {
                     },
                   }}
                 />
-              </Grid>
+              </Box>
 
               {/* City */}
-              <Grid item xs={12} md={4}>
+              <Box>
                 <TextField
                   label="City"
                   fullWidth
@@ -1446,11 +1436,10 @@ const InvestorRegister = () => {
                     },
                   }}
                 />
-              </Grid>
+              </Box>
 
               {/* Occupation */}
-              <Grid item xs={12}>
-                <TextField
+  <Box sx={{ gridColumn: { xs: "span 1", sm: "span 2", md: "span 3" } }}>                <TextField
                   select
                   label="Occupation"
                   fullWidth
@@ -1481,12 +1470,11 @@ const InvestorRegister = () => {
                     </MenuItem>
                   ))}
                 </TextField>
-              </Grid>
+              </Box>
 
               {/* Other Occupation */}
               {formData.occupation === "Other" && (
-                <Grid item xs={12}>
-                  <TextField
+  <Box sx={{ gridColumn: { xs: "span 1", sm: "span 2", md: "span 3" } }}>                  <TextField
                     label="Specify Occupation"
                     fullWidth
                     variant="outlined"
@@ -1501,9 +1489,9 @@ const InvestorRegister = () => {
                       },
                     }}
                   />
-                </Grid>
+                </Box>
               )}
-            </Grid>
+            </Box>
 
             {/* Preferences Section */}
             <Box sx={{ mt: 6 }}>
@@ -1541,9 +1529,19 @@ const InvestorRegister = () => {
                 </Tooltip>
               </Typography>
 
-              <Grid container spacing={3}>
-                {/* Industry and Category */}
-                <Grid item xs={12} md={6}>
+<Box
+    sx={{
+      display: "grid",
+      gridTemplateColumns: {
+        xs: "1fr",
+        sm: "repeat(2, 1fr)",
+        md: "repeat(4, 1fr)",
+      },
+      gap: 3,
+      mb: 4,
+    }}
+  >                {/* Industry and Category */}
+                <Box>
                   <TextField
                     select
                     label="Industry"
@@ -1558,38 +1556,85 @@ const InvestorRegister = () => {
                       Food & Beverages
                     </MenuItem>
                   </TextField>
-                </Grid>
-
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    select
-                    label="Category"
-                    fullWidth
-                    variant="outlined"
-                    value={formData.currentPreference.category}
-                    onChange={(e) =>
-                      handlePreferenceChange("category", e.target.value)
-                    }
-                    disabled={
-                      !formData.currentPreference.industry ||
-                      loadingIndustryDetails
-                    }
-                    sx={{ borderRadius: "8px" }}
-                  >
-                    <MenuItem value="">Select Category</MenuItem>
-                    {categoryOptions.map((category) => (
-                      <MenuItem key={category} value={category}>
-                        {category}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                  {loadingIndustryDetails && (
-                    <FormHelperText>Loading categories...</FormHelperText>
-                  )}
-                </Grid>
+                </Box>
+<Box sx={{ width: '100%', minWidth: 0 }}>
+  <TextField
+    select
+    label="Category"
+    fullWidth
+    variant="outlined"
+    value={formData.currentPreference.category}
+    onChange={(e) =>
+      handlePreferenceChange("category", e.target.value)
+    }
+    disabled={
+      !formData.currentPreference.industry ||
+      loadingIndustryDetails
+    }
+    sx={{ 
+      borderRadius: "8px",
+      '& .MuiSelect-select': {
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        whiteSpace: 'nowrap',
+      }
+    }}
+    SelectProps={{
+      renderValue: (selected) => {
+        if (!selected) return <span style={{ color: '#999' }}>Select Category</span>;
+        return (
+          <Box
+            sx={{
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+              width: '100%',
+              display: 'block',
+            }}
+            title={selected}
+          >
+            {selected}
+          </Box>
+        );
+      },
+      MenuProps: {
+        PaperProps: {
+          sx: {
+            maxHeight: 300,
+            '& .MuiMenuItem-root': {
+              whiteSpace: 'normal',
+              minHeight: '48px',
+            },
+          },
+        },
+      },
+    }}
+  >
+    <MenuItem value="">
+      <em>Select Category</em>
+    </MenuItem>
+    {categoryOptions.map((category) => (
+      <MenuItem 
+        key={category} 
+        value={category}
+        sx={{
+          whiteSpace: 'normal',
+          py: 1,
+          // Ensure menu items don't affect the select width
+          maxWidth: '400px',
+        }}
+      >
+        {category}
+      </MenuItem>
+    ))}
+  </TextField>
+  {loadingIndustryDetails && (
+    <FormHelperText>Loading categories...</FormHelperText>
+  )}
+</Box>
 
                 {/* Investment Amount */}
-                <Grid item xs={12} md={6}>
+                <Box>
                   <TextField
                     select
                     label="Preferred Investment Amount"
@@ -1614,10 +1659,10 @@ const InvestorRegister = () => {
                       </MenuItem>
                     ))}
                   </TextField>
-                </Grid>
+                </Box>
 
                 {/* Investment Range */}
-                <Grid item xs={12} md={6}>
+                <Box>
                   <TextField
                     select
                     label="Preferred Investment Readiness"
@@ -1642,10 +1687,10 @@ const InvestorRegister = () => {
                       </MenuItem>
                     ))}
                   </TextField>
-                </Grid>
+                </Box>
 
                 {/* Location Type */}
-                <Grid item xs={12}>
+                <Box>
                   <Typography
                     variant="subtitle1"
                     sx={{ mb: 1, fontWeight: 500 }}
@@ -1681,7 +1726,7 @@ const InvestorRegister = () => {
                       />
                     </RadioGroup>
                   </FormControl>
-                </Grid>
+                </Box>
 
                 {/* Location Fields */}
                 {formData.currentPreference.locationType && (
@@ -1690,7 +1735,7 @@ const InvestorRegister = () => {
                     {formData.currentPreference.locationType ===
                     "international" ? (
                       <>
-                        <Grid item xs={12} md={4}>
+                        <Box >
                           <TextField
                             select
                             label="Country"
@@ -1714,9 +1759,9 @@ const InvestorRegister = () => {
                               </MenuItem>
                             ))}
                           </TextField>
-                        </Grid>
+                        </Box>
 
-                        <Grid item xs={12} md={4}>
+                        <Box>
                           <TextField
                             select
                             label="State"
@@ -1742,9 +1787,9 @@ const InvestorRegister = () => {
                               </MenuItem>
                             ))}
                           </TextField>
-                        </Grid>
+                        </Box>
 
-                        <Grid item xs={12} md={4}>
+                        <Box>
                           <TextField
                             select
                             label="City"
@@ -1769,12 +1814,12 @@ const InvestorRegister = () => {
                               </MenuItem>
                             ))}
                           </TextField>
-                        </Grid>
+                        </Box>
                       </>
                     ) : (
                       /* For Domestic: State, District, City */
                       <>
-                        <Grid item xs={12} md={4}>
+                        <Box>
                           <TextField
                             select
                             label="State"
@@ -1798,9 +1843,9 @@ const InvestorRegister = () => {
                               </MenuItem>
                             ))}
                           </TextField>
-                        </Grid>
+                        </Box>
 
-                        <Grid item xs={12} md={4}>
+                        <Box>
                           <TextField
                             select
                             label="District"
@@ -1828,9 +1873,9 @@ const InvestorRegister = () => {
                               </MenuItem>
                             ))}
                           </TextField>
-                        </Grid>
+                        </Box>
 
-                        <Grid item xs={12} md={4}>
+                        <Box>
                           <TextField
                             select
                             label="City"
@@ -1858,14 +1903,14 @@ const InvestorRegister = () => {
                               </MenuItem>
                             ))}
                           </TextField>
-                        </Grid>
+                        </Box>
                       </>
                     )}
                   </>
                 )}
 
                 {/* Property Type */}
-                <Grid item xs={12}>
+                <Box sx={{ gridColumn: { xs: "span 1", sm: "span 2", md: "span 4" } }}>
                   <Typography
                     variant="subtitle1"
                     sx={{ mb: 1, fontWeight: 500 }}
@@ -1912,11 +1957,11 @@ const InvestorRegister = () => {
                       }
                     />
                   </RadioGroup>
-                </Grid>
+                </Box>
 
                 {/* Property Size (for Own Property) */}
                 {formData.currentPreference.propertyType === "Own Property" && (
-                  <Grid item xs={12} md={6}>
+                  <Box>
                     <TextField
                       select
                       label="Property Size"
@@ -1937,13 +1982,13 @@ const InvestorRegister = () => {
                         </MenuItem>
                       ))}
                     </TextField>
-                  </Grid>
+                  </Box>
                 )}
 
                 {/* Property Location (for Own Property) */}
                 {formData.currentPreference.propertyType === "Own Property" && (
                   <>
-                    <Grid item xs={12} md={4}>
+                    <Box>
                       <Autocomplete
                         freeSolo
                         options={propertyCountries}
@@ -1967,9 +2012,9 @@ const InvestorRegister = () => {
                           />
                         )}
                       />
-                    </Grid>
+                    </Box>
 
-                    <Grid item xs={12} md={4}>
+                    <Box>
                       <Autocomplete
                         freeSolo
                         options={propertyStates}
@@ -1992,9 +2037,9 @@ const InvestorRegister = () => {
                           />
                         )}
                       />
-                    </Grid>
+                    </Box>
 
-                    <Grid item xs={12} md={4}>
+                    <Box>
                       <Autocomplete
                         freeSolo
                         options={propertyCities}
@@ -2010,18 +2055,19 @@ const InvestorRegister = () => {
                           <TextField
                             {...params}
                             fullWidth
+                            label="Property City"
                             variant="outlined"
                             sx={{ borderRadius: "8px" }}
                           />
                         )}
                       />
-                    </Grid>
+                    </Box>
                   </>
                 )}
-              </Grid>
+              </Box>
 
               {/* Add Preference Button */}
-              <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 3 }}>
+              <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
                 <Button
                   onClick={handleAddPreference}
                   sx={{
@@ -2309,6 +2355,43 @@ const InvestorRegister = () => {
               </Box>
             </DialogContent>
           </Dialog>
+           <Dialog
+        open={registrationSuccess}
+        onClose={handleSuccessRedirect}
+        PaperProps={{ sx: { borderRadius: "16px", p: 3 } }}
+      >
+        <DialogTitle sx={{ fontWeight: "bold", textAlign: "center" }}>
+          Registration Successful!
+        </DialogTitle>
+        <DialogContent>
+          <Box sx={{ textAlign: "center", py: 2 }}>
+            <CheckCircleOutline sx={{ fontSize: 60, color: "success.main", mb: 2 }} />
+            <Typography variant="h6" gutterBottom>
+              Welcome, {formData.firstName}!
+            </Typography>
+            <Typography variant="body1">
+              Your investor registration has been completed successfully.
+            </Typography>
+            <Typography variant="body2" sx={{ mt: 1, color: "text.secondary" }}>
+              You can now login to your account.
+            </Typography>
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ justifyContent: "center", pb: 3 }}>
+          <Button
+            variant="contained"
+            onClick={handleSuccessRedirect}
+            sx={{
+              borderRadius: "8px",
+              backgroundColor: "#7ad03a",
+              "&:hover": { backgroundColor: "#5a9e2a" },
+              px: 4,
+            }}
+          >
+            Continue to Home
+          </Button>
+        </DialogActions>
+      </Dialog>
 
           {/* WhatsApp Snackbar */}
           <Snackbar

@@ -1015,10 +1015,22 @@ const InvestorRegister = () => {
             >
               <PersonOutlined color="primary" /> Personal Details
             </Typography>
-            <Grid spacing={3}>
+            <Box sx={
+              {
+                display: "grid",
+                gridTemplateColumns:{
+                  xs: "1fr",
+      sm: "repeat(2, 1fr)",
+      md: "repeat(2, 1fr)",
+    },
+    gap: 3,
+    mb: 4,
+                }
+              
+            }>
               {/* First Name */}
-              <Grid item xs={12} md={6}>
-                <Controller
+  <Box sx={{ gridColumn: { xs: "span 1", sm: "span 2", md: "span 2" } }}>
+                    <Controller
                   name="firstName"
                   control={control}
                   rules={{ required: "First name is required" }}
@@ -1046,19 +1058,10 @@ const InvestorRegister = () => {
                     />
                   )}
                 />
-              </Grid>
+              </Box>
 
               {/* Email */}
-              <Grid
-                container
-                spacing={2}
-                sx={{
-                  display: "grid",
-                  gridTemplateColumns: { md: "repeat(3, 1fr)", xs: "1fr" },
-                  gap: 2,
-                }}
-              >
-              <Grid item xs={12} md={6}>
+              <Box>
                 <Controller
                   name="email"
                   control={control}
@@ -1124,10 +1127,10 @@ const InvestorRegister = () => {
                     />
                   )}
                 />
-              </Grid>
+              </Box>
   
                 {/* Mobile Number */}
-                <Grid item xs={12} md={6}>
+                <Box>
                   <Controller
                     name="mobileNumber"
                     control={control}
@@ -1175,10 +1178,10 @@ const InvestorRegister = () => {
                       />
                     )}
                   />
-                </Grid>
+                </Box>
 
                 {/* WhatsApp Number */}
-                <Grid item xs={12} md={6}>
+                <Box>
                   <Controller
                     name="whatsappNumber"
                     control={control}
@@ -1219,18 +1222,9 @@ const InvestorRegister = () => {
                       />
                     )}
                   />
-                </Grid>
-                </Grid>
-              <Grid
-                container
-                spacing={2}
-                sx={{
-                  display: "flex",
-                  gap: 2,
-                  alignItems: "flex-start",
-                }}
-              >
-                <Grid size={4} mt={1}>
+                </Box>
+          
+                <Box>
                   <Controller
                     name="country"
                     defaultValue="India"
@@ -1270,10 +1264,10 @@ const InvestorRegister = () => {
                       />
                     )}
                   />
-                </Grid>
+                </Box>
 
                 {/* Address */}
-                <Grid size={8} md={8}>
+                <Box sx={{ gridColumn: { xs: "span 1", sm: "span 2", md: "span 2" } }}>
                   <Controller
                     name="address"
                     control={control}
@@ -1302,19 +1296,11 @@ const InvestorRegister = () => {
                       />
                     )}
                   />
-                </Grid>
-              </Grid>
-              <Grid
-                container
-                spacing={2}
-                sx={{
-                  display: "grid",
-                  gridTemplateColumns: { md: "repeat(3, 1fr)", xs: "1fr" },
-                  gap: 2,
-                }}
-              >
+                </Box>
+             
+             
                 {/* Pincode */}
-                <Grid item xs={12} md={4}>
+                <Box>
                   <Controller
                     name="pincode"
                     control={control}
@@ -1379,10 +1365,10 @@ const InvestorRegister = () => {
                       );
                     }}
                   />
-                </Grid>
+                </Box>
 
                 {/* State */}
-                <Grid item xs={12} md={4}>
+                <Box>
                   <Controller
                     name="state"
                     control={control}
@@ -1405,10 +1391,10 @@ const InvestorRegister = () => {
                       />
                     )}
                   />
-                </Grid>
+                </Box>
 
                 {/* City */}
-                <Grid item xs={12} md={4}>
+                <Box>
                   <Controller
                     name="city"
                     control={control}
@@ -1431,11 +1417,11 @@ const InvestorRegister = () => {
                       />
                     )}
                   />
-                </Grid>
-              </Grid>
+                </Box>
+            
 
               {/* Occupation */}
-              <Grid item xs={12}>
+              <Box sx={{ gridColumn: { xs: "span 1", sm: "span 2", md: "span 2" } }}>
                 <Controller
                   name="occupation"
                   control={control}
@@ -1481,11 +1467,11 @@ const InvestorRegister = () => {
                     </TextField>
                   )}
                 />
-              </Grid>
+              </Box>
 
               {/* Other Occupation */}
               {occupationValue === "Other" && (
-                <Grid item xs={12}>
+                <Box sx={{ gridColumn: { xs: "span 1", sm: "span 2", md: "span 2" } }}>
                   <Controller
                     name="otherOccupation"
                     control={control}
@@ -1505,9 +1491,9 @@ const InvestorRegister = () => {
                       />
                     )}
                   />
-                </Grid>
+                </Box>
               )}
-            </Grid>
+            </Box>
 
             {/* Preferences Section - Now in separate component */}
             <InvestorRegisterPreferences
