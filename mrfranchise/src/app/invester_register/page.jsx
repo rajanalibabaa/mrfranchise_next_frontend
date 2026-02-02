@@ -57,6 +57,8 @@ import FlagIcon from "@mui/icons-material/Flag";
 import Navbar from "@/Components/Navbar/NavBar";
 import Footer from "@/Components/Footers/Footer";
 import { API_BASE_URL } from "@/Api/api";
+import AdSlot from "@/Components/ads/GoogleAd";
+import { ADS } from "@/config/ads.config";
 
 const initialFormState = {
   // Personal Details
@@ -1069,7 +1071,7 @@ const InvestorRegister = () => {
         sx={{
           color: "#7ad03a",
           mb: -3,
-          mt: { xs: 12, md: 15, lg: 15, sm: 20 },
+          mt: { xs: 12, md: 15, lg: 25, sm: 20 },
           textAlign: "center",
           textDecoration: "underline",
           fontSize: { xs: "1.8rem", sm: "2.2rem", md: "2.5rem" },
@@ -1083,8 +1085,8 @@ const InvestorRegister = () => {
           minHeight: "100vh",
           flexDirection: isMobile ? "column" : "row",
           display: "flex",
-          justifyContent: "center",
-          alignItems: "flex-start",
+          justifyContent: "space-evenly",
+          // alignItems: "flex-start",
           marginLeft: { xs: "0" },
           width: { xs: "70%", lg: "100%", md: "100%", sm: "100%" },
         }}
@@ -1093,7 +1095,7 @@ const InvestorRegister = () => {
           ref={dropdownRef}
           sx={{
             p: 4,
-            ml: "30px",
+            ml: "20px",
             width: "100%",
             maxWidth: "1030px",
             position: "relative",
@@ -2195,8 +2197,7 @@ const InvestorRegister = () => {
                 }
                 sx={{ mb: 3 }}
               />
-              // Update the submit button - remove the preference check from
-              disabled condition
+           
               <Button
                 type="submit"
                 variant="contained"
@@ -2383,11 +2384,13 @@ const InvestorRegister = () => {
         </Box>
 
         {!isMobile && (
-          <Box sx={{ marginTop: { sm: "35px" } }}>
-            <RegisterationMediaHandling />
+          <Box >
+            {/* <RegisterationMediaHandling /> */}
+            <AdSlot {...ADS.HOME.FILTER_BOTTOM_RECTANGLE}/>
           </Box>
         )}
       </Box>
+            <AdSlot {...ADS.HOME.FOOTER_RECTANGLE}/>
 
       <Box>
         <Footer />

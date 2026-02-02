@@ -22,7 +22,7 @@ import {
   PictureInPicture
 } from '@mui/icons-material';
 import { useSelector, useDispatch } from 'react-redux';
-import { fetchBrands } from "../../Redux/Slices/GetAllBrandsDataUpdationFile";
+import { fetchBrands } from "@/Redux/Slices/GetAllBrandsDataUpdationFile";
 
 function RegisterationMediaHandling() {
   const dispatch = useDispatch();

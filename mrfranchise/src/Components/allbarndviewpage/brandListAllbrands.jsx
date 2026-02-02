@@ -10,6 +10,7 @@ import React, {
   Suspense,
   useRef,
   startTransition,
+  Fragment,
 } from "react";
 import {
   Container,
@@ -491,8 +492,9 @@ function BrandList() {
       <>
         <Box sx={gridStyles} ref={brandsContainerRef}>
           {brands.map((brand, index) => (
+            <Fragment key={brand.uuid || index}>
             <LazyBrandCard
-              key={brand.uuid || index}
+              // key={brand.uuid || index}
               brand={brand}
               handleLikeClick={handleLikeClick}
               likeProcessing={likeProcessing}
@@ -507,6 +509,27 @@ function BrandList() {
               }
               onShowLogin={setShowLogin}
             />
+            {index === 7 && (
+              <Box   sx={{
+            gridColumn: "1 / -1", // ⬅ spans full grid width
+            my: 1,
+          }}> <AdSlot {...ADS.HOME.TOP_LEADERBOARD}/>
+          </Box>
+            )}
+            {/* {index === 7 && (
+          //     <Box   sx={{
+          //   gridColumn: "1 / -1", // ⬅ spans full grid width
+          //   my: 1,
+          // }}> 
+          <AdSlot {...ADS.HOME.TOP_LEADERBOARD}/>
+          // </Box>
+            )} */}
+
+
+            </Fragment>
+
+
+
           ))}
         </Box>
 

@@ -41,7 +41,7 @@ const InvestFranchise = () => {
   const isTablet = useMediaQuery(theme.breakpoints.between("sm", "md"));
 
   return (
-    <Box sx={{ fontFamily: FONT_FAMILY, background: "#f9fafb", minHeight: "100vh" }}>
+    <Box sx={{ fontFamily: FONT_FAMILY, background: "#f9fafb", minHeight: "100vh",mt:20 }}>
       <Box sx={{ position: "fixed", top: 0, width: "100%", zIndex: 10 }}>
         <Navbar />
       </Box>
@@ -300,9 +300,8 @@ const InvestFranchise = () => {
         </Box>
         </motion.div>
       </Box>
-      <Box sx={{ mt: 3, backgroundColor: "background.default", py: 4 }}>
+     
         <Footer />
-      </Box>
     </Box>
   );
 };

@@ -96,6 +96,7 @@ const serviceTags=brand?.[0]?.brandfranchisedetails?.franchiseDetails?.brandCate
       )}
 
       <AdSlot {...ADS.HOME.TOP_LEADERBOARD}/>
+      
       {hasData(serviceTags) && (
         <FranchiseTagsOverView 
 

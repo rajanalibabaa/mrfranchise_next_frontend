@@ -77,7 +77,7 @@ const ExpandYourBrandClient = () => {
   );
 
   return (
-    <Box className="expand-bg">
+    <Box className="expand-bg" mt={10}>
       <Box sx={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 50 }}>
         <Navbar />
       </Box>
