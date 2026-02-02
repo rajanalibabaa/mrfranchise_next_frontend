@@ -15,68 +15,69 @@ import {
   Typography,
 } from "@mui/material";
 import { Fade } from "@mui/material";
-import { keyframes } from "@emotion/react";
-
+import { useMediaQuery, useTheme } from "@mui/material";
 const FranchiseDetailsTable = ({ ficoDetails, formatCurrency }) => {
   const [selectedModel, setSelectedModel] = useState(null);
   const containerRef = useRef(null);
   const [isUserScrolling, setIsUserScrolling] = useState(false);
   const [hasHoveredOnce, setHasHoveredOnce] = useState(false);
+const theme = useTheme();
+const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
-  const tableRows = ficoDetails.map((model, index) => (
-    <Fade in={true} key={model._id || index} timeout={index * 100}>
-      <TableRow
-        hover
-        selected={selectedModel?._id && model._id && selectedModel._id === model._id}
-        sx={{ "&:hover": { backgroundColor: "rgba(0, 0, 0, 0.04)" } }}
-      >
-        {[
-          model.franchiseModel,
-          model.franchiseType,
-          model.investmentRange,
-          model.areaRequired,
-          model.agreementPeriod ? `${model.agreementPeriod} yrs` : "N/A",
-          model.franchiseFee ? formatCurrency(model.franchiseFee) : "N/A",
-          model.interiorCost ? formatCurrency(model.interiorCost) : "N/A",
-          model.stockInvestment ? formatCurrency(model.stockInvestment) : "N/A",
-          model.otherCost ? formatCurrency(model.otherCost) : "N/A",
-          model.requireWorkingCapital ? formatCurrency(model.requireWorkingCapital) : "N/A",
-          model.royaltyFee,
-          model.breakEven,
-          model.roi ? `${model.roi}%` : "N/A",
-          model.payBackPeriod,
-          model.marginOnSales ? `${model.marginOnSales}%` : "N/A",
-        ].map((value, j) => (
-          <TableCell
-            key={j}
-            align="center"
-            sx={{
-              borderBottom: "1px solid rgba(0,0,0,0.05)",
-              padding: "16px",
-              minWidth: j === 0 ? "180px" : "170px", // Adjust minimum widths as needed
-              maxWidth: "200px",
-              whiteSpace: "normal",
-              wordBreak: "break-word",
-              overflow: "visible",
-              textOverflow: "unset",
-              fontWeight:
-                (j === 12 && model.roi) || (j === 14 && model.marginOnSales)
-                  ? 700
-                  : "inherit",
-              color:
-                j === 12 && parseFloat(model.roi) > 20
-                  ? "success.main"
-                  : j === 14 && parseFloat(model.marginOnSales) > 30
-                  ? "success.main"
-                  : "inherit",
-            }}
-          >
-            {value || "N/A"}
-          </TableCell>
-        ))}
-      </TableRow>
-    </Fade>
-  ));
+  // const tableRows = ficoDetails.map((model, index) => (
+  //   <Fade in={true} key={model._id || index} timeout={index * 100}>
+  //     <TableRow
+  //       hover
+  //       selected={selectedModel?._id && model._id && selectedModel._id === model._id}
+  //       sx={{ "&:hover": { backgroundColor: "rgba(0, 0, 0, 0.04)" } }}
+  //     >
+  //       {[
+  //         model.franchiseModel,
+  //         model.franchiseType,
+  //         model.investmentRange,
+  //         model.areaRequired,
+  //         model.agreementPeriod ? `${model.agreementPeriod} yrs` : "N/A",
+  //         model.franchiseFee ? formatCurrency(model.franchiseFee) : "N/A",
+  //         model.interiorCost ? formatCurrency(model.interiorCost) : "N/A",
+  //         model.stockInvestment ? formatCurrency(model.stockInvestment) : "N/A",
+  //         model.otherCost ? formatCurrency(model.otherCost) : "N/A",
+  //         model.requireWorkingCapital ? formatCurrency(model.requireWorkingCapital) : "N/A",
+  //         model.royaltyFee,
+  //         model.breakEven,
+  //         model.roi ? `${model.roi}%` : "N/A",
+  //         model.payBackPeriod,
+  //         model.marginOnSales ? `${model.marginOnSales}%` : "N/A",
+  //       ].map((value, j) => (
+  //         <TableCell
+  //           key={j}
+  //           align="center"
+  //           sx={{
+  //             borderBottom: "1px solid rgba(0,0,0,0.05)",
+  //             padding: "16px",
+  //             minWidth: j === 0 ? "180px" : "170px", // Adjust minimum widths as needed
+  //             maxWidth: "200px",
+  //             whiteSpace: "normal",
+  //             wordBreak: "break-word",
+  //             overflow: "visible",
+  //             textOverflow: "unset",
+  //             fontWeight:
+  //               (j === 12 && model.roi) || (j === 14 && model.marginOnSales)
+  //                 ? 700
+  //                 : "inherit",
+  //             color:
+  //               j === 12 && parseFloat(model.roi) > 20
+  //                 ? "success.main"
+  //                 : j === 14 && parseFloat(model.marginOnSales) > 30
+  //                 ? "success.main"
+  //                 : "inherit",
+  //           }}
+  //         >
+  //           {value || "N/A"}
+  //         </TableCell>
+  //       ))}
+  //     </TableRow>
+  //   </Fade>
+  // ));
 
   const handleUserScrollStart = () => {
     setIsUserScrolling(true);
@@ -91,6 +92,71 @@ const FranchiseDetailsTable = ({ ficoDetails, formatCurrency }) => {
       setHasHoveredOnce(true);
     }
   };
+const MobileRow = ({ label, value }) => (
+  <Box
+    sx={{
+      display: "flex",
+      justifyContent: "flex-start",
+      py: 0.4,
+      borderBottom: "1px solid #eee",
+      gap:3,
+      
+    }}
+
+  
+                        
+                    
+  >
+    <Typography fontSize="0.75rem" fontWeight={600} color="text.secondary" sx={{
+height: 30,
+                        width: 80,
+                        backgroundColor: "white",
+                        border: "1px solid #e0e0e0",
+                        borderLeft: { xs: "4px solid #7ad03a", sm: "5px solid #7ad03a" },
+                        borderRadius: "4px",
+                        color: "#000000ff",
+                        fontWeight: 500,
+                        // display: "flex",
+                        // alignItems: "center",
+                        pl: { xs: 1.5, sm: 2 },
+                        fontSize: { xs: "0.75rem", sm: "0.875rem", md: "1rem" },
+                        "&:hover": {
+                          backgroundColor: "#ffffffff",
+                          color: "#000000ff",
+                          borderLeft: "2px solid #5fb52a",
+                        },
+    }}>
+      {label}
+    </Typography>
+    <Typography
+      fontSize="0.75rem"
+      fontWeight={500}
+      // textAlign="right"
+      color="text.primary"
+      sx={{
+height: 30,
+                        width: 150,
+                        backgroundColor: "white",
+                        border: "1px solid #e0e0e0",
+                        borderLeft: "5px solid #ff9900" ,
+                        borderRadius: "4px",
+                        color: "#000000ff",
+                        fontWeight: 500,
+                        // display: "flex",
+                        // alignItems: "center",
+                        pl: { xs: 1.5, sm: 2 },
+                        fontSize: { xs: "0.75rem", sm: "0.875rem", md: "1rem" },
+                        "&:hover": {
+                          backgroundColor: "#ffffffff",
+                          color: "#000000ff",
+                          borderLeft: "2px solid #5fb52a",
+                        },
+    }}
+    >
+      {value || "N/A"}
+    </Typography>
+  </Box>
+);
 
   const tableData = ficoDetails.map(model => ({
   model: model.franchiseModel,
@@ -148,6 +214,11 @@ const visibleColumns = columns.filter(col =>
       {/* <Typography variant="h6" fontWeight={700} sx={{ mb: 1.5, color: "#7ad03a" }}>
         Franchise Details
       </Typography> */}
+
+
+
+
+      
      <TableContainer
   ref={containerRef}
   sx={{
@@ -201,6 +272,45 @@ const visibleColumns = columns.filter(col =>
   }}
 >
 
+  {isMobile && (
+    <Box sx={{ mt: 1 }}>
+      {tableData.map((row, index) => (
+        <Fade in key={index} timeout={index * 100}>
+          <Box
+            sx={{
+              mb: 2,
+              p: 2,
+              // width: "100%",
+              height:400,
+              borderRadius: 2,
+              backgroundColor: "#ffffff",
+              border: "1px solid #e0e0e0",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+            }}
+          >
+            <Typography
+              fontWeight={700}
+              fontSize="0.85rem"
+              sx={{ mb: 1, color: "#7cd13b" }}
+            >
+              Franchise Details 
+            </Typography>
+
+           {visibleColumns.map(col => (
+  <MobileRow
+    key={col.key}
+    label={col.label}
+    value={row[col.key]}
+  />
+))}
+
+          </Box>
+        </Fade>
+      ))}
+    </Box>
+  )}
+{!isMobile && (
+  
         <Table
           stickyHeader
           sx={{
@@ -277,6 +387,7 @@ const visibleColumns = columns.filter(col =>
 </TableBody>
 
         </Table>
+)}
       </TableContainer>
     </Box>
   );

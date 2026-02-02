@@ -46,33 +46,72 @@ const MediaSection = ({
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   const videoSrc = Array.isArray(allVideos) ? allVideos[0] : allVideos ;
-  const poster = allImages?.[0] || "";
+  const poster = allImages?.[0] || null;
 
 
   // Initialize HLS if needed
+// useEffect(() => {
+//   if (!videoSrc || !videoRef.current) return;
+//   const video = videoRef.current;
+//   let hls;
+//   setVideoLoading(true);
+//   setVideoError(false);
+
+//   // Check if URL ends with '.m3u8' for HLS
+//   if (videoSrc.endsWith('.m3u8')) {
+//     if (Hls.isSupported()) {
+//        hls = new Hls();
+//       hls.loadSource(videoSrc);
+//       hls.attachMedia(video);
+//       hls.on(Hls.Events.MANIFEST_PARSED, () => {
+//         setVideoLoading(false);
+//         if (!isMuted) video.play();
+//       });
+//       hls.on(Hls.Events.ERROR, (event, data) => {
+//         console.error("HLS error:", data);
+//         setVideoError(true);
+//       });
+//       return () => hls.destroy();
+//     } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
+//       // fallback native support
+//       video.src = videoSrc;
+//       setVideoLoading(false);
+//     } else {
+//       setVideoError(true);
+//       setVideoLoading(false);
+//     }
+//   } else {
+//     // Non-HLS (e.g., MP4)
+//     video.src = videoSrc;
+//     setVideoLoading(false);
+//     if (!isMuted) video.play();
+//   }
+// }, [videoSrc]);
+
 useEffect(() => {
-  if (!videoSrc) return;
+  if (!videoSrc || !videoRef.current) return;
+
   const video = videoRef.current;
+  let hls;
+
   setVideoLoading(true);
   setVideoError(false);
 
-  // Check if URL ends with '.m3u8' for HLS
-  if (videoSrc.endsWith('.m3u8')) {
+  if (videoSrc.endsWith(".m3u8")) {
     if (Hls.isSupported()) {
-      const hls = new Hls();
+      hls = new Hls();
       hls.loadSource(videoSrc);
       hls.attachMedia(video);
+
       hls.on(Hls.Events.MANIFEST_PARSED, () => {
         setVideoLoading(false);
-        if (!isMuted) video.play();
       });
-      hls.on(Hls.Events.ERROR, (event, data) => {
-        console.error("HLS error:", data);
+
+      hls.on(Hls.Events.ERROR, () => {
         setVideoError(true);
+        setVideoLoading(false);
       });
-      return () => hls.destroy();
     } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
-      // fallback native support
       video.src = videoSrc;
       setVideoLoading(false);
     } else {
@@ -80,13 +119,19 @@ useEffect(() => {
       setVideoLoading(false);
     }
   } else {
-    // Non-HLS (e.g., MP4)
     video.src = videoSrc;
     setVideoLoading(false);
-    if (!isMuted) video.play();
   }
-}, [videoSrc]);
 
+  return () => {
+    if (hls) {
+      hls.destroy();
+    }
+    video.pause();
+    video.removeAttribute("src");
+    video.load();
+  };
+}, [videoSrc]);
 
 
   // Start muted & autoplay for compatibility
@@ -267,18 +312,19 @@ useEffect(() => {
               <>
                 <video
                   ref={videoRef}
-                  src={videoSrc}
-                  poster={poster}
+                  // src={videoSrc}
+                  // poster={poster}
                   playsInline
                   autoPlay
                   muted={isMuted}
+                  preload="metadata"
                   style={{
                     width: "100%",
                     height: "100%",
                     objectFit: "contain",
                     background: "#eee",
                   }}
-                  preload="auto"
+                  
                   tabIndex={-1}
                   onClick={handlePlayPause}
                   onDoubleClick={handleFullscreen}
@@ -294,18 +340,18 @@ useEffect(() => {
                     <CircularProgress />
                   </Box>
                 )} */}
-                {videoError && (
+                {/* {videoError && (
                   <Box sx={{
                     position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     flexDirection: "column", bgcolor: "rgba(0,0,0,.6)", zIndex: 2
                   }}>
-                    <Typography color="white">Video playback failed</Typography>
+                    
                     <Button onClick={() => window.location.reload()} sx={{ mt: 1 }}>
                       Reload Page
                     </Button>
                   </Box>
-                )}
+                )} */}
                 {/* --- Centered Play/Pause Button Overlay --- */}
                 {(!isPlaying || showControls) && !videoLoading && !videoError && (
                   <Box
@@ -342,7 +388,7 @@ useEffect(() => {
     bottom: 0,
     left: 0,
     right: 0,
-    px: 1, py: 0.5,
+    px: 0.5, py: 0.5,
     bgcolor: 'linear-gradient(to top, rgba(0,0,0,0.92), transparent 88%)',
     pointerEvents: (showControls || !isPlaying || videoLoading || videoError) ? "all" : "none",
 opacity: (showControls || !isPlaying || videoLoading || videoError) ? 1 : 0,
@@ -360,6 +406,7 @@ opacity: (showControls || !isPlaying || videoLoading || videoError) ? 1 : 0,
                     aria-label="Video progress"
                     sx={{
                       height: 6,
+                      width: "100%",
                       borderRadius: 4,
                       p: 0,
                       background: "none",
@@ -411,7 +458,7 @@ opacity: (showControls || !isPlaying || videoLoading || videoError) ? 1 : 0,
                         },
                       }}
                     />
-                    <Typography variant="caption" color="black" mx={1}>
+                    <Typography variant="caption" color="white" mx={1}>
                       {formatTime(videoRef.current?.currentTime || 0)} / {formatTime(duration)}
                     </Typography>
                     <Box flex={1} />

@@ -1,6 +1,6 @@
 
 "use client"
-import React, { useRef, Suspense } from "react";
+import React, { useRef, Suspense, useState } from "react";
 import {
   Box,
   Typography,
@@ -9,7 +9,11 @@ import {
   Button,
   Slide,
   Skeleton,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
 } from "@mui/material";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
 
@@ -64,6 +68,15 @@ const OverviewTab = ({ brand }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const overviewRef = useRef(null);
+  const [openMobile, setOpenMobile] = useState({
+    domesticCurrent: false,
+    domesticExpansion: false,
+    intlCurrent: false,
+    intlExpansion: false,
+  });
+
+  const toggleMobile = (key) =>
+    setOpenMobile((s) => ({ ...s, [key]: !s[key] }));
 
   const formatCurrency = (value) => {
     const number = Number(value);
@@ -89,6 +102,7 @@ const serviceTags=brand?.[0]?.brandfranchisedetails?.franchiseDetails?.brandCate
       }
        {/* Franchise Details: Render instantly */}
       {hasData(franchiseDetails.fico) && (
+        
         <FranchiseDetailsTable
           ficoDetails={franchiseDetails.fico}
           formatCurrency={formatCurrency}
@@ -128,7 +142,9 @@ const serviceTags=brand?.[0]?.brandfranchisedetails?.franchiseDetails?.brandCate
         </Grid>
       )}
 
-     <Box display={{ sm: 'none', md: 'flex', }} gap={2} >
+{!isMobile && (
+  <>
+  <Box display={{ sm: 'none', md: 'flex', }} gap={2} >
        {/* OUTLET GRIDS: Lazy-load (domestic, international) */}
       {hasData(expansionLocationData.currentOutletLocations?.domestic?.locations) && (
         <LazyInViewSection minHeight={180}>
@@ -182,6 +198,107 @@ const serviceTags=brand?.[0]?.brandfranchisedetails?.franchiseDetails?.brandCate
           </Suspense>
         </LazyInViewSection>
       )}
+
+      </>
+)}
+     
+
+       
+
+     
+
+
+ {isMobile && (
+          <Box sx={{ mt: 2,display:'flex',flexDirection:'column',gap:2 }}>
+            {hasData(expansionLocationData.currentOutletLocations?.domestic?.locations) && (
+              <Accordion
+                expanded={openMobile.domesticCurrent}
+                onChange={() => toggleMobile("domesticCurrent")}
+              >
+                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                  <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                    Current Outlets (India)
+                  </Typography>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <LazyInViewSection minHeight={180}>
+                    <Suspense fallback={<SectionSkeleton lines={2} height={36} />}>
+                      <ExpansionLocationGrid
+                        data={expansionLocationData.currentOutletLocations.domestic}
+                      />
+                    </Suspense>
+                  </LazyInViewSection>
+                </AccordionDetails>
+              </Accordion>
+            )}
+
+            {hasData(expansionLocationData.expansionLocations?.domestic?.locations) && (
+              <Accordion
+                expanded={openMobile.domesticExpansion}
+                onChange={() => toggleMobile("domesticExpansion")}
+              >
+                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                  <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                    Expansion Locations (India)
+                  </Typography>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <LazyInViewSection minHeight={180}>
+                    <Suspense fallback={<SectionSkeleton lines={2} height={36} />}>
+                      <ExpansionLocationGrid
+                        data={expansionLocationData.expansionLocations.domestic}
+                      />
+                    </Suspense>
+                  </LazyInViewSection>
+                </AccordionDetails>
+              </Accordion>
+            )}
+
+            {hasData(expansionLocationData.currentOutletLocations?.international?.country) && (
+              <Accordion
+                expanded={openMobile.intlCurrent}
+                onChange={() => toggleMobile("intlCurrent")}
+              >
+                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                  <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                    Current Outlets (International)
+                  </Typography>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <LazyInViewSection minHeight={160}>
+                    <Suspense fallback={<SectionSkeleton lines={2} height={36} />}>
+                      <ExpansionLocationGridInternational
+                        data={expansionLocationData.currentOutletLocations.international}
+                      />
+                    </Suspense>
+                  </LazyInViewSection>
+                </AccordionDetails>
+              </Accordion>
+            )}
+
+            {hasData(expansionLocationData.expansionLocations?.international?.country) && (
+              <Accordion
+                expanded={openMobile.intlExpansion}
+                onChange={() => toggleMobile("intlExpansion")}
+              >
+                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                  <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                    Expansion Locations (International)
+                  </Typography>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <LazyInViewSection minHeight={160}>
+                    <Suspense fallback={<SectionSkeleton lines={2} height={36} />}>
+                      <ExpansionLocationGridInternational
+                        data={expansionLocationData.expansionLocations.international}
+                      />
+                    </Suspense>
+                  </LazyInViewSection>
+                </AccordionDetails>
+              </Accordion>
+            )}
+          </Box>
+        )}
 
       {/* Awards: Lazy-load only when scrolled into view. */}
       {hasData(uploads.awards) && (

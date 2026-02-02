@@ -10,9 +10,12 @@ import {
   Zoom,
 } from "@mui/material";
 import { Business } from "@mui/icons-material";
+import AdSlot from "../ads/GoogleAd";
+import { ADS } from "@/config/ads.config";
 
 const SupportProvided = ({ trainingSupport, aidFinancing, isInternationalExpansion }) => {
   return (
+    <>
     <Zoom in={true} timeout={700}>
       <Card
         sx={{
@@ -90,6 +93,8 @@ const SupportProvided = ({ trainingSupport, aidFinancing, isInternationalExpansi
         </CardContent>
       </Card>
     </Zoom>
+          <AdSlot {...ADS.HOME.FILTER_BOTTOM_RECTANGLE}/>
+</>
   );
 };
 

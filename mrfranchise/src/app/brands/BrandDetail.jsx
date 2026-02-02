@@ -639,9 +639,9 @@ const handleSubmit = useCallback(
    
       <Disclaimer isMobile={isMobile} />
  <AdSlot {...ADS.HOME.TOP_BILLBOARD} />
-      <Suspense fallback={null}>
+      {/* <Suspense fallback={null}>
         <BackToTopButton show={showBackToTop} isMobile={isMobile} />
-      </Suspense>
+      </Suspense> */}
       <Suspense fallback={<div style={{height: 300, background: "#eee"}} />}>
         <Footer />
       </Suspense>

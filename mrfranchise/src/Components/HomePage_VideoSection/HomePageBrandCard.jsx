@@ -6,7 +6,6 @@ import Typography from "@mui/material/Typography";
 import IconButton from "@mui/material/IconButton";
 import CircularProgress from "@mui/material/CircularProgress";
 import Chip from "@mui/material/Chip";
-import Divider from "@mui/material/Divider";
 import Stack from "@mui/material/Stack";
 import Tooltip from "@mui/material/Tooltip";
 import Button from "@mui/material/Button";
@@ -76,13 +75,14 @@ const HomePageBrandCard = React.memo(
     const shortlistButtonRef = useRef(null);
     const likeButtonRef = useRef(null);
       const [anchorEl, setAnchorEl] = useState(null);
+    const [selectedBrand, setSelectedBrand] = useState(null);
 
 
     const brandId = brand?.uuid || "";
     const franchiseModel = brand?.fico || {};
     const category = brand?.brandCategories || {};
-    const brandLogo = brand?.logo || "";
     const brandName = brand?.brandname || brand?.brandName;
+    const brandLogo = brand?.logo || brand?.brandName;
 
     const {
       investmentRange = "Not specified",
@@ -218,7 +218,8 @@ const HomePageBrandCard = React.memo(
 
      const handleOpenShareClick = useCallback((event) => {
     setAnchorEl(event.currentTarget);
-  }, []);
+    setSelectedBrand(brand);
+  }, [brand]);
 
 
 
@@ -318,7 +319,7 @@ const HomePageBrandCard = React.memo(
 
 {/* share buton fix  */}
 <AnimatedIconButton
-                  onClick={() => handleOpenShareClick(brand)}
+                  onClick={handleOpenShareClick}
                  
                 >
                   <Tooltip title={"Share"}>
@@ -423,14 +424,14 @@ const HomePageBrandCard = React.memo(
                 fullWidth
                 onClick={() => handleApply(brand)}
                 sx={{
-                  backgroundColor: "#f29724",
+                  backgroundColor: "#4cb04f",
                   "&:hover": {
                     backgroundColor: "#000000ff",
                     boxShadow: 2,
                   },
                   // py: 1,
                   maxWidth: 200,
-                  ml:{xs:"auto",sm:"auto",md:2,lg:6},
+                  ml:{xs:3,sm:3,md:4,lg:3,xl:6},
                   borderRadius: 1,
                   textTransform: "none",
                   fontWeight: 600,
@@ -446,14 +447,14 @@ const HomePageBrandCard = React.memo(
           <LoginPage open={showLogin} onClose={() => setShowLogin(false)} />
         )}
 
-         <ShareDialogActions
+        <ShareDialogActions
                           anchorEl={anchorEl}
                           setAnchorEl={setAnchorEl}
-                          brand={{
-                            name: brand[0]?.brandDetails?.brandName,
-                            logo: brand[0]?.uploads?.logo,
-                            // video: brand[0]?.uploads?.franchisePromotionVideo
-                          }}
+                          brand={selectedBrand ? {
+                            name: selectedBrand?.brandname || selectedBrand?.brandName,
+                            logo: selectedBrand?.logo,
+                            // video: selectedBrand?.franchiseVideos
+                          } : null}
                         />
 
       </motion.div>
