@@ -1,20 +1,20 @@
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
-import Paper from '@mui/material/Paper';
-import Box from '@mui/material/Box';
-import TextField from '@mui/material/TextField';
+import Paper from "@mui/material/Paper";
+import Box from "@mui/material/Box";
+import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
-import Avatar from '@mui/material/Avatar';
-import CircularProgress from '@mui/material/CircularProgress';
-import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
-import Snackbar from '@mui/material/Snackbar';
-import IconButton from '@mui/material/IconButton';
-import MenuItem from '@mui/material/MenuItem';
-import CloseIcon from '@mui/icons-material/Close';
+import Avatar from "@mui/material/Avatar";
+import CircularProgress from "@mui/material/CircularProgress";
+import Button from "@mui/material/Button";
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import DialogActions from "@mui/material/DialogActions";
+import Snackbar from "@mui/material/Snackbar";
+import IconButton from "@mui/material/IconButton";
+import MenuItem from "@mui/material/MenuItem";
+import CloseIcon from "@mui/icons-material/Close";
 import EditIcon from "@mui/icons-material/Edit";
 import SaveIcon from "@mui/icons-material/Save";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -44,7 +44,7 @@ const ManageProfile = () => {
     pincode: "",
     preferences: [],
     profileImage: "",
-    investorID: ""
+    investorID: "",
   });
   const [editMode, setEditMode] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -76,12 +76,12 @@ const ManageProfile = () => {
   const [isImageRemoved, setIsImageRemoved] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   // Industry and Category states
   const [industryData, setIndustryData] = useState({});
   const [allIndustries, setAllIndustries] = useState([]);
   const [loadingIndustry, setLoadingIndustry] = useState(false);
-  
+
   // Location data states
   const [countries, setCountries] = useState([]);
   const [intlStates, setIntlStates] = useState({});
@@ -105,15 +105,15 @@ const ManageProfile = () => {
   // Filter suggestions helper
   const filterSuggestions = useCallback((input, data) => {
     if (!input || !data) return [];
-    return data.filter(item => 
-      item.toLowerCase().includes(input.toLowerCase())
-    ).slice(0, 5);
+    return data
+      .filter((item) => item.toLowerCase().includes(input.toLowerCase()))
+      .slice(0, 5);
   }, []);
 
   // Fetch industry details
   const fetchIndustryDetails = async (industryName) => {
     if (!industryName) return;
-    
+
     try {
       setLoadingIndustry(true);
       const response = await axios.get(
@@ -123,37 +123,37 @@ const ManageProfile = () => {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${AccessToken}`,
-          }
-        }
+          },
+        },
       );
-      
+
       if (response.data?.success && response.data?.data) {
         const data = response.data.data;
-        setIndustryData(prev => ({
+        setIndustryData((prev) => ({
           ...prev,
           [industryName]: {
             industry: data.industry || industryName,
-            categories: data.categories || []
-          }
+            categories: data.categories || [],
+          },
         }));
       } else {
         // Fallback if no specific data
-        setIndustryData(prev => ({
+        setIndustryData((prev) => ({
           ...prev,
           [industryName]: {
             industry: industryName,
-            categories: []
-          }
+            categories: [],
+          },
         }));
       }
     } catch (error) {
-      console.error('Error fetching industry details:', error);
-      setIndustryData(prev => ({
+      console.error("Error fetching industry details:", error);
+      setIndustryData((prev) => ({
         ...prev,
         [industryName]: {
           industry: industryName,
-          categories: []
-        }
+          categories: [],
+        },
       }));
     } finally {
       setLoadingIndustry(false);
@@ -169,12 +169,14 @@ const ManageProfile = () => {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${AccessToken}`,
-          }
-        }
+          },
+        },
       );
-      
+
       if (response.data?.success && response.data?.data) {
-        const industries = response.data.data.map(ind => ind.industry || ind.name);
+        const industries = response.data.data.map(
+          (ind) => ind.industry || ind.name,
+        );
         setAllIndustries(industries);
         return industries;
       }
@@ -182,7 +184,7 @@ const ManageProfile = () => {
       setAllIndustries(defaultIndustries);
       return defaultIndustries;
     } catch (error) {
-      console.error('Error fetching industries list:', error);
+      console.error("Error fetching industries list:", error);
       const defaultIndustries = ["Food & Beverages"];
       setAllIndustries(defaultIndustries);
       return defaultIndustries;
@@ -196,16 +198,18 @@ const ManageProfile = () => {
       const maxSize = 50 * 1024; // 50KB in bytes
 
       if (file.size > maxSize) {
-        setImagesizeError("Oops! Upload failed — please use an image under 50KB.");
+        setImagesizeError(
+          "Oops! Upload failed — please use an image under 50KB.",
+        );
         return;
       }
-      
-      if (!file.type.match('image.*')) {
+
+      if (!file.type.match("image.*")) {
         setImagesizeError("Please upload an image file (JPEG, PNG, etc.)");
         return;
       }
-      
-      setImagesizeError('');
+
+      setImagesizeError("");
       setAvatarFile(file);
       setIsImageRemoved(false);
       const reader = new FileReader();
@@ -224,42 +228,49 @@ const ManageProfile = () => {
   };
 
   // Location data handling for India
-  const getDistrictsForState = useCallback((stateName) => {
-    if (!stateName) return [];
-    const stateObj = indiaData.find((s) => s.name === stateName);
-    return stateObj?.districts || [];
-  }, [indiaData]);
+  const getDistrictsForState = useCallback(
+    (stateName) => {
+      if (!stateName) return [];
+      const stateObj = indiaData.find((s) => s.name === stateName);
+      return stateObj?.districts || [];
+    },
+    [indiaData],
+  );
 
-  const getCitiesForDistrict = useCallback((stateName, districtName) => {
-    if (!stateName || !districtName) return [];
-    const stateObj = indiaData.find((s) => s.name === stateName);
-    if (!stateObj) return [];
-    return (stateObj.cities || [])
-      .filter((city) => city.district === districtName)
-      .map((city) => city.name);
-  }, [indiaData]);
+  const getCitiesForDistrict = useCallback(
+    (stateName, districtName) => {
+      if (!stateName || !districtName) return [];
+      const stateObj = indiaData.find((s) => s.name === stateName);
+      if (!stateObj) return [];
+      return (stateObj.cities || [])
+        .filter((city) => city.district === districtName)
+        .map((city) => city.name);
+    },
+    [indiaData],
+  );
 
   // Fetch international states from API
   const fetchInternationalStates = async (country) => {
     if (!country) {
       return;
     }
-    
+
     try {
       const response = await axios.post(
-        'https://countriesnow.space/api/v0.1/countries/states',
-        { country }
+        "https://countriesnow.space/api/v0.1/countries/states",
+        { country },
       );
-      const states = response.data?.data?.states?.map(state => state.name) || [];
-      setIntlStates(prev => ({
+      const states =
+        response.data?.data?.states?.map((state) => state.name) || [];
+      setIntlStates((prev) => ({
         ...prev,
-        [country]: states
+        [country]: states,
       }));
     } catch (error) {
-      console.error('Error fetching international states:', error);
-      setIntlStates(prev => ({
+      console.error("Error fetching international states:", error);
+      setIntlStates((prev) => ({
         ...prev,
-        [country]: []
+        [country]: [],
       }));
     }
   };
@@ -269,22 +280,22 @@ const ManageProfile = () => {
     if (!country || !state) {
       return;
     }
-    
+
     try {
       const response = await axios.post(
-        'https://countriesnow.space/api/v0.1/countries/state/cities',
-        { country, state }
+        "https://countriesnow.space/api/v0.1/countries/state/cities",
+        { country, state },
       );
       const cities = response.data?.data || [];
-      setIntlCities(prev => ({
+      setIntlCities((prev) => ({
         ...prev,
-        [`${country}-${state}`]: cities
+        [`${country}-${state}`]: cities,
       }));
     } catch (error) {
-      console.error('Error fetching international cities:', error);
-      setIntlCities(prev => ({
+      console.error("Error fetching international cities:", error);
+      setIntlCities((prev) => ({
         ...prev,
-        [`${country}-${state}`]: []
+        [`${country}-${state}`]: [],
       }));
     }
   };
@@ -292,14 +303,16 @@ const ManageProfile = () => {
   // Fetch all countries from API
   const fetchAllCountries = async () => {
     try {
-      const response = await axios.get('https://countriesnow.space/api/v0.1/countries');
+      const response = await axios.get(
+        "https://countriesnow.space/api/v0.1/countries",
+      );
       if (response.data?.data) {
-        const countryNames = response.data.data.map(c => c.country).sort();
+        const countryNames = response.data.data.map((c) => c.country).sort();
         setCountries(countryNames);
         return countryNames;
       }
     } catch (error) {
-      console.error('Error fetching countries:', error);
+      console.error("Error fetching countries:", error);
       return [];
     }
   };
@@ -310,7 +323,7 @@ const ManageProfile = () => {
       try {
         // Fetch India data
         const indiaRes = await axios.get(
-          "https://raw.githubusercontent.com/prasad-gowda/india-state-district-cities/master/India-state-district-city.json"
+          "https://raw.githubusercontent.com/prasad-gowda/india-state-district-cities/master/India-state-district-city.json",
         );
         setIndiaData(indiaRes.data);
 
@@ -320,7 +333,8 @@ const ManageProfile = () => {
         console.error("Error fetching location data:", err);
         setSnackbar({
           open: true,
-          message: "Failed to load location data. Some features may not work properly.",
+          message:
+            "Failed to load location data. Some features may not work properly.",
           severity: "warning",
         });
       }
@@ -354,12 +368,12 @@ const ManageProfile = () => {
               "Content-Type": "application/json",
               Authorization: `Bearer ${AccessToken}`,
             },
-          }
+          },
         );
 
         if (response.data?.data) {
           const data = response.data.data;
-          
+
           // Transform the data to match our component structure
           const formattedData = {
             ...data,
@@ -368,14 +382,14 @@ const ManageProfile = () => {
             occupation: data.occupation || "",
             investorID: data.inveterID || "",
             profileImage: data.profileImage || "",
-            
+
             // Transform preferences - handle both old (main/sub) and new (industry/category) structures
             preferences: data.preferences?.map((pref, index) => {
               // Transform categories from backend structure (main/sub) to frontend structure (industry/category)
-              const transformedCategories = Array.isArray(pref.category) 
-                ? pref.category.map(cat => ({
+              const transformedCategories = Array.isArray(pref.category)
+                ? pref.category.map((cat) => ({
                     industry: cat.main || "", // Use main as industry
-                    category: cat.sub || "",   // Use sub as category
+                    category: cat.sub || "", // Use sub as category
                   }))
                 : [{ industry: "", category: "" }];
 
@@ -383,42 +397,55 @@ const ManageProfile = () => {
                 ...pref,
                 _id: pref._id || `pref-${Date.now()}-${index}`,
                 category: transformedCategories,
-                locationType: pref.locationType === "international" ? "International" : "Domestic",
-                propertyPreferred: Array.isArray(pref.propertyPreferred) ? pref.propertyPreferred : [{
-                  propertyType: "",
-                  propertySize: "",
-                  propertyCountry: "",
-                  propertyState: "",
-                  propertyCity: ""
-                }]
+                locationType:
+                  pref.locationType === "international"
+                    ? "International"
+                    : "Domestic",
+                propertyPreferred: Array.isArray(pref.propertyPreferred)
+                  ? pref.propertyPreferred
+                  : [
+                      {
+                        propertyType: "",
+                        propertySize: "",
+                        propertyCountry: "",
+                        propertyState: "",
+                        propertyCity: "",
+                      },
+                    ],
               };
-            }) || [{
-              investmentRange: "",
-              investmentAmount: "",
-              locationType: "Domestic",
-              preferredCountry: "India", // Default for domestic
-              preferredState: "",
-              preferredDistrict: "",
-              preferredCity: "",
-              category: [{ 
-                industry: "", 
-                category: "" 
-              }],
-              propertyPreferred: [{
-                propertyType: "",
-                propertySize: "",
-                propertyCountry: "",
-                propertyState: "",
-                propertyCity: ""
-              }],
-              _id: `pref-${Date.now()}`
-            }]
+            }) || [
+              {
+                investmentRange: "",
+                investmentAmount: "",
+                locationType: "Domestic",
+                preferredCountry: "India", // Default for domestic
+                preferredState: "",
+                preferredDistrict: "",
+                preferredCity: "",
+                category: [
+                  {
+                    industry: "",
+                    category: "",
+                  },
+                ],
+                propertyPreferred: [
+                  {
+                    propertyType: "",
+                    propertySize: "",
+                    propertyCountry: "",
+                    propertyState: "",
+                    propertyCity: "",
+                  },
+                ],
+                _id: `pref-${Date.now()}`,
+              },
+            ],
           };
-          
+
           setInvestorData(formattedData);
           setOriginalData(formattedData);
           setAvatarPreview(data.profileImage || "");
-          
+
           // Pre-fetch industry details for all existing categories
           if (formattedData.preferences) {
             for (const pref of formattedData.preferences) {
@@ -431,14 +458,20 @@ const ManageProfile = () => {
               }
             }
           }
-          
+
           // Pre-fetch international location data if needed
           if (data.preferences) {
             for (const pref of data.preferences) {
-              if (pref.locationType === "international" && pref.preferredCountry) {
+              if (
+                pref.locationType === "international" &&
+                pref.preferredCountry
+              ) {
                 await fetchInternationalStates(pref.preferredCountry);
                 if (pref.preferredState) {
-                  await fetchInternationalCities(pref.preferredCountry, pref.preferredState);
+                  await fetchInternationalCities(
+                    pref.preferredCountry,
+                    pref.preferredState,
+                  );
                 }
               }
             }
@@ -482,7 +515,12 @@ const ManageProfile = () => {
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL}/api/v1/otp/existingEmailOTP`,
         { email: investorData.email },
-        { headers: { "Content-Type": "application/json", "Authorization": `Bearer ${AccessToken}` } }
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${AccessToken}`,
+          },
+        },
       );
 
       if (response.data.success) {
@@ -494,14 +532,14 @@ const ManageProfile = () => {
         });
       } else {
         setErrorMSG(
-          response.data.message || "Failed to send OTP. Please try again."
+          response.data.message || "Failed to send OTP. Please try again.",
         );
       }
     } catch (error) {
       console.error("OTP request error:", error);
       setErrorMSG(
-        error.response?.data?.message || 
-        "An error occurred while requesting OTP. Please try again later."
+        error.response?.data?.message ||
+          "An error occurred while requesting OTP. Please try again later.",
       );
     } finally {
       setRequestOTP(false);
@@ -530,7 +568,12 @@ const ManageProfile = () => {
           email: investorData.email,
           verifyOTP: otp,
         },
-        { headers: { "Content-Type": "application/json", "Authorization": `Bearer ${AccessToken}` } }
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${AccessToken}`,
+          },
+        },
       );
 
       if (response.data.success) {
@@ -547,8 +590,8 @@ const ManageProfile = () => {
     } catch (error) {
       console.error("OTP verification error:", error);
       setOtpError(
-        error.response?.data?.message || 
-        "An error occurred during OTP verification. Please try again."
+        error.response?.data?.message ||
+          "An error occurred during OTP verification. Please try again.",
       );
     } finally {
       setRequestOTP(false);
@@ -650,7 +693,7 @@ const ManageProfile = () => {
           isValid = false;
           break;
         }
-        
+
         if (!pref.investmentAmount) {
           setSnackbar({
             open: true,
@@ -660,7 +703,7 @@ const ManageProfile = () => {
           isValid = false;
           break;
         }
-        
+
         if (!pref.locationType) {
           setSnackbar({
             open: true,
@@ -670,7 +713,7 @@ const ManageProfile = () => {
           isValid = false;
           break;
         }
-        
+
         if (pref.locationType === "Domestic") {
           if (!pref.preferredState) {
             setSnackbar({
@@ -681,17 +724,18 @@ const ManageProfile = () => {
             isValid = false;
             break;
           }
-          
+
           if (!pref.preferredDistrict) {
             setSnackbar({
               open: true,
-              message: "Preferred district is required for domestic preferences",
+              message:
+                "Preferred district is required for domestic preferences",
               severity: "error",
             });
             isValid = false;
             break;
           }
-          
+
           if (!pref.preferredCity) {
             setSnackbar({
               open: true,
@@ -705,34 +749,37 @@ const ManageProfile = () => {
           if (!pref.preferredCountry) {
             setSnackbar({
               open: true,
-              message: "Preferred country is required for international preferences",
+              message:
+                "Preferred country is required for international preferences",
               severity: "error",
             });
             isValid = false;
             break;
           }
-          
+
           if (!pref.preferredState) {
             setSnackbar({
               open: true,
-              message: "Preferred state/province is required for international preferences",
+              message:
+                "Preferred state/province is required for international preferences",
               severity: "error",
             });
             isValid = false;
             break;
           }
-          
+
           if (!pref.preferredCity) {
             setSnackbar({
               open: true,
-              message: "Preferred city is required for international preferences",
+              message:
+                "Preferred city is required for international preferences",
               severity: "error",
             });
             isValid = false;
             break;
           }
         }
-        
+
         if (!pref.category || pref.category.length === 0) {
           setSnackbar({
             open: true,
@@ -742,7 +789,7 @@ const ManageProfile = () => {
           isValid = false;
           break;
         }
-        
+
         for (const cat of pref.category) {
           if (!cat.industry) {
             setSnackbar({
@@ -753,7 +800,7 @@ const ManageProfile = () => {
             isValid = false;
             break;
           }
-          
+
           if (!cat.category) {
             setSnackbar({
               open: true,
@@ -786,11 +833,12 @@ const ManageProfile = () => {
             isValid = false;
             break;
           }
-          
+
           if (prop.propertyType === "Own Property" && !prop.propertySize) {
             setSnackbar({
               open: true,
-              message: "Property size is required when property type is Own Property",
+              message:
+                "Property size is required when property type is Own Property",
               severity: "error",
             });
             isValid = false;
@@ -807,71 +855,83 @@ const ManageProfile = () => {
   // Get only changed fields
   const getChangedFields = useCallback(() => {
     if (!originalData) return {};
-    
+
     const changes = {};
-    
+
     // Basic fields
     const fieldsToCheck = [
-      'firstName', 'email', 'mobileNumber', 'whatsappNumber', 
-      'country', 'state', 'city', 'address', 'pincode', 'occupation'
+      "firstName",
+      "email",
+      "mobileNumber",
+      "whatsappNumber",
+      "country",
+      "state",
+      "city",
+      "address",
+      "pincode",
+      "occupation",
     ];
-    
-    fieldsToCheck.forEach(field => {
+
+    fieldsToCheck.forEach((field) => {
       if (investorData[field] !== originalData[field]) {
         changes[field] = investorData[field];
       }
     });
-    
+
     // Handle phone numbers - add +91 prefix for backend
     const currentMobile = formatNumber(investorData.mobileNumber);
     const originalMobile = formatNumber(originalData.mobileNumber);
     if (currentMobile !== originalMobile) {
       changes.mobileNumber = "+91" + currentMobile;
     }
-    
+
     const currentWhatsapp = formatNumber(investorData.whatsappNumber);
     const originalWhatsapp = formatNumber(originalData.whatsappNumber);
     if (currentWhatsapp !== originalWhatsapp) {
       changes.whatsappNumber = "+91" + currentWhatsapp;
     }
-    
+
     // Handle preferences if changed
-    const normalizedOriginalPrefs = originalData.preferences.map(pref => ({
+    const normalizedOriginalPrefs = originalData.preferences.map((pref) => ({
       ...pref,
       locationType: pref.locationType.toLowerCase(),
       // Transform categories to match backend structure (main/sub without child)
-      category: pref.category.map(cat => ({
+      category: pref.category.map((cat) => ({
         main: cat.industry || "",
         sub: cat.category || "",
-        child: "" // Ensure child is empty
-      }))
+        child: "", // Ensure child is empty
+      })),
     }));
-    
-    const normalizedCurrentPrefs = investorData.preferences.map(pref => ({
+
+    const normalizedCurrentPrefs = investorData.preferences.map((pref) => ({
       ...pref,
       locationType: pref.locationType.toLowerCase(),
       // Set preferredCountry to India for domestic
-      preferredCountry: pref.locationType === "Domestic" ? "India" : pref.preferredCountry,
+      preferredCountry:
+        pref.locationType === "Domestic" ? "India" : pref.preferredCountry,
       // Transform categories to match backend structure
-      category: pref.category.map(cat => ({
+      category: pref.category.map((cat) => ({
         main: cat.industry || "",
         sub: cat.category || "",
-        child: "" // Ensure child is empty
+        child: "", // Ensure child is empty
       })),
-      propertyPreferred: pref.propertyPreferred || []
+      propertyPreferred: pref.propertyPreferred || [],
     }));
-    
-    if (JSON.stringify(normalizedCurrentPrefs) !== JSON.stringify(normalizedOriginalPrefs)) {
+
+    if (
+      JSON.stringify(normalizedCurrentPrefs) !==
+      JSON.stringify(normalizedOriginalPrefs)
+    ) {
       changes.preferences = normalizedCurrentPrefs;
     }
-    
+
     // Handle profile image changes
     if (avatarFile) {
       changes.profileImage = avatarFile;
     } else if (isImageRemoved) {
       changes.removeProfileImage = true;
     }
-    
+
     return changes;
   }, [originalData, investorData, avatarFile, isImageRemoved, formatNumber]);
 
@@ -882,11 +942,15 @@ const ManageProfile = () => {
     }
 
     setIsSubmitting(true);
-    
+
     const changedFields = getChangedFields();
-    
+
     // If nothing changed, just exit edit mode
-    if (Object.keys(changedFields).length === 0 && !avatarFile && !isImageRemoved) {
+    if (
+      Object.keys(changedFields).length === 0 &&
+      !avatarFile &&
+      !isImageRemoved
+    ) {
       setEditMode(false);
       setSnackbar({
         open: true,
@@ -898,18 +962,18 @@ const ManageProfile = () => {
     }
 
     const formData = new FormData();
-    
+
     // Append only changed fields
     Object.entries(changedFields).forEach(([key, value]) => {
-      if (key === 'profileImage') {
+      if (key === "profileImage") {
         formData.append(key, value);
-      } else if (key === 'preferences') {
+      } else if (key === "preferences") {
         formData.append(key, JSON.stringify(value));
-      } else if (key !== 'removeProfileImage') {
+      } else if (key !== "removeProfileImage") {
         formData.append(key, value);
       }
     });
-    
+
     if (changedFields.removeProfileImage) {
       formData.append("removeProfileImage", "true");
     }
@@ -923,12 +987,12 @@ const ManageProfile = () => {
             "Content-Type": "multipart/form-data",
             Authorization: `Bearer ${AccessToken}`,
           },
-        }
+        },
       );
 
       if (response.data.success) {
         const updatedData = response.data.data;
-        
+
         // Transform the updated data back to frontend structure
         const newOriginalData = {
           ...originalData,
@@ -936,37 +1000,41 @@ const ManageProfile = () => {
           mobileNumber: formatNumber(updatedData.mobileNumber),
           whatsappNumber: formatNumber(updatedData.whatsappNumber),
           profileImage: updatedData.profileImage || "",
-          preferences: updatedData.preferences?.map(pref => {
-            // Transform categories from backend (main/sub) to frontend (industry/category)
-            const transformedCategories = Array.isArray(pref.category)
-              ? pref.category.map(cat => ({
-                  industry: cat.main || "",
-                  category: cat.sub || ""
-                }))
-              : [{ industry: "", category: "" }];
+          preferences:
+            updatedData.preferences?.map((pref) => {
+              // Transform categories from backend (main/sub) to frontend (industry/category)
+              const transformedCategories = Array.isArray(pref.category)
+                ? pref.category.map((cat) => ({
+                    industry: cat.main || "",
+                    category: cat.sub || "",
+                  }))
+                : [{ industry: "", category: "" }];
 
-            return {
-              ...pref,
-              locationType: pref.locationType === "international" ? "International" : "Domestic",
-              category: transformedCategories,
-              propertyPreferred: pref.propertyPreferred || []
-            };
-          }) || []
+              return {
+                ...pref,
+                locationType:
+                  pref.locationType === "international"
+                    ? "International"
+                    : "Domestic",
+                category: transformedCategories,
+                propertyPreferred: pref.propertyPreferred || [],
+              };
+            }) || [],
         };
-        
+
         setOriginalData(newOriginalData);
         setInvestorData(newOriginalData);
-        
+
         if (avatarFile) {
           setAvatarPreview(URL.createObjectURL(avatarFile));
         } else if (isImageRemoved) {
           setAvatarPreview("");
         }
-        
+
         setAvatarFile(null);
         setIsImageRemoved(false);
         setEditMode(false);
-        
+
         setSnackbar({
           open: true,
           message: "Profile successfully updated!",
@@ -979,7 +1047,9 @@ const ManageProfile = () => {
       console.error("Error saving investor data:", error);
       setSnackbar({
         open: true,
-        message: error.response?.data?.message || "Failed to update profile. Please try again.",
+        message:
+          error.response?.data?.message ||
+          "Failed to update profile. Please try again.",
         severity: "error",
       });
     } finally {
@@ -991,7 +1061,7 @@ const ManageProfile = () => {
   const handlePreferenceChange = async (index, key, value) => {
     const newPrefs = [...(investorData.preferences || [])];
     newPrefs[index] = { ...newPrefs[index], [key]: value };
-    
+
     // Reset location fields when location type changes
     if (key === "locationType") {
       if (value === "Domestic") {
@@ -1000,7 +1070,7 @@ const ManageProfile = () => {
           preferredCountry: "India",
           preferredState: "",
           preferredDistrict: "",
-          preferredCity: ""
+          preferredCity: "",
         };
       } else if (value === "International") {
         newPrefs[index] = {
@@ -1008,11 +1078,11 @@ const ManageProfile = () => {
           preferredCountry: "",
           preferredState: "",
           preferredDistrict: "",
-          preferredCity: ""
+          preferredCity: "",
         };
       }
     }
-    
+
     setInvestorData({ ...investorData, preferences: newPrefs });
   };
 
@@ -1023,10 +1093,10 @@ const ManageProfile = () => {
       ...newPrefs[prefIndex],
       preferredCountry: countryName,
       preferredState: "",
-      preferredCity: ""
+      preferredCity: "",
     };
     setInvestorData({ ...investorData, preferences: newPrefs });
-    
+
     // Fetch states for the selected country
     await fetchInternationalStates(countryName);
   };
@@ -1037,10 +1107,10 @@ const ManageProfile = () => {
     newPrefs[prefIndex] = {
       ...newPrefs[prefIndex],
       preferredState: stateName,
-      preferredCity: ""
+      preferredCity: "",
     };
     setInvestorData({ ...investorData, preferences: newPrefs });
-    
+
     // Fetch cities for the selected state
     const pref = newPrefs[prefIndex];
     await fetchInternationalCities(pref.preferredCountry, stateName);
@@ -1049,15 +1119,15 @@ const ManageProfile = () => {
   // Handle industry change in category
   const handleIndustryChange = async (prefIndex, catIndex, industryName) => {
     const newPrefs = [...(investorData.preferences || [])];
-    const newCategories = [...(newPrefs[prefIndex].category || [])];  
-    newCategories[catIndex] = { 
-      ...newCategories[catIndex], 
+    const newCategories = [...(newPrefs[prefIndex].category || [])];
+    newCategories[catIndex] = {
+      ...newCategories[catIndex],
       industry: industryName,
-      category: "" // Reset category when industry changes
+      category: "", // Reset category when industry changes
     };
     newPrefs[prefIndex].category = newCategories;
     setInvestorData({ ...investorData, preferences: newPrefs });
-    
+
     // Fetch categories for the selected industry if not already fetched
     if (industryName && !industryData[industryName]) {
       await fetchIndustryDetails(industryName);
@@ -1067,10 +1137,10 @@ const ManageProfile = () => {
   // Handle category change
   const handleCategoryChange = (prefIndex, catIndex, value) => {
     const newPrefs = [...(investorData.preferences || [])];
-    const newCategories = [...(newPrefs[prefIndex].category || [])];  
-    newCategories[catIndex] = { 
-      ...newCategories[catIndex], 
-      category: value 
+    const newCategories = [...(newPrefs[prefIndex].category || [])];
+    newCategories[catIndex] = {
+      ...newCategories[catIndex],
+      category: value,
     };
     newPrefs[prefIndex].category = newCategories;
     setInvestorData({ ...investorData, preferences: newPrefs });
@@ -1095,18 +1165,22 @@ const ManageProfile = () => {
       preferredState: "",
       preferredDistrict: "",
       preferredCity: "",
-      category: [{ 
-        industry: "", 
-        category: "" 
-      }],
-      propertyPreferred: [{
-        propertyType: "",
-        propertySize: "",
-        propertyCountry: "",
-        propertyState: "",
-        propertyCity: ""
-      }],
-      _id: `pref-${Date.now()}`
+      category: [
+        {
+          industry: "",
+          category: "",
+        },
+      ],
+      propertyPreferred: [
+        {
+          propertyType: "",
+          propertySize: "",
+          propertyCountry: "",
+          propertyState: "",
+          propertyCity: "",
+        },
+      ],
+      _id: `pref-${Date.now()}`,
     });
     setInvestorData({ ...investorData, preferences: newPrefs });
   };
@@ -1132,7 +1206,7 @@ const ManageProfile = () => {
       ...newPrefs[prefIndex],
       preferredState: stateName,
       preferredDistrict: "",
-      preferredCity: ""
+      preferredCity: "",
     };
     setInvestorData({ ...investorData, preferences: newPrefs });
     setStateSuggestions([]);
@@ -1144,7 +1218,7 @@ const ManageProfile = () => {
     newPrefs[prefIndex] = {
       ...newPrefs[prefIndex],
       preferredDistrict: districtName,
-      preferredCity: ""
+      preferredCity: "",
     };
     setInvestorData({ ...investorData, preferences: newPrefs });
     setDistrictSuggestions([]);
@@ -1155,7 +1229,7 @@ const ManageProfile = () => {
     const newPrefs = [...(investorData.preferences || [])];
     newPrefs[prefIndex] = {
       ...newPrefs[prefIndex],
-      preferredCity: cityName
+      preferredCity: cityName,
     };
     setInvestorData({ ...investorData, preferences: newPrefs });
     setCitySuggestions([]);
@@ -1164,7 +1238,8 @@ const ManageProfile = () => {
   // Render international location fields
   const renderInternationalLocationFields = (pref, prefIndex) => {
     const countryStates = intlStates[pref.preferredCountry] || [];
-    const cities = intlCities[`${pref.preferredCountry}-${pref.preferredState}`] || [];
+    const cities =
+      intlCities[`${pref.preferredCountry}-${pref.preferredState}`] || [];
 
     return (
       <>
@@ -1180,7 +1255,9 @@ const ManageProfile = () => {
           fullWidth
           required
           error={editMode && !pref.preferredCountry}
-          helperText={editMode && !pref.preferredCountry ? "This field is required" : ""}
+          helperText={
+            editMode && !pref.preferredCountry ? "This field is required" : ""
+          }
         >
           <MenuItem value="">Select Country</MenuItem>
           {countries.map((country) => (
@@ -1202,7 +1279,9 @@ const ManageProfile = () => {
           fullWidth
           required
           error={editMode && !pref.preferredState}
-          helperText={editMode && !pref.preferredState ? "This field is required" : ""}
+          helperText={
+            editMode && !pref.preferredState ? "This field is required" : ""
+          }
           sx={{ mt: 2 }}
         >
           <MenuItem value="">Select State/Province</MenuItem>
@@ -1218,18 +1297,16 @@ const ManageProfile = () => {
           label="Preferred City"
           value={pref.preferredCity || ""}
           onChange={(e) =>
-            handlePreferenceChange(
-              prefIndex,
-              "preferredCity",
-              e.target.value
-            )
+            handlePreferenceChange(prefIndex, "preferredCity", e.target.value)
           }
           disabled={!editMode || !pref.preferredState}
           select
           fullWidth
           required
           error={editMode && !pref.preferredCity}
-          helperText={editMode && !pref.preferredCity ? "This field is required" : ""}
+          helperText={
+            editMode && !pref.preferredCity ? "This field is required" : ""
+          }
           sx={{ mt: 2 }}
         >
           <MenuItem value="">Select City</MenuItem>
@@ -1246,7 +1323,10 @@ const ManageProfile = () => {
   // Render domestic location fields
   const renderDomesticLocationFields = (pref, prefIndex) => {
     const districts = getDistrictsForState(pref.preferredState);
-    const cities = getCitiesForDistrict(pref.preferredState, pref.preferredDistrict);
+    const cities = getCitiesForDistrict(
+      pref.preferredState,
+      pref.preferredDistrict,
+    );
 
     return (
       <>
@@ -1256,27 +1336,40 @@ const ManageProfile = () => {
           value={pref?.preferredState || ""}
           onChange={(e) => {
             handleStateChange(prefIndex, e.target.value);
-            setStateSuggestions(filterSuggestions(e.target.value, indiaData.map(state => state.name)));
+            setStateSuggestions(
+              filterSuggestions(
+                e.target.value,
+                indiaData.map((state) => state.name),
+              ),
+            );
             setActiveSuggestionIndex(-1);
           }}
           onFocus={() => {
             if (pref?.preferredState) {
-              setStateSuggestions(filterSuggestions(pref.preferredState, indiaData.map(state => state.name)));
+              setStateSuggestions(
+                filterSuggestions(
+                  pref.preferredState,
+                  indiaData.map((state) => state.name),
+                ),
+              );
             }
           }}
           onBlur={() => setTimeout(() => setStateSuggestions([]), 200)}
           onKeyDown={(e) => {
-            if (e.key === 'ArrowDown') {
+            if (e.key === "ArrowDown") {
               e.preventDefault();
-              setActiveSuggestionIndex(prev => 
-                Math.min(prev + 1, stateSuggestions.length - 1)
+              setActiveSuggestionIndex((prev) =>
+                Math.min(prev + 1, stateSuggestions.length - 1),
               );
-            } else if (e.key === 'ArrowUp') {
+            } else if (e.key === "ArrowUp") {
               e.preventDefault();
-              setActiveSuggestionIndex(prev => Math.max(prev - 1, -1));
-            } else if (e.key === 'Enter' && activeSuggestionIndex >= 0) {
+              setActiveSuggestionIndex((prev) => Math.max(prev - 1, -1));
+            } else if (e.key === "Enter" && activeSuggestionIndex >= 0) {
               e.preventDefault();
-              handleStateChange(prefIndex, stateSuggestions[activeSuggestionIndex]);
+              handleStateChange(
+                prefIndex,
+                stateSuggestions[activeSuggestionIndex],
+              );
               setStateSuggestions([]);
             }
           }}
@@ -1284,11 +1377,16 @@ const ManageProfile = () => {
           fullWidth
           required
           error={editMode && !pref.preferredState}
-          helperText={editMode && !pref.preferredState ? "This field is required" : ""}
+          helperText={
+            editMode && !pref.preferredState ? "This field is required" : ""
+          }
         />
 
         {stateSuggestions.length > 0 && (
-          <Paper elevation={3} sx={{ mt: 0.5, maxHeight: 200, overflow: 'auto' }}>
+          <Paper
+            elevation={3}
+            sx={{ mt: 0.5, maxHeight: 200, overflow: "auto" }}
+          >
             {stateSuggestions.map((state, index) => (
               <MenuItem
                 key={state}
@@ -1297,7 +1395,7 @@ const ManageProfile = () => {
                   handleStateChange(prefIndex, state);
                   setStateSuggestions([]);
                 }}
-                sx={{ fontSize: '0.875rem' }}
+                sx={{ fontSize: "0.875rem" }}
               >
                 {state}
               </MenuItem>
@@ -1311,27 +1409,34 @@ const ManageProfile = () => {
           value={pref.preferredDistrict || ""}
           onChange={(e) => {
             handleDistrictChange(prefIndex, e.target.value);
-            setDistrictSuggestions(filterSuggestions(e.target.value, districts));
+            setDistrictSuggestions(
+              filterSuggestions(e.target.value, districts),
+            );
             setActiveSuggestionIndex(-1);
           }}
           onFocus={() => {
             if (pref?.preferredDistrict && pref.preferredState) {
-              setDistrictSuggestions(filterSuggestions(pref.preferredDistrict, districts));
+              setDistrictSuggestions(
+                filterSuggestions(pref.preferredDistrict, districts),
+              );
             }
           }}
           onBlur={() => setTimeout(() => setDistrictSuggestions([]), 200)}
           onKeyDown={(e) => {
-            if (e.key === 'ArrowDown') {
+            if (e.key === "ArrowDown") {
               e.preventDefault();
-              setActiveSuggestionIndex(prev => 
-                Math.min(prev + 1, districtSuggestions.length - 1)
+              setActiveSuggestionIndex((prev) =>
+                Math.min(prev + 1, districtSuggestions.length - 1),
               );
-            } else if (e.key === 'ArrowUp') {
+            } else if (e.key === "ArrowUp") {
               e.preventDefault();
-              setActiveSuggestionIndex(prev => Math.max(prev - 1, -1));
-            } else if (e.key === 'Enter' && activeSuggestionIndex >= 0) {
+              setActiveSuggestionIndex((prev) => Math.max(prev - 1, -1));
+            } else if (e.key === "Enter" && activeSuggestionIndex >= 0) {
               e.preventDefault();
-              handleDistrictChange(prefIndex, districtSuggestions[activeSuggestionIndex]);
+              handleDistrictChange(
+                prefIndex,
+                districtSuggestions[activeSuggestionIndex],
+              );
               setDistrictSuggestions([]);
             }
           }}
@@ -1339,12 +1444,17 @@ const ManageProfile = () => {
           fullWidth
           required
           error={editMode && !pref.preferredDistrict}
-          helperText={editMode && !pref.preferredDistrict ? "This field is required" : ""}
+          helperText={
+            editMode && !pref.preferredDistrict ? "This field is required" : ""
+          }
           sx={{ mt: 2 }}
         />
 
         {districtSuggestions.length > 0 && (
-          <Paper elevation={3} sx={{ mt: 0.5, maxHeight: 200, overflow: 'auto' }}>
+          <Paper
+            elevation={3}
+            sx={{ mt: 0.5, maxHeight: 200, overflow: "auto" }}
+          >
             {districtSuggestions.map((district, index) => (
               <MenuItem
                 key={district}
@@ -1353,7 +1463,7 @@ const ManageProfile = () => {
                   handleDistrictChange(prefIndex, district);
                   setDistrictSuggestions([]);
                 }}
-                sx={{ fontSize: '0.875rem' }}
+                sx={{ fontSize: "0.875rem" }}
               >
                 {district}
               </MenuItem>
@@ -1371,23 +1481,30 @@ const ManageProfile = () => {
             setActiveSuggestionIndex(-1);
           }}
           onFocus={() => {
-            if (pref?.preferredCity && pref.preferredState && pref.preferredDistrict) {
+            if (
+              pref?.preferredCity &&
+              pref.preferredState &&
+              pref.preferredDistrict
+            ) {
               setCitySuggestions(filterSuggestions(pref.preferredCity, cities));
             }
           }}
           onBlur={() => setTimeout(() => setCitySuggestions([]), 200)}
           onKeyDown={(e) => {
-            if (e.key === 'ArrowDown') {
+            if (e.key === "ArrowDown") {
               e.preventDefault();
-              setActiveSuggestionIndex(prev => 
-                Math.min(prev + 1, citySuggestions.length - 1)
+              setActiveSuggestionIndex((prev) =>
+                Math.min(prev + 1, citySuggestions.length - 1),
               );
-            } else if (e.key === 'ArrowUp') {
+            } else if (e.key === "ArrowUp") {
               e.preventDefault();
-              setActiveSuggestionIndex(prev => Math.max(prev - 1, -1));
-            } else if (e.key === 'Enter' && activeSuggestionIndex >= 0) {
+              setActiveSuggestionIndex((prev) => Math.max(prev - 1, -1));
+            } else if (e.key === "Enter" && activeSuggestionIndex >= 0) {
               e.preventDefault();
-              handleCityChange(prefIndex, citySuggestions[activeSuggestionIndex]);
+              handleCityChange(
+                prefIndex,
+                citySuggestions[activeSuggestionIndex],
+              );
               setCitySuggestions([]);
             }
           }}
@@ -1395,12 +1512,17 @@ const ManageProfile = () => {
           fullWidth
           required
           error={editMode && !pref.preferredCity}
-          helperText={editMode && !pref.preferredCity ? "This field is required" : ""}
+          helperText={
+            editMode && !pref.preferredCity ? "This field is required" : ""
+          }
           sx={{ mt: 2 }}
         />
 
         {citySuggestions.length > 0 && (
-          <Paper elevation={3} sx={{ mt: 0.5, maxHeight: 200, overflow: 'auto' }}>
+          <Paper
+            elevation={3}
+            sx={{ mt: 0.5, maxHeight: 200, overflow: "auto" }}
+          >
             {citySuggestions.map((city, index) => (
               <MenuItem
                 key={city}
@@ -1409,7 +1531,7 @@ const ManageProfile = () => {
                   handleCityChange(prefIndex, city);
                   setCitySuggestions([]);
                 }}
-                sx={{ fontSize: '0.875rem' }}
+                sx={{ fontSize: "0.875rem" }}
               >
                 {city}
               </MenuItem>
@@ -1463,10 +1585,16 @@ const ManageProfile = () => {
               >
                 <MenuItem value="Investor">Investor</MenuItem>
                 <MenuItem value="Student">Student</MenuItem>
-                <MenuItem value="Salaried Professional">Salaried Professional</MenuItem>
-                <MenuItem value="Business Owner/ Self-Employed">Business Owner/ Self-Employed</MenuItem>
+                <MenuItem value="Salaried Professional">
+                  Salaried Professional
+                </MenuItem>
+                <MenuItem value="Business Owner/ Self-Employed">
+                  Business Owner/ Self-Employed
+                </MenuItem>
                 <MenuItem value="Retired">Retired</MenuItem>
-                <MenuItem value="Freelancer/ Consultant">Freelancer/ Consultant</MenuItem>
+                <MenuItem value="Freelancer/ Consultant">
+                  Freelancer/ Consultant
+                </MenuItem>
                 <MenuItem value="Homemaker">Homemaker</MenuItem>
                 <MenuItem value="Other">Other</MenuItem>
               </TextField>
@@ -1477,7 +1605,7 @@ const ManageProfile = () => {
                 size="small"
                 value={value || ""}
                 onChange={(e) => {
-                  const input = e.target.value.replace(/\D/g, '').slice(0, 6);
+                  const input = e.target.value.replace(/\D/g, "").slice(0, 6);
                   setInvestorData({ ...investorData, [key]: input });
                   setFieldErrors({ ...fieldErrors, [key]: "" });
                 }}
@@ -1522,14 +1650,14 @@ const ManageProfile = () => {
         ) : (
           <Typography
             variant="body1"
-            sx={{ 
-              backgroundColor: "#f5f5f5", 
-              p: 1, 
+            sx={{
+              backgroundColor: "#f5f5f5",
+              p: 1,
               borderRadius: 1,
               whiteSpace: "pre-wrap",
               minHeight: isAddressField ? "60px" : "auto",
               display: "flex",
-              alignItems: isAddressField ? "flex-start" : "center"
+              alignItems: isAddressField ? "flex-start" : "center",
             }}
           >
             {isPhoneField ? `+91 ${displayValue}` : displayValue || "-----"}
@@ -1558,8 +1686,8 @@ const ManageProfile = () => {
         <Typography variant="h6" gutterBottom>
           Unable to load profile. Please try again later.
         </Typography>
-        <Button 
-          variant="contained" 
+        <Button
+          variant="contained"
           onClick={() => navigate("/loginpage")}
           sx={{ mt: 2 }}
         >
@@ -1580,7 +1708,7 @@ const ManageProfile = () => {
   const handleConfirm = async () => {
     try {
       setSnackbarOpen(false);
-      
+
       const response = await axios.patch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/v1/investor/deleteInvestorProfileImage/${investorUUID}`,
         { removeProfileImage: true },
@@ -1588,34 +1716,37 @@ const ManageProfile = () => {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${AccessToken}`,
-          }
-        }
+          },
+        },
       );
 
       if (response.data.success) {
         const updatedData = {
           ...originalData,
-          profileImage: ""
+          profileImage: "",
         };
         setOriginalData(updatedData);
         setInvestorData(updatedData);
         setAvatarPreview("");
         setAvatarFile(null);
         setIsImageRemoved(true);
-        
+
         setSnackbar({
           open: true,
           message: "Profile image removed successfully!",
           severity: "success",
         });
       } else {
-        throw new Error(response.data.message || "Failed to remove profile image");
+        throw new Error(
+          response.data.message || "Failed to remove profile image",
+        );
       }
     } catch (error) {
       console.error("Error removing profile image:", error);
       setSnackbar({
         open: true,
-        message: error.response?.data?.message || "Failed to remove profile image",
+        message:
+          error.response?.data?.message || "Failed to remove profile image",
         severity: "error",
       });
     }
@@ -1623,9 +1754,9 @@ const ManageProfile = () => {
 
   return (
     <>
-      <Navbar/>
-      <Box sx={{ display: "flex", }}>
-        <InvestorDashboardLayout/>
+      <Navbar />
+      <Box sx={{ display: "flex" }}>
+        <InvestorDashboardLayout />
         <Box px={2} py={4} width="100%">
           <Typography
             variant="h6"
@@ -1641,16 +1772,16 @@ const ManageProfile = () => {
           >
             Manage Profile
           </Typography>
-           
+
           <Box display="flex" justifyContent="center">
             <Paper
               elevation={4}
-              sx={{ 
-                padding: 4, 
-                borderRadius: 4, 
-                width: "100%", 
+              sx={{
+                padding: 4,
+                borderRadius: 4,
+                width: "100%",
                 maxWidth: 700,
-                position: "relative"
+                position: "relative",
               }}
             >
               {editMode && (
@@ -1665,14 +1796,14 @@ const ManageProfile = () => {
                     setImagesizeError("");
                   }}
                   sx={{
-                    position: 'absolute',
+                    position: "absolute",
                     right: 0,
                     top: 0,
-                    color: 'text.secondary',
-                    '&:hover': {
-                      color: 'error.main',
-                      backgroundColor: 'rgba(244, 67, 54, 0.08)'
-                    }
+                    color: "text.secondary",
+                    "&:hover": {
+                      color: "error.main",
+                      backgroundColor: "rgba(244, 67, 54, 0.08)",
+                    },
                   }}
                   disabled={isSubmitting}
                 >
@@ -1693,12 +1824,12 @@ const ManageProfile = () => {
                   variant="outlined"
                   startIcon={editMode ? <SaveIcon /> : <EditIcon />}
                   onClick={editMode ? handleSave : handleEditToggle}
-                  sx={{ 
-                    borderRadius: 3, 
-                    textTransform: "none", 
-                    fontWeight: 600, 
-                    px: 2.5, 
-                    py: 1 
+                  sx={{
+                    borderRadius: 3,
+                    textTransform: "none",
+                    fontWeight: 600,
+                    px: 2.5,
+                    py: 1,
                   }}
                   disabled={isSubmitting}
                 >
@@ -1713,11 +1844,14 @@ const ManageProfile = () => {
                       {/* Avatar Display */}
                       <Avatar
                         alt="Investor Avatar"
-                        src={avatarPreview || (isImageRemoved ? "" : investorData.profileImage)}
-                        sx={{ 
-                          width: 80, 
+                        src={
+                          avatarPreview ||
+                          (isImageRemoved ? "" : investorData.profileImage)
+                        }
+                        sx={{
+                          width: 80,
                           height: 80,
-                          mx: 2
+                          mx: 2,
                         }}
                       />
 
@@ -1729,7 +1863,7 @@ const ManageProfile = () => {
                             id={`avatar-upload-${investorUUID}`}
                             type="file"
                             accept="image/*"
-                            style={{ display: 'none' }}
+                            style={{ display: "none" }}
                             onChange={handleAvatarChange}
                             disabled={isSubmitting}
                           />
@@ -1738,11 +1872,11 @@ const ManageProfile = () => {
                             htmlFor={`avatar-upload-${investorUUID}`}
                             size="medium"
                             color="primary"
-                            sx={{ 
-                              backgroundColor: 'rgba(25, 118, 210, 0.08)',
-                              '&:hover': {
-                                backgroundColor: 'rgba(25, 118, 210, 0.12)',
-                              }
+                            sx={{
+                              backgroundColor: "rgba(25, 118, 210, 0.08)",
+                              "&:hover": {
+                                backgroundColor: "rgba(25, 118, 210, 0.12)",
+                              },
                             }}
                             disabled={isSubmitting}
                           >
@@ -1751,32 +1885,35 @@ const ManageProfile = () => {
                         </Box>
 
                         {/* Delete Button - Only show if there's an image to delete */}
-                        {(avatarPreview || investorData.profileImage) && !isImageRemoved && (
-                          <Box mx={1}>
-                            <IconButton
-                              size="medium"
-                              color="error"
-                              onClick={handleRemoveAvatar}
-                              sx={{ 
-                                backgroundColor: 'rgba(244, 67, 54, 0.08)',
-                                '&:hover': {
-                                  backgroundColor: 'rgba(244, 67, 54, 0.12)',
-                                }
-                              }}
-                              disabled={isSubmitting}
-                            >
-                              <DeleteIcon />
-                            </IconButton>
-                          </Box>
-                        )}
+                        {(avatarPreview || investorData.profileImage) &&
+                          !isImageRemoved && (
+                            <Box mx={1}>
+                              <IconButton
+                                size="medium"
+                                color="error"
+                                onClick={handleRemoveAvatar}
+                                sx={{
+                                  backgroundColor: "rgba(244, 67, 54, 0.08)",
+                                  "&:hover": {
+                                    backgroundColor: "rgba(244, 67, 54, 0.12)",
+                                  },
+                                }}
+                                disabled={isSubmitting}
+                              >
+                                <DeleteIcon />
+                              </IconButton>
+                            </Box>
+                          )}
                       </Box>
 
-                      <Typography variant="h6" ml={2}>{investorData.investorID}</Typography>
+                      <Typography variant="h6" ml={2}>
+                        {investorData.investorID}
+                      </Typography>
                     </Box>
 
                     {/* Instruction text */}
-                    <Typography 
-                      variant="caption" 
+                    <Typography
+                      variant="caption"
                       display="block"
                       mt={1}
                       ml={2}
@@ -1788,7 +1925,10 @@ const ManageProfile = () => {
                     {/* Error message */}
                     {imagesizeError && (
                       <Box mt={1} ml={2}>
-                        <MuiAlert severity="error" sx={{ width: 'fit-content' }}>
+                        <MuiAlert
+                          severity="error"
+                          sx={{ width: "fit-content" }}
+                        >
                           {imagesizeError}
                         </MuiAlert>
                       </Box>
@@ -1796,12 +1936,14 @@ const ManageProfile = () => {
                   </Box>
                 ) : (
                   /* View Mode */
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <Box sx={{ 
-                      position: 'relative',
-                      display: 'inline-block',
-                      mr: 2
-                    }}>
+                  <Box sx={{ display: "flex", alignItems: "center" }}>
+                    <Box
+                      sx={{
+                        position: "relative",
+                        display: "inline-block",
+                        mr: 2,
+                      }}
+                    >
                       <Avatar
                         alt="Investor Avatar"
                         src={investorData.profileImage}
@@ -1814,25 +1956,27 @@ const ManageProfile = () => {
                         <CloseIcon
                           onClick={handleOpenSnackbar}
                           sx={{
-                            position: 'absolute',
-                            top: '4px',
-                            right: '4px',
+                            position: "absolute",
+                            top: "4px",
+                            right: "4px",
                             fontSize: 18,
-                            backgroundColor: '#fff',
-                            borderRadius: '50%',
-                            padding: '2px',
-                            cursor: 'pointer',
+                            backgroundColor: "#fff",
+                            borderRadius: "50%",
+                            padding: "2px",
+                            cursor: "pointer",
                             boxShadow: 1,
-                            transition: 'all 0.2s ease-in-out',
-                            '&:hover': {
-                              backgroundColor: '#f44336',
-                              color: '#fff',
+                            transition: "all 0.2s ease-in-out",
+                            "&:hover": {
+                              backgroundColor: "#f44336",
+                              color: "#fff",
                             },
                           }}
                         />
                       )}
                     </Box>
-                    <Typography variant="h6">{investorData.investorID}</Typography>
+                    {/* <Typography variant="h6">
+                      {investorData.investorID}
+                    </Typography> */}
                   </Box>
                 )}
               </Box>
@@ -1854,16 +1998,15 @@ const ManageProfile = () => {
                 </Typography>
 
                 {(investorData.preferences || []).map((pref, prefIndex) => (
-                  
                   <Paper
                     key={pref._id}
                     elevation={2}
-                    sx={{ 
-                      p: 2, 
-                      mb: 3, 
-                      borderRadius: 2, 
+                    sx={{
+                      p: 2,
+                      mb: 3,
+                      borderRadius: 2,
                       backgroundColor: "#f9f9f9",
-                      position: "relative"
+                      position: "relative",
                     }}
                   >
                     <Box
@@ -1880,7 +2023,9 @@ const ManageProfile = () => {
                           size="small"
                           color="error"
                           onClick={() => removePreference(prefIndex)}
-                          disabled={investorData.preferences.length <= 1 || isSubmitting}
+                          disabled={
+                            investorData.preferences.length <= 1 || isSubmitting
+                          }
                         >
                           <DeleteIcon />
                         </IconButton>
@@ -1897,19 +2042,29 @@ const ManageProfile = () => {
                           handlePreferenceChange(
                             prefIndex,
                             "investmentRange",
-                            e.target.value
+                            e.target.value,
                           )
                         }
                         disabled={!editMode}
                         select
                         required
                         error={editMode && !pref.investmentRange}
-                        helperText={editMode && !pref.investmentRange ? "This field is required" : ""}
+                        helperText={
+                          editMode && !pref.investmentRange
+                            ? "This field is required"
+                            : ""
+                        }
                       >
                         <MenuItem value="">Select Investment Range</MenuItem>
-                        <MenuItem value="having amount">Having Investment Amount Ready</MenuItem>
-                        <MenuItem value="take loan">Planning to take a Loan</MenuItem>
-                        <MenuItem value="need loan">Need Loan Assistance</MenuItem>
+                        <MenuItem value="having amount">
+                          Having Investment Amount Ready
+                        </MenuItem>
+                        <MenuItem value="take loan">
+                          Planning to take a Loan
+                        </MenuItem>
+                        <MenuItem value="need loan">
+                          Need Loan Assistance
+                        </MenuItem>
                       </TextField>
 
                       {/* Investment Amount */}
@@ -1921,27 +2076,51 @@ const ManageProfile = () => {
                           handlePreferenceChange(
                             prefIndex,
                             "investmentAmount",
-                            e.target.value
+                            e.target.value,
                           )
                         }
                         disabled={!editMode}
                         select
                         required
                         error={editMode && !pref.investmentAmount}
-                        helperText={editMode && !pref.investmentAmount ? "This field is required" : ""}
+                        helperText={
+                          editMode && !pref.investmentAmount
+                            ? "This field is required"
+                            : ""
+                        }
                       >
                         <MenuItem value="">Select Investment Amount</MenuItem>
-                        <MenuItem value="Below-50,000">Below - Rs.50 K</MenuItem>
-                        <MenuItem value="Rs.50,000-2L">Rs.50 K - 2 L</MenuItem>
-                        <MenuItem value="Rs.2L-5L">Rs.2 L - 5 L</MenuItem>
-                        <MenuItem value="Rs.5L-10L">Rs.5 L - 10 L</MenuItem>
-                        <MenuItem value="Rs.10L-20L">Rs.10 L - 20 L</MenuItem>
-                        <MenuItem value="Rs.20L-30L">Rs.20 L - 30 L</MenuItem>
-                        <MenuItem value="Rs.30L-50L">Rs.30 L - 50 L</MenuItem>
-                        <MenuItem value="Rs.50L-1Cr">Rs.50 L - 1 Cr</MenuItem>
-                        <MenuItem value="Rs.1Cr-2Cr">Rs.1 Cr - 2 Cr</MenuItem>
-                        <MenuItem value="Rs.2Cr-5Cr">Rs.2 Cr - 5 Cr</MenuItem>
-                        <MenuItem value="Rs.5Cr-above">Rs.5 Cr - Above</MenuItem>
+                        <MenuItem value="Below - 50,000">
+                          Below - Rs.50 K
+                        </MenuItem>
+                        <MenuItem value="Rs. 50,000 - 2 L">
+                          Rs.50 K - 2 L
+                        </MenuItem>
+                        <MenuItem value="Rs. 2 L - 5 L">Rs.2 L - 5 L</MenuItem>
+                        <MenuItem value="Rs. 5 L - 10 L">
+                          Rs.5 L - 10 L
+                        </MenuItem>
+                        <MenuItem value="Rs. 10 L - 20 L">
+                          Rs.10 L - 20 L
+                        </MenuItem>
+                        <MenuItem value="Rs. 20 L - 30 L">
+                          Rs.20 L - 30 L
+                        </MenuItem>
+                        <MenuItem value="Rs. 30 L - 50 L">
+                          Rs.30 L - 50 L
+                        </MenuItem>
+                        <MenuItem value="Rs. 50 L - 1 Cr">
+                          Rs.50 L - 1 Cr
+                        </MenuItem>
+                        <MenuItem value="Rs. 1 Cr - 2 Cr">
+                          Rs.1 Cr - 2 Cr
+                        </MenuItem>
+                        <MenuItem value="Rs. 2 Cr - 5 Cr">
+                          Rs.2 Cr - 5 Cr
+                        </MenuItem>
+                        <MenuItem value="Rs. 5 Cr - Above">
+                          Rs.5 Cr - Above
+                        </MenuItem>
                       </TextField>
 
                       {/* Location Type */}
@@ -1953,7 +2132,7 @@ const ManageProfile = () => {
                           handlePreferenceChange(
                             prefIndex,
                             "locationType",
-                            e.target.value
+                            e.target.value,
                           )
                         }
                         disabled={!editMode}
@@ -1961,17 +2140,20 @@ const ManageProfile = () => {
                         fullWidth
                         required
                         error={editMode && !pref.locationType}
-                        helperText={editMode && !pref.locationType ? "This field is required" : ""}
+                        helperText={
+                          editMode && !pref.locationType
+                            ? "This field is required"
+                            : ""
+                        }
                       >
                         <MenuItem value="Domestic">Domestic</MenuItem>
                         <MenuItem value="International">International</MenuItem>
                       </TextField>
 
                       {/* Location Selection */}
-                      {pref.locationType === "Domestic" ? 
-                        renderDomesticLocationFields(pref, prefIndex) :
-                        renderInternationalLocationFields(pref, prefIndex)
-                      }
+                      {pref.locationType === "Domestic"
+                        ? renderDomesticLocationFields(pref, prefIndex)
+                        : renderInternationalLocationFields(pref, prefIndex)}
 
                       {/* Category Selection */}
                       <Box mt={1}>
@@ -1980,8 +2162,11 @@ const ManageProfile = () => {
                         </Typography>
 
                         {pref.category?.map((cat, catIndex) => {
-                          const currentIndustryData = industryData[cat.industry] || { categories: [] };
-                          const categories = currentIndustryData.categories || [];
+                          const currentIndustryData = industryData[
+                            cat.industry
+                          ] || { categories: [] };
+                          const categories =
+                            currentIndustryData.categories || [];
 
                           return (
                             <Box
@@ -1990,7 +2175,7 @@ const ManageProfile = () => {
                               gap={0.5}
                               alignItems="center"
                               mb={1}
-                              sx={{marginLeft:{xs:"-12px"}}}
+                              sx={{ marginLeft: { xs: "-12px" } }}
                             >
                               {editMode ? (
                                 <>
@@ -2001,16 +2186,27 @@ const ManageProfile = () => {
                                     value={cat.industry || ""}
                                     onChange={async (e) => {
                                       const industryName = e.target.value;
-                                      await handleIndustryChange(prefIndex, catIndex, industryName);
+
+                                      await handleIndustryChange(
+                                        prefIndex,
+                                        catIndex,
+                                        industryName,
+                                      );
                                     }}
                                     sx={{ flex: 1 }}
                                     select
                                     required
                                     error={editMode && !cat.industry}
-                                    helperText={editMode && !cat.industry ? "Required" : ""}
+                                    helperText={
+                                      editMode && !cat.industry
+                                        ? "Required"
+                                        : ""
+                                    }
                                     disabled={isSubmitting}
                                   >
-                                    <MenuItem value="">Select Industry</MenuItem>
+                                    <MenuItem value="">
+                                      Select Industry
+                                    </MenuItem>
                                     {allIndustries.map((industry) => (
                                       <MenuItem key={industry} value={industry}>
                                         {industry}
@@ -2027,17 +2223,23 @@ const ManageProfile = () => {
                                       handleCategoryChange(
                                         prefIndex,
                                         catIndex,
-                                        e.target.value
+                                        e.target.value,
                                       )
                                     }
                                     sx={{ flex: 1 }}
                                     select
                                     required
                                     error={editMode && !cat.category}
-                                    helperText={editMode && !cat.category ? "Required" : ""}
+                                    helperText={
+                                      editMode && !cat.category
+                                        ? "Required"
+                                        : ""
+                                    }
                                     disabled={!cat.industry || isSubmitting}
                                   >
-                                    <MenuItem value="">Select Category</MenuItem>
+                                    <MenuItem value="">
+                                      Select Category
+                                    </MenuItem>
                                     {categories.map((category) => (
                                       <MenuItem key={category} value={category}>
                                         {category}
@@ -2080,127 +2282,179 @@ const ManageProfile = () => {
                           Property Preferences
                         </Typography>
 
-                        {(pref.propertyPreferred || []).map((prop, propIndex) => (
-                          <Box key={propIndex} mb={2} sx={{ p: 2, border: '1px solid #e0e0e0', borderRadius: 1 }}>
-                            <Box display="flex" flexDirection="column" gap={1}>
-                              {/* Property Type */}
-                              <TextField
-                                size="small"
-                                label="Property Type"
-                                value={prop.propertyType || ""}
-                                onChange={(e) =>
-                                  handlePropertyPreferenceChange(
-                                    prefIndex,
-                                    propIndex,
-                                    "propertyType",
-                                    e.target.value
-                                  )
-                                }
-                                disabled={!editMode}
-                                select
-                                required
-                                error={editMode && !prop.propertyType}
-                                helperText={editMode && !prop.propertyType ? "This field is required" : ""}
+                        {(pref.propertyPreferred || []).map(
+                          (prop, propIndex) => (
+                            <Box
+                              key={propIndex}
+                              mb={2}
+                              sx={{
+                                p: 2,
+                                border: "1px solid #e0e0e0",
+                                borderRadius: 1,
+                              }}
+                            >
+                              <Box
+                                display="flex"
+                                flexDirection="column"
+                                gap={1}
                               >
-                                <MenuItem value="">Select Property Type</MenuItem>
-                                <MenuItem value="Own Property">Own Property</MenuItem>
-                                <MenuItem value="Rental Property">Rental Property</MenuItem>
-                              </TextField>
-
-                              {/* Property Size - Only show if property type is Own Property */}
-                              {prop.propertyType === "Own Property" && (
+                                {/* Property Type */}
                                 <TextField
                                   size="small"
-                                  label="Property Size"
-                                  value={prop.propertySize || ""}
+                                  label="Property Type"
+                                  value={prop.propertyType || ""}
                                   onChange={(e) =>
                                     handlePropertyPreferenceChange(
                                       prefIndex,
                                       propIndex,
-                                      "propertySize",
-                                      e.target.value
+                                      "propertyType",
+                                      e.target.value,
                                     )
                                   }
                                   disabled={!editMode}
                                   select
                                   required
-                                  error={editMode && !prop.propertySize}
-                                  helperText={editMode && !prop.propertySize ? "This field is required" : ""}
+                                  error={editMode && !prop.propertyType}
+                                  helperText={
+                                    editMode && !prop.propertyType
+                                      ? "This field is required"
+                                      : ""
+                                  }
                                 >
-                                  <MenuItem value="">Select Total Area</MenuItem>
-                                  <MenuItem value="Below - 100 sq ft">Below - 100 sq ft</MenuItem>
-                                  <MenuItem value="100 sq ft - 200 sq ft">100 sq ft - 200 sq ft</MenuItem>
-                                  <MenuItem value="200 sq ft - 500 sq ft">200 sq ft - 500 sq ft</MenuItem>
-                                  <MenuItem value="500 sq ft - 1000 sq ft">500 sq ft - 1000 sq ft</MenuItem>
-                                  <MenuItem value="1000 sq ft - 1500 sq ft">1000 sq ft - 1500 sq ft</MenuItem>
-                                  <MenuItem value="1500 sq ft - 2000 sq ft">1500 sq ft - 2000 sq ft</MenuItem>
-                                  <MenuItem value="2000 sq ft - 3000 sq ft">2000 sq ft - 3000 sq ft</MenuItem>
-                                  <MenuItem value="3000 sq ft - 5000 sq ft">3000 sq ft - 5000 sq ft</MenuItem>
-                                  <MenuItem value="5000 sq ft - 7000 sq ft">5000 sq ft - 7000 sq ft</MenuItem>
-                                  <MenuItem value="7000 sq ft - 10000 sq ft">7000 sq ft - 10000 sq ft</MenuItem>
-                                  <MenuItem value="Above 10000 sq ft">Above 10000 sq ft</MenuItem>
-                                </TextField>
-                              )}
-
-                              {/* Location fields */}
-                              <TextField
-                                size="small"
-                                label="Country"
-                                value={prop.propertyCountry || ""}
-                                onChange={(e) =>
-                                  handlePropertyPreferenceChange(
-                                    prefIndex,
-                                    propIndex,
-                                    "propertyCountry",
-                                    e.target.value
-                                  )
-                                }
-                                disabled={!editMode}
-                                select
-                                fullWidth
-                              >
-                                <MenuItem value="">Select Country</MenuItem>
-                                {countries.map((country) => (
-                                  <MenuItem key={country} value={country}>
-                                    {country}
+                                  <MenuItem value="">
+                                    Select Property Type
                                   </MenuItem>
-                                ))}
-                              </TextField>
+                                  <MenuItem value="Own Property">
+                                    Own Property
+                                  </MenuItem>
+                                  <MenuItem value="Rental Property">
+                                    Rental Property
+                                  </MenuItem>
+                                </TextField>
 
-                              <TextField
-                                size="small"
-                                label="State"
-                                value={prop.propertyState || ""}
-                                onChange={(e) =>
-                                  handlePropertyPreferenceChange(
-                                    prefIndex,
-                                    propIndex,
-                                    "propertyState",
-                                    e.target.value
-                                  )
-                                }
-                                disabled={!editMode}
-                                fullWidth
-                              />
+                                {/* Property Size - Only show if property type is Own Property */}
+                                {prop.propertyType === "Own Property" && (
+                                  <TextField
+                                    size="small"
+                                    label="Property Size"
+                                    value={prop.propertySize || ""}
+                                    onChange={(e) =>
+                                      handlePropertyPreferenceChange(
+                                        prefIndex,
+                                        propIndex,
+                                        "propertySize",
+                                        e.target.value,
+                                      )
+                                    }
+                                    disabled={!editMode}
+                                    select
+                                    required
+                                    error={editMode && !prop.propertySize}
+                                    helperText={
+                                      editMode && !prop.propertySize
+                                        ? "This field is required"
+                                        : ""
+                                    }
+                                  >
+                                    <MenuItem value="">
+                                      Select Total Area
+                                    </MenuItem>
+                                    <MenuItem value="Below - 100 sq ft">
+                                      Below - 100 sq ft
+                                    </MenuItem>
+                                    <MenuItem value="100 sq ft - 200 sq ft">
+                                      100 sq ft - 200 sq ft
+                                    </MenuItem>
+                                    <MenuItem value="200 sq ft - 500 sq ft">
+                                      200 sq ft - 500 sq ft
+                                    </MenuItem>
+                                    <MenuItem value="500 sq ft - 1000 sq ft">
+                                      500 sq ft - 1000 sq ft
+                                    </MenuItem>
+                                    <MenuItem value="1000 sq ft - 1500 sq ft">
+                                      1000 sq ft - 1500 sq ft
+                                    </MenuItem>
+                                    <MenuItem value="1500 sq ft - 2000 sq ft">
+                                      1500 sq ft - 2000 sq ft
+                                    </MenuItem>
+                                    <MenuItem value="2000 sq ft - 3000 sq ft">
+                                      2000 sq ft - 3000 sq ft
+                                    </MenuItem>
+                                    <MenuItem value="3000 sq ft - 5000 sq ft">
+                                      3000 sq ft - 5000 sq ft
+                                    </MenuItem>
+                                    <MenuItem value="5000 sq ft - 7000 sq ft">
+                                      5000 sq ft - 7000 sq ft
+                                    </MenuItem>
+                                    <MenuItem value="7000 sq ft - 10000 sq ft">
+                                      7000 sq ft - 10000 sq ft
+                                    </MenuItem>
+                                    <MenuItem value="Above 10000 sq ft">
+                                      Above 10000 sq ft
+                                    </MenuItem>
+                                  </TextField>
+                                )}
 
-                              <TextField
-                                size="small"
-                                label="City"
-                                value={prop.propertyCity || ""}
-                                onChange={(e) =>
-                                  handlePropertyPreferenceChange(
-                                    prefIndex,
-                                    propIndex,
-                                    "propertyCity",
-                                    e.target.value
-                                  )
-                                }
-                                disabled={!editMode}
-                                fullWidth
-                              />
+                                {/* Location fields */}
+                                <TextField
+                                  size="small"
+                                  label="Country"
+                                  value={prop.propertyCountry || ""}
+                                  onChange={(e) =>
+                                    handlePropertyPreferenceChange(
+                                      prefIndex,
+                                      propIndex,
+                                      "propertyCountry",
+                                      e.target.value,
+                                    )
+                                  }
+                                  disabled={!editMode}
+                                  select
+                                  fullWidth
+                                >
+                                  <MenuItem value="">Select Country</MenuItem>
+                                  {countries.map((country) => (
+                                    <MenuItem key={country} value={country}>
+                                      {country}
+                                    </MenuItem>
+                                  ))}
+                                </TextField>
+
+                                <TextField
+                                  size="small"
+                                  label="State"
+                                  value={prop.propertyState || ""}
+                                  onChange={(e) =>
+                                    handlePropertyPreferenceChange(
+                                      prefIndex,
+                                      propIndex,
+                                      "propertyState",
+                                      e.target.value,
+                                    )
+                                  }
+                                  disabled={!editMode}
+                                  fullWidth
+                                />
+
+                                <TextField
+                                  size="small"
+                                  label="City"
+                                  value={prop.propertyCity || ""}
+                                  onChange={(e) =>
+                                    handlePropertyPreferenceChange(
+                                      prefIndex,
+                                      propIndex,
+                                      "propertyCity",
+                                      e.target.value,
+                                    )
+                                  }
+                                  disabled={!editMode}
+                                  fullWidth
+                                />
+                              </Box>
                             </Box>
-                          </Box>
-                        ))}
+                          ),
+                        )}
                       </Box>
                     </Box>
                   </Paper>
@@ -2220,10 +2474,10 @@ const ManageProfile = () => {
               </Box>
             </Paper>
           </Box>
-         
+
           {/* OTP Verification Dialog */}
-          <Dialog 
-            open={otpDialogOpen} 
+          <Dialog
+            open={otpDialogOpen}
             onClose={() => !requestOTP && setOtpDialogOpen(false)}
             disableEscapeKeyDown={requestOTP}
           >
@@ -2298,7 +2552,7 @@ const ManageProfile = () => {
           <Snackbar
             open={snackbar.open}
             autoHideDuration={6000}
-            anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+            anchorOrigin={{ vertical: "top", horizontal: "center" }}
             onClose={() => setSnackbar({ ...snackbar, open: false })}
           >
             <MuiAlert
@@ -2306,30 +2560,26 @@ const ManageProfile = () => {
               variant="filled"
               onClose={() => setSnackbar({ ...snackbar, open: false })}
               severity={snackbar.severity}
-              sx={{ width: '100%' }}
+              sx={{ width: "100%" }}
             >
               {snackbar.message}
             </MuiAlert>
           </Snackbar>
 
           {/* Confirmation Dialog for Image Removal */}
-          <Dialog
-            open={snackbarOpen}
-            onClose={handleCloseSnackbar}
-          >
+          <Dialog open={snackbarOpen} onClose={handleCloseSnackbar}>
             <DialogTitle>Confirm Removal</DialogTitle>
             <DialogContent>
-              <Typography>Are you sure you want to remove your profile image?</Typography>
+              <Typography>
+                Are you sure you want to remove your profile image?
+              </Typography>
             </DialogContent>
             <DialogActions>
-              <Button 
-                onClick={handleCloseSnackbar}
-                disabled={isSubmitting}
-              >
+              <Button onClick={handleCloseSnackbar} disabled={isSubmitting}>
                 Cancel
               </Button>
-              <Button 
-                onClick={handleConfirm} 
+              <Button
+                onClick={handleConfirm}
                 color="error"
                 variant="contained"
                 disabled={isSubmitting}
@@ -2340,7 +2590,7 @@ const ManageProfile = () => {
           </Dialog>
         </Box>
       </Box>
-      <Footer/>
+      <Footer />
     </>
   );
 };

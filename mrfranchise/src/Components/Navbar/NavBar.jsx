@@ -413,23 +413,23 @@ const [ID, setId] = useState(null);
                   const url = `/brand_listing_creation_form?source=${encodeURIComponent("mr franchise")}&ref=${encodeURIComponent("homepage")}`;
                   window.open(url, "_blank");
                 }}
-                startIcon={<Plus size={20} />}
+                // startIcon={<Plus size={20} />}
                 sx={{
                   color: 'black',  
                   backgroundColor: ' #6fff00fa',
                   borderRadius: '8px',
-                  px: {4: 3, xs: 2},
+                  px: {4: 3, xs: 1.9},
                   py:isMobile?0: 1,
                   margin:{ xs:"5px"},
                   textTransform: 'none',
-                  fontSize: isMobile ? '0.5': '1rem',
+                  fontSize: isMobile ? '0.1': '1rem',
                   fontWeight: 500,
                   '&:hover': {
                     backgroundColor: '#7ad03a'
                   }
                 }}
               >
-                Add Your Brand
+                Add Brand
               </Button>
             </motion.div>
           </Box>

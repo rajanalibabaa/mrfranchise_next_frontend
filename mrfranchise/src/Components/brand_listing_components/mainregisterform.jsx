@@ -1351,40 +1351,45 @@ const [activeStep, setActiveStep] = useState(0);
               p: 0,
             }}
           >
-            <Box
-              sx={{ display: "grid", gridTemplateColumns: "auto 1fr" }}
-              mb={1}
-              mt={1}
-            >
-              <Button
-                onClick={handleHomeClick}
-                sx={{
-                  backgroundColor: "#7ad03a",
-                  color: "white",
-                  height: "40px",
-                  pr: 3,
-                  pl: 2,
-                  py: 0,
-                  mt: 2,
+          <Box
+  sx={{
+    display: "grid",
+    gridTemplateColumns: { xs: "1fr", md: "auto 1fr" },
+    gap: 2,
+    alignItems: "center",
+  }}
+  mb={1}
+  mt={1}
+>
 
-                  ml: { md: 6, xs: 3 },
-                  boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
-                  transition: "all 0.3s ease",
-                  display: "flex", // Ensure flex layout
-                  gap: 1, // Adds spacing (theme.spacing(1) = 8px by default)
-                  alignItems: "center", // Vertically center items
-                  "&:hover": {
-                    backgroundColor: "#5db024",
-                    transform: "scale(1.05)",
-                    boxShadow: "0px 6px 14px rgba(0, 0, 0, 0.2)",
-                  },
-                  "&:active": {
-                    transform: "scale(0.97)",
-                  },
-                }}
-              >
-                <HomeOutlinedIcon fontSize="small" /> Home
-              </Button>
+             <Button
+  onClick={handleHomeClick}
+  sx={{
+    width: { xs: "100%", md: "auto" },
+    justifyContent: "center",
+    backgroundColor: "#7ad03a",
+    color: "white",
+    height: "40px",
+    pr: 3,
+    pl: 2,
+    py: 0,
+    mt: 2,
+    ml: { md: 6, xs: 0 },
+    boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
+    transition: "all 0.3s ease",
+    display: "flex",
+    gap: 1,
+    alignItems: "center",
+    "&:hover": {
+      backgroundColor: "#5db024",
+      transform: "scale(1.05)",
+      boxShadow: "0px 6px 14px rgba(0, 0, 0, 0.2)",
+    },
+  }}
+>
+  <HomeOutlinedIcon fontSize="small" /> Home
+</Button>
+
 
               {/* Stepper ==> To Navigate The Particular Page */}
               <Stepper
