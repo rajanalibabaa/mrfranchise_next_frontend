@@ -1,7 +1,6 @@
 import React from "react";
 import BrandRegisterForm from "@/Components/brand_listing_components/mainregisterform";
-import AdSlot from "@/Components/ads/GoogleAd";
-import { ADS } from "@/config/ads.config";
+
 
 export const metadata = {
   title: "Brand Registration | Join Mr Franchise as a Brand Partner",
@@ -57,7 +56,6 @@ export const metadata = {
 const BrandRegisterPage = () => {
   return(
     <>
-    <AdSlot {...ADS.HOME.TOP_BILLBOARD} />
       <BrandRegisterForm />;
 
     </>

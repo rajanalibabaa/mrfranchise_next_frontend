@@ -2386,11 +2386,11 @@ const InvestorRegister = () => {
         {!isMobile && (
           <Box >
             {/* <RegisterationMediaHandling /> */}
-            <AdSlot {...ADS.HOME.FILTER_BOTTOM_RECTANGLE}/>
+            {/* <AdSlot {...ADS.HOME.FILTER_BOTTOM_RECTANGLE}/> */}
           </Box>
         )}
       </Box>
-            <AdSlot {...ADS.HOME.FOOTER_RECTANGLE}/>
+            {/* <AdSlot {...ADS.HOME.FOOTER_RECTANGLE}/> */}
 
       <Box>
         <Footer />

@@ -509,13 +509,13 @@ function BrandList() {
               }
               onShowLogin={setShowLogin}
             />
-            {index === 7 && (
+            {/* {index === 7 && (
               <Box   sx={{
             gridColumn: "1 / -1", // ⬅ spans full grid width
             my: 1,
           }}> <AdSlot {...ADS.HOME.TOP_LEADERBOARD}/>
           </Box>
-            )}
+            )} */}
             {/* {index === 7 && (
           //     <Box   sx={{
           //   gridColumn: "1 / -1", // ⬅ spans full grid width
