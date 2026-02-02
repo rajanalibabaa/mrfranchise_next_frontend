@@ -23,16 +23,16 @@ import { useSelector, useDispatch } from "react-redux";
 import {
   homeSection2,
   toggleHomeCardLike,
-} from "../../Redux/Slices/TopCardFetchingSlice.jsx";
+} from "@/Redux/Slices/TopCardFetchingSlice.jsx";
 import slugify from "slugify";
 import LoginPage from "@/Components/LoginPage/LoginPage.jsx";
 import { motion } from "framer-motion";
 import HomePageBrandCard from "./HomePageBrandCard.jsx";
-import { token } from "../../Utils/autherId.jsx";
-import { toggleBrandLike } from "../../Redux/Slices/GetAllBrandsDataUpdationFile.jsx";
-import { likeApiFunction } from "../../Api/likeApi.jsx";
-import { openBrandDialog } from "../../Redux/Slices/OpenBrandNewPageSlice.jsx";
-
+import { getToken } from "@/Utils/autherId.jsx";
+import { toggleBrandLike } from "@/Redux/Slices/GetAllBrandsDataUpdationFile.jsx";
+import { likeApiFunction } from "@/Api/likeApi.jsx";
+import { openBrandDialog } from "@/Redux/Slices/OpenBrandNewPageSlice.jsx";
+const token = getToken();
 // Breakpoints
 const CARD_DIMENSIONS = {
   mobile: { width: 280, height: 520 },
@@ -217,7 +217,7 @@ const HomeSection2 = () => {
   });
 
   const subcat = encodeURIComponent(brandCategoriesName); // encode spaces/special chars
-  const url = `/AllCategoryPage/allbrandlisting/${slug}?subcat=${subcat}`;
+  const url = `${slug}?subcat=${subcat}`;
 
   // Open in new tab
   const newWindow = window.open(url, "_blank");

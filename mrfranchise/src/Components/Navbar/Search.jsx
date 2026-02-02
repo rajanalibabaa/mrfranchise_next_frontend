@@ -108,7 +108,7 @@ const Search = ({ handleClose }) => {
 
         // Next.js way to open in new tab
         if (typeof window !== "undefined") {
-            window.open(`/AllCategoryPage/allbrandlisting?${queryParams.toString()}`, "_blank", "noopener,noreferrer");
+            window.open(`/all-franchise-brands?${queryParams.toString()}`, "_blank", "noopener,noreferrer");
 
         }
       }

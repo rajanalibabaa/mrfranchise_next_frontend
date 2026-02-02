@@ -1,9 +1,7 @@
 // api/brands.js
 import axios from "axios"
 import { api, API_BASE_URL } from "./api";
-import { useDispatch } from "react-redux";
-import { use, useState } from "react";
-// import { initializeShortlist } from "../Redux/Slices/shortlistslice";
+import { use, useEffect, useState } from "react";
 
 // Create a single axios instance with default headers
 const apiClient = axios.create({
@@ -15,21 +13,23 @@ const apiClient = axios.create({
 
 // Add request interceptor to inject auth token
 apiClient.interceptors.request.use(config => {
-  const token = localStorage.getItem("accessToken");
+  const [token ,setToken]=useState(null)
+  useEffect(() => {
+    setToken(localStorage.getItem("accessToken"));
+  }, []);
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });
 
-// const id = localStorage.getItem("investorUUID") || localStorage.getItem("brandUUID");
 
 export const fetchBrands = async () => {
 const [id ,setId]=useState(null)
 
 useEffect(() => {
   setId(localStorage.getItem("investorUUID") || localStorage.getItem("brandUUID"));
-})
+}, []);
   // const dispatch = useDispatch()
   const url = id 
     ? `${api.allBrandsApi.get.likeAndUnlikeBrands}/${id}`
@@ -61,8 +61,12 @@ export const fetchBrandById = async (brandId) => {
 };
 
 export const toggleBrandLike = async ({ brandId, isLiked }) => {
-  // const investorId = localStorage.getItem("investorUUID") || localStorage.getItem("brandUUID");
-  const token = localStorage.getItem("accessToken");
+
+  const [token ,setToken]=useState(null)
+const [AccessToken ,setAccessToken]=useState(null)
+  useEffect(() => {
+    setToken(localStorage.getItem("accessToken"));
+  }, []); 
 
   const config = {
     headers: {
@@ -70,8 +74,9 @@ export const toggleBrandLike = async ({ brandId, isLiked }) => {
       'Authorization': `Bearer ${token}`
     }
   };
-
-  const AccessToken = localStorage.getItem("accessToken");
+useEffect(() => {
+  setAccessToken(localStorage.getItem("accessToken"));
+}, []);
 
   try {
     if (!isLiked) {
@@ -120,7 +125,12 @@ export const toggleBrandLike = async ({ brandId, isLiked }) => {
 
 
 export const recordBrandView = async (brandID) => {
-  const id = localStorage.getItem("investorUUID") || localStorage.getItem("brandUUID");
+
+  const [id ,setId]=useState(null)
+
+  useEffect(() => {
+    setId(localStorage.getItem("investorUUID") || localStorage.getItem("brandUUID"));
+  }, []);
   
   try {
     const response = await apiClient.post(

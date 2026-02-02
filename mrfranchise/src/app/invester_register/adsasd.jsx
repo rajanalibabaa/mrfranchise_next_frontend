@@ -41,7 +41,7 @@ import {
 import { categories } from "./BrandCategories";
 import LoginPage from "@/Components/LoginPage/LoginPage";
 import { useDispatch } from "react-redux";
-import { showLoading, hideLoading } from "../../Redux/Slices/loadingSlice";
+import { showLoading, hideLoading } from "../../Redux/Slices/LoadingSlice";
 import RegisterationMediaHandling from "../Registration/RegisterationMediaHandling";
 import FlagIcon from "@mui/icons-material/Flag";
 import Navbar from "../../Components/Navbar/NavBar";
@@ -113,8 +113,8 @@ const InvestorRegister = () => {
   const [selectedChild, setSelectedChild] = useState("");
   const propertyTypeValue = useWatch({ control, name: "propertyType" });
 
-  console.log("Selected Main Category:", selectedMainCategory);
-  console.log("Selected Sub Category:", selectedSubCategory);
+  // console.log("Selected Main Category:", selectedMainCategory);
+  // console.log("Selected Sub Category:", selectedSubCategory);
 
   // OTP verification state
   const [otpModal, setOtpModal] = useState({
@@ -181,7 +181,7 @@ const InvestorRegister = () => {
     preferredCity: "",
     terms: false,
   };
-  console.log(propertyCountry)
+  // console.log(propertyCountry)
 
   useEffect(() => {
     fetch("https://countriesnow.space/api/v0.1/countries/positions")
@@ -791,7 +791,7 @@ const InvestorRegister = () => {
     try {
       dispatch(showLoading());
       const response = await axios.post(
-        `http://localhost:5000/api/v1/investor/createInvestor`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/investor/createInvestor`,
         formattedData,
         { headers: { "Content-Type": "application/json" } }
       );

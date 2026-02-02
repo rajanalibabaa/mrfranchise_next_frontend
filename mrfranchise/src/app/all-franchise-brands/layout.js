@@ -1,7 +1,7 @@
 
 const SITE_URL ="https://mrfranchise.in";
 const SITE_NAME = "Mr Franchise";
-const PAGE_PATH = "/AllCategoryPage/allbrandlisting";
+const PAGE_PATH = "/all-franchise-brands";
 const CANONICAL_URL = `${SITE_URL}${PAGE_PATH}`;
 
 
@@ -262,7 +262,7 @@ const generateStructuredData = () => {
             "@type": "ListItem",
             "position": 2,
             "name": "All Categories",
-            "item": `${SITE_URL}/AllCategoryPage`,
+            "item": `${SITE_URL}/allcategorypage`,
           },
           {
             "@type": "ListItem",
@@ -438,6 +438,8 @@ export default function BrandListingLayout({ children }) {
           __html: JSON.stringify(structuredData),
         }}
       />
+        <link rel="icon" href="/logo.png" type="image/jpeg" />
+
 
       {/* Preconnect for Performance */}
       <link rel="preconnect" href="https://fonts.googleapis.com" />

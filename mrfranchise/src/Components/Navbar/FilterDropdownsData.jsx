@@ -136,7 +136,7 @@ const formattedInvestmentRanges = useMemo(() => {
 // In your FilterDropdowns component
 const handleFindBrands = useCallback(() => {
   const queryParams = new URLSearchParams();
-  console.log('query params ',queryParams);
+  // console.log('query params ',queryParams);
   
   
   if (filters.selectedSubCategory) {
@@ -150,7 +150,7 @@ const handleFindBrands = useCallback(() => {
   }
 
  // 🔹 Open in a new browser tab instead of same tab
-  window.open(`/AllCategoryPage/allbrandlisting?${queryParams.toString()}`, "_blank", "noopener,noreferrer");
+  window.open(`/all-franchise-brands?${queryParams.toString()}`, "_blank", "noopener,noreferrer");
 }, [filters, router]);
 
 

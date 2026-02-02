@@ -16,12 +16,10 @@ import {
   DialogContent,
   DialogTitle,
 } from "@mui/material";
-// import illustration from "../../assets/Images/LoginImage.png";
 import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
-import { setUUIDandTOKEN, logout } from "../../Redux/Slices/AuthSlice/authSlice";
+import { setUUIDandTOKEN, logout } from "@/Redux/Slices/AuthSlice/authSlice";
 import CloseIcon from "@mui/icons-material/Close";
-import { showLoading, hideLoading } from "../../Redux/Slices/loadingSlice";
 import { useMediaQuery, useTheme } from "@mui/system";
 import Image from "next/image";
 
@@ -130,7 +128,7 @@ function LoginPage({ open, onClose }) {
           : otpRequestPayload;
 
         const response = await axios.post(
-          `http://localhost:5000/api/v1/login/generateOTPforLogin`,
+          `${process.env.NEXT_PUBLIC_API_URL}/api/v1/login/generateOTPforLogin`,
           payload,
           { headers: { "Content-Type": "application/json" } }
         );
@@ -177,7 +175,7 @@ function LoginPage({ open, onClose }) {
     setIsLoading(true);
     try {
       const response = await axios.post(
-        `http://localhost:5000/api/v1/login/`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/login/`,
         otpVerifyPayload,
         { headers: { "Content-Type": "application/json" } }
       );
@@ -334,12 +332,9 @@ function LoginPage({ open, onClose }) {
                   <Link
                     component="button"
                     onClick={() => {
-                      dispatch(showLoading());
                       onClose();
-                      router.push("/invester_register");
-                      setTimeout(() => {
-                        dispatch(hideLoading());
-                      }, 1000);
+                      router.push("/registerhandleuser");
+                      
                     }}
                     sx={{ fontWeight: 500 }}
                   >

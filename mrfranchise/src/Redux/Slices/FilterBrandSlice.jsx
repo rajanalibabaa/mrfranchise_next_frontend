@@ -3,9 +3,9 @@
 // import axios from "axios";
 // import { getUserId } from "@/Utils/autherId";
 // const userId = getUserId();
-// const API_BASE_URL = "http://localhost:5000/api/v1/";
+// const API_BASE_URL = "https://mrfranchisebackend.mrfranchise.in/api/v1/";
 // const id = userId;
-
+ 
 // // --- Async thunk for fetching filtered brands ---
 // export const fetchFilteredBrands = createAsyncThunk(
 //   "filterBrands/fetchFilteredBrands",
@@ -26,16 +26,16 @@
 //         modelType,
 //         areaRequired, // ✅ Added destructuring
 //       } = filters;
-
+ 
 //       const params = new URLSearchParams();
 //       params.append("page", page);
 //       params.append("limit", limit);
 //       if (id) params.append("id", id);
-
+ 
 //       // console.log("searchTerm :",searchTerm)
 //       // ✅ Always include maincat
 //       params.append("maincat", maincat);
-
+ 
 //       if (subcat) params.append("subcat", subcat);
 //       if (childcat) params.append("childcat", childcat);
 //       if (searchTerm) params.append("serchterm", searchTerm); // backend expects "serchterm"
@@ -46,13 +46,13 @@
 //       if (investmentRange) params.append("investmentRange", investmentRange);
 //       if (modelType) params.append("modelType", modelType);
 //       if (areaRequired) params.append("areaRequired", areaRequired); // ✅ Fixed areaRequired param
-
+ 
 //       // console.log("params ;",`${API_BASE_URL}filter/getAllBrandsAndFilter?${params.toString()}`)
 //       // ✅ axios GET (better for filters)
 //       const response = await axios.get(
 //         `${API_BASE_URL}filter/getAllBrandsAndFilter?${params.toString()}`
 //       );
-
+ 
 //       const normalizedBrands =
 //         response.data.data?.brands?.map((brand) => ({
 //           ...brand,
@@ -76,7 +76,7 @@
 //           isLiked: brand?.isLiked || false,
 //           isShortListed: brand?.isShortListed || false,
 //         })) || [];
-
+ 
 //       return {
 //         brands: normalizedBrands,
 //         pagination:
@@ -95,7 +95,7 @@
 //     }
 //   }
 // );
-
+ 
 // // --- Initial State ---
 // const initialState = {
 //   brands: [],
@@ -127,7 +127,7 @@
 //   },
 //   cacheKey: Date.now(),
 // };
-
+ 
 // // --- Slice ---
 // const filterBrandSlice = createSlice({
 //   name: "filterBrands",
@@ -136,7 +136,7 @@
 //     setFilter: (state, action) => {
 //       const { filterName, value } = action.payload;
 //       state.filters[filterName] = value;
-
+ 
 //       // --- Reset dependent filters ---
 //       if (filterName === "maincat") {
 //         state.filters.subcat = null;
@@ -149,7 +149,7 @@
 //       } else if (filterName === "district") {
 //         state.filters.city = null;
 //       }
-
+ 
 //       // Reset pagination & cache
 //       state.filters.page = 1;
 //       state.pagination.currentPage = 1;
@@ -167,7 +167,7 @@
 //     clearError: (state) => {
 //       state.error = null;
 //     },
-
+ 
 //     // Toggle brand states
 //     toggleBrandLikefilter: (state, action) => {
 //       const brandId = action.payload;
@@ -175,7 +175,7 @@
 //         brand?.uuid === brandId ? { ...brand, isLiked: !brand.isLiked } : brand
 //       );
 //     },
-
+ 
 //     toggleBrandShortListfilter: (state, action) => {
 //       const brandId = action.payload;
 //       state.brands = state.brands.map((brand) =>
@@ -193,7 +193,7 @@
 //       })
 //       .addCase(fetchFilteredBrands.fulfilled, (state, action) => {
 //         state.loading = false;
-
+ 
 //         // --- Optional stable sort (videos first)
 //         const sortedBrands = [...action.payload.brands].sort((a, b) => {
 //           const aHasVideo = a.uploads?.video ? 1 : 0;
@@ -201,9 +201,9 @@
 //           if (bHasVideo !== aHasVideo) return bHasVideo - aHasVideo;
 //           return a.uuid.localeCompare(b.uuid);
 //         });
-
+ 
 //         state.brands = sortedBrands;
-
+ 
 //         if (action.payload.pagination) {
 //           state.pagination = {
 //             ...action.payload.pagination,
@@ -219,7 +219,7 @@
 //       });
 //   },
 // });
-
+ 
 // export const {
 //   setFilter,
 //   resetFilters,
@@ -228,55 +228,51 @@
 //   toggleBrandLikefilter,
 //   toggleBrandShortListfilter,
 // } = filterBrandSlice.actions;
-
+ 
 // export default filterBrandSlice.reducer;
-
-
-"use client";
+ 
+ "use client";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import { getUserId } from "@/Utils/autherId";
 
-const API_BASE_URL = "http://localhost:5000/api/v1/";
+const API_BASE_URL = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/`;
 const userId = getUserId();
 
 /* ============================
-   THUNK: Fetch Filtered Brands
+   FAST THUNK: Fetch Filtered Brands
 ============================ */
 export const fetchFilteredBrands = createAsyncThunk(
   "filterBrands/fetchFilteredBrands",
   async (filters, { signal, rejectWithValue }) => {
     try {
-      const params = new URLSearchParams();
-
-      // Pagination (always safe)
-      params.append("page", filters.page ?? 1);
-      params.append("limit", filters.limit ?? 20);
+      // Build query params dynamically
+      const params = new URLSearchParams({
+        page: filters.page ?? 1,
+        limit: filters.limit ?? 20,
+      });
 
       if (userId) params.append("id", userId);
-
-      // Optional filters (ONLY when present)
       if (filters.maincat) params.append("maincat", filters.maincat);
       if (filters.subcat) params.append("subcat", filters.subcat);
       if (filters.childcat) params.append("childcat", filters.childcat);
-      if (filters.searchTerm)
-        params.append("serchterm", filters.searchTerm);
+      if (filters.searchTerm) params.append("serchterm", filters.searchTerm);
       if (filters.country) params.append("country", filters.country);
       if (filters.state) params.append("state", filters.state);
       if (filters.district) params.append("district", filters.district);
       if (filters.city) params.append("city", filters.city);
       if (filters.investmentRange)
         params.append("investmentRange", filters.investmentRange);
-      if (filters.modelType)
-        params.append("modelType", filters.modelType);
-      if (filters.areaRequired)
-        params.append("areaRequired", filters.areaRequired);
+      if (filters.modelType) params.append("modelType", filters.modelType);
+      if (filters.areaRequired) params.append("areaRequired", filters.areaRequired);
 
+      // 🔥 Fast API call with Axios
       const response = await axios.get(
-        `${API_BASE_URL}filter/getAllBrandsAndFilter?${params.toString()}`,
-        { signal }
+        `${API_BASE_URL}filter/getAllBrandsAndFilter`,
+        { params, signal, timeout: 10000 } // 10s timeout for fast fail
       );
 
+      // Normalize brands for fast UI updates
       const brands =
         response.data?.data?.brands?.map((brand) => ({
           ...brand,
@@ -314,7 +310,7 @@ export const fetchFilteredBrands = createAsyncThunk(
           },
       };
     } catch (error) {
-      if (axios.isCancel(error)) return;
+      if (axios.isCancel(error)) return; // request cancelled
       return rejectWithValue(
         error?.response?.data?.message || "Failed to fetch brands"
       );
@@ -329,7 +325,6 @@ const initialState = {
   brands: [],
   loading: false,
   error: null,
-
   pagination: {
     currentPage: 1,
     totalPages: 1,
@@ -338,7 +333,6 @@ const initialState = {
     hasNext: false,
     hasPrevious: false,
   },
-
   filters: {
     maincat: null,
     subcat: null,
@@ -425,6 +419,7 @@ const filterBrandSlice = createSlice({
       .addCase(fetchFilteredBrands.fulfilled, (state, action) => {
         state.loading = false;
 
+        // Sort brands: video first for fast visual load
         state.brands = action.payload.brands.sort((a, b) => {
           const av = a.uploads?.video ? 1 : 0;
           const bv = b.uploads?.video ? 1 : 0;

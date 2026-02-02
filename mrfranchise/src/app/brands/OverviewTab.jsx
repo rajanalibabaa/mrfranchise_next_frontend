@@ -14,14 +14,16 @@ import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
 
 // Direct (eager) import for critical info
-import FranchiseDetailsTable from "../../Components/OverTabHandlings.jsx/FranchiseDetailsOverView.jsx";
-import BrandDescription from "../../Components/OverTabHandlings.jsx/BrandDescriptionsOverView.jsx";
-import SupportProvided from "../../Components/OverTabHandlings.jsx/SupportProvidedOverView.jsx";
-import FranchiseTagsOverView from "../../Components/OverTabHandlings.jsx/FranchiseTagsOverView.jsx";
+import FranchiseDetailsTable from "@/Components/OverTabHandlings.jsx/FranchiseDetailsOverView.jsx";
+import BrandDescription from "@/Components/OverTabHandlings.jsx/BrandDescriptionsOverView.jsx";
+import SupportProvided from "@/Components/OverTabHandlings.jsx/SupportProvidedOverView.jsx";
+import FranchiseTagsOverView from "@/Components/OverTabHandlings.jsx/FranchiseTagsOverView.jsx";
+import AdSlot from "@/Components/ads/GoogleAd";
+import { ADS } from "@/config/ads.config";
 
 // Lazy loading heavy/offscreen/large sections
-const ExpansionLocationGrid = React.lazy(() => import("../../Components/OverTabHandlings.jsx/BrandOverViewExpansionLocationDomestic.jsx"));
-const ExpansionLocationGridInternational = React.lazy(() => import("../../Components/OverTabHandlings.jsx/BrandExpansionLOcationOverviewInternational.jsx"));
+const ExpansionLocationGrid = React.lazy(() => import("@/Components/OverTabHandlings.jsx/BrandOverViewExpansionLocationDomestic.jsx"));
+const ExpansionLocationGridInternational = React.lazy(() => import("@/Components/OverTabHandlings.jsx/BrandExpansionLOcationOverviewInternational.jsx"));
 const DescriptionIcon = React.lazy(() => import("@mui/icons-material/Description"));
 
 /** Helper: Lightweight skeleton, fallback for Suspense. */
@@ -92,6 +94,9 @@ const serviceTags=brand?.[0]?.brandfranchisedetails?.franchiseDetails?.brandCate
           formatCurrency={formatCurrency}
         />
       )}
+
+      <AdSlot {...ADS.HOME.TOP_LEADERBOARD}/>
+      
       {hasData(serviceTags) && (
         <FranchiseTagsOverView 
 

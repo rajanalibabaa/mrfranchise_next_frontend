@@ -1,4 +1,4 @@
-// app/AllCategoryPage/allbrandlisting/loading.js
+// app/all-franchise-brands/loading.js
 'use client';
 import { Box, Skeleton, Grid } from "@mui/material";
 

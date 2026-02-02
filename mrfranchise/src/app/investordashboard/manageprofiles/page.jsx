@@ -117,7 +117,7 @@ const ManageProfile = () => {
     try {
       setLoadingIndustry(true);
       const response = await axios.get(
-        `http://localhost:5000/api/v1/admin/getIndustryByIndustryName`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/getIndustryByIndustryName`,
         {
           params: { industry: industryName },
           headers: {
@@ -164,7 +164,7 @@ const ManageProfile = () => {
   const fetchAllIndustries = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:5000/api/v1/admin/getAllIndustries`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/getAllIndustries`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -362,7 +362,7 @@ const ManageProfile = () => {
       try {
         setLoading(true);
         const response = await axios.get(
-          `http://localhost:5000/api/v1/investor/getInvestorByUUID/${investorUUID}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/api/v1/investor/getInvestorByUUID/${investorUUID}`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -513,7 +513,7 @@ const ManageProfile = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/v1/otp/existingEmailOTP",
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/otp/existingEmailOTP`,
         { email: investorData.email },
         {
           headers: {
@@ -563,7 +563,7 @@ const ManageProfile = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/v1/otp/verifyExistingEmailOTP",
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/otp/verifyExistingEmailOTP`,
         {
           email: investorData.email,
           verifyOTP: otp,
@@ -980,7 +980,7 @@ const ManageProfile = () => {
 
     try {
       const response = await axios.patch(
-        `http://localhost:5000/api/v1/investor/updateInvestor/${investorUUID}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/investor/updateInvestor/${investorUUID}`,
         formData,
         {
           headers: {
@@ -1710,7 +1710,7 @@ const ManageProfile = () => {
       setSnackbarOpen(false);
 
       const response = await axios.patch(
-        `http://localhost:5000/api/v1/investor/deleteInvestorProfileImage/${investorUUID}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/investor/deleteInvestorProfileImage/${investorUUID}`,
         { removeProfileImage: true },
         {
           headers: {

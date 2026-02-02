@@ -158,6 +158,7 @@ const FranchiseTagsOverView = ({ serviceTags }) => {
     <Box
       sx={{
         mb: 2,
+        mt: 2,
         borderRadius: 2,
         width: "100%",
         px: { xs: 0, sm: 2, md: 0 },

@@ -99,7 +99,7 @@ const PaymentPage = ({ selectedMembership, selectedListing, selectedPlan }) => {
     // console.log("Brand ID:", Id);
 
     axios
-      .put(`http://localhost:5000/api/v1/leadPackageUpdate/${Id}`, {
+      .put(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/leadPackageUpdate/${Id}`, {
         packageName: PackageName,
       })
       .then((res) => {

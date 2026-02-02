@@ -29,7 +29,7 @@ function Complaint() {
 
     try {
       const response = await axios.post(
-        " http://localhost:5000/api/v1/complaint/createComplaint",
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/complaint/createComplaint`,
         formattedData,
         {
           headers: {

@@ -27,8 +27,9 @@ import {
   resetChildCategories,
   resetDistricts,
   resetCities,
-} from "../../Redux/Slices/filterDropdownData";
-
+} from "@/Redux/Slices/filterDropdownData";
+import AdSlot from "../ads/GoogleAd";
+import { ADS } from "@/config/ads.config";
 // Define the correct order for investment ranges
 const INVESTMENT_RANGE_ORDER = [
   "Below - 50k",
@@ -299,7 +300,7 @@ const FilterPanel = React.memo(
     };
 
     return (
-      <Box sx={{ pr: 2, height: "calc(100vh - 120px)", overflowY: "auto" }}>
+      <Box sx={{ pr: 2, height: "calc(100vh - 40px)", overflowY: "hidden",  }}>
  <Typography
           variant="body2"
           sx={{ color: "#000000ff", background: "#7cd13b",display:'block', textAlign: "center",padding:'10px',borderRadius:'5px' ,mb:1,mt:4}}
@@ -461,7 +462,7 @@ const FilterPanel = React.memo(
                         <Box
                           ref={subCategoryRef}
                           sx={{
-                            ml: 3,
+                            ml: 0,
                             mt: 1,
                             // borderLeft: "2px solid #4caf50",
                             pl: 1,
@@ -1017,7 +1018,7 @@ const FilterPanel = React.memo(
 
        
         <Divider sx={{ my: 2 }} />
-       
+       <AdSlot {...ADS.HOME.FILTER_BOTTOM_RECTANGLE}/>
       </Box>
     );
   }

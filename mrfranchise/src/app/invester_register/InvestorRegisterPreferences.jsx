@@ -89,7 +89,7 @@ const InvestorRegisterPreferences = ({
     try {
       setLoadingIndustries(true);
       const response = await fetch(
-        `http://localhost:5000/api/v1/admin/getIndustryByIndustryName`
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/getIndustryByIndustryName`
       );
       const result = await response.json();
       
@@ -126,7 +126,7 @@ const InvestorRegisterPreferences = ({
     try {
       setLoadingIndustryDetails(true);
       const response = await fetch(
-        `http://localhost:5000/api/v1/admin/getIndustryByIndustryName?industry=${encodeURIComponent(industryName)}`
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/getIndustryByIndustryName?industry=${encodeURIComponent(industryName)}`
       );
       const result = await response.json();
      
@@ -143,7 +143,7 @@ const InvestorRegisterPreferences = ({
           setValue("industry", industryName);
         }
         
-        console.log("Fetched industry details:", industryData);
+        // console.log("Fetched industry details:", industryData);
       }
     } catch (error) {
       console.error('Error fetching industry details:', error);

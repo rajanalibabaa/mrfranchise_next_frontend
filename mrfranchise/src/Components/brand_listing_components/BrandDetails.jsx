@@ -22,11 +22,12 @@ import axios from "axios";
 import FlagIcon from "@mui/icons-material/Flag";
 
 import { fetchGlobalLocationByPostalCode } from "@/Utils/PincodeFetch.jsx";
-import coutryCode from "@/Utils/PincodeFetch.jsx";
+import {getSupportedCountries} from "@/Utils/countries";
 
 const BrandDetails = ({ data = {}, errors = {}, onChange }) => {
   const [showWhatsappSnackbar, setShowWhatsappSnackbar] = useState(false);
   const [whatsappEnabled, setWhatsappEnabled] = useState(false);
+  const countryCode = getSupportedCountries();
 
   const formData = {
     companyName: "",
@@ -143,7 +144,7 @@ const BrandDetails = ({ data = {}, errors = {}, onChange }) => {
   });
 
   // Filter country codes to remove duplicates and sort
-  // const uniqueCountryCodes = coutryCode
+  // const uniqueCountryCodes = countryCode
   //   .reduce((acc, current) => {
   //     const x = acc.find((item) => item.code === current.code);
   //     if (!x) {
@@ -154,8 +155,8 @@ const BrandDetails = ({ data = {}, errors = {}, onChange }) => {
   //   }, [])
   //   .sort((a, b) => a.name.localeCompare(b.name));
 
-  const uniqueCountryCodes = Array.isArray(coutryCode)
-  ? coutryCode
+  const uniqueCountryCodes = Array.isArray(countryCode)
+  ? countryCode
       .reduce((acc, current) => {
         if (!acc.some(item => item.code === current.code)) {
           acc.push(current);
@@ -317,7 +318,7 @@ const BrandDetails = ({ data = {}, errors = {}, onChange }) => {
 
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/v1/otpverify/send-otp-email",
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/otpverify/send-otp-email`,
         {
           [field === "email" ? "email" : "phone"]: data[field],
           type: field,
@@ -400,7 +401,7 @@ const BrandDetails = ({ data = {}, errors = {}, onChange }) => {
     try {
 
       const response = await axios.post(
-        "http://localhost:5000/api/v1/otpverify/verify-otp",
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/otpverify/verify-otp`,
         {
           identifier: data[field],
           otp: otpInput,

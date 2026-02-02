@@ -7,7 +7,7 @@ import storage from 'redux-persist/lib/storage';
 // Import all your reducers
 import authReducer from "../Slices/AuthSlice/authSlice";
 import navReducer from "../Slices/navbarSlice";
-import loadingReducer from "../Slices/loadingSlice";
+import loadingReducer from "../Slices/LoadingSlice";
 import getAllBrands from "../Slices/GetAllBrandsDataUpdationFile";
 import openBrandViewPage from "../Slices/OpenBrandNewPageSlice";
 import overAllPlatformReducer from "../Slices/TopCardFetchingSlice";

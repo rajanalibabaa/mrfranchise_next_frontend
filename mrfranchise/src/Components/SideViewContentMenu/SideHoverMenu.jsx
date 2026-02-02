@@ -31,7 +31,7 @@ import { useDispatch } from "react-redux";
 import { openBrandDialog } from "@/Redux/Slices/OpenBrandNewPageSlice";
 // Create axios instance with base config
 const api = axios.create({
-  baseURL: "http://localhost:5000/api/v1/",
+  baseURL: `${process.env.NEXT_PUBLIC_API_URL}/api/v1/`,
   headers: {
     "Content-Type": "application/json",
   },
@@ -341,9 +341,9 @@ const SideViewContent = ({ hoverCategory, onHoverLeave, onBrandClick }) => {
       // if (filters.modelType) params.append('modelType', filters.modelType);
       // if (filters.areaRequired) params.append('areaRequired', filters.areaRequired);
       
-      console.log("Fetching brands with params:", params.toString());
+      // console.log("Fetching brands with params:", params.toString());
       const response = await api.get(`filter/getAllBrandsAndFilter?${params.toString()}`);
-      console.log("Brands API response:", response.data);
+      // console.log("Brands API response:", response.data);
       
       if (response.data.success) {
         // Normalize brand data structure
@@ -428,7 +428,7 @@ const SideViewContent = ({ hoverCategory, onHoverLeave, onBrandClick }) => {
         });
         try {
           const subcats = await fetchSubCategories(industryName);
-          console.log("Fetched subcategories for", industryName, ":", subcats);
+          // console.log("Fetched subcategories for", industryName, ":", subcats);
           setAvailableSubCategories(subcats);
         } catch (err) {
           console.error("Failed to fetch subcategories:", err);
@@ -460,14 +460,14 @@ const SideViewContent = ({ hoverCategory, onHoverLeave, onBrandClick }) => {
         });
         try {
           const industry = industries[activeIndustry] || "";
-          console.log("Fetching brands for industry:", industry, "subcategory:", subCategoryName);
+          // console.log("Fetching brands for industry:", industry, "subcategory:", subCategoryName);
           const result = await fetchBrands({
             industry,
             subcat: subCategoryName,
             page: 1,
             limit: 30
           });
-          console.log("Fetched brands result:", result.brands?.length || 0);
+          // console.log("Fetched brands result:", result.brands?.length || 0);
           setBrands(result.brands || []);
           setPagination(result.pagination || { 
             currentPage: 1, 

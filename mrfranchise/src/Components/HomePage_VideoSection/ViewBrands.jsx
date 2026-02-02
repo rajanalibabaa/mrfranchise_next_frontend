@@ -22,9 +22,9 @@ import ArrowRight from "@mui/icons-material/ArrowRight";
 
 import { motion } from "framer-motion";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchViewBrandsById } from "@/Redux/Slices/viewSlice";
+import { fetchViewBrandsById } from "@/Redux/Slices/viewSlice.jsx";
 import HomePageBrandCard from "./HomePageBrandCard.jsx";
-import LoginPage from "@/Components/LoginPage/LoginPage";
+import LoginPage from "@/Components/LoginPage/LoginPage.jsx";
 import { getUserId } from "@/Utils/autherId.jsx"
  
 const userId = getUserId();
@@ -247,7 +247,7 @@ const ViewBrands = () => {
       boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
     },
   }}
-  onClick={() => window.open("/brandviewpage", "_blank")}
+  onClick={() => window.open("/all-franchise-brands", "_blank")}
 >
   View More
 </Button>

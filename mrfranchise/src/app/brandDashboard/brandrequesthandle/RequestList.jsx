@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useMemo, useCallback } from "react";
+import React, { useEffect, useMemo, useCallback, useState } from "react";
 
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -31,14 +31,15 @@ import io from "socket.io-client";
 const RequestTable = () => {
   const dispatch = useDispatch();
   const { singleRequest, loading } = useSelector((state) => state.requests);
-  console.log("Single Request:", singleRequest);
-
-  const brandUUID = localStorage.getItem("brandUUID");
-
+const [brandUUID, setBrandUUID] = useState(null);
+useEffect(() => {
+    const id = localStorage.getItem("brandUUID");
+    setBrandUUID(id);
+  }, []);
   // Socket connection
   const socket = useMemo(() => {
     if (brandUUID) {
-      return io("http://localhost:5000", {
+      return io(`${process.env.NEXT_PUBLIC_API_URL}`, {
         transports: ["websocket"],
         upgrade: false,
       });
@@ -53,7 +54,7 @@ const RequestTable = () => {
     socket.emit("joinBrand", brandUUID);
 
     const handleRealtimeUpdate = (data) => {
-      console.log("🔄 Realtime Request Update:", data);
+      // console.log("🔄 Realtime Request Update:", data);
       dispatch(addRealtimeRequest(data));
     };
 

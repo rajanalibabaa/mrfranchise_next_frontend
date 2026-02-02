@@ -1,29 +1,7 @@
-"use client"
-import React,{useState} from "react";
-import {useTheme,useMediaQuery} from "@mui/material";
-import Box from "@mui/material/Box";
-import Container from "@mui/material/Container";
-import Typography from "@mui/material/Typography";
-import TextField from "@mui/material/TextField";
-import Button from "@mui/material/Button";
-import Paper from "@mui/material/Paper";
-import Snackbar from "@mui/material/Snackbar";
-import Alert from "@mui/material/Alert";
-import InputAdornment from "@mui/material/InputAdornment";
-import Stack from "@mui/material/Stack";
-import Grid from "@mui/material/Grid";
-import Chip from "@mui/material/Chip";
-import Fade from "@mui/material/Fade";
-import Zoom from "@mui/material/Zoom";
-import Phone from "@mui/icons-material/Phone";
-import Email from "@mui/icons-material/Email";
-import Person from "@mui/icons-material/Person";
-import AccessTime from "@mui/icons-material/AccessTime";
-import ArrowForward from "@mui/icons-material/ArrowForward";
-import CheckCircle from "@mui/icons-material/CheckCircle";
+import ContactForm from "./contactus_client.jsx";
 
-import Navbar from "@/Components/Navbar/NavBar";
-import Footer from "@/Components/Footers/Footer"
+import Navbar from "@/Components/Navbar/NavBar.jsx";
+import Footer from "@/Components/Footers/Footer.jsx"
 // import img1 from '../../../assets/Images/bg23.jpeg'
 const ContactUs = () => {
   const theme = useTheme();
@@ -121,10 +99,10 @@ const ContactUs = () => {
       details: ["Mon - Sat: 9:00 AM - 7:00 PM", "Sunday: Closed"],
       address: [
         "Mr Franchise New No 76/18, Old No 22, B-8,",
-        <br />,
+        // <br />,
         "TRB Complex, Near Ashok Pillar Signal",
         "100 Feet Road, Ashok Nagar",
-        <br />,
+        // <br />,
         "Chennai – 600083, Tamil Nadu",
       ],
       color: "#ff9800",
@@ -879,4 +857,6 @@ const ContactUs = () => {
   );
 };
 
-export default ContactUs;
+export default function ContactPage() {
+  return <ContactForm />;
+}

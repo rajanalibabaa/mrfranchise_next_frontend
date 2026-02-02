@@ -2,16 +2,12 @@
 
 import HomeBannerSec from "../Components/HomePages/HomeBannerSec";
 
-/* ============================
-   CONSTANTS
-============================ */
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://mrfranchise.in";
+
+const SITE_URL =  "https://mrfranchise.in";
 const SITE_NAME = "Mr Franchise India";
 const CURRENT_YEAR = new Date().getFullYear();
 
-/* ============================
-   METADATA
-============================ */
+
 export const metadata = {
   metadataBase: new URL(SITE_URL),
 
@@ -129,12 +125,8 @@ export const metadata = {
 
   // Verification Tags
   verification: {
-    google: process.env.NEXT_PUBLIC_GOOGLE_VERIFICATION || "",
-    yandex: process.env.NEXT_PUBLIC_YANDEX_VERIFICATION || "",
-    bing: process.env.NEXT_PUBLIC_BING_VERIFICATION || "",
-    other: {
-      "facebook-domain-verification": process.env.NEXT_PUBLIC_FB_VERIFICATION || "",
-    },
+    google: process.env.NEXT_PUBLIC_GOOGLE_VERIFICATION_ID,
+    
   },
 
   // Open Graph (Enhanced)
@@ -148,14 +140,14 @@ export const metadata = {
       "Explore 10,000+ verified franchise and business opportunities in India. Compare investment costs, ROI, and connect with franchise owners. Buy, sell, and grow your business with India's most trusted franchise marketplace.",
     images: [
       {
-        url: `${SITE_URL}/og-home.jpg`,
+        url: `${SITE_URL}/logo.png`,
         width: 1200,
         height: 630,
         alt: `${SITE_NAME} – Franchise Marketplace`,
         type: "image/jpeg",
       },
       {
-        url: `${SITE_URL}/og-logo.png`,
+        url: `${SITE_URL}/logo.png`,
         width: 800,
         height: 800,
         alt: `${SITE_NAME} Logo`,
@@ -222,40 +214,7 @@ export const metadata = {
     },
   },
 
-  // Additional Meta Tags
-  other: {
-    // Business Information
-    "business:contact_data:country_name": "India",
-    "business:contact_data:email": "support@mrfranchise.in",
-    "business:contact_data:phone_number": "+91-XXXXXXXXXX",
-    
-    // Content Classification
-    "rating": "General",
-    "distribution": "Global",
-    "coverage": "India",
-    "target": "all",
-    
-    // Mobile Optimization
-    "mobile-web-app-capable": "yes",
-    "apple-mobile-web-app-capable": "yes",
-    "apple-mobile-web-app-status-bar-style": "black-translucent",
-    "apple-mobile-web-app-title": SITE_NAME,
-    
-    // Microsoft
-    "msapplication-TileColor": "#ffffff",
-    "msapplication-config": "/browserconfig.xml",
-    
-    // Theme
-    "theme-color": "#ffffff",
-    
-    // Pinterest
-    "pinterest-rich-pin": "true",
-    
-    // Additional Info
-    "franchise:total_listings": "10000+",
-    "franchise:categories": "50+",
-    "franchise:verified": "true",
-  },
+ 
 
   // Category
   category: "Franchise & Business Opportunities Marketplace",
@@ -322,7 +281,7 @@ const generateStructuredData = () => {
         "contactPoint": [
           {
             "@type": "ContactPoint",
-            "telephone": "+91-XXXXXXXXXX",
+            "telephone": "+91-9841323388",
             "contactType": "Customer Service",
             "email": "support@mrfranchise.in",
             "availableLanguage": ["English", "Hindi"],
@@ -393,49 +352,49 @@ const generateStructuredData = () => {
             "@type": "ListItem",
             "position": 1,
             "name": "Food & Beverage Franchise",
-            "url": `${SITE_URL}/AllCategoryPage/allbrandlisting/food-beverages`,
+            "url": `${SITE_URL}/all-franchise-brands/food-beverages`,
           },
           {
             "@type": "ListItem",
             "position": 2,
             "name": "Retail Franchise",
-            "url": `${SITE_URL}/AllCategoryPage/allbrandlisting/retail`,
+            "url": `${SITE_URL}/all-franchise-brands/retail`,
           },
           {
             "@type": "ListItem",
             "position": 3,
             "name": "Education Franchise",
-            "url": `${SITE_URL}/AllCategoryPage/allbrandlisting/education`,
+            "url": `${SITE_URL}/all-franchise-brands/education`,
           },
           {
             "@type": "ListItem",
             "position": 4,
             "name": "Healthcare Franchise",
-            "url": `${SITE_URL}/AllCategoryPage/allbrandlisting/healthcare`,
+            "url": `${SITE_URL}/all-franchise-brands/healthcare`,
           },
           {
             "@type": "ListItem",
             "position": 5,
             "name": "Fitness Franchise",
-            "url": `${SITE_URL}/AllCategoryPage/allbrandlisting/fitness`,
+            "url": `${SITE_URL}/all-franchise-brands/fitness`,
           },
           {
             "@type": "ListItem",
             "position": 6,
             "name": "Beauty & Salon Franchise",
-            "url": `${SITE_URL}/AllCategoryPage/allbrandlisting/beauty-salon`,
+            "url": `${SITE_URL}/all-franchise-brands/beauty-salon`,
           },
           {
             "@type": "ListItem",
             "position": 7,
             "name": "Cafe & Coffee Franchise",
-            "url": `${SITE_URL}/AllCategoryPage/allbrandlisting/cafe-coffee`,
+            "url": `${SITE_URL}/all-franchise-brands/cafe-coffee`,
           },
           {
             "@type": "ListItem",
             "position": 8,
             "name": "Automotive Franchise",
-            "url": `${SITE_URL}/AllCategoryPage/allbrandlisting/automotive`,
+            "url": `${SITE_URL}/all-franchise-brands/automotive`,
           },
         ],
       },
@@ -530,6 +489,7 @@ export default function Home() {
           __html: JSON.stringify(structuredData),
         }}
       />
+  <link rel="icon" href="/logo.png" type="image/jpeg" />
 
       {/* Preconnect for Performance */}
       <link rel="preconnect" href="https://fonts.googleapis.com" />

@@ -25,7 +25,7 @@ const id = useSelector((state) => state.user.investorUUID);
         const fetchData = async () => {
             try {
                 const response = await axios.get(
-                    `http://localhost:5000/api/v1/investor/getInvestor/${id}`,
+                    `${process.env.NEXT_PUBLIC_API_URL}/api/v1/investor/getInvestor/${id}`,
                     {
                         headers: {
                             "Content-Type": "application/json",

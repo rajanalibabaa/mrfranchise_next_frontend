@@ -1,38 +1,38 @@
 "use client";
 import { useState, useEffect, useMemo } from "react";
 import { useTheme, alpha } from "@mui/material";
-import Box from "@mui/material/Box/index.js";
-import Grid from "@mui/material/Grid/index.js";
-import Card from "@mui/material/Card/index.js";
-import CardContent from "@mui/material/CardContent/index.js";
-import Typography from "@mui/material/Typography/index.js";
-import Button from "@mui/material/Button/index.js";
-import Container from "@mui/material/Container/index.js";
-import Stack from "@mui/material/Stack/index.js";
-import CircularProgress from "@mui/material/CircularProgress/index.js";
-import Alert from "@mui/material/Alert/index.js";
-import Divider from "@mui/material/Divider/index.js";
-import Fade from "@mui/material/Fade/index.js";
+import Box from "@mui/material/Box";
+import Grid from "@mui/material/Grid";
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
+import Typography from "@mui/material/Typography";
+import Button from "@mui/material/Button";
+import Container from "@mui/material/Container";
+import Stack from "@mui/material/Stack";
+import CircularProgress from "@mui/material/CircularProgress";
+import Alert from "@mui/material/Alert";
+import Divider from "@mui/material/Divider";
+import Fade from "@mui/material/Fade";
 
 import { keyframes } from "@emotion/react";
 
-import CheckIcon from "@mui/icons-material/Check.js";
-import TrendingUpIcon from "@mui/icons-material/TrendingUp.js";
-import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome.js";
-import { useRouter } from "next/navigation.js";
+import CheckIcon from "@mui/icons-material/Check";
+import TrendingUpIcon from "@mui/icons-material/TrendingUp";
+import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
+import { useRouter } from "next/navigation";
 import PaymentPage from "./payment.jsx";
 import { getUserId } from "@/Utils/autherId.jsx";
 import { api } from "@/Api/api.jsx";
 import { GetApiCall } from "@/Api/DefaultApi.jsx";
 // import Navbar from '../../../Navbar/NavBar';
 
-import CheckCircleIcon from "@mui/icons-material/CheckCircle.js";
-import WorkspacePremiumIcon from "@mui/icons-material/WorkspacePremium.js";
-import WorkspacePremiumOutlinedIcon from "@mui/icons-material/WorkspacePremiumOutlined.js";
-import MilitaryTechIcon from "@mui/icons-material/MilitaryTech.js";
-import EmojiEventsIcon from "@mui/icons-material/EmojiEvents.js";
-import StarIcon from "@mui/icons-material/Star.js";
-import BoltIcon from "@mui/icons-material/Bolt.js";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import WorkspacePremiumIcon from "@mui/icons-material/WorkspacePremium";
+import WorkspacePremiumOutlinedIcon from "@mui/icons-material/WorkspacePremiumOutlined";
+import MilitaryTechIcon from "@mui/icons-material/MilitaryTech";
+import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
+import StarIcon from "@mui/icons-material/Star";
+import BoltIcon from "@mui/icons-material/Bolt";
 
 const userId = getUserId();
 // Animation keyframes
@@ -118,7 +118,7 @@ const MembershipSelection = ({}) => {
         setLoading(true);
         setError(null);
         const response = await fetch(
-          "http://localhost:5000/api/v1/brandadvertise/payment",
+          `${process.env.NEXT_PUBLIC_API_URL}/api/v1/brandadvertise/payment`,
           {
             method: "GET",
             headers: {

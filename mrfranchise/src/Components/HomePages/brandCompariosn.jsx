@@ -26,14 +26,15 @@ import axios from "axios";
 import { handleShortList } from "@/Api/shortListApi";
 import { toggleBrandShortList } from "@/Redux/Slices/GetAllBrandsDataUpdationFile";
 import { useDispatch } from "react-redux";
-import { token, userId } from "@/Utils/autherId";
+import { getToken,getUserId } from "@/Utils/autherId";
 import LoginPage from "@/Components/LoginPage/LoginPage";
 import { toggleHomeCardShortlist } from "@/Redux/Slices/TopCardFetchingSlice";
 import { toggleBrandShortListfilter } from "@/Redux/Slices/FilterBrandSlice";
 import { postView } from "@/Utils/function/view.jsx";
 import { openBrandDialog } from "@/Redux/Slices/OpenBrandNewPageSlice.jsx";
  
- 
+ const token = getToken();
+ const userId = getUserId();
 const BrandComparison = ({
   open,
   onClose,
@@ -97,7 +98,7 @@ useEffect(() => {
     setLoading(true);
     try {
       const promises = selectedBrands.map((brand) =>
-        axios.get(`https://mrfranchisebackend.mrfranchise.in/api/v1/brandlisting/getBrandListingByUUID/${brand.uuid}`, {
+        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/brandlisting/getBrandListingByUUID/${brand.uuid}`, {
           params: {
             userId: userId
           }

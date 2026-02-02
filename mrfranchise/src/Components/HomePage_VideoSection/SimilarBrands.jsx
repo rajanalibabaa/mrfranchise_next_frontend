@@ -26,8 +26,8 @@ import LoginPage from "@/Components/LoginPage/LoginPage.jsx";
 import { toggleHomeCardLike } from '@/Redux/Slices/TopCardFetchingSlice.jsx';
 import { toggleBrandLike } from "@/Redux/Slices/GetAllBrandsDataUpdationFile.jsx";
 import { likeApiFunction } from "@/Api/likeApi.jsx";
-import { token } from "@/Utils/autherId.jsx";
-
+import { getToken } from "@/Utils/autherId.jsx";
+const token = getToken();
 const CARD_DIMENSIONS = {
   mobile: { width: 280, height: 520 },
   tablet: { width: 320, height: 560 },
@@ -297,7 +297,7 @@ const SimilarBrands = ({ brandData }) => {
               },
             }}
             onClick={() => {
-              window.open(`/brandviewpage?category=${currentSubCategory}&subCategory=${currentChildCategory}`, "_blank");
+              window.open(`/all-franchise-brands?category=${currentSubCategory}&subCategory=${currentChildCategory}`, "_blank");
             }}
           >
             View More

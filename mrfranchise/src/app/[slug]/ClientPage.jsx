@@ -6,14 +6,13 @@ import dynamic from "next/dynamic";
 import { useParams } from "next/navigation";
 import Navbar from "@/Components/Navbar/NavBar";
 import Footer from "@/Components/Footers/Footer";
-import Loading from "../loading";
-import BrandListClient from "../BrandListClient";
-
+// import Loading from "../all-franchise-brands/loading";
+//chaged
 // Dynamic import for better code splitting
 const BrandListNew = dynamic(
-  () => import("@/app/AllCategoryPage/BrandListAllbrands"),
+  () => import("../../Components/allbarndviewpage/brandListAllbrands"),
   {
-    loading: () => <Loading />,
+    // loading: () => <Loading />,
     ssr: true,
   }
 );
@@ -22,24 +21,13 @@ const BrandListNew = dynamic(
 
 
 export default function BrandCategoryViewPage() {
-  const params = useParams();
-  const slug = params?.slug || "all"; // fallback slug
-  // Convert slug back to readable category
-  const categoryName = slug
-    .replace(/-/g, " ")
-    .replace(/\b\w/g, (l) => l.toUpperCase()); // optional capitalization
+  
+   
 
-  // Prepare initial filters for BrandListClient
-  const initialFilters = {
-    subcat: categoryName !== "All" ? categoryName : "",
-    state: "",
-    investmentRange: "",
-    maincat: "",
-    childcat: "",
-    searchTerm: "",
-    page: 1,
-    limit: 20,
-  };
+
+  
+
+ 
 
   return (
     <>
@@ -57,10 +45,8 @@ export default function BrandCategoryViewPage() {
           minHeight: "calc(100vh - 64px)",
         }}
       >
-        <Suspense fallback={<Loading />}>
-          <BrandListClient initialFilters={initialFilters}>
+        <Suspense fallback={<div>Loading...</div>}>
             <BrandListNew />
-          </BrandListClient>
         </Suspense>
       </Box>
 

@@ -51,12 +51,14 @@ import {
 } from "@mui/icons-material";
 import { Link as RouterLink } from "next/link";
 import { useDispatch } from "react-redux";
-import { showLoading, hideLoading } from "../../Redux/Slices/loadingSlice";
+// import { showLoading, hideLoading } from "@/Redux/Slices/loadingSlice";
 import RegisterationMediaHandling from "../Registration/RegisterationMediaHandling";
 import FlagIcon from "@mui/icons-material/Flag";
-import Navbar from "../../Components/Navbar/NavBar";
-import Footer from "../../Components/Footers/Footer";
-import { API_BASE_URL } from "../../Api/api";
+import Navbar from "@/Components/Navbar/NavBar";
+import Footer from "@/Components/Footers/Footer";
+import { API_BASE_URL } from "@/Api/api";
+import AdSlot from "@/Components/ads/GoogleAd";
+import { ADS } from "@/config/ads.config";
 
 const initialFormState = {
   // Personal Details
@@ -547,7 +549,7 @@ const InvestorRegister = () => {
     try {
       setLoadingIndustries(true);
       const response = await fetch(
-        `http://localhost:5000/api/v1/admin/getIndustryByIndustryName`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/getIndustryByIndustryName`,
       );
       const result = await response.json();
 
@@ -579,7 +581,7 @@ const InvestorRegister = () => {
     try {
       setLoadingIndustryDetails(true);
       const response = await fetch(
-        `http://localhost:5000/api/v1/admin/getIndustryByIndustryName?industry=${encodeURIComponent(industryName)}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/getIndustryByIndustryName?industry=${encodeURIComponent(industryName)}`,
       );
       const result = await response.json();
 
@@ -982,12 +984,12 @@ const InvestorRegister = () => {
       }),
     };
 
-    console.log("Submitting data:", formattedData);
+    // console.log("Submitting data:", formattedData);
 
     try {
-      dispatch(showLoading());
+      // dispatch(showLoading());
       const response = await axios.post(
-        `http://localhost:5000/api/v1/investor/createInvestor`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/investor/createInvestor`,
         formattedData,
         { headers: { "Content-Type": "application/json" } },
       );
@@ -1007,11 +1009,9 @@ const InvestorRegister = () => {
           localStorage.setItem("investorEmail", formattedData.email);
         }
 
-        setTimeout(() => {
-          dispatch(hideLoading());
-        }, 2000);
+        
       } else {
-        dispatch(hideLoading());
+        // dispatch(hideLoading());
         showSnackbar(
           "An unexpected error occurred. Please try again.",
           "error",
@@ -1019,7 +1019,7 @@ const InvestorRegister = () => {
       }
     } catch (error) {
       console.error("Registration error:", error);
-      dispatch(hideLoading());
+      // dispatch(hideLoading());
 
       if (error.response?.status === 409) {
         showSnackbar(
@@ -1071,7 +1071,7 @@ const InvestorRegister = () => {
         sx={{
           color: "#7ad03a",
           mb: -3,
-          mt: { xs: 12, md: 15, lg: 15, sm: 20 },
+          mt: { xs: 12, md: 15, lg: 25, sm: 20 },
           textAlign: "center",
           textDecoration: "underline",
           fontSize: { xs: "1.8rem", sm: "2.2rem", md: "2.5rem" },
@@ -1085,8 +1085,8 @@ const InvestorRegister = () => {
           minHeight: "100vh",
           flexDirection: isMobile ? "column" : "row",
           display: "flex",
-          justifyContent: "center",
-          alignItems: "flex-start",
+          justifyContent: "space-evenly",
+          // alignItems: "flex-start",
           marginLeft: { xs: "0" },
           width: { xs: "70%", lg: "100%", md: "100%", sm: "100%" },
         }}
@@ -1095,7 +1095,7 @@ const InvestorRegister = () => {
           ref={dropdownRef}
           sx={{
             p: 4,
-            ml: "30px",
+            ml: "20px",
             width: "100%",
             maxWidth: "1030px",
             position: "relative",
@@ -2197,8 +2197,7 @@ const InvestorRegister = () => {
                 }
                 sx={{ mb: 3 }}
               />
-              // Update the submit button - remove the preference check from
-              disabled condition
+           
               <Button
                 type="submit"
                 variant="contained"
@@ -2385,11 +2384,13 @@ const InvestorRegister = () => {
         </Box>
 
         {!isMobile && (
-          <Box sx={{ marginTop: { sm: "35px" } }}>
-            <RegisterationMediaHandling />
+          <Box >
+            {/* <RegisterationMediaHandling /> */}
+            {/* <AdSlot {...ADS.HOME.FILTER_BOTTOM_RECTANGLE}/> */}
           </Box>
         )}
       </Box>
+            {/* <AdSlot {...ADS.HOME.FOOTER_RECTANGLE}/> */}
 
       <Box>
         <Footer />

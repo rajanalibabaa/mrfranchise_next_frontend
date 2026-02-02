@@ -19,20 +19,22 @@ import {
 } from "@mui/material";
 import { motion } from "framer-motion";
 import axios from "axios";
-
+ 
 import { useToggleLike } from "../../Hooks/Fetchbrands.jsx";
 import { handleShortList } from "../../Api/shortListApi.jsx";
 import { toggleBrandLike, toggleBrandShortList } from "../../Redux/Slices/GetAllBrandsDataUpdationFile.jsx";
 import { toggleHomeCardLike, toggleHomeCardShortlist } from "../../Redux/Slices/TopCardFetchingSlice.jsx";
 import { likeApiFunction } from "@/Api/likeApi.jsx";
 import { useDispatch } from "react-redux";
-import { token } from "@/Utils/autherId.jsx";
+import { getToken } from "@/Utils/autherId.jsx";
 import LoginPage from "@/Components/LoginPage/LoginPage.jsx";
-
+ 
 import BrandHeader from "@/Components/BrandViewPageHandling/BrandHeaderViewPage.jsx";
 import MediaSection from "@/Components/BrandViewPageHandling/MediaSectionViewPage.jsx";
 import Disclaimer from "@/Components/OverTabHandlings.jsx/DisclimerPage.jsx";
-
+import AdSlot from "@/Components/ads/GoogleAd.jsx";
+import { ADS } from "@/config/ads.config.js";
+ 
 // LAZY load (secondary) components
 const Navbar = lazy(() => import("@/Components/Navbar/NavBar.jsx"));
 const Footer = lazy(() => import("@/Components/Footers/Footer.jsx"));
@@ -46,12 +48,12 @@ const SimilarBrands = lazy(() => import("@/Components/HomePage_VideoSection/Simi
 const LikedBrands = lazy(() => import("@/Components/HomePage_VideoSection/LikedBrands.jsx"));
 const ViewBrands = lazy(() => import("@/Components/HomePage_VideoSection/ViewBrands.jsx"));
 const ShortListedBrands = lazy(() => import("@/Components/HomePage_VideoSection/ShortlistBrands.jsx"));
-
+ 
 // Lazy-load OverviewTab only when visible
 function LazyOverviewTab({ brand }) {
   const ref = useRef();
   const [visible, setVisible] = useState(false);
-
+ 
   useEffect(() => {
     if (!ref.current) return;
     const observer = new window.IntersectionObserver(
@@ -63,7 +65,7 @@ function LazyOverviewTab({ brand }) {
     observer.observe(ref.current);
     return () => observer.disconnect();
   }, []);
-
+ 
   return (
     <Box ref={ref} sx={{ minHeight: 400 }}>
       {visible ? (
@@ -78,25 +80,25 @@ function LazyOverviewTab({ brand }) {
     </Box>
   );
 }
-
-
-
-
+ 
+ 
+ const token = getToken();
+ 
 const BrandDetails = ({ brandData }) => {
   const theme = useTheme();
   const router = useRouter();
   const searchParams = useSearchParams();
   const uuid = searchParams.get("uuid");
-
+ 
   // Media queries
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const isTablet = useMediaQuery(theme.breakpoints.between("sm", "md"));
   const isSmallDesktop = useMediaQuery(theme.breakpoints.between("md", "lg"));
   const isLargeDesktop = useMediaQuery(theme.breakpoints.up("lg"));
-
+ 
   // Ref for scrolling
   const mainContainerRef = useRef(null);
-
+ 
   // States
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -113,14 +115,14 @@ const BrandDetails = ({ brandData }) => {
   });
   // const [localIsLiked, setLocalIsLiked] = useState(brandData[0].isLiked);
 const [localIsLiked, setLocalIsLiked] = useState(false);
-
+ 
 useEffect(() => {
   if (brandData?.[0]) {
     setLocalIsLiked(!!brandData[0].isLiked);
   }
 }, [brandData]);
-
-
+ 
+ 
   const [isProcessingLike, setIsProcessingLike] = useState(false);
   // const [shortListed, setShortListed] = useState(brandData[0].isShortListed);
   const [shortListed, setShortListed] = useState(false);
@@ -143,13 +145,13 @@ useEffect(() => {
   });
   const [showLogin, setShowLogin] = useState(false);
   const dispatch = useDispatch();
-
+ 
   // Memoized
   const selectedBrand = brandData || {};
   const investorUUID = useMemo(() => localStorage.getItem("investorUUID"), []);
   const AccessToken = useMemo(() => localStorage.getItem("accessToken"), []);
-
-
+ 
+ 
   const investmentRanges = useMemo(
     () => [
       ...new Set(
@@ -159,22 +161,22 @@ useEffect(() => {
     ],
     [selectedBrand]
   );
-
+ 
   const investmentTimings = useMemo(
     () => ["Immediately", "1 - 3 Months", "3 - 6 Months", "6 + Months"],
     []
   );
-
+ 
   const readyToInvestOptions = useMemo(
     () => ["Own Investment", "Going For Loan", "Need Loan Assistance"],
     []
   );
-
+ 
   const allVideos = useMemo(() => {
     if (!selectedBrand || selectedBrand.length === 0) return [];
     return selectedBrand[0]?.uploads?.franchiseVideos || [];
   }, [selectedBrand]);
-
+ 
   const allImages = useMemo(
     () => [
       ...(selectedBrand[0]?.uploads?.logo
@@ -185,12 +187,12 @@ useEffect(() => {
     ],
     [selectedBrand]
   );
-
+ 
   // Events (useCallback)
   const handleOpenShareClick = useCallback((event) => {
     setAnchorEl(event.currentTarget);
   }, []);
-
+ 
   const handleLikeClick = async () => {
     const brandId = brandData[0].uuid;
     if (!token) {
@@ -202,7 +204,7 @@ useEffect(() => {
     await likeApiFunction(brandId);
     setLocalIsLiked(!localIsLiked);
   };
-
+ 
   const handleToggleShortList = async () => {
     const brandId = brandData[0].uuid;
     if (!token) {
@@ -214,7 +216,7 @@ useEffect(() => {
     await handleShortList(brandId);
     setShortListed(!shortListed);
   };
-
+ 
   const toggleDrawer = useCallback(
     (open) => (event) => {
       if (
@@ -227,12 +229,12 @@ useEffect(() => {
     },
     []
   );
-
+ 
   const handleChange = useCallback((e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   }, []);
-
+ 
 const handleSubmit = useCallback(
   async (e) => {
     e.preventDefault();
@@ -265,10 +267,10 @@ const handleSubmit = useCallback(
         readyToInvest: formData.readyToInvest,
         brandId: selectedBrand[0]?.uuid, // Correctly access brand UUID from array
         brandName: selectedBrand[0]?.brandDetails?.brandName || "",
-        
+       
         applyId: id,
       };
-
+ 
  
       // Validate required fields
       const requiredFields = [
@@ -293,7 +295,7 @@ const handleSubmit = useCallback(
  
       // Make API request
       const response = await axios.post(
-        "http://localhost:5000/api/v1/instantapply/postApplication",
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/instantapply/postApplication`,
         payload,
         {
           headers: {
@@ -308,8 +310,10 @@ const handleSubmit = useCallback(
  
       if (response.data && response.data.success) {
         setSubmitSuccess(true);
-        alert("✅ Success! Your application has been submitted.");
         setDrawerOpen(false);
+          const whatsappNumber = selectedBrand[0]?.brandDetails?.whatsappnumber;
+        const brandName = selectedBrand[0]?.brandDetails?.brandName || "Franchise";
+ 
         // Reset form
         setFormData({
           fullName: "",
@@ -322,6 +326,14 @@ const handleSubmit = useCallback(
           planToInvest: "",
           readyToInvest: "",
         });
+                alert("✅ Success! Your application has been submitted.");
+ if (whatsappNumber) {
+          const cleanNumber = whatsappNumber.replace(/[\s()-]/g, "");
+          const message = encodeURIComponent(
+            `Hi, I just submitted an application for the ${brandName} franchise. I'm interested in discussing this opportunity further.`
+          );
+          window.open(`https://wa.me/${cleanNumber}?text=${message}`, "_blank");
+        }
       } else {
         throw new Error(response.data?.message || "Unknown error occurred");
       }
@@ -351,12 +363,12 @@ const handleSubmit = useCallback(
   [formData, selectedBrand, investorUUID, router, AccessToken]
 );
  
-
+ 
   const handleImageOpen = useCallback((index) => {
     setCurrentImageIndex(index);
     setImageModalOpen(true);
   }, []);
-
+ 
   const handlePrevImage = useCallback(() => {
     setCurrentImageIndex((prev) =>
       prev === 0 ? allImages.length - 1 : prev - 1
@@ -367,14 +379,14 @@ const handleSubmit = useCallback(
       prev === allImages.length - 1 ? 0 : prev + 1
     );
   }, [allImages.length]);
-
+ 
   // API: fetch investor and brand as before...
-
+ 
   const fetchInvestorDetails = useCallback(async () => {
     if (!investorUUID || !AccessToken) return;
     try {
       const response = await axios.get(
-        `http://localhost:5000/api/v1/investor/getInvestorByUUID/${investorUUID}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/investor/getInvestorByUUID/${investorUUID}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -400,8 +412,8 @@ const handleSubmit = useCallback(
       }
     }
   }, [investorUUID, AccessToken]);
-
-
+ 
+ 
   useEffect(() => {
     if (investorUUID && AccessToken) {
       const controller = new AbortController();
@@ -409,7 +421,7 @@ const handleSubmit = useCallback(
       return () => controller.abort();
     }
   }, [fetchInvestorDetails, investorUUID, AccessToken]);
-
+ 
   useEffect(() => {
     const locations =
       selectedBrand[0]?.brandexpansionlocationdatas?.expansionLocations?.domestic?.locations || [];
@@ -425,7 +437,7 @@ const handleSubmit = useCallback(
       }));
     }
   }, [selectedBrand]);
-
+ 
   useEffect(() => {
     const locations =
       selectedBrand[0]?.brandexpansionlocationdatas?.expansionLocations?.domestic?.locations || [];
@@ -446,7 +458,7 @@ const handleSubmit = useCallback(
       }));
     }
   }, [formData.state, selectedBrand]);
-
+ 
   useEffect(() => {
     const locations =
       selectedBrand[0]?.brandexpansionlocationdatas?.expansionLocations?.domestic?.locations || [];
@@ -466,7 +478,7 @@ const handleSubmit = useCallback(
       }));
     }
   }, [formData.district, formData.state, selectedBrand]);
-
+ 
   useEffect(() => {
     const handleScroll = () => {
       setShowBackToTop(window.pageYOffset > 300);
@@ -474,11 +486,11 @@ const handleSubmit = useCallback(
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
-
+ 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
-
+ 
   // Utility
   const getImageBoxSize = useCallback(() => {
     if (isMobile) return 120;
@@ -501,15 +513,15 @@ const handleSubmit = useCallback(
       </Box>
     );
   }
-  
-
+ 
+ 
   return (
     <>
       {/* LAZY NAVBAR LOAD */}
       <Suspense fallback={<div style={{height: 60, background: "#fff"}} />}>
         <Navbar />
       </Suspense>
-
+ 
       <Box
         ref={mainContainerRef}
         sx={{
@@ -520,13 +532,13 @@ const handleSubmit = useCallback(
           px: isMobile ? 1 : isTablet ? 3 : 4,
         }}
       >
-
+ 
           <FloatingApplyButton
             isMobile={isMobile}
             brand={selectedBrand}
             toggleDrawer={toggleDrawer}
           />
-
+ 
           <ApplyDrawer
             open={drawerOpen}
             onClose={toggleDrawer(false)}
@@ -560,9 +572,9 @@ const handleSubmit = useCallback(
             toggleDrawer={toggleDrawer}
             getOutletRange={getOutletRange}
           />
-
+ 
         {/* <Divider sx={{ my: 1, }} /> */}
-
+ 
           <MediaSection
             allVideos={allVideos}
             allImages={allImages}
@@ -573,11 +585,11 @@ const handleSubmit = useCallback(
           />
         {/* </Suspense> */}
         {/* <Divider sx={{ my: 1 }} /> */}
-
+ 
         <Suspense fallback={<Box minHeight={180}><CircularProgress /></Box>}>
           <LazyOverviewTab brand={selectedBrand} />
         </Suspense>
-
+ 
         <Suspense fallback={null}>
           <ImageDialog
             open={imageModalOpen}
@@ -591,7 +603,7 @@ const handleSubmit = useCallback(
           />
         </Suspense>
       </Box>
-
+ 
       {/* LAZY LOAD LIKED/SIMILAR BRANDS */}
       <Suspense fallback={<Box minHeight={120}><CircularProgress /></Box>}>
         <LikedBrands  />
@@ -605,7 +617,7 @@ const handleSubmit = useCallback(
       <Suspense fallback={<Box minHeight={120}><CircularProgress /></Box>}>
         <SimilarBrands brandData={selectedBrand} />
       </Suspense>
-
+ 
       {/* EXPANSION LOCATIONS LAZY ON SCROLL */}
       <Box
         sx={{
@@ -623,20 +635,20 @@ const handleSubmit = useCallback(
             isSmallDesktop={isSmallDesktop}
             isLargeDesktop={isLargeDesktop}
           />
-      </Box> 
-    
+      </Box>
+   
       <Disclaimer isMobile={isMobile} />
-
+ <AdSlot {...ADS.HOME.TOP_BILLBOARD} />
       <Suspense fallback={null}>
         <BackToTopButton show={showBackToTop} isMobile={isMobile} />
       </Suspense>
       <Suspense fallback={<div style={{height: 300, background: "#eee"}} />}>
         <Footer />
       </Suspense>
-
-
-
-
+ 
+ 
+ 
+ 
       {/* Login Dialog */}
       {showLogin && (
         <LoginPage open={showLogin} onClose={() => setShowLogin(false)} />
@@ -644,5 +656,6 @@ const handleSubmit = useCallback(
     </>
   );
 };
-
+ 
 export default React.memo(BrandDetails);
+ 

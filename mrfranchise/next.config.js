@@ -1,25 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // output: "export",
   reactStrictMode: true,
+  trailingSlash: true,
 
   images: {
-    domains: ['mrfranchise.in'],
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'mrfranchise.in',
-        pathname: '/**',
-      },
-    ],
-  },
-
-  webpack: (config) => {
-    config.module.rules.push({
-      test: /\.(avif|jpeg|jpg|png|webp|gif|svg)$/i,
-      type: 'asset/resource',
-    });
-    return config;
+    unoptimized: true,
   },
 };
 
-export default nextConfig;
+module.exports = nextConfig;

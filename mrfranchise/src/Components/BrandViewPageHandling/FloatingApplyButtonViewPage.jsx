@@ -1,95 +1,122 @@
 "use client";
 import React from "react";
-import { Button, Box, Typography, keyframes } from "@mui/material";
+import {
+  Button,
+  Box,
+  Typography,
+  keyframes,
+  IconButton,
+  Tooltip,
+} from "@mui/material";
+import WhatsAppIcon from "@mui/icons-material/WhatsApp";
 import { motion } from "framer-motion";
 
-// Bounce animation keyframes
+// Bounce animation
 const bounce = keyframes`
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
 `;
 
 const FloatingApplyButton = ({ isMobile, brand, toggleDrawer }) => {
-  const brandName = brand[0]?.brandDetails?.brandName || "Brand";
-  const brandCategory =
-    brand[0]?.brandfranchisedetails?.franchiseDetails?.brandCategories?.child ||
-    "";
+
+  ;
+const currentUrl = window.location.href;
+  const brandName = brand?.[0]?.brandDetails?.brandName || "Brand";
+  const whatsappNumber = brand?.[0]?.brandDetails?.whatsappnumber || "";
+
+  const shareText = `${currentUrl}\n\n#MrFranchise.in`;
+
+  const whatsappLink = whatsappNumber
+    ? `https://wa.me/${whatsappNumber.replace(/\D/g, "")}?text=${encodeURIComponent(
+        `Hi, I am interested in your"${brandName}" franchise business.\n\n${shareText} \n\n `
+      )}`
+    : null;
 
   return (
+    <>
     <Box
       sx={{
         position: "fixed",
-        bottom: isMobile ? 10 : 300,
-        right: isMobile ? 0 : 20,
-        left: isMobile ? 0 : "auto",
+        right: 20,                     // ✅ always right
+        bottom: isMobile ? 90 : 350,   // ✅ responsive spacing
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        zIndex: 1000,
+        gap: 1.5,
+        zIndex: 1200,
       }}
     >
-      {/* Animated Apply Now Button */}
+      {/* 🔶 APPLY NOW */}
       <motion.div
-        initial={{ scale: 0.9 }}
-        animate={{
-          scale: 1,
-          y: [0, -10, 0], // bounce
-        }}
+        initial={{ scale: 0.95 }}
+        animate={{ scale: 1, y: [0, -8, 0] }}
         transition={{
-          y: {
-            repeat: Infinity,
-            repeatType: "loop",
-            duration: 2,
-            ease: "easeOut",
-          },
-          scale: {
-            type: "spring",
-            stiffness: 100,
-            damping: 10,
-          },
+          y: { repeat: Infinity, duration: 2 },
+          scale: { type: "spring", stiffness: 120, damping: 12 },
         }}
-        whileHover={{
-          scale: 1.05,
-          transition: { type: "spring", stiffness: 400, damping: 10 },
-        }}
+        whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
-        style={{ textAlign: "center" }}
       >
-     <Button
-  variant="contained"
-  size="large"
-  onClick={toggleDrawer(true)}
-  sx={{
-    display: "flex",
-    flexDirection: "column", // 🔹 Stack text vertically
-    alignItems: "center",
-    backgroundColor: "#ff9800",
-    color: "white",
-    borderRadius: 4,
-    
-    boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
-    "&:hover": {
-      backgroundColor: "#e65100",
-    },
-    fontSize: "1rem",
-    animation: `${bounce} 2s infinite ease-in-out`,
-  }}
->
-  {/* Top line → Apply Now */}
-  <span style={{ fontWeight: 600, fontSize: "1rem" }}>Apply Now</span>
-
-  {/* Bottom line → Brand Name */}
-  <span style={{ fontSize: "0.75rem" }}>
-    {brandName}
-  </span>
-</Button>
-       
+        <Button
+          variant="contained"
+          onClick={toggleDrawer(true)}
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            px: 3,
+            py: 1,
+            backgroundColor: "#ff9800",
+            borderRadius: 3,
+            boxShadow: "0 6px 14px rgba(0,0,0,0.25)",
+            "&:hover": { backgroundColor: "#e65100" },
+            animation: `${bounce} 2s infinite`,
+          }}
+        >
+          <Typography fontWeight={600}>Apply Now</Typography>
+          <Typography fontSize="0.75rem">{brandName}</Typography>
+        </Button>
       </motion.div>
+
+      
     </Box>
+    <Box  sx={{
+        position: "fixed",
+        right: 20,                     // ✅ always right
+        bottom: isMobile ? 90 : 100,   // ✅ responsive spacing
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: 1.5,
+        zIndex: 1200,
+      }}>
+      {/* 🟢 WHATSAPP ICON */}
+      {whatsappLink && (
+        <Tooltip title="Chat on WhatsApp" placement="left">
+          <IconButton
+            component="a"
+            href={whatsappLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            sx={{
+              backgroundColor: "#25D366",
+              color: "#fff",
+              width: 66,
+              height: 66,
+              boxShadow: "0 4px 14px rgba(0,0,0,0.3)",
+              "&:hover": {
+                backgroundColor: "#1ebe5d",
+                transform: "scale(1.1)",
+              },
+              transition: "all 0.25s ease",
+            }}
+            aria-label="WhatsApp Chat"
+          >
+            <WhatsAppIcon sx={{ fontSize: 28 }} />
+          </IconButton>
+        </Tooltip>
+      )}
+    </Box>
+    </>
   );
 };
 

@@ -45,7 +45,7 @@
 //   openGraph: {
 //     type: "website",
 //     locale: "en_IN",
-//     url: "https://mrfranchise.in/AllCategoryPage/allbrandlisting",
+//     url: "https://mrfranchise.in/all-franchise-brands",
 //     siteName: "Mr Franchise India",
 //     title:
 //       "All Franchise Brands in India | Business Opportunities | Mr Franchise India",
@@ -71,7 +71,7 @@
 //   },
 
 //   alternates: {
-//     canonical: "https://mrfranchise.in/AllCategoryPage/allbrandlisting",
+//     canonical: "https://mrfranchise.in/all-franchise-brands",
 //   },
 
 //   category: "Franchise Listings",

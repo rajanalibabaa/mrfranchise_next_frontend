@@ -22,7 +22,7 @@ export const fetchBrandsBySubCategory = createAsyncThunk(
       }
 
       const response = await axios.get(
-        `http://localhost:5000/api/v1/brandlisting/getBrandsByChildCategory`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/brandlisting/getBrandsByChildCategory`,
         {
           params: { subCategory, id, page, limit },
         }

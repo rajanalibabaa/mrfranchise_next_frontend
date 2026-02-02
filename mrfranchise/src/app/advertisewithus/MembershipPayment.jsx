@@ -81,7 +81,7 @@ const MembershipSelection = ({
         setLoading(true);
         setError(null);
         const response = await fetch(
-          "http://localhost:5000/api/v1/brandadvertise/payment",
+          `${process.env.NEXT_PUBLIC_API_URL}/api/v1/brandadvertise/payment`,
           {
             method: "GET",
             headers: {
@@ -138,7 +138,7 @@ const MembershipSelection = ({
               }))
             );
           }
-          console.log("Processed Membership Packages:", membershipPkgs);
+          // console.log("Processed Membership Packages:", membershipPkgs);
           // console.log("Processed Listing Packages:", listingPkgs);
           setPackages(membershipPkgs);
           setListingPackages(listingPkgs);
@@ -281,7 +281,7 @@ const MembershipSelection = ({
   };
   const handleContinueToPayment = () => {
     if (selectedPlan) {
-      console.log("Opening payment page with plan:", selectedPlan);
+      // console.log("Opening payment page with plan:", selectedPlan);
       setShowPaymentPage(true);
     } else {
       console.error("No plan selected");

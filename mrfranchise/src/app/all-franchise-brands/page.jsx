@@ -1,5 +1,5 @@
 
-
+;
 //server side rendering 
 
 import { Suspense } from "react";
@@ -8,11 +8,10 @@ import dynamic from "next/dynamic";
 import Navbar from "@/Components/Navbar/NavBar";
 import Footer from "@/Components/Footers/Footer";
 import Loading from "./loading";
-import BrandListClient from "./BrandListClient";
 
 // Dynamic import for better code splitting
 const BrandListNew = dynamic(
-  () => import("@/app/AllCategoryPage/BrandListAllbrands"),
+  () => import("@/Components/allbarndviewpage/brandListAllbrands"),
   {
     loading: () => <Loading />,
     ssr: true,
@@ -26,14 +25,14 @@ const BrandListNew = dynamic(
 
 export default async function BrandCategoryViewPage({ searchParams }) {
   // Extract filters from URL
-  const initialFilters = {
-    subcat: searchParams?.subcat || "",
-    state: searchParams?.state || "",
-    investmentRange: searchParams?.investmentRange || "",
-    maincat: searchParams?.maincat || "",
-    childcat: searchParams?.childcat || "",
-    searchTerm: searchParams?.searchTerm || "",
-  };
+  // const initialFilters = {
+  //   subcat: searchParams?.subcat || "",
+  //   state: searchParams?.state || "",
+  //   investmentRange: searchParams?.investmentRange || "",
+  //   maincat: searchParams?.maincat || "",
+  //   childcat: searchParams?.childcat || "",
+  //   searchTerm: searchParams?.searchTerm || "",
+  // };
 
   
   return (
@@ -47,7 +46,7 @@ export default async function BrandCategoryViewPage({ searchParams }) {
             "@type": "CollectionPage",
             name: "Franchise Brands Directory",
             description: "Explore all franchise opportunities across India",
-            url: "https://mrfranchise.in/AllCategoryPage/allbrandlisting",
+            url: "https://mrfranchise.in/all-franchise-brands",
             mainEntity: {
               "@type": "ItemList",
               name: "Franchise Brands",
@@ -66,7 +65,7 @@ export default async function BrandCategoryViewPage({ searchParams }) {
                   "@type": "ListItem",
                   position: 2,
                   name: "All Brands",
-                  item: "https://mrfranchise.in/AllCategoryPage/allbrandlisting",
+                  item: "https://mrfranchise.in/all-franchise-brands",
                 },
               ],
             },
@@ -87,9 +86,7 @@ export default async function BrandCategoryViewPage({ searchParams }) {
         }}
       >
         <Suspense fallback={<Loading />}>
-          <BrandListClient initialFilters={initialFilters}>
             <BrandListNew />
-          </BrandListClient>
         </Suspense>
       </Box>
 

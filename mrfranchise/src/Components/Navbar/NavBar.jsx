@@ -1,6 +1,5 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
-import Link from 'next/link.js';
 import {useRouter } from "next/navigation.js";
 import AppBar from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
@@ -23,15 +22,15 @@ import {
   loginSuccess,
   toggleSidebar,
   toggleMenu,
-} from "@/Redux/Slices/navbarSlice";
-import { logout } from "@/Redux/Slices/AuthSlice/authSlice";
+} from "@/Redux/Slices/navbarSlice.jsx";
+import { logout } from "@/Redux/Slices/AuthSlice/authSlice.jsx";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 // import logo from "@/assets/Images/logo.png";
-import { showLoading } from "@/Redux/Slices/loadingSlice";
 import NavbarSearch from "./NavbarSearch.jsx";
 import Image from "next/image.js";
-
+import AdSlot from "../ads/GoogleAd.jsx";
+import { ADS } from "@/config/ads.config.js";
 function Navbar() {
   const router = useRouter();
   const dispatch = useDispatch();
@@ -112,7 +111,7 @@ const [ID, setId] = useState(null);
   //   setlogoutLoading(true);
   //   try {
   //     const response = await axios.post(
-  //       `http://localhost:5000/api/v1/logout/${ID}`,
+  //       `https://mrfranchisebackend.mrfranchise.in/api/v1/logout/${ID}`,
   //       {},
   //       {
   //         headers: {
@@ -222,8 +221,31 @@ const [ID, setId] = useState(null);
     //   dispatch(showLoading());
     //   navigate("/");
     // }
-    dispatch(showLoading());
+    // dispatch(showLoading());
     router.push("/");
+  };
+
+
+  const menuItems = [
+  { label: "Expand Your Franchise", path: "/expandyourbrand", external: false },
+  { label: "Investor", path: "/investfranchise", external: false },
+  { label: "Advertise", path: "/advertisewithus", external: false },
+  { label: "Blogs", path: "/", external: false },
+  {
+    label: "Franchise Consulting",
+    path: "https://franchiseconsulting.mrfranchise.in",
+    external: true,
+  },
+];
+
+  const handleNavigation = (item) => {
+    if (item.external) {
+      // ✅ open external site in new tab
+      window.open(item.path, "_blank", "noopener,noreferrer");
+    } else {
+      // ✅ super fast client-side navigation
+      router.push(item.path);
+    }
   };
 
   return (
@@ -250,6 +272,7 @@ const [ID, setId] = useState(null);
           },
         }}
       >
+        <AdSlot {...ADS.HOME.TOP_BILLBOARD} />
         <Box sx={{ 
           display:{ xs: "none", sm: "flex"}, 
           flexWrap: "wrap",
@@ -258,7 +281,7 @@ const [ID, setId] = useState(null);
           position: 'relative',
           zIndex: 1
         }}>
-          {['Expand Your Franchise', 'Investor', 'Advertise',"Blogs","Franchise Consultant"].map((text) => (
+          {/* {['Expand Your Franchise', 'Investor', 'Advertise',"Blogs","Franchise Consultant"].map((text) => (
             <motion.div
               key={text}
               whileHover={{ scale: 1.05 }}
@@ -296,7 +319,30 @@ const [ID, setId] = useState(null);
 </Button>
 
             </motion.div>
-          ))}
+          ))} */}
+          {menuItems.map((item) => (
+        <motion.div
+          key={item.label}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          <Button
+            size="small"
+            onClick={() => handleNavigation(item)}
+            sx={{
+              fontSize: isMobile ? "0.75rem" : "0.875rem",
+              textTransform: "none",
+              color: "black",
+              "&:hover": {
+                color: "#ff9800",
+                backgroundColor: "rgba(255, 255, 255, 0.1)",
+              },
+            }}
+          >
+            {item.label}
+          </Button>
+        </motion.div>
+      ))}
         </Box>
         <Toolbar
           sx={{

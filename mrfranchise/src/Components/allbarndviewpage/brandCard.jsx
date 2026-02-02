@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useCallback, memo, useMemo, useRef } from "react";
+import React, { useState, useCallback, memo, useMemo, useRef, useEffect } from "react";
 import {
   Box,
   Button,
@@ -23,7 +23,7 @@ import {
 } from "@mui/icons-material";
 import LoginPage from "@/Components/LoginPage/LoginPage";
 import { postView } from "@/Utils/function/view";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { openBrandDialog } from "@/Redux/Slices/OpenBrandNewPageSlice.jsx";
 import {
   toggleBrandLikefilter,
@@ -122,7 +122,10 @@ const BrandCard = memo(
     const videoRef = useRef(null);
     const likeButtonRef = useRef(null);
     const shortlistButtonRef = useRef(null);
-
+const [token, setToken] = useState(null);
+useEffect(() => {
+  setToken(localStorage.getItem("accessToken"));
+}, []);
     // 🎉 Updated confetti effect to use element position
     const triggerCelebration = (color, buttonRef) => {
       if (buttonRef && buttonRef.current) {
@@ -165,14 +168,13 @@ const BrandCard = memo(
         setTimeout(() => postView(uuid), 0);
       }
       dispatch(openBrandDialog(brand));
-      console.log('brndssssss',brand);
+      // console.log('brndssssss',brand);
       
       
     }, [uuid, brand, dispatch]);
 
     const handleLike = useCallback(async () => {
       if (likeProcessing) return;
-      const token = localStorage.getItem("accessToken");
 
       if (!token) {
         onShowLogin(true);
@@ -207,7 +209,6 @@ const BrandCard = memo(
 
     const handleToggleShortList = useCallback(async () => {
       if (shortlistProcessing) return;
-      const token = localStorage.getItem("accessToken");
 
       if (!token) {
         onShowLogin(true);
@@ -423,21 +424,7 @@ const BrandCard = memo(
                 )}
               </IconButton>
             </Box>
-            {/* {brandCategories?.main ? (
-              <Chip
-                label={brandCategories?.main}
-                size="small"
-                sx={{
-                  bgcolor: "rgba(255, 152, 0, 0.1)",
-                  color: "orange.dark",
-                  fontWeight: 200,
-                }}
-              />
-            ) : (
-              <Typography variant="body2" color="text.secondary">
-                N/A
-              </Typography>
-            )} */}
+            
           </Box>
 
           <Box
