@@ -53,7 +53,7 @@ export default function AdSlot({
         mx: "auto",
         my: 0,
         textAlign: "center",
-        background:'red',
+        background:'transparent',
         minHeight: finalMinHeight,
       }}
     >

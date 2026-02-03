@@ -121,7 +121,7 @@ const AppliedTab = ({
                 page={currentPage}
                 onChange={handlePageChange}
                 color="primary"
-                size="large"
+                size="medium"
               />
             </Box>
           )}

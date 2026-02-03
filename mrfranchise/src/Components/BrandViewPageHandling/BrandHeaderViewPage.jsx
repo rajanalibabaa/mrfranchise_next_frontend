@@ -357,7 +357,7 @@ height: 35,
 
   return (
     <>
-      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1,p:2 }}>
+      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 ,}}>
         {categoryArray.map((category, index) => (
           <Chip
             key={index}

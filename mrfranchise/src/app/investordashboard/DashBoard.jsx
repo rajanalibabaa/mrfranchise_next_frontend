@@ -401,7 +401,7 @@ const allDocs = appliedRes.data?.data?.results?.flatMap(result => result.data) |
       <Avatar
         src={userData?.profileImage || "url(/logo.png)"}
         loading="lazy"
-        alt="Profile"
+        alt={userData?.firstName || "Investor"}
         sx={{
           width: 60,
           height: 60,
