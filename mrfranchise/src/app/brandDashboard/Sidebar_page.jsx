@@ -1,5 +1,3 @@
-
-
 "use client";
 
 import React, { useState } from "react";
@@ -12,6 +10,7 @@ import {
   useTheme,
   AppBar,
   Toolbar,
+  Typography,
 } from "@mui/material";
 
 import MenuIcon from "@mui/icons-material/Menu";
@@ -21,25 +20,26 @@ import ViewListIcon from "@mui/icons-material/ViewList";
 import SupportAgentIcon from "@mui/icons-material/SupportAgent";
 import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
-import Footer from "@/Components/Footers/Footer";
 
-export default function BrandDashboardLayout({ children }) {
+const drawerWidth = 240;
+
+export default function BrandDashboardLayout() {
   const theme = useTheme();
-const isTabletOrMobile = useMediaQuery(theme.breakpoints.down("lg"));
+  const isMobileOrTablet = useMediaQuery(theme.breakpoints.down("md"));
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const handleDrawerToggle = () => {
-    setMobileOpen(prev => !prev);
-  };
+  const handleDrawerToggle = () => setMobileOpen(prev => !prev);
 
   const navLinkStyle = {
-    display: "block",
+    display: "flex",
+    alignItems: "center",
+    gap: 1,
     textDecoration: "none",
     color: "#333",
-    padding: "10px",
-    borderRadius: "6px",
+    padding: "10px 12px",
+    borderRadius: "8px",
     backgroundColor: "#f9f9f9",
-    transition: "all 0.3s ease",
+    transition: "0.25s",
     "&:hover": {
       backgroundColor: "#e9e9e9",
       transform: "translateX(6px)",
@@ -48,77 +48,53 @@ const isTabletOrMobile = useMediaQuery(theme.breakpoints.down("lg"));
 
   const SidebarLinks = () => (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-
       <Box sx={{ textAlign: "center", mb: 2 }}>
-        <Link href="/" onClick={() => isTabletOrMobile && setMobileOpen(false)}>
+        <Link href="/" onClick={() => isMobileOrTablet && setMobileOpen(false)}>
           <img
             src="/brandLogo.jpg"
             alt="Brand Logo"
-            style={{ width: "100%", maxWidth: 180 }}
+            style={{ maxWidth: 180, width: "100%" }}
           />
         </Link>
       </Box>
 
-
-      <Link href="/brandDashboard" style={navLinkStyle} onClick={() => isTabletOrMobile && setMobileOpen(false)}>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <SpaceDashboardIcon /> Dashboard
-        </Box>
+      <Link href="/brandDashboard" style={navLinkStyle} onClick={() => setMobileOpen(false)}>
+        <SpaceDashboardIcon /> Dashboard
       </Link>
 
-      <Link href="/brandDashboard/brand_listing_controller" style={navLinkStyle} onClick={() => isTabletOrMobile && setMobileOpen(false)}>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <ViewListIcon /> Edit Brand Listing
-        </Box>
+      <Link href="/brandDashboard/brand_listing_controller" style={navLinkStyle} onClick={() => setMobileOpen(false)}>
+        <ViewListIcon /> Edit Brand Listing
       </Link>
 
-      <Link href="/brandDashboard/brandsearchus" style={navLinkStyle} onClick={() => isTabletOrMobile && setMobileOpen(false)}>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <SupportAgentIcon /> Reach Us
-        </Box>
+      <Link href="/brandDashboard/brandsearchus" style={navLinkStyle} onClick={() => setMobileOpen(false)}>
+        <SupportAgentIcon /> Reach Us
       </Link>
 
-      <Link href="/brandDashboard/brandrequesthandle" style={navLinkStyle} onClick={() => isTabletOrMobile  && setMobileOpen(false)}>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <ManageAccountsIcon /> Action Manager
-        </Box>
+      <Link href="/brandDashboard/brandrequesthandle" style={navLinkStyle} onClick={() => setMobileOpen(false)}>
+        <ManageAccountsIcon /> Action Manager
       </Link>
 
-      <Link href="/brandDashboard/paymentpackageupgrade" style={navLinkStyle} onClick={() => isTabletOrMobile && setMobileOpen(false)}>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <TrendingUpIcon /> Package Upgrade
-        </Box>
+      <Link href="/brandDashboard/paymentpackageupgrade" style={navLinkStyle} onClick={() => setMobileOpen(false)}>
+        <TrendingUpIcon /> Package Upgrade
       </Link>
-      
     </Box>
   );
 
-  const sidebarContent = (
+  const drawerContent = (
     <Box
       sx={{
-        width: 240,
-        p: 2,
+        width: drawerWidth,
         height: "100%",
+        p: 2,
         display: "flex",
         flexDirection: "column",
         justifyContent: "space-between",
       }}
     >
-      {/* Logo */}
-      {/* <Box sx={{ textAlign: "center", mb: 2 }}>
-        <Link href="/" onClick={() => isMobile && setMobileOpen(false)}>
-          <img
-            src="/brandLogo.jpg"
-            alt="Brand Logo"
-            style={{ width: "100%", maxWidth: 180 }}
-          />
-        </Link>
-      </Box> */}
-
       <SidebarLinks />
- 
-      {isTabletOrMobile && (
-        <IconButton onClick={handleDrawerToggle} sx={{ mt: 2 }}>
+
+      {isMobileOrTablet && (
+        <IconButton onClick={handleDrawerToggle} sx={{ alignSelf: "center", mt: 2 }}>
           <CloseIcon />
         </IconButton>
       )}
@@ -126,68 +102,47 @@ const isTabletOrMobile = useMediaQuery(theme.breakpoints.down("lg"));
   );
 
   return (
-    <>
-      {/* Mobile AppBar */}
-     {isTabletOrMobile && (
-  <AppBar position="fixed" sx={{ backgroundColor: "#fff", color: "#333" }}>
-    <Toolbar sx={{ position: "relative", justifyContent: "center" }}>
-      
-      {/* Hamburger - Left */}
-      <IconButton
-        edge="start"
-        onClick={handleDrawerToggle}
-        sx={{ position: "absolute", left: 8 }}
-      >
-        <MenuIcon />
-      </IconButton>
+    <Box sx={{ display: "flex", minHeight: isMobileOrTablet ? "10vh" : "auto" }}>
+      {/* AppBar - Mobile & Tablet */}
+      {isMobileOrTablet && (
+        <AppBar position="fixed" color="default" elevation={1}>
+          <Toolbar sx={{ justifyContent: "space-around" }}>
+            <IconButton edge="start" onClick={handleDrawerToggle}>
+              <MenuIcon />
+            </IconButton>
 
-      {/* Center Logo */}
-      <Link href="/">
-        <img
-          src="/logo.png"
-          alt="Brand Logo"
-          style={{
-            height: 40,
-            objectFit: "contain",
-          }}
-        />
-      </Link>
+            <Link href="/">
+              <img src="/logo.png" alt="Logo" height={36} />
+            </Link>
 
-    </Toolbar>
-  </AppBar>
-)}
+          </Toolbar>
+        </AppBar>
+      )}
 
-
-      <Box sx={{ display: "flex", minHeight: "100vh" }}>
-        {/* Desktop Sidebar */}
-        {!isTabletOrMobile && sidebarContent}
-  {/* Logo */}
-     
-        {/* Mobile Drawer */}
-        <Drawer
-          open={mobileOpen}
-          onClose={handleDrawerToggle}
-          variant="temporary"
-          sx={{
-            "& .MuiDrawer-paper": { width: 240 },
-          }}
-        >
-          {sidebarContent}
-        </Drawer>
-
-        {/* Page Content */}
+      {/* Sidebar - Desktop */}
+      {!isMobileOrTablet && (
         <Box
-          sx={{
-            flexGrow: 1,
-            p: 3,
-            mt: isTabletOrMobile ? "64px" : 0,
-          }}
+         
         >
-          {children}
+          {drawerContent}
         </Box>
-        
-      </Box>
+      )}
 
-    </>
+      {/* Drawer - Mobile */}
+      <Drawer
+        open={mobileOpen}
+        onClose={handleDrawerToggle}
+        variant="temporary"
+        ModalProps={{ keepMounted: true }}
+        sx={{
+          "& .MuiDrawer-paper": {
+            width: drawerWidth,
+          },
+        }}
+      >
+        {drawerContent}
+      </Drawer>
+
+    </Box>
   );
 }
