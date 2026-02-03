@@ -16,7 +16,7 @@ import {
   Chip,
   Button as MuiButton,
 } from "@mui/material";
-import { Phone, Favorite, ShareOutlined, Label } from "@mui/icons-material";
+import { Phone, Favorite, ShareOutlined } from "@mui/icons-material";
 import { motion } from "framer-motion";
 import ShareDialogActions from "@/app/brands/ShareDialogActions";
 import { RiBookmark3Fill } from "react-icons/ri";
@@ -77,13 +77,13 @@ const BrandHeader = ({
     }
   };
 
-  const handleMoreClick = (e) => {
-    e.preventDefault();
-    const element = document.getElementById("expansion-location");
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" });
-    }
-  };
+  // const handleMoreClick = (e) => {
+  //   e.preventDefault();
+  //   const element = document.getElementById("expansion-location");
+  //   if (element) {
+  //     element.scrollIntoView({ behavior: "smooth" });
+  //   }
+  // };
 
   const MobileRow = ({ label, value }) => (
   <Box
@@ -357,7 +357,7 @@ height: 35,
 
   return (
     <>
-      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 ,}}>
+      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 ,pl:{xs:2,sm:2}}}>
         {categoryArray.map((category, index) => (
           <Chip
             key={index}
@@ -368,6 +368,7 @@ height: 35,
               fontSize: isMobile ? "0.65rem" : "0.75rem",
               height: "24px",
               backgroundColor: "#ffffffff",
+              
               borderColor: "#7cd13b",
               color: "black",
               "& .MuiChip-label": {

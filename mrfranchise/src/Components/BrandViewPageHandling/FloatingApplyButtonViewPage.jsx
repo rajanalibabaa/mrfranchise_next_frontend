@@ -62,7 +62,7 @@ const FloatingApplyButton = ({ isMobile, brand, toggleDrawer }) => {
           onClick={toggleDrawer(true)}
           sx={{
             flex: 1,
-            backgroundColor: "#ff9800",
+              backgroundColor: "#25D366",
             borderRadius: 3,
             py: 1.3,
             maxHeight:{
@@ -77,15 +77,16 @@ const FloatingApplyButton = ({ isMobile, brand, toggleDrawer }) => {
             "&:hover": { backgroundColor: "#e65100" },
           }}
         >
-          <Box textAlign="center">
-            <Typography fontWeight={600}>Apply Now</Typography>
-            <Typography fontSize="0.75rem">{brandName}</Typography>
+          <Box textAlign="center" display={'flex'} gap={1}> 
+                        <WhatsAppIcon  />
+
+            <Typography fontSize="0.85rem"mt={0.4}> Chat with {brandName}</Typography>
           </Box>
         </Button>
       </motion.div>
 
       {/* WHATSAPP */}
-      {whatsappLink && (
+      {/* {whatsappLink && (
         <Tooltip title="Chat on WhatsApp">
           <Button
             component="a"
@@ -113,7 +114,7 @@ const FloatingApplyButton = ({ isMobile, brand, toggleDrawer }) => {
             <WhatsAppIcon sx={{ ml: 1 }} />
           </Button>
         </Tooltip>
-      )}
+      )} */}
     </Box>
   );
 };

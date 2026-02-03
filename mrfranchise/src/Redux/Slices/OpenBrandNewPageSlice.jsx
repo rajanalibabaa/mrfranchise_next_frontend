@@ -33,7 +33,7 @@ export default brandSlice.reducer;
 
 // Thunk for side effects
 export const openBrandDialog = (brand,  openInNewTab = true) => async (dispatch) => {
-  // console.log('incoming',brand);
+  console.log('incoming',brand);
   
   if (!brand) {
     console.error("❌ No brand payload provided");

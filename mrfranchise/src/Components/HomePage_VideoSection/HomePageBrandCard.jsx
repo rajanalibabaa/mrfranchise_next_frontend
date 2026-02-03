@@ -58,6 +58,7 @@ import {
 import confetti from "canvas-confetti";
 import { Share } from "lucide-react";
 import ShareDialogActions from "@/app/brands/ShareDialogActions";
+import { ShareOutlined } from "@mui/icons-material";
 const token = getToken();
 const cardVariants = {
   initial: { opacity: 0, y: 30 },
@@ -323,7 +324,7 @@ const HomePageBrandCard = React.memo(
                  
                 >
                   <Tooltip title={"Share"}>
-                    <Share size={21} />
+                    <ShareOutlined size={21} />
                   </Tooltip>
                 </AnimatedIconButton>
                   
