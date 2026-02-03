@@ -65,11 +65,11 @@ export default function AdSlot({
         data-ad-format={isResponsive ? "auto" : undefined}
         data-full-width-responsive={isResponsive ? "true" : "false"}
       />
-      {label && (
+      {/* {label && (
         <div style={{ fontSize: 11, color: "#888", marginTop: 4 }}>
           {label}
         </div>
-      )}
+      )} */}
     </Box>
   );
 }
