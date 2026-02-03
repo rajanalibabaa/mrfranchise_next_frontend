@@ -880,8 +880,8 @@ const triggerCelebration = (e, color = "#f44336") => {
                               color: "#fff",
                               background:
                                 theme.palette.mode === "dark"
-                                  ? "linear-gradient(45deg, #ffb74d, #ff9800)"
-                                  : "linear-gradient(45deg, #f57c00, #ff9800)",
+                                  ? "linear-gradient(45deg, #4cb04f, #4cb04f)"
+                                  : "linear-gradient(45deg, #4cb04f, #4cb04f)",
                               "&:hover": {
                                 background:
                                   theme.palette.mode === "dark"
@@ -910,8 +910,8 @@ const triggerCelebration = (e, color = "#f44336") => {
                               color: "#fff",
                               background:
                                 theme.palette.mode === "dark"
-                                  ? "linear-gradient(45deg, #ffb74d, #ff9800)"
-                                  : "linear-gradient(45deg, #f57c00, #ff9800)",
+                                  ? "linear-gradient(45deg, #4cb04f, #4cb04f)"
+                                  : "linear-gradient(45deg, #4cb04f, #4cb04f)",
                               "&:hover": {
                                 background:
                                   theme.palette.mode === "dark"
@@ -986,13 +986,17 @@ const triggerCelebration = (e, color = "#f44336") => {
               }}
             >
               <Button
-                variant="outlined"
+                variant="contained"
                 onClick={handlePrev}
                 startIcon={<ChevronLeft />}
                 fullWidth
                 sx={{
                   textTransform: "none",
-                  color: theme.palette.mode === "dark" ? "#ffb74d" : "#f57c00",
+                  color: theme.palette.mode === "dark" ? "#ffffff" : "#ffffff",
+                  background:
+                    theme.palette.mode === "dark"
+                      ? "linear-gradient(45deg, #ffb74d, #ff9800)"
+                      : "linear-gradient(45deg, #f57c00, #ff9800)",
                   borderColor:
                     theme.palette.mode === "dark" ? "#ffb74d" : "#f57c00",
                 }}
@@ -1406,8 +1410,8 @@ const triggerCelebration = (e, color = "#f44336") => {
                     sx={{
                       background:
                         theme.palette.mode === "dark"
-                          ? "linear-gradient(45deg, #ffb74d, #ff9800)"
-                          : "linear-gradient(45deg, #f57c00, #ff9800)",
+                          ? "linear-gradient(45deg, #4cb04f, #4cb04f)"
+                          : "linear-gradient(45deg, #4cb04f, #4cb04f)",
                       textTransform: "none",
                       fontSize: "1rem",
                       color: "#fff",

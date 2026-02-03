@@ -53,21 +53,23 @@ const BrandHeader = ({ brandData }) => {
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   //  console.log("===brandData=== :",brandData)
   return (
-    <Card
+    <Box
       sx={{
         mb: 2,
         p: isMobile ? 1.5 : 2,
         display: "flex",
+        width: "100%",
         flexDirection: isMobile ? "column" : "row",
-        alignItems: "center",
+        alignItems: isMobile ? "flex-start" : "center",
         gap: 2,
-        boxShadow: 1,
-        borderRadius: "12px",
+        
+        // boxShadow: 1,
+        // borderRadius: "12px",
       }}
     >
       {/* Brand Info */}
       <Box
-        sx={{ display: "flex", alignItems: "center", gap: 1.5, flexGrow: 1 }}
+        sx={{ display: "flex", justifyContent: "flex-start",  flexDirection: isMobile ? "row" : "row", gap: 1.5, flexGrow: isMobile ? 0 : 1 }}
       >
         <Avatar
           src={brandData?.uploads?.logo || "/default-brand.png"}
@@ -121,7 +123,7 @@ const BrandHeader = ({ brandData }) => {
           />
         </Grid>
       </Grid>
-    </Card>
+    </Box>
   );
 };
 

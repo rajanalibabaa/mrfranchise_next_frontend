@@ -30,6 +30,8 @@ import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 // import { Helmet } from "react-helmet-async";
 
 const ShareDialogActions = ({ anchorEl, setAnchorEl, brand }) => {
+  console.log(brand);
+  
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
   const open = Boolean(anchorEl);
@@ -47,13 +49,13 @@ const ShareDialogActions = ({ anchorEl, setAnchorEl, brand }) => {
   const handleUrlDialogClose = () => setUrlDialogOpen(false);
 
   const copyToClipboard = () => {
-    const shareMessage = `🌟 Check this out from ${brand?.name || "MrFranchise"}! 🌟\n\n${currentUrl}\n\n#MrFranchise.in`;
+    const shareMessage = `http://localhost:3000/brands/${brand?.name}`;
     navigator.clipboard.writeText(shareMessage);
     setSnackbarOpen(true);
     setUrlDialogOpen(false);
   };
 
-  const shareText = `🌟 ${brand?.name || "Check this out"}! 🌟\n\n${currentUrl}\n\n#MrFranchise.in`;
+  const shareText = `http://localhost:3000/brands/${brand?.name}`;
 
   // ✅ Social Platforms List
   const socialPlatforms = [
@@ -91,15 +93,15 @@ const ShareDialogActions = ({ anchorEl, setAnchorEl, brand }) => {
       url: `https://wa.me/?text=${encodeURIComponent(shareText)}`,
       action: "share",
     },
-    {
-      name: "Email",
-      icon: <Email />,
-      color: "default",
-      url: `mailto:?subject=${encodeURIComponent(
-        `Check out ${brand?.name || "MrFranchise"}`
-      )}&body=${encodeURIComponent(shareText)}`,
-      action: "share",
-    },
+    // {
+    //   name: "Email",
+    //   icon: <Email />,
+    //   color: "default",
+    //   url: `mailto:?subject=${encodeURIComponent(
+    //     `Check out ${brand?.name || "MrFranchise"}`
+    //   )}&body=${encodeURIComponent(shareText)}`,
+    //   action: "share",
+    // },
     {
       name: "Instagram",
       icon: <Instagram />,
@@ -146,7 +148,7 @@ const ShareDialogActions = ({ anchorEl, setAnchorEl, brand }) => {
             marginBottom: isSmallScreen ? 0 : "30px",
             mt: isSmallScreen ? 0 : "79px",
             boxShadow: "none",
-            backgroundColor: "transparent",
+            backgroundColor: "white",
             zIndex: 1200,
           },
         }}

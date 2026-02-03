@@ -16,7 +16,7 @@ import {
   Chip,
   Button as MuiButton,
 } from "@mui/material";
-import { Phone, Favorite, ShareOutlined, Label } from "@mui/icons-material";
+import { Phone, Favorite, ShareOutlined } from "@mui/icons-material";
 import { motion } from "framer-motion";
 import ShareDialogActions from "@/app/brands/ShareDialogActions";
 import { RiBookmark3Fill } from "react-icons/ri";
@@ -77,13 +77,72 @@ const BrandHeader = ({
     }
   };
 
-  const handleMoreClick = (e) => {
-    e.preventDefault();
-    const element = document.getElementById("expansion-location");
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" });
-    }
-  };
+  // const handleMoreClick = (e) => {
+  //   e.preventDefault();
+  //   const element = document.getElementById("expansion-location");
+  //   if (element) {
+  //     element.scrollIntoView({ behavior: "smooth" });
+  //   }
+  // };
+
+  const MobileRow = ({ label, value }) => (
+  <Box
+    sx={{
+      display: "flex",
+      justifyContent: "space-evenly",
+      py: 0.8,
+      borderBottom: "1px solid #eee",
+    }}
+    
+  >
+    <Typography fontSize="0.75rem" fontWeight={500} sx={{
+height: 30,
+                        width: 90,
+                        backgroundColor: "white",
+                        border: "1px solid #e0e0e0",
+                        borderLeft: "5px solid #ff9900" ,
+                        borderRadius: "4px",
+                        color: "#000000ff",
+                        textAlign:'left',
+                        
+                        // display: "flex",
+                        // alignItems: "center",
+                        pl:1.5 ,
+                        pt:1.5,
+                     
+                        "&:hover": {
+                          backgroundColor: "#ffffffff",
+                          color: "#000000ff",
+                          borderLeft: "2px solid #5fb52a",
+                        },
+    }}>
+      {label}
+    </Typography>
+    <Typography fontSize="0.75rem" textAlign="left" sx={{
+height: 35,
+                        width: 150,
+                        backgroundColor: "white",
+                        border: "1px solid #e0e0e0",
+                        borderLeft: "5px solid #5fb52a" ,
+                        borderRadius: "4px",
+                        color: "#000000ff",
+                        fontWeight: 500,
+                        // display: "flex",
+                        // alignItems: "center",
+                        pl: { xs: 1.5, sm: 2 },
+                        pt:1,
+                        
+                        "&:hover": {
+                          backgroundColor: "#ffffffff",
+                          color: "#000000ff",
+                          borderLeft: "2px solid #5fb52a",
+                        },
+    }}>
+      {value || "N/A"}
+    </Typography>
+  </Box>
+);
+
 
   // Modified handleLikeClick to include confetti
   const handleLikeClickWithConfetti = () => {
@@ -298,7 +357,7 @@ const BrandHeader = ({
 
   return (
     <>
-      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 ,pl:{xs:2,sm:2}}}>
         {categoryArray.map((category, index) => (
           <Chip
             key={index}
@@ -309,6 +368,7 @@ const BrandHeader = ({
               fontSize: isMobile ? "0.65rem" : "0.75rem",
               height: "24px",
               backgroundColor: "#ffffffff",
+              
               borderColor: "#7cd13b",
               color: "black",
               "& .MuiChip-label": {
@@ -323,9 +383,53 @@ const BrandHeader = ({
 })()}
 
   </Box>
-            {/* Brand details table */}
-            <Box sx={{ width: "100%", overflow: "hidden", mt: 2,mb:1 }}>
-              <TableContainer
+
+  {isMobile ? (
+  /* 📱 MOBILE VIEW */
+  <Box sx={{ borderRadius: 2, p:0.5, mt: 2 }}>
+    <MobileRow
+      label="Category"
+      value={
+        brand?.[0]?.brandfranchisedetails?.franchiseDetails
+          ?.brandCategories?.sub
+      }
+    />
+
+    <MobileRow
+      label="Area"
+      value={
+        brand?.[0]?.brandfranchisedetails?.franchiseDetails
+          ?.fico?.[0]?.areaRequired
+      }
+    />
+
+    <MobileRow
+      label="Investment"
+      value={
+        brand?.[0]?.brandfranchisedetails?.franchiseDetails
+          ?.fico?.[0]?.investmentRange
+      }
+    />
+
+    <MobileRow
+      label="Total Outlets"
+      value={getOutletRange(
+        brand?.[0]?.brandfranchisedetails?.franchiseDetails
+          ?.totalOutlets
+      )}
+    />
+
+    <MobileRow
+      label="Origin Location"
+      value={`${brand?.[0]?.brandDetails?.state || "N/A"}, ${
+        brand?.[0]?.brandDetails?.city || "N/A"
+      }`}
+    />
+  </Box>
+) : (
+  /* 💻 DESKTOP TABLE (YOUR EXISTING CODE) */
+  <Box sx={{ width: "100%", overflow: "hidden", mt: 2, mb: 1 }}>
+    <TableContainer
                 component={Paper}
                 sx={{
                   width: "100%",
@@ -348,9 +452,11 @@ const BrandHeader = ({
               >
                 <Table
                   size={isMobile ? "small" : "medium"}
+                  
                   sx={{
                     minWidth: isMobile ? 650 : "100%",
-                    tableLayout: "fixed",
+                    // tableLayout: "fixed",
+                    flexDirection:isMobile ? "column" : "row",
                   }}
                 >
                   <TableHead>
@@ -499,7 +605,10 @@ const BrandHeader = ({
                   </TableBody>
                 </Table>
               </TableContainer>
-            </Box>
+  </Box>
+)}
+
+            
            {/* <Typography
   color="#000000ff"
   mt={isMobile ? 2 : 2}

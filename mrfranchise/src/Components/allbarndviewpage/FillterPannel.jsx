@@ -300,7 +300,7 @@ const FilterPanel = React.memo(
     };
 
     return (
-      <Box sx={{ pr: 2, height: "calc(100vh - 120px)", overflowY: "auto" }}>
+      <Box sx={{ pr: 2, height: "calc(100vh - 40px)", overflowY: "hidden",  }}>
  <Typography
           variant="body2"
           sx={{ color: "#000000ff", background: "#7cd13b",display:'block', textAlign: "center",padding:'10px',borderRadius:'5px' ,mb:1,mt:4}}
@@ -462,7 +462,7 @@ const FilterPanel = React.memo(
                         <Box
                           ref={subCategoryRef}
                           sx={{
-                            ml: 3,
+                            ml: 0,
                             mt: 1,
                             // borderLeft: "2px solid #4caf50",
                             pl: 1,

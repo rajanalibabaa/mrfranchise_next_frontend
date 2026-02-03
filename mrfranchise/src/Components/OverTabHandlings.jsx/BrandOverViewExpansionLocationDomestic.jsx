@@ -60,18 +60,18 @@ const ExpansionLocationGrid = ({ data }) => {
   // Function to get cities or fallback to district name
  // Function to get cities or fallback to district name
 // Function to get cities or fallback to district name
-const getCitiesOrDistrict = (stateIndex, districtIndex) => {
-  const state = data.locations[stateIndex];
-  if (!state || !state.districts || !state.districts[districtIndex]) return [];
+// const getCitiesOrDistrict = (stateIndex, districtIndex) => {
+//   const state = data.locations[stateIndex];
+//   if (!state || !state.districts || !state.districts[districtIndex]) return [];
   
-  const district = state.districts[districtIndex];
-  if (Array.isArray(district.cities)) {
-    return district.cities.length > 0 
-      ? district.cities 
-      : [district.district || "Unknown District"];
-  }
-  return [district.district || "Unknown District"];
-};
+//   const district = state.districts[districtIndex];
+//   if (Array.isArray(district.cities)) {
+//     return district.cities.length > 0 
+//       ? district.cities 
+//       : [district.district || "Unknown District"];
+//   }
+//   return [district.district || "Unknown District"];
+// };
   return (
     <Box
       sx={{

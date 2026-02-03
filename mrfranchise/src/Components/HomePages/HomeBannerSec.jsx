@@ -170,6 +170,21 @@ const useDynamicComponents = () => {
   }), []);
 };
 
+const BackgroundWrapper = ({ children }) => (
+  <Box
+    sx={{
+      backgroundImage: "url(/bg25.jpeg)",
+      backgroundAttachment: "fixed",
+      backgroundSize: "400px",
+      backgroundRepeat: "repeat",
+      width: "100%",
+    }}
+  >
+    {children}
+  </Box>
+);
+
+
 // --- Section that lazy loads content on scroll-in-view ---
 const LazySection = memo(({ componentKey, dynamicComponents, background, isMobile }) => {
   const Component = dynamicComponents[componentKey];
@@ -186,7 +201,10 @@ const LazySection = memo(({ componentKey, dynamicComponents, background, isMobil
         backgroundAttachment: "fixed",
       }}
     >
-      <Container maxWidth="xl">
+      <Container maxWidth="xl"  sx={{
+    background: "transparent",   // 🔑 FIX
+    py: 0,
+  }}>
         {inView ? (
           <ComponentLoader Component={Component} VirtualizedCardList={VirtualizedCardList} isMobile={isMobile} />
         ) : (
@@ -666,7 +684,7 @@ background: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${page
       ADS.HOME.INLINE_3,
     ];
 return (
-      <Fragment key={i}>
+      <Fragment key={i} >
         {/* SECTION */}
         <LazySection
           componentKey={section.component}
@@ -681,9 +699,14 @@ return (
         />
 
         {/* AD AFTER EVERY 3rd SECTION */}
-        {(i + 1) % 3 === 0 && adSlots[addIndex] && (
-          <AdSlot {...adSlots[addIndex]} />
-        )}
+       {(i + 1) % 3 === 0 && adSlots[addIndex] && (
+  <BackgroundWrapper>
+    <Box sx={{ py: 3 }}>
+      <AdSlot {...adSlots[addIndex]} />
+    </Box>
+  </BackgroundWrapper>
+)}
+
       </Fragment>
     );
   })}
@@ -701,10 +724,14 @@ return (
             isMobile={isMobile}
           />
         })} */}
+        <BackgroundWrapper>
+          <Box sx={{ py: 3 }}>
+          <AdSlot {...ADS.HOME.FOOTER_RECTANGLE}/>
+</Box>
+        </BackgroundWrapper>
 
       <CompareButton />
       <BrandComparison />
-<AdSlot {...ADS.HOME.FOOTER_RECTANGLE}/>
       <Footer />
     </>
   );

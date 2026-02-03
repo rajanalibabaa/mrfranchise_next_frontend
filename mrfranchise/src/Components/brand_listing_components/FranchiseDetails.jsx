@@ -695,6 +695,13 @@ const handleDone = () => {
   
   errors.subCategory = "";
 };
+
+ const handleDescriptionChange = (content) => {
+    onChange({ brandDescription: content });
+    if (content.length >= 500) {
+    errors.brandDescription = "";
+  }
+  };
   const handleAddUSP = () => {
     const trimmedUSP = currentUSP.trim();
     if (!trimmedUSP) return;

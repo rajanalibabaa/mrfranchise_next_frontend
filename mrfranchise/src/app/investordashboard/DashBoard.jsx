@@ -401,7 +401,7 @@ const allDocs = appliedRes.data?.data?.results?.flatMap(result => result.data) |
       <Avatar
         src={userData?.profileImage || "url(/logo.png)"}
         loading="lazy"
-        alt="Profile"
+        alt={userData?.firstName || "Investor"}
         sx={{
           width: 60,
           height: 60,
@@ -413,9 +413,9 @@ const allDocs = appliedRes.data?.data?.results?.flatMap(result => result.data) |
         <Typography variant="h5" fontWeight={600}>
           {userData?.firstName || "Investor"} {userData?.lastName || ""}
         </Typography>
-        <Typography variant="body2" color="text.secondary">
+        {/* <Typography variant="body2" color="text.secondary">
           {userData?.inveterID || ""}
-        </Typography>
+        </Typography> */}
       </Box>
     </>
   ) : (

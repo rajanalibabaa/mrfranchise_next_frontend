@@ -23,14 +23,17 @@ const InvestorDashboard = () => {
   return (
     <>
       <Navbar/>
-      <Box sx={{ 
-        display: "flex", 
-        minHeight: "calc(100vh - 64px)",
-        backgroundColor: COLORS.creamWhite
-      }}>
-<InvestorDashboardLayout/>
-      <Dashboard/>
-      </Box>
+      <Box
+  sx={{
+    minHeight: "calc(100vh - 64px)",
+    backgroundColor: COLORS.creamWhite
+  }}
+>
+  <InvestorDashboardLayout>
+    <Dashboard /> 
+  </InvestorDashboardLayout>
+</Box>
+
       <Footer />
     </>
   );

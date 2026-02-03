@@ -1,12 +1,11 @@
 "use client";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState ,useCallback} from "react";
 
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import IconButton from "@mui/material/IconButton";
 import CircularProgress from "@mui/material/CircularProgress";
 import Chip from "@mui/material/Chip";
-import Divider from "@mui/material/Divider";
 import Stack from "@mui/material/Stack";
 import Tooltip from "@mui/material/Tooltip";
 import Button from "@mui/material/Button";
@@ -57,6 +56,9 @@ import {
   toggleBrandLikefilter,
 } from "@/Redux/Slices/FilterBrandSlice.jsx";
 import confetti from "canvas-confetti";
+import { Share } from "lucide-react";
+import ShareDialogActions from "@/app/brands/ShareDialogActions";
+import { ShareOutlined } from "@mui/icons-material";
 const token = getToken();
 const cardVariants = {
   initial: { opacity: 0, y: 30 },
@@ -73,12 +75,15 @@ const HomePageBrandCard = React.memo(
     const [showLogin, setShowLogin] = useState(false);
     const shortlistButtonRef = useRef(null);
     const likeButtonRef = useRef(null);
+      const [anchorEl, setAnchorEl] = useState(null);
+    const [selectedBrand, setSelectedBrand] = useState(null);
+
 
     const brandId = brand?.uuid || "";
     const franchiseModel = brand?.fico || {};
     const category = brand?.brandCategories || {};
-    const brandLogo = brand?.logo || "";
     const brandName = brand?.brandname || brand?.brandName;
+    const brandLogo = brand?.logo || brand?.brandName;
 
     const {
       investmentRange = "Not specified",
@@ -211,6 +216,14 @@ const HomePageBrandCard = React.memo(
       dispatch(fetchViewBrandsById({ page: 1, limit: 10 }));
     };
 
+
+     const handleOpenShareClick = useCallback((event) => {
+    setAnchorEl(event.currentTarget);
+    setSelectedBrand(brand);
+  }, [brand]);
+
+
+
     return (
       <motion.div
         key={brandId}
@@ -263,7 +276,27 @@ const HomePageBrandCard = React.memo(
                     objectFit: "contain",
                   }}
                 />
-
+{/* ❤️ Like Button with animations */}
+                <AnimatedIconButton
+                  ref={likeButtonRef}
+                  onClick={() => handleLikeClick(brand)}
+                  disabled={likeProcessing[brandId]}
+                  whileTap={{ scale: 0.8 }}
+                  whileHover={{ scale: 1.2 }}
+                  animate={
+                    brand.isLiked ? { scale: [1, 1.4, 1] } : { scale: 1 }
+                  }
+                  transition={{ duration: 0.3 }}
+                  sx={{
+                    color: brand?.isLiked ? "#f44336" : "rgba(0, 0, 0, 0.23)",
+                  }}
+                >
+                  {likeProcessing[brandId] ? (
+                    <CircularProgress size={24} />
+                  ) : (
+                    <Favorite />
+                  )}
+                </AnimatedIconButton>
                 {/* 🔖 ShortList Button with animations */}
                 <AnimatedIconButton
                   ref={shortlistButtonRef}
@@ -285,27 +318,19 @@ const HomePageBrandCard = React.memo(
                   </Tooltip>
                 </AnimatedIconButton>
 
-                {/* ❤️ Like Button with animations */}
-                <AnimatedIconButton
-                  ref={likeButtonRef}
-                  onClick={() => handleLikeClick(brand)}
-                  disabled={likeProcessing[brandId]}
-                  whileTap={{ scale: 0.8 }}
-                  whileHover={{ scale: 1.2 }}
-                  animate={
-                    brand.isLiked ? { scale: [1, 1.4, 1] } : { scale: 1 }
-                  }
-                  transition={{ duration: 0.3 }}
-                  sx={{
-                    color: brand?.isLiked ? "#f44336" : "rgba(0, 0, 0, 0.23)",
-                  }}
+{/* share buton fix  */}
+<AnimatedIconButton
+                  onClick={handleOpenShareClick}
+                 
                 >
-                  {likeProcessing[brandId] ? (
-                    <CircularProgress size={24} />
-                  ) : (
-                    <Favorite />
-                  )}
+                  <Tooltip title={"Share"}>
+                    <ShareOutlined size={21} />
+                  </Tooltip>
                 </AnimatedIconButton>
+                  
+
+
+                
               </Box>
 
               <Typography
@@ -400,14 +425,14 @@ const HomePageBrandCard = React.memo(
                 fullWidth
                 onClick={() => handleApply(brand)}
                 sx={{
-                  backgroundColor: "#f29724",
+                  backgroundColor: "#4cb04f",
                   "&:hover": {
                     backgroundColor: "#000000ff",
                     boxShadow: 2,
                   },
                   // py: 1,
                   maxWidth: 200,
-                  ml:{xs:"auto",sm:"auto",md:2,lg:6},
+                  ml:{xs:3,sm:3,md:4,lg:3,xl:6},
                   borderRadius: 1,
                   textTransform: "none",
                   fontWeight: 600,
@@ -422,6 +447,17 @@ const HomePageBrandCard = React.memo(
         {showLogin && (
           <LoginPage open={showLogin} onClose={() => setShowLogin(false)} />
         )}
+
+        <ShareDialogActions
+                          anchorEl={anchorEl}
+                          setAnchorEl={setAnchorEl}
+                          brand={selectedBrand ? {
+                            name: selectedBrand?.brandname || selectedBrand?.brandName,
+                            logo: selectedBrand?.logo,
+                            // video: selectedBrand?.franchiseVideos
+                          } : null}
+                        />
+
       </motion.div>
     );
   }

@@ -19,6 +19,8 @@ import LoginPage from "@/Components/LoginPage/LoginPage.jsx"
 import Footer from "@/Components/Footers/Footer";
 import { useDispatch } from "react-redux";
 import Navbar from "@/Components/Navbar/NavBar.jsx";
+import AdSlot from "@/Components/ads/GoogleAd";
+import { ADS } from "@/config/ads.config";
 // import { showLoading , hideLoading} from "../../Redux/Slices/loadingSlice";
 
 function RegisterHandleUser({boolean = true}) {
@@ -63,9 +65,9 @@ function RegisterHandleUser({boolean = true}) {
         width: "100%",
         display: "flex",
         flexDirection: { xs: "column", md: "row" },
-        bgcolor: "#ffffff",
-        boxShadow: 3,
-        borderRadius: 2,
+        // bgcolor: "#ffffff",
+        // boxShadow: 3,
+        // borderRadius: 2,
       }}
     >
       <Grid
@@ -246,15 +248,25 @@ function RegisterHandleUser({boolean = true}) {
       />
     </Grid> */}
   </Grid>
+
+
+
   {/* Login Popup Dialog */}
       <Dialog open={loginOpen} onClose={closeLoginPopup} maxWidth="sm" fullWidth>
         <LoginPage open={loginOpen} onClose={closeLoginPopup} />
       </Dialog>
 </Box>
       </Grid>
+
+
+
     </Box>
+
+          {/* <AdSlot {...ADS.HOME.FOOTER_RECTANGLE}/> */}
+
     {/* <Footer/> */}
     {boolean && <Footer/>}
+
     </>
     
   );

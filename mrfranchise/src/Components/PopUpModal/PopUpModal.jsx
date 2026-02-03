@@ -42,7 +42,7 @@ const PopupModal = ({ open, onClose }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const isTablet = useMediaQuery(theme.breakpoints.between('sm', 'md'));
-  const navigate = useRouter();
+  const router = useRouter();
   
   const [loginOpen, setLoginOpen] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
@@ -113,9 +113,9 @@ const PopupModal = ({ open, onClose }) => {
   }, [onClose]);
 
   const handleNavigation = useCallback((path) => {
-    navigate(path);
+    router.push(path);
     handleClose();
-  }, [navigate, handleClose]);
+  }, []);
 
   const openLoginPopup = useCallback(() => {
     setLoginOpen(true);
@@ -246,7 +246,7 @@ const PopupModal = ({ open, onClose }) => {
             <Box sx={styles.buttonGroup}>
               <Button
                 variant="contained"
-                onClick={() => handleNavigation("/investor-register")}
+                onClick={() => handleNavigation("/invester_register")}
                 sx={{
                   bgcolor: "#7ad03a",
                   "&:hover": { bgcolor: "#5cbf24" },
@@ -264,7 +264,7 @@ const PopupModal = ({ open, onClose }) => {
 
               <Button
                 variant="contained"
-                onClick={() => handleNavigation("/brandlistingform")}
+                onClick={() => handleNavigation("/brand_listing_creation_form")}
                 sx={{
                   bgcolor: "#e99830",
                   "&:hover": { bgcolor: "#d18722" },
@@ -281,7 +281,7 @@ const PopupModal = ({ open, onClose }) => {
             </Box>
 
             {/* Login Link */}
-            <Typography 
+            {/* <Typography 
               variant="body2" 
               sx={{ 
                 mt: 2, 
@@ -302,7 +302,7 @@ const PopupModal = ({ open, onClose }) => {
               >
                 Sign In
               </Box>
-            </Typography>
+            </Typography> */}
           </Box>
         </Box>
       </Modal>

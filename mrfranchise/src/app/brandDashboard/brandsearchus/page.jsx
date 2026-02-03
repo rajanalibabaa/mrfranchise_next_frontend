@@ -76,6 +76,7 @@ const FeedBack = () => {
         elevation={4}
         sx={{
           p: 4,
+        mt:{xs:5,sm:0},
           maxWidth: 700,
           mx: "auto",
           borderRadius: 3,

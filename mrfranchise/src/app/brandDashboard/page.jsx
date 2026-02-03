@@ -106,12 +106,13 @@ const BrandDashboard = ({ selectedSection, sectionContent }) => {
 
   return (
     <>
-    <Box sx={{ backgroundColor: "#f8f9fa", minHeight: "100vh"}}>
-      
+     
+    <Box sx={{ display: "flex", flexDirection: isMobile ? "column" : "row" }}>
+  <Sidebar/>    
+           
       <Box sx={{ px: isMobile ? 1 : 3,display: "flex", flexDirection: isMobile ? "column" : "row" , alignItems: "flex-start", }}>
         
-            <Sidebar/>
-            <Box sx={{ flexGrow: 1, ml: isMobile ? 0 : 2 }}>
+            <Box sx={{ flexGrow: isMobile ? 0 : 1, ml: isMobile ? 0 : 2 }}>
                <BrandHeader brandData={brandData} />
 
         <DashboardTabs
