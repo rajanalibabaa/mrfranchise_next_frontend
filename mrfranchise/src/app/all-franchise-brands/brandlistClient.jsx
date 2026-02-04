@@ -28,6 +28,7 @@ export default function BrandListClient({ children, initialFilters }) {
     initialized.current = true;
 
     const mergedFilters = {};
+    console.log('searchparams in brandlistclient',searchParams);
 
     FILTER_KEYS.forEach((key) => {
       const value =

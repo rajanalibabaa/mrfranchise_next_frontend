@@ -11,6 +11,7 @@ export const fetchFilterOptions = createAsyncThunk(
     try {
       const { sub, state, district, main, areaRequired   } = params;
       const queryParams = new URLSearchParams();
+      // console.log("===params=== ",params)
  
       if (sub) queryParams.append('sub', sub);
       if (state) queryParams.append('state', state);

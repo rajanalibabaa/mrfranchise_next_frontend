@@ -286,15 +286,26 @@ function BrandList() {
       setIsInitialized(true);
     }
   }, [dispatch, isInitialized]);
+  
+  const filterdata = {
+    maincat :"Food & Beverages",
+    searchTerm : filters.searchTerm || "",
+  }
+  
 
   // Fetch brands when debounced filters change
   useEffect(() => {
     if (isInitialized) {
+      const storedFilters = JSON.parse(localStorage?.getItem("franchiseFilters")); 
+        if(storedFilters?.searchTerm){
+          filterdata.searchTerm = storedFilters.searchTerm;
+          localStorage.removeItem("franchiseFilters");
+        }
       startTransition(() => {
-        dispatch(fetchFilteredBrands(debouncedFilters));
+        dispatch(fetchFilteredBrands(filterdata));
       });
     }
-  }, [dispatch, debouncedFilters, isInitialized]);
+  }, [dispatch,isInitialized]);
 
   // Check for comparison mode from URL/storage
   useEffect(() => {
