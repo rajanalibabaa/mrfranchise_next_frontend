@@ -93,7 +93,7 @@ const SupportProvided = ({ trainingSupport, aidFinancing, isInternationalExpansi
         </CardContent>
       </Card>
     </Zoom>
-          <AdSlot {...ADS.HOME.FILTER_BOTTOM_RECTANGLE}/>
+          {/* <AdSlot {...ADS.HOME.FILTER_BOTTOM_RECTANGLE}/> */}
 </>
   );
 };

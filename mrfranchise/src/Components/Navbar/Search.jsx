@@ -24,14 +24,7 @@ const Search = ({ handleClose }) => {
   const router = useRouter();
   const dispatch = useDispatch();
 
-  const brandId = params?.brandId;
-  const isIdExist = Boolean(brandId);
-  
-  const isBrandViewPage =
-    pathname?.startsWith("/brandViewPage") ||
-    pathname?.startsWith("/brands") ||
-    pathname === "/brands" ||
-    isIdExist;
+
 
   const [suggestions, setSuggestions] = useState({
     brands: [],
@@ -102,16 +95,12 @@ const Search = ({ handleClose }) => {
 
     try {
       const queryParams = new URLSearchParams();
+console.log('query',queryParams);
 
-      if (!isBrandViewPage || isIdExist) {
-        queryParams.append("searchTerm", value);
 
         // Next.js way to open in new tab
-        if (typeof window !== "undefined") {
-            window.open(`/all-franchise-brands?${queryParams.toString()}`, "_blank", "noopener,noreferrer");
+            window.open(`[slug]?${subcat}`, "_blank", "noopener,noreferrer");
 
-        }
-      }
 
       dispatch(
         fetchFilteredBrands({
@@ -131,8 +120,9 @@ const Search = ({ handleClose }) => {
 
   const handleSelectedSuggestionData = (selectedData) => {
     let searchValue;
-    if (selectedData.brandName || selectedData.companyName) {
-      searchValue = selectedData.id;
+    if (selectedData.brandName) {
+      
+      
     } else {
       searchValue =
         selectedData.tag || selectedData.industry || selectedData.category;
