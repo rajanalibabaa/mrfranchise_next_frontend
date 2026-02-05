@@ -3,7 +3,6 @@
 import { Suspense } from "react";
 import { Box } from "@mui/material";
 import dynamic from "next/dynamic";
-import { useParams } from "next/navigation";
 import Navbar from "@/Components/Navbar/NavBar";
 import Footer from "@/Components/Footers/Footer";
 // import Loading from "../all-franchise-brands/loading";

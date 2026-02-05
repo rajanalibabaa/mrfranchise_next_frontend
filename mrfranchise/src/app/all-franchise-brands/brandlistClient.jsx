@@ -27,7 +27,8 @@
 //     if (initialized.current) return;
 //     initialized.current = true;
 
-//     const mergedFilters = {};
+    // const mergedFilters = {};
+    // console.log('searchparams in brandlistclient',searchParams);
 
 //     FILTER_KEYS.forEach((key) => {
 //       const value =

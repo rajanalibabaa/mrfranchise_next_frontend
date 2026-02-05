@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, {
@@ -42,12 +41,11 @@ import {
   resetFilters,
   fetchFilteredBrands,
   setPage,
-  
 } from "@/Redux/Slices/FilterBrandSlice";
 import { fetchFilterOptions } from "@/Redux/Slices/filterDropdownData";
 import AdSlot from "../ads/GoogleAd";
 import { ADS } from "@/config/ads.config";
-
+import { localStorageData } from "@/Utils/localStorage";
 
 const BrandCardSkeleton = React.memo(() => (
   <Box
@@ -59,7 +57,11 @@ const BrandCardSkeleton = React.memo(() => (
       boxShadow: 1,
     }}
   >
-    <Skeleton variant="rectangular" height={160} sx={{ borderRadius: 1, mb: 2 }} />
+    <Skeleton
+      variant="rectangular"
+      height={160}
+      sx={{ borderRadius: 1, mb: 2 }}
+    />
     <Skeleton variant="text" width="70%" height={28} />
     <Skeleton variant="text" width="50%" height={20} />
     <Skeleton variant="text" width="40%" height={20} />
@@ -83,7 +85,6 @@ const FilterPanelSkeleton = React.memo(() => (
 ));
 FilterPanelSkeleton.displayName = "FilterPanelSkeleton";
 
-
 const BrandCard = dynamic(() => import("./brandCard"), {
   loading: () => <BrandCardSkeleton />,
   ssr: false,
@@ -94,13 +95,16 @@ const FilterPanel = dynamic(() => import("./FillterPannel"), {
   ssr: false,
 });
 
-const BrandComparison = dynamic(() => import("@/Components/HomePages/brandCompariosn"), {
-  loading: () => <Skeleton/>,
-  ssr: false,
-});
+const BrandComparison = dynamic(
+  () => import("@/Components/HomePages/brandCompariosn"),
+  {
+    loading: () => <Skeleton />,
+    ssr: false,
+  },
+);
 
 const LoginPage = dynamic(() => import("@/Components/LoginPage/LoginPage"), {
-  loading: () => <Skeleton/>,
+  loading: () => <Skeleton />,
   ssr: false,
 });
 
@@ -124,12 +128,15 @@ const useIntersectionObserver = (options = {}) => {
   const ref = useRef(null);
 
   useEffect(() => {
-    const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) {
-        setIsVisible(true);
-        observer.disconnect();
-      }
-    }, { threshold: 0.1, rootMargin: "100px", ...options });
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.1, rootMargin: "100px", ...options },
+    );
 
     const currentRef = ref.current;
     if (currentRef) observer.observe(currentRef);
@@ -143,43 +150,45 @@ const useIntersectionObserver = (options = {}) => {
 // ============================================
 // LAZY BRAND CARD WRAPPER
 // ============================================
-const LazyBrandCard = React.memo(({
-  brand,
-  handleLikeClick,
-  likeProcessing,
-  enableComparison,
-  isSelectedForComparison,
-  onToggleBrandComparison,
-  maxComparisonReached,
-  onShowLogin,
-}) => {
-  const [ref, isVisible] = useIntersectionObserver();
+const LazyBrandCard = React.memo(
+  ({
+    brand,
+    handleLikeClick,
+    likeProcessing,
+    enableComparison,
+    isSelectedForComparison,
+    onToggleBrandComparison,
+    maxComparisonReached,
+    onShowLogin,
+  }) => {
+    const [ref, isVisible] = useIntersectionObserver();
 
-  return (
-    <Box ref={ref} sx={{ minHeight: 350 }}>
-      {isVisible ? (
-        <Fade in timeout={300}>
-          <Box>
-            <Suspense fallback={<BrandCardSkeleton />}>
-              <BrandCard
-                brand={brand}
-                handleLikeClick={handleLikeClick}
-                likeProcessing={likeProcessing}
-                enableComparison={enableComparison}
-                isSelectedForComparison={isSelectedForComparison}
-                onToggleBrandComparison={onToggleBrandComparison}
-                maxComparisonReached={maxComparisonReached}
-                onShowLogin={onShowLogin}
-              />
-            </Suspense>
-          </Box>
-        </Fade>
-      ) : (
-        <BrandCardSkeleton />
-      )}
-    </Box>
-  );
-});
+    return (
+      <Box ref={ref} sx={{ minHeight: 350 }}>
+        {isVisible ? (
+          <Fade in timeout={300}>
+            <Box>
+              <Suspense fallback={<BrandCardSkeleton />}>
+                <BrandCard
+                  brand={brand}
+                  handleLikeClick={handleLikeClick}
+                  likeProcessing={likeProcessing}
+                  enableComparison={enableComparison}
+                  isSelectedForComparison={isSelectedForComparison}
+                  onToggleBrandComparison={onToggleBrandComparison}
+                  maxComparisonReached={maxComparisonReached}
+                  onShowLogin={onShowLogin}
+                />
+              </Suspense>
+            </Box>
+          </Fade>
+        ) : (
+          <BrandCardSkeleton />
+        )}
+      </Box>
+    );
+  },
+);
 LazyBrandCard.displayName = "LazyBrandCard";
 
 // ============================================
@@ -210,7 +219,7 @@ function BrandList() {
   // ============================================
   const { brands, loading, error, filters, pagination } = useSelector(
     (state) => state.filterBrands,
-    shallowEqual
+    shallowEqual,
   );
 
   const {
@@ -243,7 +252,7 @@ function BrandList() {
         value !== undefined &&
         value !== null &&
         value !== "" &&
-        (!Array.isArray(value) || value.length > 0)
+        (!Array.isArray(value) || value.length > 0),
     ).length;
   }, [filters]);
 
@@ -259,7 +268,7 @@ function BrandList() {
       },
       gap: 2,
     }),
-    []
+    [],
   );
 
   const containerStyles = useMemo(
@@ -272,7 +281,7 @@ function BrandList() {
       minHeight: "87vh",
       width: "100%",
     }),
-    []
+    [],
   );
 
   // ============================================
@@ -287,14 +296,28 @@ function BrandList() {
     }
   }, [dispatch, isInitialized]);
 
+  const filterdata = {
+    maincat: "Food & Beverages",
+    searchTerm: filters.searchTerm || "",
+  };
+
   // Fetch brands when debounced filters change
   useEffect(() => {
     if (isInitialized) {
-      startTransition(() => {
-        dispatch(fetchFilteredBrands(debouncedFilters));
-      });
+      const storedFilters = localStorageData.searchData
+      if (storedFilters?.searchTerm) {
+        filterdata.searchTerm = storedFilters.searchTerm;
+        localStorage.removeItem("franchiseFilters");
+        startTransition(() => {
+          dispatch(fetchFilteredBrands(storedFilters));
+        });
+      } else {
+        startTransition(() => {
+          dispatch(fetchFilteredBrands(debouncedFilters));
+        });
+      }
     }
-  }, [dispatch, debouncedFilters, isInitialized]);
+  }, [dispatch, isInitialized, debouncedFilters]);
 
   // Check for comparison mode from URL/storage
   useEffect(() => {
@@ -332,7 +355,7 @@ function BrandList() {
         }
       });
     },
-    [dispatch]
+    [dispatch],
   );
 
   const handleClearFilters = useCallback(() => {
@@ -349,7 +372,7 @@ function BrandList() {
       // Smooth scroll to top
       window.scrollTo({ top: 0, behavior: "smooth" });
     },
-    [dispatch]
+    [dispatch],
   );
 
   const handleLikeClick = useCallback(
@@ -374,7 +397,7 @@ function BrandList() {
         setLikeProcessing((prev) => ({ ...prev, [brandId]: false }));
       }
     },
-    [likeProcessing, isAuthenticated, dispatch, filters]
+    [likeProcessing, isAuthenticated, dispatch, filters],
   );
 
   const toggleBrandComparison = useCallback((brand) => {
@@ -461,62 +484,63 @@ function BrandList() {
       );
     }
 
-    // if (brands.length === 0) {
-    //   return (
-    //     <Box textAlign="center" py={26}>
-    //       <Typography
-    //         variant="h5"
-    //         color="orange"
-    //         bgcolor="white"
-    //         display="inline-block"
-    //         p={2}
-    //         borderRadius={2}
-    //       >
-    //         No brands match your filters
-    //       </Typography>
-    //       <br />
-    //       <Button
-    //         variant="outlined"
-    //         onClick={handleClearFilters}
-    //         startIcon={<ClearIcon />}
-    //         size="large"
-    //         sx={{ mt: 2, borderColor: "#ff9800", color: "#ff0000" }}
-    //       >
-    //         Clear All Filters
-    //       </Button>
-    //     </Box>
-    //   );
-    // }
+   
+    if (brands.length === 0 && !localStorageData?.searchData) {
+      return (
+        <Box textAlign="center" py={26}>
+          <Typography
+            variant="h5"
+            color="orange"
+            bgcolor="white"
+            display="inline-block"
+            p={2}
+            borderRadius={2}
+          >
+            No brands match your filters
+          </Typography>
+          <br />
+          <Button
+            variant="outlined"
+            onClick={handleClearFilters}
+            startIcon={<ClearIcon />}
+            size="large"
+            sx={{ mt: 2, borderColor: "#ff9800", color: "#ff0000" }}
+          >
+            Clear All Filters
+          </Button>
+        </Box>
+      );
+    }
 
     return (
       <>
         <Box sx={gridStyles} ref={brandsContainerRef}>
           {brands.map((brand, index) => (
             <Fragment key={brand.uuid || index}>
-            <LazyBrandCard
-              // key={brand.uuid || index}
-              brand={brand}
-              handleLikeClick={handleLikeClick}
-              likeProcessing={likeProcessing}
-              enableComparison={enableComparison}
-              isSelectedForComparison={selectedForComparison.some(
-                (b) => b.uuid === brand.uuid
-              )}
-              onToggleBrandComparison={toggleBrandComparison}
-              maxComparisonReached={
-                selectedForComparison.length >= 3 &&
-                !selectedForComparison.some((b) => b.uuid === brand.uuid)
-              }
-              onShowLogin={setShowLogin}
-            />
-            {/* {index === 7 && (
+              <LazyBrandCard
+                // key={brand.uuid || index}
+                brand={brand}
+                handleLikeClick={handleLikeClick}
+                likeProcessing={likeProcessing}
+                enableComparison={enableComparison}
+                isSelectedForComparison={selectedForComparison.some(
+                  (b) => b.uuid === brand.uuid,
+                )}
+                onToggleBrandComparison={toggleBrandComparison}
+                maxComparisonReached={
+                  selectedForComparison.length >= 3 &&
+                  !selectedForComparison.some((b) => b.uuid === brand.uuid)
+                }
+                onShowLogin={setShowLogin}
+              />
+              {/* {index === 7 && (
               <Box   sx={{
             gridColumn: "1 / -1", // ⬅ spans full grid width
             my: 1,
           }}> <AdSlot {...ADS.HOME.TOP_LEADERBOARD}/>
           </Box>
             )} */}
-            {/* {index === 7 && (
+              {/* {index === 7 && (
           //     <Box   sx={{
           //   gridColumn: "1 / -1", // ⬅ spans full grid width
           //   my: 1,
@@ -524,12 +548,7 @@ function BrandList() {
           <AdSlot {...ADS.HOME.TOP_LEADERBOARD}/>
           // </Box>
             )} */}
-
-
             </Fragment>
-
-
-
           ))}
         </Box>
 
@@ -565,7 +584,7 @@ function BrandList() {
             />
           </Box>
         )}
-        <AdSlot {...ADS.HOME.TOP_LEADERBOARD}/>
+        <AdSlot {...ADS.HOME.TOP_LEADERBOARD} />
       </>
     );
   }, [
@@ -592,7 +611,11 @@ function BrandList() {
       {/* Comparison Button */}
       <Box sx={{ position: "fixed", top: "30%", right: 12, zIndex: 1000 }}>
         <Badge badgeContent={selectedForComparison.length} color="primary">
-          <Tooltip title="Click to compare selected brands" placement="left" arrow>
+          <Tooltip
+            title="Click to compare selected brands"
+            placement="left"
+            arrow
+          >
             <Button
               variant="contained"
               color="primary"
@@ -667,7 +690,9 @@ function BrandList() {
             <Button
               variant="outlined"
               startIcon={<FilterAlt sx={{ color: "#ff9800" }} />}
-              endIcon={<Badge badgeContent={activeFilterCount} color="primary" />}
+              endIcon={
+                <Badge badgeContent={activeFilterCount} color="primary" />
+              }
               onClick={toggleMobileFilters}
               fullWidth
               sx={{
@@ -749,7 +774,11 @@ function BrandList() {
             variant="contained"
             fullWidth
             onClick={closeMobileFilters}
-            sx={{ mt: 2, bgcolor: "#ff9800", "&:hover": { bgcolor: "#fb8c00" } }}
+            sx={{
+              mt: 2,
+              bgcolor: "#ff9800",
+              "&:hover": { bgcolor: "#fb8c00" },
+            }}
           >
             Apply Filters
           </Button>

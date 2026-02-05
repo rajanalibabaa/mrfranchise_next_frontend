@@ -11,6 +11,7 @@ export const fetchFilterOptions = createAsyncThunk(
     try {
       const { sub, state, district, main, areaRequired   } = params;
       const queryParams = new URLSearchParams();
+      // console.log("===params=== ",params)
  
       if (sub) queryParams.append('sub', sub);
       if (state) queryParams.append('state', state);
@@ -23,7 +24,7 @@ export const fetchFilterOptions = createAsyncThunk(
  
  
       const response = await axios.post(`${API_BASE_URL}filter/getAllBrandFiltersdata?${queryParams.toString()}`);
-// console.log("===response=== ",response.data.data)
+console.log("===response=== ",response.data.data)
  
       return response.data.data;
     } catch (error) {

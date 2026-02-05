@@ -13,7 +13,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import { GetApiCall } from "@/Api/DefaultApi";
 import { api } from "@/Api/api";
 import SuggestionList from "./SuggestionList";
-import { fetchFilteredBrands } from "@/Redux/Slices/FilterBrandSlice";
+import { fetchFilteredBrands, setFilter } from "@/Redux/Slices/FilterBrandSlice";
 
 const Search = ({ handleClose }) => {
   const [query, setQuery] = useState("");
@@ -24,7 +24,14 @@ const Search = ({ handleClose }) => {
   const router = useRouter();
   const dispatch = useDispatch();
 
-
+  const brandId = params?.brandId;
+  const isIdExist = Boolean(brandId);
+  
+  const isBrandViewPage =
+    pathname?.startsWith("/all-franchise-brands") ||
+    pathname?.startsWith("/brands") ||
+    pathname === "/brands" ||
+    isIdExist;
 
   const [suggestions, setSuggestions] = useState({
     brands: [],
@@ -87,6 +94,7 @@ const Search = ({ handleClose }) => {
   const handleOnSearch = (searchValue = null) => {
     let value;
 
+    if(!query && !searchValue) return;
     if (typeof searchValue === "string") {
       value = searchValue;
     } else {
@@ -95,12 +103,24 @@ const Search = ({ handleClose }) => {
 
     try {
       const queryParams = new URLSearchParams();
-console.log('query',queryParams);
 
+      if (!isBrandViewPage || isIdExist) {
+        queryParams.append("searchTerm", value);
 
         // Next.js way to open in new tab
-            window.open(`[slug]?${subcat}`, "_blank", "noopener,noreferrer");
+        if (typeof window !== "undefined") {
+              localStorage.setItem("franchiseFilters", JSON.stringify({ searchTerm: value }));
+            dispatch(
+              setFilter(
+                { searchTerm: value }
+              )
+            )
+            // window.open(`/all-franchise-brands?${queryParams.toString()}`, "_blank", "noopener,noreferrer");
+            window.open(`/all-franchise-brands`, "_blank", "noopener,noreferrer");
 
+        }
+        return;
+      }
 
       dispatch(
         fetchFilteredBrands({
@@ -120,9 +140,8 @@ console.log('query',queryParams);
 
   const handleSelectedSuggestionData = (selectedData) => {
     let searchValue;
-    if (selectedData.brandName) {
-      
-      
+    if (selectedData.brandName || selectedData.companyName) {
+      searchValue = selectedData.id;
     } else {
       searchValue =
         selectedData.tag || selectedData.industry || selectedData.category;
