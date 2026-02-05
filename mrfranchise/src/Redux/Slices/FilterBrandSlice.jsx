@@ -103,7 +103,7 @@ const initialState = {
     hasPrevious: false,
   },
   filters: {
-    maincat: null,
+    maincat: "Food & Beverages",
     subcat: null,
     childcat: null,
     searchTerm: "",
