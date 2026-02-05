@@ -54,14 +54,16 @@ const ApplyDrawer = ({
         sx: {
           borderTopLeftRadius: 16,
           borderTopRightRadius: 16,
+          borderBottomLeftRadius: isMobile ? 0 : 16,
           maxHeight: isMobile ? "80vh" : isTablet ? "70vh" : "94vh",
           width: isMobile ? "100%" : isTablet ? "80%" : 430,
           overflow: "auto",
           mx: "auto",
+          backgroundColor: "#f9f9f9",
         },
       }}
     >
-      <Box sx={{ p: isMobile ? 2 : 3 }}>
+      <Box sx={{ pl: isMobile ? 2 : 2,pt: isMobile ? 2 : 1.5, pr: isMobile ? 2 : 2}}>
         <Box
           sx={{
             display: "flex",
@@ -71,15 +73,10 @@ const ApplyDrawer = ({
           }}
         >
              <Box>
-          <Typography variant="h6" fontWeight={700} mb={1} color="#ff9800" >
-            Apply for Franchise
+          <Typography variant="h6" fontWeight={700} mb={0.1} color="#26d466" >
+            Chat with {selectedBrand[0]?.brandDetails?.brandName}
              </Typography>
-             
-            <Box display="flex" flexDirection="column">
-              <Typography fontSize="0.7rem" color="black" mb={0.5}>
-                <b>Brand Name:</b> {selectedBrand[0]?.brandDetails?.brandName}
-              </Typography>
-              <Typography fontSize="0.7rem" color="black">
+             <Typography fontSize="0.7rem" color="black">
                <b> Brand Category: </b>
                 {
                   selectedBrand[0]?.brandfranchisedetails?.franchiseDetails
@@ -87,9 +84,8 @@ const ApplyDrawer = ({
                 }
               </Typography>
             </Box>
-            </Box>
           <IconButton onClick={onClose}>
-            <Close />
+            <Close color="error" />
           </IconButton>
         </Box>
 
@@ -99,7 +95,7 @@ const ApplyDrawer = ({
             sx={{
               display: "grid",
               gridTemplateColumns: "repeat(1, 1fr)",
-              gap: 2,
+              gap: 1.5,
             }}
           >
             <Grid item xs={12}>
@@ -273,7 +269,7 @@ const ApplyDrawer = ({
                 disabled={isSubmitting}
                 sx={{
                   mt: 2,
-                  backgroundColor: "#ff9800",
+                  backgroundColor: "#25d366",
                   py: 1.5,
                   fontSize: "1rem",
                   "&:disabled": {
@@ -292,7 +288,7 @@ const ApplyDrawer = ({
                     Submitting...
                   </>
                 ) : (
-                  "Apply Now"
+                  "Message Now 🚀"
                 )}
               </Button>
             </Grid>
@@ -333,7 +329,7 @@ const ApplyDrawer = ({
             </Typography>
           </Box>
         )}
-      </Box> */}
+      </Box>  */}
       <Disclimer/>
       
           </Grid>

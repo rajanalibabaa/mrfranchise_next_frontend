@@ -193,7 +193,7 @@ function RegisterHandleUser({boolean = true}) {
         {/* Social Media Section */}
         <Box sx={{ mt: 4, textAlign: "center" }}>
   <Typography variant="h6" sx={{ mb: 1, fontSize: isMobile ? 14 : 16 }}>
-    Follow us on:
+    Sign in with..
   </Typography>
   <Grid container spacing={2} justifyContent="center">
     {/* Google Icon */}
@@ -204,11 +204,12 @@ function RegisterHandleUser({boolean = true}) {
         src='/GoogleIcon.png'
         alt="Google"
         onClick={() => 
-        { dispatch(showLoading())
+        { 
+          // dispatch(showLoading())
           handleSocialLogin("google")
-          setTimeout(() => {
-            dispatch(hideLoading());
-          }, 2000);
+          // setTimeout(() => {
+          //   dispatch(hideLoading());
+          // }, 2000);
         }}
         sx={{
           width: 32,
