@@ -20,13 +20,13 @@ const FloatingApplyButton = ({ isMobile, brand, toggleDrawer }) => {
     typeof window !== "undefined" ? window.location.href : "";
 
   const brandName = brand?.[0]?.brandDetails?.brandName || "Brand";
-  const whatsappNumber = brand?.[0]?.brandDetails?.whatsappnumber || "";
+  // const whatsappNumber = brand?.[0]?.brandDetails?.whatsappnumber || "";
 
-  const whatsappLink = whatsappNumber
-    ? `https://wa.me/${whatsappNumber.replace(/\D/g, "")}?text=${encodeURIComponent(
-        `Hi, I am interested in your "${brandName}" franchise.\n\n${currentUrl}\n\n#MrFranchise.in`
-      )}`
-    : null;
+  // const whatsappLink = whatsappNumber
+  //   ? `https://wa.me/${whatsappNumber.replace(/\D/g, "")}?text=${encodeURIComponent(
+  //       `Hi, I am interested in your "${brandName}" franchise.\n\n${currentUrl}\n\n#MrFranchise.in`
+  //     )}`
+    // : null;
 
   return (
     <Box

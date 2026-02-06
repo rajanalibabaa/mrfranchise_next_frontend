@@ -4,7 +4,7 @@ import React from "react";
 const API_BASE =  `${process.env.NEXT_PUBLIC_API_URL}`;
 const SITE_URL =  "https://mrfranchise.in";
 
-export const dynamic = "force-static";
+export const dynamic = "force-dynamic";
 // const REVALIDATE_TIME = 3600; // 1 hour
 
 
@@ -19,11 +19,10 @@ async function getBrandData(slug) {
     const res = await fetch(
       `${API_BASE}/api/v1/brandlisting/getBrandListingSlug/${slug}`,
       { 
-        next: { revalidate: REVALIDATE_TIME },
+        next: { revalidate: 3600 }, // ✅ cache for 1 hour
         headers: {
           'Content-Type': 'application/json',
         },
-        cache: "no-store",
       }
     );
 
@@ -286,7 +285,7 @@ const logo = brand?.uploads?.logo
             __html: JSON.stringify(structuredData),
           }}
         />
-          <link rel="icon" href={logo} type="image/jpeg" />
+          {/* <link rel="icon" href={logo} type="image/jpeg" /> */}
 </>
       )}
 
