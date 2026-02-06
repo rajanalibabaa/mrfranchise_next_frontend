@@ -1,12 +1,10 @@
-
-"use client"
+"use client";
 import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   Box,
   Typography,
   Button,
-
   Divider,
   Radio,
   RadioGroup,
@@ -15,7 +13,6 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
- 
 } from "@mui/material";
 import {
   Clear as ClearIcon,
@@ -33,7 +30,7 @@ import { ADS } from "@/config/ads.config";
 // Define the correct order for investment ranges
 const INVESTMENT_RANGE_ORDER = [
   "Below - 50k",
-  "Rs. 50k - 2 Lakhs", 
+  "Rs. 50k - 2 Lakhs",
   "Rs. 2 Lakhs - 5 Lakhs",
   "Rs. 5 Lakhs - 10 Lakhs",
   "Rs. 10 Lakhs - 20 Lakhs",
@@ -42,7 +39,7 @@ const INVESTMENT_RANGE_ORDER = [
   "Rs. 50 Lakhs - 1 Crore",
   "Rs. 1 Crores - 2 Crores",
   "Rs. 2 Crores - 5 Crores",
-  "Rs. 5 Crores - above"
+  "Rs. 5 Crores - above",
 ];
 
 const FilterPanel = React.memo(
@@ -101,46 +98,46 @@ const FilterPanel = React.memo(
       dispatch(fetchFilterOptions());
     }, [dispatch]);
 
-    // Set initial main category to "Food & Beverages" if not already set (runs once on mount)
-    useEffect(() => {
-      if (!filters.maincat) {
-        onFilterChange("maincat", "Food & Beverages");
-      }
-    }, []); // Empty dependency array to run only once
+    // // Set initial main category to "Food & Beverages" if not already set (runs once on mount)
+    // useEffect(() => {
+    //   if (!filters.maincat) {
+    //     onFilterChange("maincat", "Food & Beverages");
+    //   }
+    // }, []); // Empty dependency array to run only once
 
-    // Fetch subcategories and child categories when main category changes
-    useEffect(() => {
-      if (filters.maincat) {
-        dispatch(fetchFilterOptions({ main: filters.maincat }));
-        dispatch(resetChildCategories()); // Reset child categories when main category changes
-      } else {
-        dispatch(fetchFilterOptions()); // Fetch all filters if main category is cleared
-      }
-    }, [dispatch, filters.maincat]);
+    // // Fetch subcategories and child categories when main category changes
+    // useEffect(() => {
+    //   if (filters.maincat) {
+    //     dispatch(fetchFilterOptions({ main: filters.maincat }));
+    //     dispatch(resetChildCategories()); // Reset child categories when main category changes
+    //   } else {
+    //     dispatch(fetchFilterOptions()); // Fetch all filters if main category is cleared
+    //   }
+    // }, [dispatch, filters.maincat]);
 
-    // Fetch child categories when subcategory changes
-    useEffect(() => {
-      if (filters.subcat) {
-        dispatch(fetchFilterOptions({ sub: filters.subcat }));
-      }
-    }, [dispatch, filters.subcat]);
+    // // Fetch child categories when subcategory changes
+    // useEffect(() => {
+    //   if (filters.subcat) {
+    //     dispatch(fetchFilterOptions({ sub: filters.subcat }));
+    //   }
+    // }, [dispatch, filters.subcat]);
 
-    // Fetch districts when state changes
-    useEffect(() => {
-      if (filters.state) {
-        dispatch(fetchFilterOptions({ state: filters.state }));
-        dispatch(resetCities()); // Reset cities when state changes
-      } else {
-        dispatch(resetDistricts()); // Reset districts and cities when state is cleared
-      }
-    }, [dispatch, filters.state]);
+    // // Fetch districts when state changes
+    // useEffect(() => {
+    //   if (filters.state) {
+    //     dispatch(fetchFilterOptions({ state: filters.state }));
+    //     dispatch(resetCities()); // Reset cities when state changes
+    //   } else {
+    //     dispatch(resetDistricts()); // Reset districts and cities when state is cleared
+    //   }
+    // }, [dispatch, filters.state]);
 
-    // Fetch cities when district changes
-    useEffect(() => {
-      if (filters.district) {
-        dispatch(fetchFilterOptions({ district: filters.district }));
-      }
-    }, [dispatch, filters.district]);
+    // // Fetch cities when district changes
+    // useEffect(() => {
+    //   if (filters.district) {
+    //     dispatch(fetchFilterOptions({ district: filters.district }));
+    //   }
+    // }, [dispatch, filters.district]);
 
     // Read URL parameters on mount
     useEffect(() => {
@@ -163,7 +160,7 @@ const FilterPanel = React.memo(
         const newState = { ...prev };
         // If opening this section, close others
         if (!prev[section]) {
-          Object.keys(newState).forEach(key => {
+          Object.keys(newState).forEach((key) => {
             if (key !== section) newState[key] = false;
           });
         }
@@ -179,7 +176,7 @@ const FilterPanel = React.memo(
     // Filter and sort options based on search terms (alphabetical order)
     // Initially (no search term), only render "Food & Beverages"
     const filteredMainCategories = useMemo(() => {
-      const term = (searchTerms.mainCategory || '').toLowerCase();
+      const term = (searchTerms.mainCategory || "").toLowerCase();
       if (!term) {
         return ["Food & Beverages"];
       }
@@ -188,68 +185,74 @@ const FilterPanel = React.memo(
           if (!main) return false;
           return main.toLowerCase().includes(term);
         })
-        .sort((a, b) => (a || '').toLowerCase().localeCompare((b || '').toLowerCase()))
+        .sort((a, b) =>
+          (a || "").toLowerCase().localeCompare((b || "").toLowerCase()),
+        )
         .slice(0, 100);
     }, [mainCategories, searchTerms.mainCategory]);
 
     const filteredSubCategories = useMemo(() => {
-      const term = (searchTerms.subCategory || '').toLowerCase();
+      const term = (searchTerms.subCategory || "").toLowerCase();
       return subCategories
         .filter((sub) => {
           if (!sub) return false;
           return sub.toLowerCase().includes(term);
         })
-        .sort((a, b) => (a || '').toLowerCase().localeCompare((b || '').toLowerCase()))
+        .sort((a, b) =>
+          (a || "").toLowerCase().localeCompare((b || "").toLowerCase()),
+        )
         .slice(0, 100);
     }, [subCategories, searchTerms.subCategory]);
 
     const sortedChildCategories = useMemo(() => {
       return childCategories
-        .filter((cat) => cat && typeof cat === 'string' && cat.trim() !== '')
+        .filter((cat) => cat && typeof cat === "string" && cat.trim() !== "")
         .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
     }, [childCategories]);
 
     const filteredModelTypes = useMemo(() => {
-      const term = (searchTerms.modelType || '').toLowerCase().trim();
+      const term = (searchTerms.modelType || "").toLowerCase().trim();
       return franchiseModels
         .filter((type) => {
           if (!type) return false;
           return type.toLowerCase().includes(term);
         })
-        .sort((a, b) => (a || '').toLowerCase().localeCompare((b || '').toLowerCase()));
+        .sort((a, b) =>
+          (a || "").toLowerCase().localeCompare((b || "").toLowerCase()),
+        );
     }, [franchiseModels, searchTerms.modelType]);
 
     // FIXED: Maintain the original order for investment ranges
     const filteredInvestmentRanges = useMemo(() => {
-      const term = (searchTerms.investmentRange || '').toLowerCase();
-      
+      const term = (searchTerms.investmentRange || "").toLowerCase();
+
       // First filter by search term
       const filtered = investmentRanges.filter((range) => {
         if (!range) return false;
         return range.toLowerCase().includes(term);
       });
-      
+
       // Sort by predefined order, not alphabetically
       return filtered.sort((a, b) => {
         const indexA = INVESTMENT_RANGE_ORDER.indexOf(a);
         const indexB = INVESTMENT_RANGE_ORDER.indexOf(b);
-        
+
         // If both are in the predefined order, sort by that order
         if (indexA !== -1 && indexB !== -1) {
           return indexA - indexB;
         }
-        
+
         // If only one is in predefined order, put it first
         if (indexA !== -1) return -1;
         if (indexB !== -1) return 1;
-        
+
         // If neither is in predefined order, sort alphabetically
         return a.toLowerCase().localeCompare(b.toLowerCase());
       });
     }, [investmentRanges, searchTerms.investmentRange]);
 
     const filteredAreaRequired = useMemo(() => {
-      const term = (searchTerms.areaRequired || '').toLowerCase();
+      const term = (searchTerms.areaRequired || "").toLowerCase();
       return areaRequired
         .filter((area) => {
           if (!area) return false;
@@ -259,25 +262,29 @@ const FilterPanel = React.memo(
     }, [areaRequired, searchTerms.areaRequired]);
 
     const filteredStates = useMemo(() => {
-      const term = (searchTerms.state || '').toLowerCase();
+      const term = (searchTerms.state || "").toLowerCase();
       return states
         .filter((stateItem) => {
           if (!stateItem) return false;
           return stateItem.toLowerCase().includes(term);
         })
-        .sort((a, b) => (a || '').toLowerCase().localeCompare((b || '').toLowerCase()))
+        .sort((a, b) =>
+          (a || "").toLowerCase().localeCompare((b || "").toLowerCase()),
+        )
         .slice(0, 100);
     }, [states, searchTerms.state]);
 
     const filteredDistricts = useMemo(() => {
       if (!filters.state) return [];
-      const term = (searchTerms.district || '').toLowerCase();
+      const term = (searchTerms.district || "").toLowerCase();
       return districts
         .filter((d) => {
           if (!d) return false;
           return d.toLowerCase().includes(term);
         })
-        .sort((a, b) => (a || '').toLowerCase().localeCompare((b || '').toLowerCase()))
+        .sort((a, b) =>
+          (a || "").toLowerCase().localeCompare((b || "").toLowerCase()),
+        )
         .slice(0, 100);
     }, [filters.state, districts, searchTerms.district]);
 
@@ -300,23 +307,34 @@ const FilterPanel = React.memo(
     };
 
     return (
-      <Box sx={{ pr: 2, height: "calc(100vh - 40px)", overflowY: "hidden",  }}>
- <Typography
+      <Box sx={{ pr: 2, height: "calc(100vh - 40px)", overflowY: "auto" }}>
+        <Typography
           variant="body2"
-          sx={{ color: "#000000ff", background: "#7cd13b",display:'block', textAlign: "center",padding:'10px',borderRadius:'5px' ,mb:1,mt:4}}
+          sx={{
+            color: "#000000ff",
+            background: "#7cd13b",
+            display: "block",
+            textAlign: "center",
+            padding: "10px",
+            borderRadius: "5px",
+            mb: 1,
+            mt: 4,
+          }}
         >
           Showing {resultStats.showing || 0} of {resultStats.total || 0} brands
         </Typography>
-        
+
         <Box
           display="flex"
           justifyContent="space-between"
           alignItems="center"
           mb={2}
           mt={3}
-        sx={{background:'white',p:1,borderRadius:'5px'}}
+          sx={{ background: "white", p: 1, borderRadius: "5px" }}
         >
-          <Typography variant="h6"sx={{ color: "#000000ff" }} >Filters</Typography>
+          <Typography variant="h6" sx={{ color: "#000000ff" }}>
+            Filters
+          </Typography>
           <Button
             size="small"
             variant="outlined"
@@ -325,10 +343,10 @@ const FilterPanel = React.memo(
             startIcon={<ClearIcon />}
             sx={{ color: "#ff0000ff", borderColor: "#ff0000ff" }}
           >
-            Clear 
+            Clear
           </Button>
         </Box>
-{/* 
+        {/* 
         <Breadcrumbs
           separator="|"
           sx={{ mb: 2, fontSize: "0.875rem",color: "#ff9800" ,background: "white",padding:'7px',borderRadius:'5px' }}
@@ -389,7 +407,6 @@ const FilterPanel = React.memo(
           }}
           sx={{ mb: 3 }}
         /> */}
-
 
         {/* Main Category Filter */}
         <Accordion
@@ -478,7 +495,10 @@ const FilterPanel = React.memo(
                             }}
                           >
                             {filteredSubCategories.map((subCategory) => (
-                              <Box key={`subcat-container-${subCategory}`} sx={{ mb: 0 }}>
+                              <Box
+                                key={`subcat-container-${subCategory}`}
+                                sx={{ mb: 0 }}
+                              >
                                 <FormControlLabel
                                   key={`subcat-${subCategory}`}
                                   value={subCategory}
@@ -564,14 +584,14 @@ const FilterPanel = React.memo(
             </Box>
           </AccordionDetails>
         </Accordion>
- {/* Investment Range Filter */}
+        {/* Investment Range Filter */}
         <Accordion
           ref={investmentRef}
           expanded={expandedSections.investment}
           onChange={() => toggleSection("investment")}
           disableGutters
           elevation={0}
-          sx={{ mb: 2,borderRadius: "5px", "&:before": { display: "none" } }}
+          sx={{ mb: 2, borderRadius: "5px", "&:before": { display: "none" } }}
         >
           <AccordionSummary
             expandIcon={<ExpandMoreIcon sx={{ color: "#4caf50" }} />}
@@ -634,37 +654,36 @@ const FilterPanel = React.memo(
           </AccordionDetails>
         </Accordion>
 
-
         {/* Area Required Filter */}
-<Accordion
-  ref={areaRequiredRef}
-  expanded={expandedSections.areaRequired}
-  onChange={() => toggleSection("areaRequired")}
-  disableGutters
-  elevation={0}
-  sx={{ mb: 2,borderRadius: "5px", "&:before": { display: "none" } }}
->
-  <AccordionSummary
-    expandIcon={<ExpandMoreIcon sx={{ color: "#4caf50" }} />}
-    sx={{
-      px: 1,
-      "&.Mui-expanded": { minHeight: "48px" },
-    }}
-  >
-    <Typography
-      sx={{
-        color: "#4caf50",
-        fontWeight: "bold",
-        fontSize: "0.875rem",
-      }}
-    >
-      Area Required
-    </Typography>
-  </AccordionSummary>
+        <Accordion
+          ref={areaRequiredRef}
+          expanded={expandedSections.areaRequired}
+          onChange={() => toggleSection("areaRequired")}
+          disableGutters
+          elevation={0}
+          sx={{ mb: 2, borderRadius: "5px", "&:before": { display: "none" } }}
+        >
+          <AccordionSummary
+            expandIcon={<ExpandMoreIcon sx={{ color: "#4caf50" }} />}
+            sx={{
+              px: 1,
+              "&.Mui-expanded": { minHeight: "48px" },
+            }}
+          >
+            <Typography
+              sx={{
+                color: "#4caf50",
+                fontWeight: "bold",
+                fontSize: "0.875rem",
+              }}
+            >
+              Area Required
+            </Typography>
+          </AccordionSummary>
 
-  <AccordionDetails sx={{ p: 0 }}>
-    <Box sx={{ px: 1 }}>
-      {/* <TextField
+          <AccordionDetails sx={{ p: 0 }}>
+            <Box sx={{ px: 1 }}>
+              {/* <TextField
         fullWidth
         size="small"
         placeholder="Search area required..."
@@ -678,59 +697,61 @@ const FilterPanel = React.memo(
         }}
       /> */}
 
-      <RadioGroup
-        value={filters.areaRequired || ""}
-        onChange={(e) => onFilterChange("areaRequired", e.target.value)}
-      >
-        <FormControlLabel
-          value=""
-          control={
-            <Radio
-              size="small"
-              sx={{
-                color: "#ff9800",
-                "&.Mui-checked": { color: "#4caf50" },
-                padding: "6px",
-              }}
-            />
-          }
-          label={<Typography fontSize="0.8125rem">All Areas</Typography>}
-          sx={{ mb: 0, mr: 0 }}
-        />
+              <RadioGroup
+                value={filters.areaRequired || ""}
+                onChange={(e) => onFilterChange("areaRequired", e.target.value)}
+              >
+                <FormControlLabel
+                  value=""
+                  control={
+                    <Radio
+                      size="small"
+                      sx={{
+                        color: "#ff9800",
+                        "&.Mui-checked": { color: "#4caf50" },
+                        padding: "6px",
+                      }}
+                    />
+                  }
+                  label={
+                    <Typography fontSize="0.8125rem">All Areas</Typography>
+                  }
+                  sx={{ mb: 0, mr: 0 }}
+                />
 
-        {filteredAreaRequired.map((area) => (
-          <FormControlLabel
-            key={`area-${area}`}
-            value={area}
-            control={
-              <Radio
-                size="small"
-                sx={{
-                  color: "#ff9800",
-                  "&.Mui-checked": { color: "#4caf50" },
-                  padding: "6px",
-                }}
-              />
-            }
-            label={<Typography fontSize="0.8125rem">{area}</Typography>}
-            sx={{ mb: 0, mr: 0 }}
-          />
-        ))}
-      </RadioGroup>
+                {filteredAreaRequired.map((area) => (
+                  <FormControlLabel
+                    key={`area-${area}`}
+                    value={area}
+                    control={
+                      <Radio
+                        size="small"
+                        sx={{
+                          color: "#ff9800",
+                          "&.Mui-checked": { color: "#4caf50" },
+                          padding: "6px",
+                        }}
+                      />
+                    }
+                    label={<Typography fontSize="0.8125rem">{area}</Typography>}
+                    sx={{ mb: 0, mr: 0 }}
+                  />
+                ))}
+              </RadioGroup>
 
-      {filteredAreaRequired.length === 0 && (
-        <Typography
-          fontSize="0.75rem"
-          color="text.secondary"
-          textAlign="center"
-          sx={{ py: 1 }}
-        >
-          No results found
-        </Typography>
-      )}
-    </Box>
-  </AccordionDetails>
-</Accordion>
+              {filteredAreaRequired.length === 0 && (
+                <Typography
+                  fontSize="0.75rem"
+                  color="text.secondary"
+                  textAlign="center"
+                  sx={{ py: 1 }}
+                >
+                  No results found
+                </Typography>
+              )}
+            </Box>
+          </AccordionDetails>
+        </Accordion>
 
         {/* Model Type Filter */}
         <Accordion
@@ -739,7 +760,7 @@ const FilterPanel = React.memo(
           onChange={() => toggleSection("modelType")}
           disableGutters
           elevation={0}
-          sx={{ mb: 2,borderRadius: "5px", "&:before": { display: "none" } }}
+          sx={{ mb: 2, borderRadius: "5px", "&:before": { display: "none" } }}
         >
           <AccordionSummary
             expandIcon={<ExpandMoreIcon sx={{ color: "#4caf50" }} />}
@@ -798,9 +819,6 @@ const FilterPanel = React.memo(
           </AccordionDetails>
         </Accordion>
 
-
-
-
         {/* Location Filters */}
         <Accordion
           ref={locationRef}
@@ -808,7 +826,7 @@ const FilterPanel = React.memo(
           onChange={() => toggleSection("location")}
           disableGutters
           elevation={0}
-          sx={{ mb: 2,borderRadius: "5px", "&:before": { display: "none" } }}
+          sx={{ mb: 2, borderRadius: "5px", "&:before": { display: "none" } }}
         >
           <AccordionSummary
             expandIcon={<ExpandMoreIcon sx={{ color: "#4caf50" }} />}
@@ -1016,12 +1034,11 @@ const FilterPanel = React.memo(
           </AccordionDetails>
         </Accordion>
 
-       
         <Divider sx={{ my: 2 }} />
-       <AdSlot {...ADS.HOME.FILTER_BOTTOM_RECTANGLE}/>
+        <AdSlot {...ADS.HOME.FILTER_BOTTOM_RECTANGLE} />
       </Box>
     );
-  }
+  },
 );
 
 export default FilterPanel;

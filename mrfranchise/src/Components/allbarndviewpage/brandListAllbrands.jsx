@@ -289,12 +289,17 @@ function BrandList() {
   // ============================================
 
   // Initial data fetch (only once)
-  useEffect(() => {
-    if (!isInitialized) {
-      dispatch(fetchFilterOptions());
-      setIsInitialized(true);
-    }
-  }, [dispatch, isInitialized]);
+  // useEffect(() => {
+  //   if (!isInitialized) {
+  //     dispatch(fetchFilterOptions());
+  //     setIsInitialized(true);
+  //   }
+  // }, [dispatch, isInitialized]);
+
+useEffect(() => {
+  dispatch(fetchFilterOptions());
+  setIsInitialized(true);
+}, [dispatch]);
 
   const filterdata = {
     maincat: "Food & Beverages",
@@ -302,22 +307,45 @@ function BrandList() {
   };
 
   // Fetch brands when debounced filters change
+  // useEffect(() => {
+  //   if (isInitialized) {
+  //     const storedFilters = localStorageData.searchData
+  //     if (storedFilters?.searchTerm) {
+  //       filterdata.searchTerm = storedFilters.searchTerm;
+  //       localStorage.removeItem("franchiseFilters");
+  //       startTransition(() => {
+  //         dispatch(fetchFilteredBrands(storedFilters));
+  //       });
+  //     } else {
+  //       startTransition(() => {
+  //         dispatch(fetchFilteredBrands(debouncedFilters));
+  //       });
+  //     }
+  //   }
+  // }, [dispatch, isInitialized, debouncedFilters]);
+
+
+  // === FIXED: Only ONE fetch, no double calls ===
+
+
   useEffect(() => {
-    if (isInitialized) {
-      const storedFilters = localStorageData.searchData
-      if (storedFilters?.searchTerm) {
-        filterdata.searchTerm = storedFilters.searchTerm;
-        localStorage.removeItem("franchiseFilters");
-        startTransition(() => {
-          dispatch(fetchFilteredBrands(storedFilters));
-        });
-      } else {
-        startTransition(() => {
-          dispatch(fetchFilteredBrands(debouncedFilters));
-        });
-      }
-    }
-  }, [dispatch, isInitialized, debouncedFilters]);
+  if (!isInitialized) return;
+
+  let finalFilters = { ...debouncedFilters };
+
+  // Only apply stored search term from localStorage ONCE on mount
+  const stored = localStorageData.searchData;
+  if (stored?.searchTerm && !debouncedFilters.searchTerm) {
+    finalFilters.searchTerm = stored.searchTerm;
+    localStorage.removeItem("franchiseFilters"); // clean up
+  }
+
+  startTransition(() => {
+    dispatch(fetchFilteredBrands(finalFilters));
+  });
+}, [dispatch, isInitialized, debouncedFilters]); // Only these deps!
+
+
 
   // Check for comparison mode from URL/storage
   useEffect(() => {

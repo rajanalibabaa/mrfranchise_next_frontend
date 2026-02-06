@@ -28,9 +28,7 @@ const Search = ({ handleClose }) => {
   const isIdExist = Boolean(brandId);
   
   const isBrandViewPage =
-    pathname?.startsWith("/all-franchise-brands") ||
-    pathname?.startsWith("/brands") ||
-    pathname === "/brands" ||
+    pathname?.startsWith("/all-franchise-brands") 
     isIdExist;
 
   const [suggestions, setSuggestions] = useState({
@@ -139,14 +137,19 @@ const Search = ({ handleClose }) => {
   };
 
   const handleSelectedSuggestionData = (selectedData) => {
-    let searchValue;
-    if (selectedData.brandName || selectedData.companyName) {
-      searchValue = selectedData.id;
-    } else {
-      searchValue =
-        selectedData.tag || selectedData.industry || selectedData.category;
+    // 🔹 If brand name selected, navigate to brand detail page
+    if (selectedData.brandName) {
+      console.log(selectedData);
+      
+      const brandSlug = selectedData?.brandName;
+      if (typeof window !== "undefined") {
+        window.open(`/brands/${brandSlug}`, "_blank", "noopener,noreferrer");
+      }
+      return;
     }
 
+    // 🔹 Otherwise, treat as search filter
+    const searchValue = selectedData.tag || selectedData.industry || selectedData.category;
     handleOnSearch(searchValue);
   };
 
