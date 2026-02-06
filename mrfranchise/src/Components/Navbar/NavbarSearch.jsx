@@ -367,9 +367,9 @@ const NavbarSearch = ({ open, handleClose }) => {
         </Box>
 
         {/* Search Input */}
-        {/* <Box display="flex" justifyContent="center" mb={2}>
+        <Box display="flex" justifyContent="center" mb={2}>
           <Search handleClose={handleClose} />
-        </Box> */}
+        </Box>
 
         {/* Active Filters */}
         <Box
@@ -437,9 +437,9 @@ const NavbarSearch = ({ open, handleClose }) => {
           )}
         </Box>
 
-        {/* <Typography align="center" color="text.secondary" sx={{ mb: 2 }}>
+        <Typography align="center" color="text.secondary" sx={{ mb: 2 }}>
           Or Explore By
-        </Typography> */}
+        </Typography>
 
         {/* Tabs */}
         <Tabs

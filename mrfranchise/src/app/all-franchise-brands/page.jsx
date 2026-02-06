@@ -23,7 +23,7 @@ const BrandListNew = dynamic(
 
 
 
-export default async function BrandCategoryViewPage({ searchParams }) {
+export default async function BrandCategoryViewPage() {
   // Extract filters from URL
   // const initialFilters = {
   //   subcat: searchParams?.subcat || "",

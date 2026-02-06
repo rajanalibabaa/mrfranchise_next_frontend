@@ -1,5 +1,5 @@
 "use client";
-import React,{useEffect } from "react";
+import React,{useEffect , useState} from "react";
 import {
   Drawer,
   Box,
@@ -32,6 +32,8 @@ const ApplyDrawer = ({
   userData,
 }) => {
   
+    const [expanded, setExpanded] = useState(false);
+
  // Prefill form with userData when available
   useEffect(() => {
     if (userData && open) {
@@ -54,14 +56,16 @@ const ApplyDrawer = ({
         sx: {
           borderTopLeftRadius: 16,
           borderTopRightRadius: 16,
+          borderBottomLeftRadius: isMobile ? 0 : 16,
           maxHeight: isMobile ? "80vh" : isTablet ? "70vh" : "94vh",
           width: isMobile ? "100%" : isTablet ? "80%" : 430,
           overflow: "auto",
           mx: "auto",
+          backgroundColor: "#f9f9f9",
         },
       }}
     >
-      <Box sx={{ p: isMobile ? 2 : 3 }}>
+      <Box sx={{ pl: isMobile ? 2 : 2,pt: isMobile ? 2 : 1.5, pr: isMobile ? 2 : 2}}>
         <Box
           sx={{
             display: "flex",
@@ -71,15 +75,10 @@ const ApplyDrawer = ({
           }}
         >
              <Box>
-          <Typography variant="h6" fontWeight={700} mb={1} color="#ff9800" >
-            Apply for Franchise
+          <Typography variant="h6" fontWeight={700} mb={0.1} color="#26d466" >
+            Chat with {selectedBrand[0]?.brandDetails?.brandName}
              </Typography>
-             
-            <Box display="flex" flexDirection="column">
-              <Typography fontSize="0.7rem" color="black" mb={0.5}>
-                <b>Brand Name:</b> {selectedBrand[0]?.brandDetails?.brandName}
-              </Typography>
-              <Typography fontSize="0.7rem" color="black">
+             <Typography fontSize="0.7rem" color="black">
                <b> Brand Category: </b>
                 {
                   selectedBrand[0]?.brandfranchisedetails?.franchiseDetails
@@ -87,9 +86,8 @@ const ApplyDrawer = ({
                 }
               </Typography>
             </Box>
-            </Box>
           <IconButton onClick={onClose}>
-            <Close />
+            <Close color="error" />
           </IconButton>
         </Box>
 
@@ -99,7 +97,7 @@ const ApplyDrawer = ({
             sx={{
               display: "grid",
               gridTemplateColumns: "repeat(1, 1fr)",
-              gap: 2,
+              gap: 1.5,
             }}
           >
             <Grid item xs={12}>
@@ -272,8 +270,8 @@ const ApplyDrawer = ({
                 variant="contained"
                 disabled={isSubmitting}
                 sx={{
-                  mt: 2,
-                  backgroundColor: "#ff9800",
+                  mt: 0.5,
+                  backgroundColor: "#25d366",
                   py: 1.5,
                   fontSize: "1rem",
                   "&:disabled": {
@@ -292,49 +290,66 @@ const ApplyDrawer = ({
                     Submitting...
                   </>
                 ) : (
-                  "Apply Now"
+                  "Message Now 🚀"
                 )}
               </Button>
             </Grid>
           </Grid>
-          <Grid item xs={12} sx={{ mt: 2 }}>
+          <Grid item xs={12} sx={{ mt: 0 }}>
             {/* aimer: Instantly rendered */}
-      {/* <Box
-        sx={{
-          mt: 4,
-          p: 3,
-          borderRadius: "12px",
-          bgcolor: "rgba(244, 67, 54, 0.05)",
-        }}
-      >
-        <Typography variant="body1"fontSize={10} color="#f44336">
-          Disclaimer:
-        </Typography>
-        {!isMobile ? (
-          <Typography variant="caption"  fontSize={9} color="#212121">
-            Mr Franchise and the site sponsors accept no liability for the
-            accuracy of any information contained on this site or on other
-            linked sites. We recommend you take advice from a lawyer,
-            accountant and franchise consultant experienced in franchising
-            before you commit yourself. It is user's responsibility to satisfy
-            yourself as to the accuracy and reliability of the information
-            supplied. Please read the terms & conditions on MrFranchise.in
-          </Typography>
-        ) : (
-          <Box sx={{ overflowX: 'auto', whiteSpace: 'nowrap', minWidth: '300px', py: 1 }}>
-            <Typography variant="caption"  fontSize={9} color="#212121">
-              Mr Franchise and the site sponsors accept no liability for the
-              accuracy of any information contained on this site or on other
-              linked sites. We recommend you take advice from a lawyer,
-              accountant and franchise consultant experienced in franchising
-              before you commit yourself. It is user's responsibility to satisfy
-              yourself as to the accuracy and reliability of the information
-              supplied. Please read the terms & conditions on MrFranchise.in
+      <Box
+            sx={{
+              // ml: { xs: 2, md: 10.5 },
+              // mr: { xs: 2, md: 10.5 },
+              // mb: 4,
+              mt: 0,
+              p: 2,
+              // borderRadius: "12px",
+              // bgcolor: "rgba(255, 255, 255, 1)",
+            }}
+          >
+            <Typography
+              variant="caption"
+              fontSize={9}
+              color="#212121"
+              sx={{
+                display: "-webkit-box",
+                WebkitLineClamp: expanded ? "unset" : 1, // one line when collapsed
+                WebkitBoxOrient: "vertical",
+                overflow: "hidden",
+                whiteSpace: expanded ? "normal" : "nowrap",
+                textOverflow: "ellipsis",
+              }}
+            >
+              <span style={{ color: "#f44336", fontWeight: 600 }}>
+                Disclaimer:{" "}
+              </span>
+              Mr Franchise and the site sponsors accept no liability for the accuracy
+              of any information contained on this site or on other linked sites. We
+              recommend you take advice from a lawyer, accountant and franchise
+              consultant experienced in franchising before you commit yourself. It is
+              user's responsibility to satisfy yourself as to the accuracy and
+              reliability of the information supplied. Please read the terms &
+              conditions on MrFranchise.in
             </Typography>
+      
+            <Button
+              size="small"
+              onClick={() => setExpanded(!expanded)}
+              sx={{
+                mt: 0.5,
+                p: 0,
+                minWidth: "auto",
+                fontSize: "9px",
+                textTransform: "none",
+                color: "#ba1212ff",
+                textDecoration: "underline",
+              }}
+            >
+              {expanded ? "Less" : "Expand More"}
+            </Button>
           </Box>
-        )}
-      </Box> */}
-      <Disclimer/>
+      {/* <Disclimer/> */}
       
           </Grid>
         </form>

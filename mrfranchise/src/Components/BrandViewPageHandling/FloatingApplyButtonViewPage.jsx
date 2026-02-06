@@ -74,7 +74,7 @@ const FloatingApplyButton = ({ isMobile, brand, toggleDrawer }) => {
             },
             animation: `${bounce} 2s infinite`,
             boxShadow: "0 6px 16px rgba(0,0,0,0.25)",
-            "&:hover": { backgroundColor: "#e65100" },
+            "&:hover": { backgroundColor: "#25d365b5" },
           }}
         >
           <Box textAlign="center" display={'flex'} gap={1}> 

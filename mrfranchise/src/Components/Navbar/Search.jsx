@@ -13,7 +13,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import { GetApiCall } from "@/Api/DefaultApi";
 import { api } from "@/Api/api";
 import SuggestionList from "./SuggestionList";
-import { fetchFilteredBrands } from "@/Redux/Slices/FilterBrandSlice";
+import { fetchFilteredBrands, setFilter } from "@/Redux/Slices/FilterBrandSlice";
 
 const Search = ({ handleClose }) => {
   const [query, setQuery] = useState("");
@@ -28,9 +28,7 @@ const Search = ({ handleClose }) => {
   const isIdExist = Boolean(brandId);
   
   const isBrandViewPage =
-    pathname?.startsWith("/brandViewPage") ||
-    pathname?.startsWith("/brands") ||
-    pathname === "/brands" ||
+    pathname?.startsWith("/all-franchise-brands") 
     isIdExist;
 
   const [suggestions, setSuggestions] = useState({
@@ -94,6 +92,7 @@ const Search = ({ handleClose }) => {
   const handleOnSearch = (searchValue = null) => {
     let value;
 
+    if(!query && !searchValue) return;
     if (typeof searchValue === "string") {
       value = searchValue;
     } else {
@@ -108,9 +107,17 @@ const Search = ({ handleClose }) => {
 
         // Next.js way to open in new tab
         if (typeof window !== "undefined") {
-            window.open(`/all-franchise-brands?${queryParams.toString()}`, "_blank", "noopener,noreferrer");
+              localStorage.setItem("franchiseFilters", JSON.stringify({ searchTerm: value }));
+            dispatch(
+              setFilter(
+                { searchTerm: value }
+              )
+            )
+            // window.open(`/all-franchise-brands?${queryParams.toString()}`, "_blank", "noopener,noreferrer");
+            window.open(`/all-franchise-brands`, "_blank", "noopener,noreferrer");
 
         }
+        return;
       }
 
       dispatch(
@@ -130,14 +137,19 @@ const Search = ({ handleClose }) => {
   };
 
   const handleSelectedSuggestionData = (selectedData) => {
-    let searchValue;
-    if (selectedData.brandName || selectedData.companyName) {
-      searchValue = selectedData.id;
-    } else {
-      searchValue =
-        selectedData.tag || selectedData.industry || selectedData.category;
+    // 🔹 If brand name selected, navigate to brand detail page
+    if (selectedData.brandName) {
+      console.log(selectedData);
+      
+      const brandSlug = selectedData?.brandName;
+      if (typeof window !== "undefined") {
+        window.open(`/brands/${brandSlug}`, "_blank", "noopener,noreferrer");
+      }
+      return;
     }
 
+    // 🔹 Otherwise, treat as search filter
+    const searchValue = selectedData.tag || selectedData.industry || selectedData.category;
     handleOnSearch(searchValue);
   };
 
