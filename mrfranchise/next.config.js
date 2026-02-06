@@ -7,6 +7,10 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  experimental: {
+    workerThreads: false,
+    cpus: 2,
+  },
 };
 
 module.exports = nextConfig;
