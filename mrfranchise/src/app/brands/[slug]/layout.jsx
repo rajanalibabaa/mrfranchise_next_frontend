@@ -4,8 +4,8 @@ import React from "react";
 const API_BASE =  `${process.env.NEXT_PUBLIC_API_URL}`;
 const SITE_URL =  "https://mrfranchise.in";
 
-// export const dynamic = "force-static";
-const REVALIDATE_TIME = 3600; // 1 hour
+export const dynamic = "force-static";
+// const REVALIDATE_TIME = 3600; // 1 hour
 
 
 
@@ -22,7 +22,8 @@ async function getBrandData(slug) {
         next: { revalidate: REVALIDATE_TIME },
         headers: {
           'Content-Type': 'application/json',
-        }
+        },
+        cache: "no-store",
       }
     );
 

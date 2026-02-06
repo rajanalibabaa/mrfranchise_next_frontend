@@ -5,6 +5,7 @@ import ClientPage from "./ClientPage";
 const API_BASE =  `${process.env.NEXT_PUBLIC_API_URL}`;
 const SITE_URL ="https://mrfranchise.in";
 const SITE_NAME = "Mr Franchise";
+export const dynamic = "force-dynamic";
 
 
 const CATEGORY_CONFIG = {
@@ -167,7 +168,6 @@ async function getCategoryData(slug) {
     const res = await fetch(
       `${API_BASE}/api/v1/filter/getAllBrandsAndFilter?maincat=${encodeURIComponent(toTitleCase(slug))}`,
       {
-        next: { revalidate: 3600 },
         headers: {
           "Content-Type": "application/json",
         },
@@ -536,34 +536,34 @@ export default async function Page({ params }) {
 
 
 
-export async function generateStaticParams() {
-  try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/filter/getAllBrandsAndFilter?page=1&limit=50`,
-      {
-        next: { revalidate: 3600 }, // ✅ cache for build + ISR
-      }
-    );
+// export async function generateStaticParams() {
+//   try {
+//     const res = await fetch(
+//       `${API_BASE}/api/v1/filter/getAllBrandsAndFilter?page=1&limit=50`,
+//       {
+//         cache: "no-store",
+//       }
+//     );
 
-    if (!res.ok) throw new Error("Failed to fetch brands");
+//     if (!res.ok) throw new Error("Failed to fetch brands");
 
-    const json = await res.json();
+//     const json = await res.json();
 
-    const brands = Array.isArray(json?.data?.brands)
-      ? json.data.brands
-      : [];
+//     const brands = Array.isArray(json?.data?.brands)
+//       ? json.data.brands
+//       : [];
 
-    return brands.map((brand) => ({
-      slug:
-        brand.slug ||
-        brand.brandname
-          ?.toLowerCase()
-          .replace(/\s+/g, "-")
-          .replace(/[^a-z0-9-]/g, "") ||
-        String(brand.uuid),
-    }));
-  } catch (error) {
-    console.error("generateStaticParams failed:", error);
-    return []; // 🚑 DO NOT crash build
-  }
-}
+//     return brands.map((brand) => ({
+//       slug:
+//         brand.slug ||
+//         brand.brandname
+//           ?.toLowerCase()
+//           .replace(/\s+/g, "-")
+//           .replace(/[^a-z0-9-]/g, "") ||
+//         String(brand.uuid),
+//     }));
+//   } catch (error) {
+//     console.error("generateStaticParams failed:", error);
+//     return []; // 🚑 DO NOT crash build
+//   }
+// }
