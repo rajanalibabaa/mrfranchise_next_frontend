@@ -6,14 +6,12 @@
 // }
 
 // src/Utils/localStorage.js
-export const localStorageData = () => {
+export const getLocalStorageData = () => {
   if (typeof window === "undefined") return null;
 
   try {
-    const data = localStorage.getItem("franchiseFilters");
-    return data ? JSON.parse(data) : null;
-  } catch (err) {
-    console.error("Invalid localStorage data", err);
+    return JSON.parse(localStorage.getItem("franchiseFilters"));
+  } catch {
     return null;
   }
 };

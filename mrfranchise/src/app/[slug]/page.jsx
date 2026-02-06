@@ -539,7 +539,7 @@ export default async function Page({ params }) {
 export async function generateStaticParams() {
   try {
     const res = await fetch(
-      "https://mrfranchisebackend.mrfranchise.in/api/v1/filter/getAllBrandsAndFilter?page=1&limit=50",
+      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/filter/getAllBrandsAndFilter?page=1&limit=50`,
       {
         next: { revalidate: 3600 }, // ✅ cache for build + ISR
       }

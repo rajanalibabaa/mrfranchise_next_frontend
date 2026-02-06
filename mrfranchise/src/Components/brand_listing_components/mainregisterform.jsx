@@ -453,7 +453,7 @@ const [activeStep, setActiveStep] = useState(0);
             gstNumber: formData.brandDetails.gstNumber,
             pancardNumber: formData.brandDetails.pancardNumber,
             awardText: formData.brandDetails.awardText || [], // Include award texts
-            paymentPackage: selectedMembership,
+            paymentPackage: selectedMembership?.tier.toLowerCase(),
             listingPackages: {
               periodMonths: selectedListing?.periodMonths,
               amount: selectedListing?.amount,

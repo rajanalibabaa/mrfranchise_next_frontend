@@ -54,7 +54,7 @@ const BrandComparison = ({
 //       setLoading(true);
 //       try {
 //         const promises = selectedBrands.map((brand) =>
-//   axios.get(`https://mrfranchisebackend.mrfranchise.in/api/v1/brandlisting/getBrandListingByUUID/${brand.uuid}`, {
+//   axios.get(`http://localhost:5000/api/v1/brandlisting/getBrandListingByUUID/${brand.uuid}`, {
 //     params: {
 //       userId: userId
 //     }
