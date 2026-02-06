@@ -45,7 +45,7 @@ import {
 import { fetchFilterOptions } from "@/Redux/Slices/filterDropdownData";
 import AdSlot from "../ads/GoogleAd";
 import { ADS } from "@/config/ads.config";
-import { localStorageData } from "@/Utils/localStorage";
+import { getLocalStorageData } from "@/Utils/localStorage";
 
 const BrandCardSkeleton = React.memo(() => (
   <Box
@@ -334,7 +334,7 @@ useEffect(() => {
   let finalFilters = { ...debouncedFilters };
 
   // Only apply stored search term from localStorage ONCE on mount
-  const stored = localStorageData.searchData;
+  const stored = getLocalStorageData();
   if (stored?.searchTerm && !debouncedFilters.searchTerm) {
     finalFilters.searchTerm = stored.searchTerm;
     localStorage.removeItem("franchiseFilters"); // clean up
@@ -349,7 +349,7 @@ useEffect(() => {
 
   // Check for comparison mode from URL/storage
   useEffect(() => {
-    const enableFromStorage = localStorage.getItem("enableComparison");
+    const enableFromStorage = getLocalStorageData()?.enableComparison;
     if (enableFromStorage === "true") {
       setEnableComparison(true);
       localStorage.removeItem("enableComparison");
@@ -513,32 +513,32 @@ useEffect(() => {
     }
 
    
-    if (brands.length === 0 && !localStorageData?.searchData) {
-      return (
-        <Box textAlign="center" py={26}>
-          <Typography
-            variant="h5"
-            color="orange"
-            bgcolor="white"
-            display="inline-block"
-            p={2}
-            borderRadius={2}
-          >
-            No brands match your filters
-          </Typography>
-          <br />
-          <Button
-            variant="outlined"
-            onClick={handleClearFilters}
-            startIcon={<ClearIcon />}
-            size="large"
-            sx={{ mt: 2, borderColor: "#ff9800", color: "#ff0000" }}
-          >
-            Clear All Filters
-          </Button>
-        </Box>
-      );
-    }
+    // if (brands.length === 0 && !?.searchData) {
+    //   return (
+    //     <Box textAlign="center" py={26}>
+    //       <Typography
+    //         variant="h5"
+    //         color="orange"
+    //         bgcolor="white"
+    //         display="inline-block"
+    //         p={2}
+    //         borderRadius={2}
+    //       >
+    //         No brands match your filters
+    //       </Typography>
+    //       <br />
+    //       <Button
+    //         variant="outlined"
+    //         onClick={handleClearFilters}
+    //         startIcon={<ClearIcon />}
+    //         size="large"
+    //         sx={{ mt: 2, borderColor: "#ff9800", color: "#ff0000" }}
+    //       >
+    //         Clear All Filters
+    //       </Button>
+    //     </Box>
+    //   );
+    // }
 
     return (
       <>
