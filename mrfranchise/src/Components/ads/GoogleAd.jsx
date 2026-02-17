@@ -5,11 +5,11 @@ import { Box } from "@mui/material";
 
 // Standard Google AdSense sizes
 const VARIANT_SIZES = {
-  billboard: { width: 970, height: 70 },        // 970×90
-  leaderboard: { width: 828, height: 90 },      // 728×90
-  rectangle: { width: 1200, height: 250 },       // 970×250
-  medium_rectangle: { width: 300, height: 200 },
-  large_rectangle: { width: 160, height: 600 },
+  billboard: { width: 970, height: 90 },        // 970×90
+  leaderboard: { width: 728, height: 90 },      // 728×90
+  rectangle: { width: 970, height: 250 },       // 970×250
+  medium_rectangle: { width: 300, height: 250 },
+  large_rectangle: { width: 336, height: 280 },
   // skyscraper: { width: 160, height: 600 },
   // wide_skyscraper: { width: 300, height: 600 },
   // half_page: { width: 300, height: 600 },
