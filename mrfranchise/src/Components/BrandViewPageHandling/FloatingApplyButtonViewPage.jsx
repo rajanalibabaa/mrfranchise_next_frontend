@@ -18,9 +18,7 @@ const bounce = keyframes`
 `;
 
 const FloatingApplyButton = ({ isMobile, brand, toggleDrawer }) => {
-  const currentUrl =
-    typeof window !== "undefined" ? window.location.href : "";
-
+ 
   const brandName = brand?.[0]?.brandDetails?.brandName || "Brand";
   // const whatsappNumber = brand?.[0]?.brandDetails?.whatsappnumber || "";
 
