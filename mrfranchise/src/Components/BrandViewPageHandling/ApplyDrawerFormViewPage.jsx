@@ -136,7 +136,7 @@ const ApplyDrawer = ({
                 size="small"
               />
             </Grid>
-            Select your Store Location
+            Where you want to start
             {/* State Dropdown */}
             <Grid item xs={12}>
               <TextField

@@ -30,7 +30,7 @@ import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 // import { Helmet } from "react-helmet-async";
 
 const ShareDialogActions = ({ anchorEl, setAnchorEl, brand }) => {
-  console.log(brand);
+
   
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
