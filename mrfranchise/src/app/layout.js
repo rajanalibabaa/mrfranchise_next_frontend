@@ -53,13 +53,13 @@ export default function RootLayout({ children }) {
         </Script>
 
         {/* ================= GOOGLE ADSENSE ================= */}
-        {/* <Script
+        <Script
           id="adsense"
           strategy="afterInteractive"
           async
           src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${process.env.NEXT_PUBLIC_ADSENSE_ID}`}
           crossOrigin="anonymous"
-        /> */}
+        />
 
         {/* ================= APP PROVIDERS ================= */}
         <ReactQueryProvider>

@@ -533,11 +533,13 @@ const handleSubmit = useCallback(
         }}
       >
  
-          <FloatingApplyButton
-            isMobile={isMobile}
-            brand={selectedBrand}
-            toggleDrawer={toggleDrawer}
-          />
+          { !drawerOpen && (
+            <FloatingApplyButton
+              isMobile={isMobile}
+              brand={selectedBrand}
+              toggleDrawer={toggleDrawer}
+            />
+          )}
  
           <ApplyDrawer
             open={drawerOpen}

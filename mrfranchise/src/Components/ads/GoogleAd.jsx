@@ -26,12 +26,17 @@ export default function AdSlot({
   label,
 }) {
   useEffect(() => {
-    try {
-      (window.adsbygoogle = window.adsbygoogle || []).push({});
-    } catch (err) {
-      console.warn("AdSense error:", err);
-    }
-  }, []);
+
+  if (!window.adsbygoogle) return;
+
+  try {
+
+    window.adsbygoogle.push({});
+
+  } catch {}
+
+}, [slot]);
+
 
   const config = VARIANT_SIZES[variant] || VARIANT_SIZES.default;
 
@@ -59,7 +64,7 @@ export default function AdSlot({
     >
       <ins
         className="adsbygoogle"
-        style={{ display: "block", width: "100%" }}
+        style={{ display: "block", width: finalWidth, height: finalHeight }}
         data-ad-client={process.env.NEXT_PUBLIC_ADSENSE_ID}
         data-ad-slot={slot}
         data-ad-format={isResponsive ? "auto" : undefined}
