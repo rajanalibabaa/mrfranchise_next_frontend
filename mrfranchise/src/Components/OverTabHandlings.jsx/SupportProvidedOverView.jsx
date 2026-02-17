@@ -30,8 +30,6 @@ const SupportProvided = ({ trainingSupport, aidFinancing, isInternationalExpansi
       >
         <CardContent>
           <Typography
-            variant="h6"
-            fontWeight={700}
             gutterBottom
             display="flex"
             alignItems="center"

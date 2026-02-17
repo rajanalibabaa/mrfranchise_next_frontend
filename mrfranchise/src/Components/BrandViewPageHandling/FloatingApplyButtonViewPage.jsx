@@ -9,6 +9,8 @@ import {
 } from "@mui/material";
 import WhatsAppIcon from "@mui/icons-material/WhatsApp";
 import { motion } from "framer-motion";
+import { useSelector } from "react-redux";
+import LoginPage from "../LoginPage/LoginPage";
 
 const bounce = keyframes`
   0%, 100% { transform: translateY(0); }
@@ -27,6 +29,24 @@ const FloatingApplyButton = ({ isMobile, brand, toggleDrawer }) => {
   //       `Hi, I am interested in your "${brandName}" franchise.\n\n${currentUrl}\n\n#MrFranchise.in`
   //     )}`
     // : null;
+
+  
+    const [open, setOpen] = React.useState(false);
+    const { AccessToken } = useSelector((state) => state.auth);
+
+    const handleApplyClick = (event) => {
+      
+    
+    if (AccessToken) {
+      toggleDrawer(true)(event);
+    } else {
+      setOpen(true);
+          console.log("AccessToken in FloatingApplyButton:", AccessToken);
+
+    }
+      ;
+  };
+
 
   return (
     <Box
@@ -59,7 +79,7 @@ const FloatingApplyButton = ({ isMobile, brand, toggleDrawer }) => {
         <Button
           fullWidth={isMobile}
           variant="contained"
-          onClick={toggleDrawer(true)}
+          onClick={handleApplyClick}
           sx={{
             flex: 1,
               backgroundColor: "#25D366",
@@ -115,6 +135,11 @@ const FloatingApplyButton = ({ isMobile, brand, toggleDrawer }) => {
           </Button>
         </Tooltip>
       )} */}
+
+      <LoginPage 
+        open={open}
+        onClose={() => setOpen(false)}
+      />
     </Box>
   );
 };
