@@ -45,12 +45,12 @@ export const ADS = {
       mobile: false,
       label: "Home – Filter Bottom Billboard",
     },
-    FILTER_BOTTOM_RECTANGLE: {
-      slot: "5100768802",
-      variant: "large_rectangle",
-      mobile: false,
-      label: "Home – Filter Bottom Billboard",
-    },
+    // FILTER_BOTTOM_RECTANGLE: {
+    //   slot: "5100768802",
+    //   variant: "large_rectangle",
+    //   mobile: false,
+    //   label: "Home – Filter Bottom Billboard",
+    // },
   },
 
   
