@@ -680,9 +680,9 @@ background: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${page
           const addIndex = Math.floor(i / 3);
 
            const adSlots = [
-      ADS.HOME.INLINE_1,
-      ADS.HOME.INLINE_2,
-      ADS.HOME.INLINE_3,
+      ADS.HOME.TOP_BILLBOARD,
+      ADS.HOME.TOP_BILLBOARD,
+      ADS.HOME.TOP_BILLBOARD,
     ];
 return (
       <Fragment key={i} >
