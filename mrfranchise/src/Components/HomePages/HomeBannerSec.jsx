@@ -537,13 +537,6 @@ const pathname = usePathname();
       
       <Navbar />
 
-      {/* TOP LEADERBOARD AD - SHOW ON HOME PAGE */}
-      <BackgroundWrapper>
-        <Box sx={{ py: 2, textAlign: "center" }}>
-          <AdSlot {...ADS.HOME.TOP_LEADERBOARD} />
-        </Box>
-      </BackgroundWrapper>
-
       {showPopup && (
         <PopupModal
           open={isPopupOpen}
@@ -710,7 +703,7 @@ return (
        {(i + 1) % 3 === 0 && adSlots[addIndex] && (
   <BackgroundWrapper>
     <Box sx={{ py: 3 }}>
-      <AdSlot key={`inline-ad-${addIndex}`} {...adSlots[addIndex]} />
+      <AdSlot key={pathname} {...adSlots[addIndex]} />
     </Box>
   </BackgroundWrapper>
 )}
@@ -734,7 +727,7 @@ return (
         })} */}
         <BackgroundWrapper>
           <Box sx={{ py: 3 }}>
-          <AdSlot key="footer-ad-home" {...ADS.HOME.FOOTER_RECTANGLE}/>
+          <AdSlot key={pathname} {...ADS.HOME.FOOTER_RECTANGLE}/>
 </Box>
         </BackgroundWrapper>
 
