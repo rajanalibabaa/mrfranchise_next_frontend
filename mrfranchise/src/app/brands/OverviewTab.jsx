@@ -24,7 +24,7 @@ import SupportProvided from "@/Components/OverTabHandlings.jsx/SupportProvidedOv
 import FranchiseTagsOverView from "@/Components/OverTabHandlings.jsx/FranchiseTagsOverView.jsx";
 import AdSlot from "@/Components/ads/GoogleAd";
 import { ADS } from "@/config/ads.config";
-
+import { usePathname } from "next/navigation.js";
 // Lazy loading heavy/offscreen/large sections
 const ExpansionLocationGrid = React.lazy(() => import("@/Components/OverTabHandlings.jsx/BrandOverViewExpansionLocationDomestic.jsx"));
 const ExpansionLocationGridInternational = React.lazy(() => import("@/Components/OverTabHandlings.jsx/BrandExpansionLOcationOverviewInternational.jsx"));
@@ -68,6 +68,7 @@ const OverviewTab = ({ brand }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const overviewRef = useRef(null);
+    const pathname = usePathname();
   const [openMobile, setOpenMobile] = useState({
     domesticCurrent: false,
     domesticExpansion: false,
@@ -109,7 +110,7 @@ const serviceTags=brand?.[0]?.brandfranchisedetails?.franchiseDetails?.brandCate
         />
       )}
 
-      <AdSlot {...ADS.HOME.TOP_LEADERBOARD}/>
+      <AdSlot key={pathname} {...ADS.HOME.TOP_LEADERBOARD}/>
       
       {hasData(serviceTags) && (
         <FranchiseTagsOverView 
