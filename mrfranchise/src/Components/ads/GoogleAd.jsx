@@ -162,6 +162,7 @@ export default function AdSlot({
         textAlign: "center",
         width: "100%",
         minHeight: finalHeight,
+        margin: "0 auto",
       }}
     >
       <div ref={adRef} />
