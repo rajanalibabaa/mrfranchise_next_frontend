@@ -703,7 +703,7 @@ return (
        {(i + 1) % 3 === 0 && adSlots[addIndex] && (
   <BackgroundWrapper>
     <Box sx={{ py: 3 }}>
-      <AdSlot key={pathname} {...adSlots[addIndex]} />
+      <AdSlot key={`${pathname}-${adSlots[addIndex].slot}`} {...adSlots[addIndex]} />
     </Box>
   </BackgroundWrapper>
 )}

@@ -1,80 +1,79 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Box } from "@mui/material";
 
-// Standard Google AdSense sizes
 const VARIANT_SIZES = {
-  billboard: { width: 970, height: 90 },        // 970×90
-  leaderboard: { width: 728, height: 90 },      // 728×90
-  rectangle: { width: 970, height: 250 },       // 970×250
+  billboard: { width: 970, height: 90 },
+  leaderboard: { width: 728, height: 90 },
+  rectangle: { width: 970, height: 250 },
   medium_rectangle: { width: 300, height: 250 },
   large_rectangle: { width: 336, height: 280 },
-  // skyscraper: { width: 160, height: 600 },
-  // wide_skyscraper: { width: 300, height: 600 },
-  // half_page: { width: 300, height: 600 },
-  default: { width: "100%" },                  // fully responsive
+  responsive: { width: "100%" },
 };
 
 export default function AdSlot({
   slot,
-  variant = "default",
-  width,
-  height,
-  minHeight,
+  variant = "responsive",
   mobile = true,
-  label,
 }) {
+
+  const adRef = useRef(null);
+
   useEffect(() => {
 
-  if (!window.adsbygoogle) return;
+    if (!adRef.current) return;
 
-  try {
+    try {
 
-    window.adsbygoogle.push({});
+      if (window.adsbygoogle && adRef.current.getAttribute("data-adsbygoogle-status") !== "done") {
 
-  } catch {}
+        window.adsbygoogle.push({});
 
-}, [slot]);
+      }
+
+    } catch (e) {
+
+      console.log("AdSense error", e);
+
+    }
+
+  }, [slot]);
 
 
-  const config = VARIANT_SIZES[variant] || VARIANT_SIZES.default;
+  const config = VARIANT_SIZES[variant] || VARIANT_SIZES.responsive;
 
-  const finalWidth = width !== undefined ? width : config.width;
-  const finalHeight = height !== undefined ? height : config.height;
-  const finalMinHeight = minHeight !== undefined ? minHeight : finalHeight || 90;
+  const isMobile =
+    typeof window !== "undefined" && window.innerWidth < 768;
 
-  // Hide on mobile if mobile={false}
-  const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
   if (!mobile && isMobile) return null;
 
-  const isResponsive = finalWidth === "100%" || finalWidth === "100vw";
-
   return (
+
     <Box
       sx={{
-        maxWidth: finalWidth,
         width: "100%",
-        mx: "auto",
-        my: 0,
         textAlign: "center",
-        background:'transparent',
-        minHeight: finalMinHeight,
+        minHeight: config.height || 90,
+        margin:'0 auto',
       }}
     >
+
       <ins
+        ref={adRef}
         className="adsbygoogle"
-        style={{ display: "block", width: finalWidth, height: finalHeight }}
+        style={{
+          display: "block",
+          width: config.width,
+          height: config.height,
+        }}
         data-ad-client={process.env.NEXT_PUBLIC_ADSENSE_ID}
         data-ad-slot={slot}
-        data-ad-format={isResponsive ? "auto" : undefined}
-        data-full-width-responsive={isResponsive ? "true" : "false"}
+        data-ad-format="auto"
+        data-full-width-responsive="true"
       />
-      {/* {label && (
-        <div style={{ fontSize: 11, color: "#888", marginTop: 4 }}>
-          {label}
-        </div>
-      )} */}
+
     </Box>
+
   );
 }
