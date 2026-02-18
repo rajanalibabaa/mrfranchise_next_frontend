@@ -1,4 +1,3 @@
-import BrandDetailsPage from "@/app/brands/[slug]/page";
 
 
 

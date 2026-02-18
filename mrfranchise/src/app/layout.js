@@ -3,6 +3,7 @@ import { VideoControllerProvider } from "@/services/VideoControllerMedia/VideHan
 import GlobalLoader from "@/Components/GLobalLoader";
 import ReactQueryProvider from "@/providers/ReactQueryProvider";
 import Script from "next/script";
+import RefreshSync from "@/Components/Refresh/RefreshSync";
 
 export default function RootLayout({ children }) {
   return (
@@ -54,8 +55,8 @@ export default function RootLayout({ children }) {
 
         {/* ================= GOOGLE ADSENSE ================= */}
         <Script
-          id="adsense"
-          strategy="lazyOnload"
+          id="adsense-script"
+          strategy="afterInteractive"
           async
           src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${process.env.NEXT_PUBLIC_ADSENSE_ID}`}
           crossOrigin="anonymous"
@@ -65,6 +66,7 @@ export default function RootLayout({ children }) {
         <ReactQueryProvider>
           <Providers>
             <VideoControllerProvider>
+              <RefreshSync />
               {children}
               <GlobalLoader />
             </VideoControllerProvider>

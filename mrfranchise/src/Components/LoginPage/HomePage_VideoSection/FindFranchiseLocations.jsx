@@ -23,8 +23,8 @@ import ArrowForward from "@mui/icons-material/ArrowForward";
 import ArrowBack from "@mui/icons-material/ArrowBack";
 import Close from "@mui/icons-material/Close";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchFilterOptions } from "../../Redux/Slices/filterDropdownData";
-import { fetchFilteredBrands, setFilter } from "../../Redux/Slices/FilterBrandSlice";
+import { fetchFilterOptions } from "../../../Redux/Slices/filterDropdownData";
+import { fetchFilteredBrands, setFilter } from "../../../Redux/Slices/FilterBrandSlice";
 import LoginPage from "@/Components/LoginPage/LoginPage";
 import HomePageBrandCard from "./HomePageBrandCard";
 

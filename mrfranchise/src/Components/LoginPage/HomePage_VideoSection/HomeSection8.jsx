@@ -8,7 +8,7 @@ import React, {
   useLayoutEffect,
 } from "react";
 import {
-  
+
   useMediaQuery,
   useTheme,
 } from "@mui/material";
@@ -20,7 +20,7 @@ import ArrowBack from "@mui/icons-material/ArrowBack";
 import ArrowForward from "@mui/icons-material/ArrowForward";
 import ArrowRight from "@mui/icons-material/ArrowRight";
 import { useSelector, useDispatch } from "react-redux";
-import { homeSection6} from '../../Redux/Slices/TopCardFetchingSlice.jsx';
+import {homeSection8} from '../../../Redux/Slices/TopCardFetchingSlice.jsx';
 import { motion } from "framer-motion";
 import HomePageBrandCard from "./HomePageBrandCard.jsx";
 import slugify from "slugify";
@@ -33,18 +33,18 @@ const CARD_DIMENSIONS = {
   largeDesktop: { width: 327, height: 500 },
 };
 
-const HomeSection6 = () => {
+const HomeSection8 = () => {
    const theme = useTheme();
    const dispatch = useDispatch();
 
-  const homeSection6State  = useSelector((state) => state.overAllPlatform.homeSection6);
+  const homeSection8State  = useSelector((state) => state.overAllPlatform.homeSection8);
 
   const {
     brands = [],
     isLoading,
     error,
     pagination
-  } = homeSection6State  || {};
+  } = homeSection8State  || {};
 
  
    const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -80,7 +80,7 @@ const HomeSection6 = () => {
    }, [isMobile, isTablet, isSmallDesktop, isDesktop, isLargeDesktop]);
  
  useEffect(() => {
-     dispatch(homeSection6({ page: 1 }));
+     dispatch(homeSection8({ page: 1 }));
    }, [dispatch]);
  
    useLayoutEffect(() => {
@@ -250,13 +250,13 @@ const HomeSection6 = () => {
                  width: "80px",
                  height: "4px",
                  background:
-                   theme.palette.mode === "dark" ? "#ffb74d" : "#f57c00",
+                   theme.palette.mode === "dark" ? "#ffb74d" : "#72f500ff",
                  mt: 1,
                  borderRadius: 2,
                },
              }}
            >
-             {/* Top Cloud Kitchens & Food Delivery */}
+             {/* Top Bars, Pubs & Lounges */}
              Top {brandCategoriesName}
            </Typography>
  
@@ -302,7 +302,7 @@ const HomeSection6 = () => {
                minWidth: 40,
                height: 40,
                borderRadius: "50%",
-               color:"black",
+               color : "black",
                backgroundColor: "#ff9800",
                boxShadow: 2,
                "&:hover": {
@@ -330,8 +330,8 @@ const HomeSection6 = () => {
                minWidth: 40,
                height: 40,
                borderRadius: "50%",
-               color:"black",
                backgroundColor: "#ff9800",
+               color : "black",
                boxShadow: 2,
                "&:hover": {
                  backgroundColor: "#c28223ff",
@@ -380,4 +380,4 @@ const HomeSection6 = () => {
    );
 };
 
-export default React.memo(HomeSection6);
+export default React.memo(HomeSection8);

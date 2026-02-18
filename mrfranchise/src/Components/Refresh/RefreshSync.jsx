@@ -11,7 +11,7 @@ export default function RefreshSync() {
       }
     };
 
-    window.addEventListener("storages", handleRefresh);
+    window.addEventListener("storage", handleRefresh);
 
     return () => {
       window.removeEventListener("storage", handleRefresh);

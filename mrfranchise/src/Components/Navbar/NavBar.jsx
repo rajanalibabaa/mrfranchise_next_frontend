@@ -32,6 +32,11 @@ import Image from "next/image.js";
 import AdSlot from "../ads/GoogleAd.jsx";
 import { ADS } from "@/config/ads.config.js";
 import { usePathname } from "next/navigation.js";
+import {
+  clearAllUserData,
+  broadcastLogoutEvent,
+  callLogoutAPI,
+} from "@/Api/logoutService.js";
 function Navbar() {
   const router = useRouter();
   const dispatch = useDispatch();
