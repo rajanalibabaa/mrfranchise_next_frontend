@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import React, {
   useCallback,
   useEffect,
@@ -8,6 +8,7 @@ import React, {
   useLayoutEffect,
 } from "react";
 import {
+ 
   useMediaQuery,
   useTheme,
 } from "@mui/material";
@@ -19,12 +20,11 @@ import ArrowBack from "@mui/icons-material/ArrowBack";
 import ArrowForward from "@mui/icons-material/ArrowForward";
 import ArrowRight from "@mui/icons-material/ArrowRight";
 import { useSelector, useDispatch } from "react-redux";
-import { homeSection4  } from '../../../Redux/Slices/TopCardFetchingSlice.jsx';
+import { homeSection3  } from '../../Redux/Slices/TopCardFetchingSlice.jsx';
 import slugify from "slugify";
 import LoginPage from "@/Components/LoginPage/LoginPage.jsx";
 import { motion } from "framer-motion";
 import HomePageBrandCard from "./HomePageBrandCard.jsx";
-import { useRouter } from "next/navigation.js";
 
 // Breakpoints
 const CARD_DIMENSIONS = {
@@ -35,18 +35,10 @@ const CARD_DIMENSIONS = {
   largeDesktop: { width: 327, height: 500 },
 };
 
-const HomeSection4 = () => {
+const HomeSection3 = () => {
   const theme = useTheme();
   const dispatch = useDispatch();
-const router = useRouter();
-const homeSection4State  = useSelector((state) => state.overAllPlatform.homeSection4);
 
-const {
-  brands = [],
-  isLoading,
-  error,
-  pagination
-} = homeSection4State  || {};
 
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const isTablet = useMediaQuery(theme.breakpoints.between("sm", "md"));
@@ -64,14 +56,6 @@ const {
   const [showEndShadow, setShowEndShadow] = useState(true);
   const [visibleCardCount, setVisibleCardCount] = useState(4);
 
-  // const dessertBakeryBrands = useMemo(() => {
-  //   if (!filteredData?.length) return [];
-  //   return filteredData.filter((brand) => {
-  //     const category = brand?.franchiseDetails?.brandCategories?.sub || "";
-  //     return category.includes("Dessert & Bakery");
-  //   });
-  // }, [filteredData]);
-
   const dimensions = useMemo(() => {
     if (isMobile) return CARD_DIMENSIONS.mobile;
     if (isTablet) return CARD_DIMENSIONS.tablet;
@@ -80,8 +64,17 @@ const {
     return CARD_DIMENSIONS.largeDesktop;
   }, [isMobile, isTablet, isSmallDesktop, isDesktop, isLargeDesktop]);
 
+const homeSection3State  = useSelector((state) => state.overAllPlatform.homeSection3);
+
+const {
+  brands = [],
+  isLoading,
+  error,
+  pagination
+} = homeSection3State  || {};
+
 useEffect(() => {
-    dispatch(homeSection4({ page: 1 }));
+    dispatch(homeSection3({ page: 1 }));
   }, [dispatch]);
 
   useLayoutEffect(() => {
@@ -100,7 +93,7 @@ useEffect(() => {
     return () => window.removeEventListener("resize", updateVisibleCards);
   }, [dimensions.width, isMobile]);
 
-  
+ 
 
   const getScrollDistance = useCallback(() => {
     return dimensions.width + (isMobile ? 16 : 24);
@@ -193,7 +186,6 @@ useEffect(() => {
   // Optional: focus the new tab
   if (newWindow) newWindow.focus();
 };
-
   if (isLoading) {
     return (
       <Box sx={{ textAlign: "center", p: 4 }}>
@@ -252,15 +244,14 @@ useEffect(() => {
                 width: "80px",
                 height: "4px",
                 background:
-                  theme.palette.mode === "dark" ? "#ffb74d" : "#35f500ff",
+                  theme.palette.mode === "dark" ? "#ffb74d" : "#f57c00",
                 mt: 1,
                 borderRadius: 2,
               },
             }}
           >
-             {/* Top Bakery, Confectionery & Traditional Sweets
-              */}
-              Top {brandCategoriesName}
+             {/* Top Tea, Coffee & Cafe Chains  */}
+             Top {brandCategoriesName}
           </Typography>
 
           <Button
@@ -284,7 +275,8 @@ useEffect(() => {
       boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
     },
   }}
-onClick={handleClickOpenBrandCategories}
+  onClick={handleClickOpenBrandCategories}
+
 >
   View More
 </Button>
@@ -294,8 +286,8 @@ onClick={handleClickOpenBrandCategories}
         <Box sx={{ position: "relative" }}>
           <Button
             onClick={handlePrevClick}
-            aria-label="previous"
             disabled={!showStartShadow}
+            aria-label="previous"
             sx={{
               position: "absolute",
               left: isMobile ? 2 : -10,
@@ -333,8 +325,8 @@ onClick={handleClickOpenBrandCategories}
               minWidth: 40,
               height: 40,
               borderRadius: "50%",
-              color:"black",
               backgroundColor: "#ff9800",
+              color:"black",
               boxShadow: 2,
               "&:hover": {
                 backgroundColor: "#c28223ff",
@@ -383,4 +375,4 @@ onClick={handleClickOpenBrandCategories}
   );
 };
 
-export default React.memo(HomeSection4);
+export default React.memo(HomeSection3);

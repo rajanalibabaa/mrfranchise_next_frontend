@@ -44,10 +44,10 @@ const ImageDialog = lazy(() => import("@/Components/BrandViewPageHandling/ImageD
 const ApplyDrawer = lazy(() => import("@/Components/BrandViewPageHandling/ApplyDrawerFormViewPage.jsx"));
 const BackToTopButton = lazy(() => import("@/Components/BrandViewPageHandling/BackToTopButtonViewPage.jsx"));
 const FloatingApplyButton = lazy(() => import("@/Components/BrandViewPageHandling/FloatingApplyButtonViewPage.jsx"));
-const SimilarBrands = lazy(() => import("@/Components/LoginPage/HomePage_VideoSection/SimilarBrands.jsx"));
-const LikedBrands = lazy(() => import("@/Components/LoginPage/HomePage_VideoSection/LikedBrands.jsx"));
-const ViewBrands = lazy(() => import("@/Components/LoginPage/HomePage_VideoSection/ViewBrands.jsx"));
-const ShortListedBrands = lazy(() => import("@/Components/LoginPage/HomePage_VideoSection/ShortlistBrands.jsx"));
+const SimilarBrands = lazy(() => import("@/Components/HomePage_VideoSection/SimilarBrands.jsx"));
+const LikedBrands = lazy(() => import("@/Components/HomePage_VideoSection/LikedBrands.jsx"));
+const ViewBrands = lazy(() => import("@/Components/HomePage_VideoSection/ViewBrands.jsx"));
+const ShortListedBrands = lazy(() => import("@/Components/HomePage_VideoSection/ShortlistBrands.jsx"));
  
 // Lazy-load OverviewTab only when visible
 function LazyOverviewTab({ brand }) {
