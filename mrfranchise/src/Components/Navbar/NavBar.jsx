@@ -31,11 +31,6 @@ import NavbarSearch from "./NavbarSearch.jsx";
 import Image from "next/image.js";
 import AdSlot from "../ads/GoogleAd.jsx";
 import { ADS } from "@/config/ads.config.js";
-import {
-  clearAllUserData,
-  broadcastLogoutEvent,
-  callLogoutAPI,
-} from "@/Api/logoutService.js";
 function Navbar() {
   const router = useRouter();
   const dispatch = useDispatch();
@@ -148,37 +143,50 @@ const [ID, setId] = useState(null);
   // };
 
 
-  const handleVerifySignOut = async () => {
-    setlogoutLoading(true);
-    const accessToken = localStorage.getItem("accessToken");
+  const handleVerifySignOut  = async () => {
+  setlogoutLoading(true);
 
-    try {
-      // Call logout API
-      await callLogoutAPI(ID, accessToken);
+  try {
+    await axios.post(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/logout/${ID}`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+        withCredentials: true,
+      }
+    );
+  } catch (error) {
+    console.error("Logout API error:", error);
+  } finally {
+    // ✅ 1. Redux reset
+    dispatch(logout());
 
-      // Broadcast to other tabs
-      await broadcastLogoutEvent();
+    // ✅ 2. Clear ALL storage
+    localStorage.clear();
+    sessionStorage.clear();
 
-      // Redux reset
-      dispatch(logout());
+    // ✅ 3. Clear cookies (important)
+    document.cookie.split(";").forEach((cookie) => {
+      document.cookie = cookie
+        .replace(/^ +/, "")
+        .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+    });
 
-      // Clear all data
-      clearAllUserData();
-
-      // Redirect to home
-      window.location.replace("/");
-    } catch (error) {
-      console.error("Logout error:", error);
-
-      // Fallback: Clear state and redirect even if API fails
-      dispatch(logout());
-      clearAllUserData();
-      window.location.replace("/");
-    } finally {
-      setlogoutLoading(false);
-      setPopupLogout(false);
+    // ✅ 4. Disable caching
+    if ("caches" in window) {
+      caches.keys().then((names) => {
+        names.forEach((name) => caches.delete(name));
+      });
     }
-  };
+
+    // ✅ 5. Hard redirect (kills memory state)
+    window.location.replace("/");
+
+    setlogoutLoading(false);
+  }
+};
   const handleMyProfileNavigate = () => {
     const investorUUID = localStorage.getItem("investorUUID");
     const brandUUID = localStorage.getItem("brandUUID");
