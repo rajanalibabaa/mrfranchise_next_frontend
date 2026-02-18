@@ -3,6 +3,7 @@ import { VideoControllerProvider } from "@/services/VideoControllerMedia/VideHan
 import GlobalLoader from "@/Components/GLobalLoader";
 import ReactQueryProvider from "@/providers/ReactQueryProvider";
 import Script from "next/script";
+import RefreshSync from "@/Components/Refresh/RefreshSync";
 
 export default function RootLayout({ children }) {
   return (
@@ -65,6 +66,7 @@ export default function RootLayout({ children }) {
         <ReactQueryProvider>
           <Providers>
             <VideoControllerProvider>
+              <RefreshSync />
               {children}
               <GlobalLoader />
             </VideoControllerProvider>

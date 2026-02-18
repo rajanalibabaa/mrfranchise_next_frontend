@@ -106,6 +106,7 @@ const authSlice = createSlice({
         if (investorUUID) localStorage.setItem("investorUUID", investorUUID);
         if (brandUUID) localStorage.setItem("brandUUID", brandUUID);
       }
+      localStorage.setItem("refreshAllTabs", Date.now().toString());
     },
     logout: (state) => {
       state.investorUUID = null;
@@ -119,6 +120,7 @@ const authSlice = createSlice({
         localStorage.removeItem("brandUUID");
         localStorage.removeItem("logoutTimestamp");
       }
+      localStorage.setItem("refreshAllTabs", Date.now().toString());
     },
   },
 });
