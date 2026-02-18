@@ -146,7 +146,18 @@ export default function AdSlot({
 
       adRef.current.appendChild(ins);
 
-      (window.adsbygoogle = window.adsbygoogle || []).push({});
+      // Ensure adsbygoogle script is loaded before pushing
+      if (window.adsbygoogle) {
+        (window.adsbygoogle = window.adsbygoogle || []).push({});
+      } else {
+        // If script not loaded yet, try again in a small delay
+        const timer = setTimeout(() => {
+          if (window.adsbygoogle) {
+            (window.adsbygoogle = window.adsbygoogle || []).push({});
+          }
+        }, 500);
+        return () => clearTimeout(timer);
+      }
 
     } catch (err) {
 
