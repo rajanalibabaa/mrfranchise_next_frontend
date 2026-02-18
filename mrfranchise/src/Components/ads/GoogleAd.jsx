@@ -1,6 +1,6 @@
 // "use client";
 
-// import { useRef, useEffect } from "react";
+// import { useEffect } from "react";
 // import { Box } from "@mui/material";
 
 // // Standard Google AdSense sizes
@@ -13,42 +13,29 @@
 //   // skyscraper: { width: 160, height: 600 },
 //   // wide_skyscraper: { width: 300, height: 600 },
 //   // half_page: { width: 300, height: 600 },
-//   // default: { width: "100%" },                  // fully responsive
-//   responsive: { width: "100%", height: "auto" },
+//   default: { width: "100%" },                  // fully responsive
 // };
 
 // export default function AdSlot({
 //   slot,
-//   variant = "responsive",
+//   variant = "default",
 //   width,
 //   height,
 //   minHeight,
 //   mobile = true,
 //   label,
 // }) {
-//   const addRef = useRef(null);
-// useEffect(() => {
+//   useEffect(() => {
 
-//   if (!addRef.current || !window.adsbygoogle) return;
+//   if (!window.adsbygoogle) return;
 
-//   const timer = setTimeout(() => {
+//   try {
 
-//     try {
+//     window.adsbygoogle.push({});
 
-//       window.adsbygoogle.push({});
-
-//     } catch (e) {
-
-//       console.log("AdSense error:", e);
-
-//     }
-
-//   }, 200);
-
-//   return () => clearTimeout(timer);
+//   } catch {}
 
 // }, [slot]);
-
 
 
 //   const config = VARIANT_SIZES[variant] || VARIANT_SIZES.default;
@@ -66,10 +53,10 @@
 //   return (
 //     <Box
 //       sx={{
-//         maxWidth: isResponsive ? "100%" : finalWidth,
+//         maxWidth: finalWidth,
 //         width: "100%",
-//         margin: "0 auto",
-//         overflow: "hidden",
+//         mx: "auto",
+//         my: 0,
 //         textAlign: "center",
 //         background:'transparent',
 //         minHeight: finalMinHeight,
@@ -91,189 +78,89 @@
 //     </Box>
 //   );
 // }
+
 "use client";
 
 import { useEffect, useRef } from "react";
 import { Box } from "@mui/material";
+import { usePathname } from "next/navigation";
 
-
-// Google standard sizes
 const VARIANT_SIZES = {
-
   billboard: { width: 970, height: 90 },
-
   leaderboard: { width: 728, height: 90 },
-
   rectangle: { width: 970, height: 250 },
-
   medium_rectangle: { width: 300, height: 250 },
-
   large_rectangle: { width: 336, height: 280 },
-
-  responsive: { width: "100%", height: "auto" },
-
+  default: { width: "100%", height: "auto" },
 };
 
-
 export default function AdSlot({
-
   slot,
-
-  variant = "responsive",
-
+  variant = "default",
   width,
-
   height,
-
   mobile = true,
-
-  label,
-
 }) {
+  const pathname = usePathname();
 
+  const adRef = useRef(null);
 
-const adRef = useRef(null);
+  const config = VARIANT_SIZES[variant] || VARIANT_SIZES.default;
 
+  const finalWidth = width || config.width;
+  const finalHeight = height || config.height;
 
-useEffect(() => {
-
-  if (!adRef.current) return;
-
-  if (!window.adsbygoogle) return;
-
-
-  const timer = setTimeout(() => {
+  useEffect(() => {
+    
+    if (!adRef.current) return;
 
     try {
+      
+      // clear old ad
+      adRef.current.innerHTML = "";
 
-      window.adsbygoogle.push({});
+      const ins = document.createElement("ins");
 
-    } catch (e) {
+      ins.className = "adsbygoogle";
 
-      console.log("AdSense:", e);
+      ins.style.display = "block";
+
+      if (finalWidth !== "100%")
+        ins.style.width = finalWidth + "px";
+
+      if (finalHeight !== "auto")
+        ins.style.height = finalHeight + "px";
+
+      ins.setAttribute(
+        "data-ad-client",
+        process.env.NEXT_PUBLIC_ADSENSE_ID
+      );
+
+      ins.setAttribute("data-ad-slot", slot);
+
+      ins.setAttribute("data-full-width-responsive", "true");
+
+      adRef.current.appendChild(ins);
+
+      (window.adsbygoogle = window.adsbygoogle || []).push({});
+
+    } catch (err) {
+
+      console.log("Ad error", err);
 
     }
 
-  }, 300);
-
-
-  return () => clearTimeout(timer);
-
-
-}, [slot]);
-
-
-const config = VARIANT_SIZES[variant] || VARIANT_SIZES.responsive;
-
-
-const finalWidth = width || config.width;
-
-const finalHeight = height || config.height;
-
-
-const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
-
-if (!mobile && isMobile) return null;
-
-
-const isResponsive = finalWidth === "100%" || variant === "responsive";
-
-
-
-return (
-
-<Box
-
- sx={{
-
-  width: "100%",
-
-  maxWidth: isResponsive ? "100%" : finalWidth,
-
-  margin: "0 auto",
-
-  textAlign: "center",
-
-  overflow: "hidden",
-
- }}
-
->
-
-
-<Box
-
- sx={{
-
-  width: finalWidth,
-
-  height: isResponsive ? "auto" : finalHeight,
-
-  margin: "0 auto",
-
- }}
-
->
-
-
-<ins
-
- ref={adRef}
-
- className="adsbygoogle"
-
- style={{
-
-  display: "block",
-
-  width: isResponsive ? "100%" : finalWidth,
-
-  height: isResponsive ? "auto" : finalHeight,
-
- }}
-
- data-ad-client={process.env.NEXT_PUBLIC_ADSENSE_ID}
-
- data-ad-slot={slot}
-
- data-ad-format={isResponsive ? "auto" : undefined}
-
- data-full-width-responsive={isResponsive ? "true" : "false"}
-
-/>
-
-
-</Box>
-
-
-
-{/* Optional Label */}
-
-{label && (
-
-<Box
-
- sx={{
-
-  fontSize: 11,
-
-  color: "#999",
-
-  mt: 0.5,
-
- }}
-
->
-
-{label}
-
-</Box>
-
-)}
-
-
-</Box>
-
-);
-
+  }, [pathname, slot]);
+
+  return (
+    <Box
+      sx={{
+        textAlign: "center",
+        width: "100%",
+        minHeight: finalHeight,
+      }}
+    >
+      <div ref={adRef} />
+    </Box>
+  );
 }
