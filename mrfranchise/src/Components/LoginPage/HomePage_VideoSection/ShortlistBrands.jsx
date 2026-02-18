@@ -26,7 +26,7 @@ import ArrowRight from "@mui/icons-material/ArrowRight";
 
 import { motion } from "framer-motion";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchShortListedById } from "../../Redux/Slices/shortlistslice.jsx";
+import { fetchShortListedById } from "../../../Redux/Slices/shortlistslice.jsx";
 import HomePageBrandCard from "./HomePageBrandCard.jsx";
 import LoginPage from "@/Components/LoginPage/LoginPage.jsx";
 const ShortlistBrands = () => {

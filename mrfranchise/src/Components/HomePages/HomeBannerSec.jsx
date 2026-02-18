@@ -154,20 +154,20 @@ const ComponentLoader = memo(({ Component, ...props }) => (
 // Dynamic imports for Next.js
 const useDynamicComponents = () => {
   return React.useMemo(() => ({
-    TopBrandThreevdocards: dynamic(() => import("@/Components/HomePage_VideoSection/TopBrandThreeVdoCards"), { ssr: false }),
-    LikedBrands: dynamic(() => import("@/Components/HomePage_VideoSection/LikedBrands"), { ssr: false }),
-    ShortlistBrands: dynamic(() => import("@/Components/HomePage_VideoSection/ShortlistBrands"), { ssr: false }),
-    ViewBrands: dynamic(() => import("@/Components/HomePage_VideoSection/ViewBrands"), { ssr: false }),
-    HomeSection1: dynamic(() => import("@/Components/HomePage_VideoSection/HomeSection1"), { ssr: false }),
-    HomeSection2: dynamic(() => import("@/Components/HomePage_VideoSection/HomeSection2"), { ssr: false }),
-    HomeSection3: dynamic(() => import("@/Components/HomePage_VideoSection/HomeSection3"), { ssr: false }),
-    HomeSection4: dynamic(() => import("@/Components/HomePage_VideoSection/HomeSection4"), { ssr: false }),
-    HomeSection5: dynamic(() => import("@/Components/HomePage_VideoSection/HomeSection5"), { ssr: false }),
-    HomeSection6: dynamic(() => import("@/Components/HomePage_VideoSection/HomeSection6"), { ssr: false }),
-    HomeSection7: dynamic(() => import("@/Components/HomePage_VideoSection/HomeSection7"), { ssr: false }),
-    HomeSection8: dynamic(() => import("@/Components/HomePage_VideoSection/HomeSection8"), { ssr: false }),
-    ToTrendingBrands: dynamic(() => import("@/Components/HomePage_VideoSection/ToTrendingBrands"), { ssr: false }),
-    FindFranchiseLocations: dynamic(() => import("@/Components/HomePage_VideoSection/FindFranchiseLocations"), { ssr: false }),
+    TopBrandThreevdocards: dynamic(() => import("@/Components/LoginPage/HomePage_VideoSection/TopBrandThreeVdoCards"), { ssr: false }),
+    LikedBrands: dynamic(() => import("@/Components/LoginPage/HomePage_VideoSection/LikedBrands"), { ssr: false }),
+    ShortlistBrands: dynamic(() => import("@/Components/LoginPage/HomePage_VideoSection/ShortlistBrands"), { ssr: false }),
+    ViewBrands: dynamic(() => import("@/Components/LoginPage/HomePage_VideoSection/ViewBrands"), { ssr: false }),
+    HomeSection1: dynamic(() => import("@/Components/LoginPage/HomePage_VideoSection/HomeSection1"), { ssr: false }),
+    HomeSection2: dynamic(() => import("@/Components/LoginPage/HomePage_VideoSection/HomeSection2"), { ssr: false }),
+    HomeSection3: dynamic(() => import("@/Components/LoginPage/HomePage_VideoSection/HomeSection3"), { ssr: false }),
+    HomeSection4: dynamic(() => import("@/Components/LoginPage/HomePage_VideoSection/HomeSection4"), { ssr: false }),
+    HomeSection5: dynamic(() => import("@/Components/LoginPage/HomePage_VideoSection/HomeSection5"), { ssr: false }),
+    HomeSection6: dynamic(() => import("@/Components/LoginPage/HomePage_VideoSection/HomeSection6"), { ssr: false }),
+    HomeSection7: dynamic(() => import("@/Components/LoginPage/HomePage_VideoSection/HomeSection7"), { ssr: false }),
+    HomeSection8: dynamic(() => import("@/Components/LoginPage/HomePage_VideoSection/HomeSection8"), { ssr: false }),
+    ToTrendingBrands: dynamic(() => import("@/Components/LoginPage/HomePage_VideoSection/ToTrendingBrands"), { ssr: false }),
+    FindFranchiseLocations: dynamic(() => import("@/Components/LoginPage/HomePage_VideoSection/FindFranchiseLocations"), { ssr: false }),
   }), []);
 };
 
