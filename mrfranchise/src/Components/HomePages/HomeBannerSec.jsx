@@ -727,7 +727,7 @@ return (
         })} */}
         <BackgroundWrapper>
           <Box sx={{ py: 3 }}>
-          <AdSlot {...ADS.HOME.FOOTER_RECTANGLE}/>
+          <AdSlot key={pathname} {...ADS.HOME.FOOTER_RECTANGLE}/>
 </Box>
         </BackgroundWrapper>
 

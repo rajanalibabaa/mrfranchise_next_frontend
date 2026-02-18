@@ -612,7 +612,7 @@ useEffect(() => {
             />
           </Box>
         )}
-        <AdSlot key={pathname} {...ADS.HOME.TOP_LEADERBOARD} />
+        <AdSlot key={pathname} {...ADS.BrandViewPage.FOOTER_RECTANGLE} />
       </>
     );
   }, [

@@ -1037,7 +1037,7 @@ const FilterPanel = React.memo(
         </Accordion>
 
         <Divider sx={{ my: 2 }} />
-        <AdSlot key={pathname} {...ADS.HOME.FILTER_BOTTOM_RECTANGLE} />
+        <AdSlot key={pathname} {...ADS.BrandViewPage.FILTER_BOTTOM_RECTANGLE} />
       </Box>
     );
   },
