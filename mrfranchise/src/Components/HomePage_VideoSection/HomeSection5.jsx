@@ -8,7 +8,7 @@ import React, {
   useLayoutEffect,
 } from "react";
 import {
- 
+  
   useMediaQuery,
   useTheme,
 } from "@mui/material";
@@ -20,7 +20,7 @@ import ArrowBack from "@mui/icons-material/ArrowBack";
 import ArrowForward from "@mui/icons-material/ArrowForward";
 import ArrowRight from "@mui/icons-material/ArrowRight";
 import { useSelector, useDispatch } from "react-redux";
-import { homeSection3  } from '../../../Redux/Slices/TopCardFetchingSlice.jsx';
+import { homeSection5  } from '../../Redux/Slices/TopCardFetchingSlice.jsx';
 import slugify from "slugify";
 import LoginPage from "@/Components/LoginPage/LoginPage.jsx";
 import { motion } from "framer-motion";
@@ -64,17 +64,19 @@ const HomeSection3 = () => {
     return CARD_DIMENSIONS.largeDesktop;
   }, [isMobile, isTablet, isSmallDesktop, isDesktop, isLargeDesktop]);
 
-const homeSection3State  = useSelector((state) => state.overAllPlatform.homeSection3);
+const homeSection5State  = useSelector((state) => state.overAllPlatform.homeSection5);
+// console.log('sec5',homeSection5State);
+
 
 const {
   brands = [],
   isLoading,
   error,
   pagination
-} = homeSection3State  || {};
+} = homeSection5State  || {};
 
 useEffect(() => {
-    dispatch(homeSection3({ page: 1 }));
+    dispatch(homeSection5({ page: 1 }));
   }, [dispatch]);
 
   useLayoutEffect(() => {
@@ -168,7 +170,8 @@ useEffect(() => {
     smoothScrollTo(newScroll);
   };
 
-    const brandCategoriesName = brands[0]?.brandCategories?.sub;
+
+     const brandCategoriesName = brands[0]?.brandCategories?.sub;
   const handleClickOpenBrandCategories = () => {
      if (!brandCategoriesName) return;
      const slug = slugify(brandCategoriesName, {
@@ -186,6 +189,7 @@ useEffect(() => {
   // Optional: focus the new tab
   if (newWindow) newWindow.focus();
 };
+
   if (isLoading) {
     return (
       <Box sx={{ textAlign: "center", p: 4 }}>
@@ -235,7 +239,7 @@ useEffect(() => {
             sx={{
               color: "#000000ff",
               mb: 1,
-              
+             
               textAlign: "left",
               position: "relative",
               "&:after": {
@@ -250,7 +254,7 @@ useEffect(() => {
               },
             }}
           >
-             {/* Top Tea, Coffee & Cafe Chains  */}
+             {/* Top Ice Cream & Frozen Desserts */}
              Top {brandCategoriesName}
           </Typography>
 
@@ -276,7 +280,6 @@ useEffect(() => {
     },
   }}
   onClick={handleClickOpenBrandCategories}
-
 >
   View More
 </Button>
@@ -290,15 +293,15 @@ useEffect(() => {
             aria-label="previous"
             sx={{
               position: "absolute",
-              left: isMobile ? 2 : -10,
+              left: isMobile ? 4 : -10,
               top: "63.5%",
               transform: "translateY(-50%)",
               zIndex: 1,
               minWidth: 40,
               height: 40,
               borderRadius: "50%",
-              color:"black",
               backgroundColor: "#ff9800",
+              color:"black",
               boxShadow: 2,
               "&:hover": {
                 backgroundColor: "#c28223ff",

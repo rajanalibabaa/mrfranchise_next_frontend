@@ -1,3 +1,4 @@
+
 "use client";
 import React, {
   useCallback,
@@ -8,7 +9,7 @@ import React, {
   useLayoutEffect,
 } from "react";
 import {
-  
+ 
   useMediaQuery,
   useTheme,
 } from "@mui/material";
@@ -20,12 +21,12 @@ import ArrowBack from "@mui/icons-material/ArrowBack";
 import ArrowForward from "@mui/icons-material/ArrowForward";
 import ArrowRight from "@mui/icons-material/ArrowRight";
 import { useSelector, useDispatch } from "react-redux";
-import { homeSection5  } from '../../../Redux/Slices/TopCardFetchingSlice.jsx';
-import slugify from "slugify";
+import { homeSection7  } from '../../Redux/Slices/TopCardFetchingSlice.jsx';
+
 import LoginPage from "@/Components/LoginPage/LoginPage.jsx";
 import { motion } from "framer-motion";
 import HomePageBrandCard from "./HomePageBrandCard.jsx";
-
+import slugify from "slugify";
 // Breakpoints
 const CARD_DIMENSIONS = {
   mobile: { width: 280, height: 520 },
@@ -35,10 +36,18 @@ const CARD_DIMENSIONS = {
   largeDesktop: { width: 327, height: 500 },
 };
 
-const HomeSection3 = () => {
+const HomeSection7 = () => {
   const theme = useTheme();
   const dispatch = useDispatch();
 
+const homeSection7State  = useSelector((state) => state.overAllPlatform.homeSection7);
+
+const {
+  brands = [],
+  isLoading,
+  error,
+  pagination
+} = homeSection7State  || {};
 
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const isTablet = useMediaQuery(theme.breakpoints.between("sm", "md"));
@@ -56,6 +65,14 @@ const HomeSection3 = () => {
   const [showEndShadow, setShowEndShadow] = useState(true);
   const [visibleCardCount, setVisibleCardCount] = useState(4);
 
+  // const dessertBakeryBrands = useMemo(() => {
+  //   if (!filteredData?.length) return [];
+  //   return filteredData.filter((brand) => {
+  //     const category = brand?.franchiseDetails?.brandCategories?.sub || "";
+  //     return category.includes("Dessert & Bakery");
+  //   });
+  // }, [filteredData]);
+
   const dimensions = useMemo(() => {
     if (isMobile) return CARD_DIMENSIONS.mobile;
     if (isTablet) return CARD_DIMENSIONS.tablet;
@@ -64,19 +81,8 @@ const HomeSection3 = () => {
     return CARD_DIMENSIONS.largeDesktop;
   }, [isMobile, isTablet, isSmallDesktop, isDesktop, isLargeDesktop]);
 
-const homeSection5State  = useSelector((state) => state.overAllPlatform.homeSection5);
-// console.log('sec5',homeSection5State);
-
-
-const {
-  brands = [],
-  isLoading,
-  error,
-  pagination
-} = homeSection5State  || {};
-
 useEffect(() => {
-    dispatch(homeSection5({ page: 1 }));
+    dispatch(homeSection7({ page: 1 }));
   }, [dispatch]);
 
   useLayoutEffect(() => {
@@ -95,7 +101,7 @@ useEffect(() => {
     return () => window.removeEventListener("resize", updateVisibleCards);
   }, [dimensions.width, isMobile]);
 
- 
+  
 
   const getScrollDistance = useCallback(() => {
     return dimensions.width + (isMobile ? 16 : 24);
@@ -170,7 +176,6 @@ useEffect(() => {
     smoothScrollTo(newScroll);
   };
 
-
      const brandCategoriesName = brands[0]?.brandCategories?.sub;
   const handleClickOpenBrandCategories = () => {
      if (!brandCategoriesName) return;
@@ -239,7 +244,7 @@ useEffect(() => {
             sx={{
               color: "#000000ff",
               mb: 1,
-             
+              
               textAlign: "left",
               position: "relative",
               "&:after": {
@@ -248,14 +253,14 @@ useEffect(() => {
                 width: "80px",
                 height: "4px",
                 background:
-                  theme.palette.mode === "dark" ? "#ffb74d" : "#f57c00",
+                  theme.palette.mode === "dark" ? "#ffb74d" : "#2df500ff",
                 mt: 1,
                 borderRadius: 2,
               },
             }}
           >
-             {/* Top Ice Cream & Frozen Desserts */}
-             Top {brandCategoriesName}
+           {/* Top Quick Service Restaurants (QSR) */}
+           Top {brandCategoriesName}
           </Typography>
 
           <Button
@@ -289,11 +294,11 @@ useEffect(() => {
         <Box sx={{ position: "relative" }}>
           <Button
             onClick={handlePrevClick}
-            disabled={!showStartShadow}
             aria-label="previous"
+            disabled={!showStartShadow}
             sx={{
               position: "absolute",
-              left: isMobile ? 4 : -10,
+              left: isMobile ? 2 : -10,
               top: "63.5%",
               transform: "translateY(-50%)",
               zIndex: 1,
@@ -378,4 +383,4 @@ useEffect(() => {
   );
 };
 
-export default React.memo(HomeSection3);
+export default React.memo(HomeSection7);

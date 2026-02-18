@@ -1,5 +1,4 @@
-
-"use client";
+"use client"
 import React, {
   useCallback,
   useEffect,
@@ -9,7 +8,6 @@ import React, {
   useLayoutEffect,
 } from "react";
 import {
- 
   useMediaQuery,
   useTheme,
 } from "@mui/material";
@@ -21,12 +19,13 @@ import ArrowBack from "@mui/icons-material/ArrowBack";
 import ArrowForward from "@mui/icons-material/ArrowForward";
 import ArrowRight from "@mui/icons-material/ArrowRight";
 import { useSelector, useDispatch } from "react-redux";
-import { homeSection7  } from '../../../Redux/Slices/TopCardFetchingSlice.jsx';
-
+import { homeSection4  } from '../../Redux/Slices/TopCardFetchingSlice.jsx';
+import slugify from "slugify";
 import LoginPage from "@/Components/LoginPage/LoginPage.jsx";
 import { motion } from "framer-motion";
 import HomePageBrandCard from "./HomePageBrandCard.jsx";
-import slugify from "slugify";
+import { useRouter } from "next/navigation.js";
+
 // Breakpoints
 const CARD_DIMENSIONS = {
   mobile: { width: 280, height: 520 },
@@ -36,18 +35,18 @@ const CARD_DIMENSIONS = {
   largeDesktop: { width: 327, height: 500 },
 };
 
-const HomeSection7 = () => {
+const HomeSection4 = () => {
   const theme = useTheme();
   const dispatch = useDispatch();
-
-const homeSection7State  = useSelector((state) => state.overAllPlatform.homeSection7);
+const router = useRouter();
+const homeSection4State  = useSelector((state) => state.overAllPlatform.homeSection4);
 
 const {
   brands = [],
   isLoading,
   error,
   pagination
-} = homeSection7State  || {};
+} = homeSection4State  || {};
 
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const isTablet = useMediaQuery(theme.breakpoints.between("sm", "md"));
@@ -82,7 +81,7 @@ const {
   }, [isMobile, isTablet, isSmallDesktop, isDesktop, isLargeDesktop]);
 
 useEffect(() => {
-    dispatch(homeSection7({ page: 1 }));
+    dispatch(homeSection4({ page: 1 }));
   }, [dispatch]);
 
   useLayoutEffect(() => {
@@ -176,7 +175,7 @@ useEffect(() => {
     smoothScrollTo(newScroll);
   };
 
-     const brandCategoriesName = brands[0]?.brandCategories?.sub;
+    const brandCategoriesName = brands[0]?.brandCategories?.sub;
   const handleClickOpenBrandCategories = () => {
      if (!brandCategoriesName) return;
      const slug = slugify(brandCategoriesName, {
@@ -253,14 +252,15 @@ useEffect(() => {
                 width: "80px",
                 height: "4px",
                 background:
-                  theme.palette.mode === "dark" ? "#ffb74d" : "#2df500ff",
+                  theme.palette.mode === "dark" ? "#ffb74d" : "#35f500ff",
                 mt: 1,
                 borderRadius: 2,
               },
             }}
           >
-           {/* Top Quick Service Restaurants (QSR) */}
-           Top {brandCategoriesName}
+             {/* Top Bakery, Confectionery & Traditional Sweets
+              */}
+              Top {brandCategoriesName}
           </Typography>
 
           <Button
@@ -284,7 +284,7 @@ useEffect(() => {
       boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
     },
   }}
-  onClick={handleClickOpenBrandCategories}
+onClick={handleClickOpenBrandCategories}
 >
   View More
 </Button>
@@ -305,8 +305,8 @@ useEffect(() => {
               minWidth: 40,
               height: 40,
               borderRadius: "50%",
-              backgroundColor: "#ff9800",
               color:"black",
+              backgroundColor: "#ff9800",
               boxShadow: 2,
               "&:hover": {
                 backgroundColor: "#c28223ff",
@@ -333,8 +333,8 @@ useEffect(() => {
               minWidth: 40,
               height: 40,
               borderRadius: "50%",
-              backgroundColor: "#ff9800",
               color:"black",
+              backgroundColor: "#ff9800",
               boxShadow: 2,
               "&:hover": {
                 backgroundColor: "#c28223ff",
@@ -383,4 +383,4 @@ useEffect(() => {
   );
 };
 
-export default React.memo(HomeSection7);
+export default React.memo(HomeSection4);
