@@ -27,6 +27,7 @@ import {
 } from "@/Redux/Slices/filterDropdownData";
 import AdSlot from "../ads/GoogleAd";
 import { ADS } from "@/config/ads.config";
+import { usePathname } from "next/navigation";
 // Define the correct order for investment ranges
 const INVESTMENT_RANGE_ORDER = [
   "Below - 50k",
@@ -306,6 +307,7 @@ const FilterPanel = React.memo(
       }
     };
 
+    const pathname = usePathname();
     return (
       <Box sx={{ pr: 2, height: "calc(100vh - 40px)", overflowY: "auto" }}>
         <Typography
@@ -1035,7 +1037,7 @@ const FilterPanel = React.memo(
         </Accordion>
 
         <Divider sx={{ my: 2 }} />
-        <AdSlot {...ADS.HOME.FILTER_BOTTOM_RECTANGLE} />
+        <AdSlot key={pathname} {...ADS.HOME.FILTER_BOTTOM_RECTANGLE} />
       </Box>
     );
   },

@@ -34,7 +34,7 @@ import MediaSection from "@/Components/BrandViewPageHandling/MediaSectionViewPag
 import Disclaimer from "@/Components/OverTabHandlings.jsx/DisclimerPage.jsx";
 import AdSlot from "@/Components/ads/GoogleAd.jsx";
 import { ADS } from "@/config/ads.config.js";
- 
+ import { usePathname } from "next/navigation.js";
 // LAZY load (secondary) components
 const Navbar = lazy(() => import("@/Components/Navbar/NavBar.jsx"));
 const Footer = lazy(() => import("@/Components/Footers/Footer.jsx"));
@@ -89,7 +89,7 @@ const BrandDetails = ({ brandData }) => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const uuid = searchParams.get("uuid");
- 
+ const pathname = usePathname();
   // Media queries
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const isTablet = useMediaQuery(theme.breakpoints.between("sm", "md"));
@@ -640,7 +640,7 @@ const handleSubmit = useCallback(
       </Box>
    
       <Disclaimer isMobile={isMobile} />
- <AdSlot {...ADS.HOME.TOP_BILLBOARD} />
+ <AdSlot key={pathname} {...ADS.HOME.TOP_BILLBOARD} />
       {/* <Suspense fallback={null}>
         <BackToTopButton show={showBackToTop} isMobile={isMobile} />
       </Suspense> */}
