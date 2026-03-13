@@ -12,7 +12,7 @@ export const homeSection1 = createAsyncThunk(
   async ({ page = 1 }, { rejectWithValue }) => {
     try {
       const response = await axios.get(
-        `${API_BASE_URL}/overAllPlatformOnlyMainCategory?main=Food %26 Beverages&sub=Juice, Smoothie %26 Health Beverages`,
+        `${API_BASE_URL}/overAllPlatformOnlyMainCategory?main=Food %26 Beverages`,
         {
           params: { page, id: userId },
         }
@@ -47,7 +47,7 @@ export const homeSection2 = createAsyncThunk(
   async ({ page = 1 }, { rejectWithValue }) => {
     try {
       const response = await axios.get(
-        `${API_BASE_URL}/overAllPlatformOnlyMainCategory?main=Food %26 Beverages&sub=Fine Dining %26 Casual Dining Restaurants`,
+        `${API_BASE_URL}/overAllPlatformOnlyMainCategory?main=Retail`,
         {
           params: { page, id: userId },
         }
@@ -82,7 +82,7 @@ export const homeSection3 = createAsyncThunk(
   async ({ page = 1 }, { rejectWithValue }) => {
     try {
       const response = await axios.get(
-        `${API_BASE_URL}/overAllPlatformOnlyMainCategory?main=Food %26 Beverages&sub=Tea, Coffee %26 Cafe Chains`,
+        `${API_BASE_URL}/overAllPlatformOnlyMainCategory?main=Education`,
         {
           params: { page, id: userId },
         }
@@ -117,7 +117,7 @@ export const homeSection4 = createAsyncThunk(
   async ({ page = 1 }, { rejectWithValue }) => {
     try {
       const response = await axios.get(
-        `${API_BASE_URL}/overAllPlatformOnlyMainCategory?main=Food %26 Beverages&sub=Bakery, Confectionery %26 Traditional Sweets`,
+        `${API_BASE_URL}/overAllPlatformOnlyMainCategory?main=Automobile`,
         {
           params: { page, id: userId },
         }
@@ -155,7 +155,7 @@ export const homeSection5 = createAsyncThunk(
   async ({ page = 1 }, { rejectWithValue }) => {
     try {
       const response = await axios.get(
-        `${API_BASE_URL}/overAllPlatformOnlyMainCategory?main=Food %26 Beverages&sub=Ice Cream %26 Frozen Desserts`,
+        `${API_BASE_URL}/overAllPlatformOnlyMainCategory?main=Service`,
         {
           params: { page, id: userId },
         }
@@ -226,7 +226,7 @@ export const homeSection6 = createAsyncThunk(
   async ({ page = 1 }, { rejectWithValue }) => {
     try {
       const response = await axios.get(
-        `${API_BASE_URL}/overAllPlatformOnlyMainCategory?main=Food %26 Beverages&sub=Cloud Kitchens %26 Food Delivery`,
+        `${API_BASE_URL}/overAllPlatformOnlyMainCategory?main=Others`,
         {
           params: { page, id: userId },
         }
