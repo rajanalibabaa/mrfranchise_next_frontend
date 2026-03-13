@@ -259,7 +259,7 @@ const NavbarSearch = ({ open, handleClose }) => {
       queryParams.append("investmentRange", selectedInvestmentRange);
 
     // Open new tab with filters in URL
-     window.open(`/AllCategoryPage/allbrandlisting?${queryParams.toString()}`, "_blank", "noopener,noreferrer");
+     window.open(`/all-franchise-brands?${queryParams.toString()}`, "_blank", "noopener,noreferrer");
 
 
     handleClose();
