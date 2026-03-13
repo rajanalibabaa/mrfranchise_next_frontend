@@ -279,7 +279,7 @@ const [ID, setId] = useState(null);
           },
         }}
       >
-        <AdSlot key={pathname} {...ADS.HOME.TOP_BILLBOARD} />
+        {/* <AdSlot key={pathname} {...ADS.HOME.TOP_BILLBOARD} /> */}
         <Box sx={{ 
           display:{ xs: "none", sm: "flex"}, 
           flexWrap: "wrap",

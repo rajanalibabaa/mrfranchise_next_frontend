@@ -173,7 +173,7 @@ const HomeSection6 = () => {
      smoothScrollTo(newScroll);
    };
  
-      const brandCategoriesName = brands[0]?.brandCategories?.sub;
+      const brandCategoriesName = brands[0]?.brandCategories?.main;
   const handleClickOpenBrandCategories = () => {
      if (!brandCategoriesName) return;
      const slug = slugify(brandCategoriesName, {
