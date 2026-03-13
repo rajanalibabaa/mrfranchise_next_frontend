@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState, useEffect, Suspense, useCallback,memo } from "react";
+import React, { useState, useEffect, Suspense, useCallback, memo } from "react";
 import { useInView } from "react-intersection-observer";
 // import { FixedSizeList as List } from "react-window";
-import {AutoSizer} from "react-virtualized-auto-sizer";
+import { AutoSizer } from "react-virtualized-auto-sizer";
 import { useRouter } from "next/navigation";
 import {
   Box,
@@ -23,27 +23,27 @@ import Navbar from "@/Components/Navbar/NavBar";
 import CompareButton from "./CompareButtonsCompenents";
 import BrandComparison from "./brandCompariosn";
 import AdSlot from "../ads/GoogleAd";
-import {ADS} from '@/config/ads.config.js';
+import { ADS } from "@/config/ads.config.js";
 import { Fragment } from "react";
 import { usePathname } from "next/navigation";
 
 const FixedSizeList = dynamic(
   () => import("react-window").then((mod) => mod.FixedSizeList),
-  { ssr: false }
+  { ssr: false },
 );
 
 // --- ErrorBoundary ---
 class ErrorBoundary extends React.Component {
   state = { hasError: false, error: null };
-  
+
   static getDerivedStateFromError(error) {
     return { hasError: true, error };
   }
-  
+
   componentDidCatch(error, info) {
     console.error(error, info);
   }
-  
+
   render() {
     if (this.state.hasError) {
       return (
@@ -64,7 +64,7 @@ class ErrorBoundary extends React.Component {
 //     triggerOnce: true,
 //     rootMargin: "400px",
 //   });
-  
+
 //   return (
 //     <div ref={ref} style={style}>
 //       {inView ? (
@@ -149,26 +149,71 @@ const ComponentLoader = memo(({ Component, ...props }) => (
   </ErrorBoundary>
 ));
 
-
-
 // Dynamic imports for Next.js
 const useDynamicComponents = () => {
-  return React.useMemo(() => ({
-    TopBrandThreevdocards: dynamic(() => import("@/Components/HomePage_VideoSection/TopBrandThreeVdoCards"), { ssr: false }),
-    LikedBrands: dynamic(() => import("@/Components/HomePage_VideoSection/LikedBrands"), { ssr: false }),
-    ShortlistBrands: dynamic(() => import("@/Components/HomePage_VideoSection/ShortlistBrands"), { ssr: false }),
-    ViewBrands: dynamic(() => import("@/Components/HomePage_VideoSection/ViewBrands"), { ssr: false }),
-    HomeSection1: dynamic(() => import("@/Components/HomePage_VideoSection/HomeSection1"), { ssr: false }),
-    HomeSection2: dynamic(() => import("@/Components/HomePage_VideoSection/HomeSection2"), { ssr: false }),
-    HomeSection3: dynamic(() => import("@/Components/HomePage_VideoSection/HomeSection3"), { ssr: false }),
-    HomeSection4: dynamic(() => import("@/Components/HomePage_VideoSection/HomeSection4"), { ssr: false }),
-    HomeSection5: dynamic(() => import("@/Components/HomePage_VideoSection/HomeSection5"), { ssr: false }),
-    HomeSection6: dynamic(() => import("@/Components/HomePage_VideoSection/HomeSection6"), { ssr: false }),
-    HomeSection7: dynamic(() => import("@/Components/HomePage_VideoSection/HomeSection7"), { ssr: false }),
-    HomeSection8: dynamic(() => import("@/Components/HomePage_VideoSection/HomeSection8"), { ssr: false }),
-    ToTrendingBrands: dynamic(() => import("@/Components/HomePage_VideoSection/ToTrendingBrands"), { ssr: false }),
-    FindFranchiseLocations: dynamic(() => import("@/Components/HomePage_VideoSection/FindFranchiseLocations"), { ssr: false }),
-  }), []);
+  return React.useMemo(
+    () => ({
+      TopBrandThreevdocards: dynamic(
+        () =>
+          import("@/Components/HomePage_VideoSection/TopBrandThreeVdoCards"),
+        { ssr: false },
+      ),
+      LikedBrands: dynamic(
+        () => import("@/Components/HomePage_VideoSection/LikedBrands"),
+        { ssr: false },
+      ),
+      ShortlistBrands: dynamic(
+        () => import("@/Components/HomePage_VideoSection/ShortlistBrands"),
+        { ssr: false },
+      ),
+      ViewBrands: dynamic(
+        () => import("@/Components/HomePage_VideoSection/ViewBrands"),
+        { ssr: false },
+      ),
+      HomeSection1: dynamic(
+        () => import("@/Components/HomePage_VideoSection/HomeSection1"),
+        { ssr: false },
+      ),
+      HomeSection2: dynamic(
+        () => import("@/Components/HomePage_VideoSection/HomeSection2"),
+        { ssr: false },
+      ),
+      HomeSection3: dynamic(
+        () => import("@/Components/HomePage_VideoSection/HomeSection3"),
+        { ssr: false },
+      ),
+      HomeSection4: dynamic(
+        () => import("@/Components/HomePage_VideoSection/HomeSection4"),
+        { ssr: false },
+      ),
+      HomeSection5: dynamic(
+        () => import("@/Components/HomePage_VideoSection/HomeSection5"),
+        { ssr: false },
+      ),
+      HomeSection6: dynamic(
+        () => import("@/Components/HomePage_VideoSection/HomeSection6"),
+        { ssr: false },
+      ),
+      // HomeSection7: dynamic(
+      //   () => import("@/Components/HomePage_VideoSection/HomeSection7"),
+      //   { ssr: false },
+      // ),
+      // HomeSection8: dynamic(
+      //   () => import("@/Components/HomePage_VideoSection/HomeSection8"),
+      //   { ssr: false },
+      // ),
+      ToTrendingBrands: dynamic(
+        () => import("@/Components/HomePage_VideoSection/ToTrendingBrands"),
+        { ssr: false },
+      ),
+      FindFranchiseLocations: dynamic(
+        () =>
+          import("@/Components/HomePage_VideoSection/FindFranchiseLocations"),
+        { ssr: false },
+      ),
+    }),
+    [],
+  );
 };
 
 const BackgroundWrapper = ({ children }) => (
@@ -185,38 +230,47 @@ const BackgroundWrapper = ({ children }) => (
   </Box>
 );
 
-
 // --- Section that lazy loads content on scroll-in-view ---
-const LazySection = memo(({ componentKey, dynamicComponents, background, isMobile }) => {
-  const Component = dynamicComponents[componentKey];
-  const { ref, inView } = useInView({ triggerOnce: true, rootMargin: "300px" });
+const LazySection = memo(
+  ({ componentKey, dynamicComponents, background, isMobile }) => {
+    const Component = dynamicComponents[componentKey];
+    const { ref, inView } = useInView({
+      triggerOnce: true,
+      rootMargin: "300px",
+    });
 
-  if (!Component) return null;
+    if (!Component) return null;
 
-  return (
-    <Box
-      ref={ref}
-      sx={{
-        ...background,
-        minHeight: "80vh",
-        backgroundAttachment: "fixed",
-      }}
-    >
-      <Container maxWidth="xl"  sx={{
-    background: "transparent",   // 🔑 FIX
-    py: 0,
-  }}>
-        {inView ? (
-          <ComponentLoader Component={Component} VirtualizedCardList={VirtualizedCardList} isMobile={isMobile} />
-        ) : (
-          <Box minHeight={200} />
-        )}
-      </Container>
-    </Box>
-  );
-});
-
-
+    return (
+      <Box
+        ref={ref}
+        sx={{
+          ...background,
+          minHeight: "80vh",
+          backgroundAttachment: "fixed",
+        }}
+      >
+        <Container
+          maxWidth="xl"
+          sx={{
+            background: "transparent", // 🔑 FIX
+            py: 0,
+          }}
+        >
+          {inView ? (
+            <ComponentLoader
+              Component={Component}
+              VirtualizedCardList={VirtualizedCardList}
+              isMobile={isMobile}
+            />
+          ) : (
+            <Box minHeight={200} />
+          )}
+        </Container>
+      </Box>
+    );
+  },
+);
 
 // --- Banner texts configuration ---
 const bannerTexts = [
@@ -380,7 +434,7 @@ const bannerTexts = [
 
 const pageConfig = {
   heroBanner: {
-    backgroundImage:"/HomeBanner.avif",
+    backgroundImage: "/HomeBanner.avif",
     overlayColor: "rgba(0, 0, 0, 0.3)",
     title: {
       text: "Welcome To Our MrFranchise Network",
@@ -399,7 +453,7 @@ const pageConfig = {
   },
   sections: [
     { component: "TopBrandThreevdocards", background: "#fff" },
-        { component: "HomeSection1", background: "#fff" },
+    { component: "HomeSection1", background: "#fff" },
     { component: "HomeSection2", background: "#fff" },
 
     { component: "LikedBrands", background: "#fff" },
@@ -441,7 +495,6 @@ const pageConfig = {
   },
 };
 
-
 // --- Main component ---
 export default memo(function HomeBannerSec() {
   const theme = useTheme();
@@ -449,7 +502,7 @@ export default memo(function HomeBannerSec() {
   const dispatch = useDispatch();
   const router = useRouter();
   const dynamicComponents = useDynamicComponents();
-const pathname = usePathname();
+  const pathname = usePathname();
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [bannerIndex, setBannerIndex] = useState(0);
   const [showPopup, setShowPopup] = useState(false);
@@ -459,7 +512,7 @@ const pathname = usePathname();
   const currentText = bannerTexts[bannerIndex];
 
   // Check login status on client side
- // Login check
+  // Login check
   useEffect(() => {
     setIsLoggedIn(!!localStorage.getItem("accessToken"));
   }, []);
@@ -470,9 +523,9 @@ const pathname = usePathname();
         typeof window !== "undefined" &&
         performance.getEntriesByType("navigation")[0]?.type === "reload";
       const shown = sessionStorage.getItem("popup-shown");
-      
+
       // dispatch(showLoading());
-      
+
       const t = setTimeout(() => {
         setIsLoading(false);
         // dispatch(hideLoading());
@@ -481,7 +534,7 @@ const pathname = usePathname();
           sessionStorage.setItem("popup-shown", "true");
         }
       }, 1500);
-      
+
       return () => clearTimeout(t);
     };
 
@@ -490,7 +543,7 @@ const pathname = usePathname();
 
   useEffect(() => {
     if (isLoading) return;
-    
+
     const interval = setInterval(() => {
       controls
         .start({
@@ -507,7 +560,7 @@ const pathname = usePathname();
           });
         });
     }, 5000);
-    
+
     return () => clearInterval(interval);
   }, [controls, isLoading]);
 
@@ -534,7 +587,6 @@ const pathname = usePathname();
 
   return (
     <>
-      
       <Navbar />
 
       {showPopup && (
@@ -549,7 +601,7 @@ const pathname = usePathname();
       <Box
         mt={0}
         sx={{
-background: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${pageConfig.heroBanner.backgroundImage})`,
+          background: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${pageConfig.heroBanner.backgroundImage})`,
           backgroundSize: "cover",
           backgroundPosition: "center",
           backgroundAttachment: isMobile ? "scroll" : "fixed",
@@ -618,7 +670,7 @@ background: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${page
             >
               {
                 currentText.subtitle.text.split(
-                  currentText.subtitle.highlight.text
+                  currentText.subtitle.highlight.text,
                 )[0]
               }
               <Typography
@@ -635,7 +687,7 @@ background: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${page
               </Typography>
               {
                 currentText.subtitle.text.split(
-                  currentText.subtitle.highlight.text
+                  currentText.subtitle.highlight.text,
                 )[1]
               }
             </Typography>
@@ -674,62 +726,58 @@ background: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${page
           />
         ))} */}
 
-           {pageConfig.sections
-        .filter((s) => isLoggedIn || !["LikedBrands", "ShortlistBrands", "ViewBrands"].includes(s.component))
+      {pageConfig.sections
+        .filter(
+          (s) =>
+            isLoggedIn ||
+            !["LikedBrands", "ShortlistBrands", "ViewBrands"].includes(
+              s.component,
+            ),
+        )
         .map((section, i) => {
           const addIndex = Math.floor(i / 3);
 
-           const adSlots = [
-      ADS.HOME.INLINE_1,
-      ADS.HOME.INLINE_2,
-      ADS.HOME.INLINE_3,
-    ];
-return (
-      <Fragment key={i} >
-        {/* SECTION */}
-        <LazySection
-          componentKey={section.component}
-          dynamicComponents={dynamicComponents}
-          background={{
-            backgroundImage: "url(/bg25.jpeg)",
-            backgroundAttachment: "fixed",
-            backgroundSize: "400px",
-            backgroundRepeat: "repeat",
-          }}
-          isMobile={isMobile}
-        />
+          const adSlots = [
+            ADS.HOME.INLINE_1,
+            ADS.HOME.INLINE_2,
+            ADS.HOME.INLINE_3,
+          ];
+          return (
+            <Fragment key={i}>
+              {/* SECTION */}
+              <LazySection
+                componentKey={section.component}
+                dynamicComponents={dynamicComponents}
+                background={{
+                  backgroundImage: "url(/bg25.jpeg)",
+                  backgroundAttachment: "fixed",
+                  backgroundSize: "400px",
+                  backgroundRepeat: "repeat",
+                }}
+                isMobile={isMobile}
+              />
 
-        {/* AD AFTER EVERY 3rd SECTION */}
-       {(i + 1) % 3 === 0 && adSlots[addIndex] && (
-  <BackgroundWrapper>
-    <Box sx={{ py: 3 }}>
-      <AdSlot key={`${pathname}-${adSlots[addIndex].slot}`} {...adSlots[addIndex]} />
-    </Box>
-  </BackgroundWrapper>
-)}
+              {/* AD AFTER EVERY 3rd SECTION */}
+              {(i + 1) % 3 === 0 && adSlots[addIndex] && (
+                <BackgroundWrapper>
+                  <Box sx={{ py: 3 }}>
+                    <AdSlot
+                      key={`${pathname}-${adSlots[addIndex].slot}`}
+                      {...adSlots[addIndex]}
+                    />
+                  </Box>
+                </BackgroundWrapper>
+              )}
+            </Fragment>
+          );
+        })}
 
-      </Fragment>
-    );
-  })}
-
-          {/* <LazySection
-            key={i}
-            componentKey={section.component}
-            dynamicComponents={dynamicComponents}
-            background={{
-              backgroundImage: "url(/bg25.jpeg)",
-              backgroundAttachment: "fixed",
-              backgroundSize: "400px",
-              backgroundRepeat: "repeat",
-            }}
-            isMobile={isMobile}
-          />
-        })} */}
-        <BackgroundWrapper>
-          <Box sx={{ py: 3 }}>
-          <AdSlot key={pathname} {...ADS.HOME.FOOTER_RECTANGLE}/>
-</Box>
-        </BackgroundWrapper>
+     
+      <BackgroundWrapper>
+        <Box sx={{ py: 3 }}>
+          <AdSlot key={pathname} {...ADS.HOME.FOOTER_RECTANGLE} />
+        </Box>
+      </BackgroundWrapper>
 
       <CompareButton />
       <BrandComparison />
@@ -737,4 +785,3 @@ return (
     </>
   );
 });
-
