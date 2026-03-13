@@ -31,6 +31,12 @@ import NavbarSearch from "./NavbarSearch.jsx";
 import Image from "next/image.js";
 import AdSlot from "../ads/GoogleAd.jsx";
 import { ADS } from "@/config/ads.config.js";
+import { usePathname } from "next/navigation.js";
+import {
+  clearAllUserData,
+  broadcastLogoutEvent,
+  callLogoutAPI,
+} from "@/Api/logoutService.js";
 function Navbar() {
   const router = useRouter();
   const dispatch = useDispatch();
@@ -40,6 +46,7 @@ function Navbar() {
 
   const { sidebarView, menuOpen } = useSelector((state) => state.navbar);
   const { isLogin } = useSelector((state) => state.auth);
+  const pathname = usePathname();
 
   const [loginModalOpen, setLoginModalOpen] = useState(false);
   const [popupLogout, setPopupLogout] = useState(false);
@@ -272,7 +279,7 @@ const [ID, setId] = useState(null);
           },
         }}
       >
-        <AdSlot {...ADS.HOME.TOP_BILLBOARD} />
+        <AdSlot key={pathname} {...ADS.HOME.TOP_BILLBOARD} />
         <Box sx={{ 
           display:{ xs: "none", sm: "flex"}, 
           flexWrap: "wrap",

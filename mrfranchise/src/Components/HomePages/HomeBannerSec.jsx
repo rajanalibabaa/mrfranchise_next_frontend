@@ -25,6 +25,7 @@ import BrandComparison from "./brandCompariosn";
 import AdSlot from "../ads/GoogleAd";
 import {ADS} from '@/config/ads.config.js';
 import { Fragment } from "react";
+import { usePathname } from "next/navigation";
 
 const FixedSizeList = dynamic(
   () => import("react-window").then((mod) => mod.FixedSizeList),
@@ -448,7 +449,7 @@ export default memo(function HomeBannerSec() {
   const dispatch = useDispatch();
   const router = useRouter();
   const dynamicComponents = useDynamicComponents();
-
+const pathname = usePathname();
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [bannerIndex, setBannerIndex] = useState(0);
   const [showPopup, setShowPopup] = useState(false);
@@ -702,7 +703,7 @@ return (
        {(i + 1) % 3 === 0 && adSlots[addIndex] && (
   <BackgroundWrapper>
     <Box sx={{ py: 3 }}>
-      <AdSlot {...adSlots[addIndex]} />
+      <AdSlot key={`${pathname}-${adSlots[addIndex].slot}`} {...adSlots[addIndex]} />
     </Box>
   </BackgroundWrapper>
 )}
@@ -726,7 +727,7 @@ return (
         })} */}
         <BackgroundWrapper>
           <Box sx={{ py: 3 }}>
-          <AdSlot {...ADS.HOME.FOOTER_RECTANGLE}/>
+          <AdSlot key={pathname} {...ADS.HOME.FOOTER_RECTANGLE}/>
 </Box>
         </BackgroundWrapper>
 

@@ -30,19 +30,18 @@ const FloatingApplyButton = ({ isMobile, brand, toggleDrawer }) => {
 
   
     const [open, setOpen] = React.useState(false);
+    const [hide, setHide] = React.useState(false);
     const { AccessToken } = useSelector((state) => state.auth);
 
     const handleApplyClick = (event) => {
-      
+      setHide(true);
     
     if (AccessToken) {
       toggleDrawer(true)(event);
     } else {
       setOpen(true);
-          console.log("AccessToken in FloatingApplyButton:", AccessToken);
 
     }
-      ;
   };
 
 
@@ -69,7 +68,8 @@ const FloatingApplyButton = ({ isMobile, brand, toggleDrawer }) => {
       }}
     >
       {/* APPLY NOW */}
-      <motion.div
+      {!hide && (
+        <motion.div
         animate={{ y: [0, -6, 0] }}
         transition={{ repeat: Infinity, duration: 2 }}
         whileTap={{ scale: 0.95 }}
@@ -102,6 +102,7 @@ const FloatingApplyButton = ({ isMobile, brand, toggleDrawer }) => {
           </Box>
         </Button>
       </motion.div>
+      )}
 
       {/* WHATSAPP */}
       {/* {whatsappLink && (

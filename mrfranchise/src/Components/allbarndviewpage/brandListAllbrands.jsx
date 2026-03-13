@@ -46,7 +46,7 @@ import { fetchFilterOptions } from "@/Redux/Slices/filterDropdownData";
 import AdSlot from "../ads/GoogleAd";
 import { ADS } from "@/config/ads.config";
 import { getLocalStorageData } from "@/Utils/localStorage";
-
+import { usePathname } from "next/navigation";
 const BrandCardSkeleton = React.memo(() => (
   <Box
     sx={{
@@ -198,7 +198,7 @@ function BrandList() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const dispatch = useDispatch();
-
+const pathname = usePathname();
   // ============================================
   // LOCAL STATE
   // ============================================
@@ -612,7 +612,7 @@ useEffect(() => {
             />
           </Box>
         )}
-        <AdSlot {...ADS.HOME.TOP_LEADERBOARD} />
+        <AdSlot key={pathname} {...ADS.HOME.FOOTER_RECTANGLE} />
       </>
     );
   }, [
