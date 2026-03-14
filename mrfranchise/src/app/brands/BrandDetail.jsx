@@ -640,7 +640,7 @@ const handleSubmit = useCallback(
       </Box>
    
       <Disclaimer isMobile={isMobile} />
- <AdSlot key={pathname} {...ADS.HOME.FOOTER_RECTANGLE} />
+ {/* <AdSlot key={pathname} {...ADS.HOME.FOOTER_RECTANGLE} /> */}
       {/* <Suspense fallback={null}>
         <BackToTopButton show={showBackToTop} isMobile={isMobile} />
       </Suspense> */}

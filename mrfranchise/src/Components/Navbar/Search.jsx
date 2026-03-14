@@ -66,7 +66,7 @@ const Search = ({ handleClose }) => {
       try {
         const url = `${api.user.get.search}?searchTerm=${encodeURIComponent(
           debouncedQuery
-        )}&industry=${encodeURIComponent("Food & Beverages")}`;
+        )}`;
         const response = await GetApiCall(url);
         const data = response?.data?.data || {};
 

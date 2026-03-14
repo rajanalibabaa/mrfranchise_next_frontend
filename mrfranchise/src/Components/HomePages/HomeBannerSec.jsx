@@ -758,7 +758,7 @@ export default memo(function HomeBannerSec() {
               />
 
               {/* AD AFTER EVERY 3rd SECTION */}
-              {(i + 1) % 3 === 0 && adSlots[addIndex] && (
+              {/* {(i + 1) % 3 === 0 && adSlots[addIndex] && (
                 <BackgroundWrapper>
                   <Box sx={{ py: 3 }}>
                     <AdSlot
@@ -767,17 +767,17 @@ export default memo(function HomeBannerSec() {
                     />
                   </Box>
                 </BackgroundWrapper>
-              )}
+              )} */}
             </Fragment>
           );
         })}
 
      
-      <BackgroundWrapper>
+      {/* <BackgroundWrapper>
         <Box sx={{ py: 3 }}>
           <AdSlot key={pathname} {...ADS.HOME.FOOTER_RECTANGLE} />
         </Box>
-      </BackgroundWrapper>
+      </BackgroundWrapper> */}
 
       <CompareButton />
       <BrandComparison />

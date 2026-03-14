@@ -5,6 +5,8 @@ import {
   Box,
   Typography,
   Button,
+  TextField,
+  FormControl,
   Divider,
   Radio,
   RadioGroup,
@@ -13,6 +15,9 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
+  Collapse,
+  Breadcrumbs,
+  Link,
 } from "@mui/material";
 import {
   Clear as ClearIcon,
@@ -25,9 +30,7 @@ import {
   resetDistricts,
   resetCities,
 } from "@/Redux/Slices/filterDropdownData";
-import AdSlot from "../ads/GoogleAd";
-import { ADS } from "@/config/ads.config";
-import { usePathname } from "next/navigation";
+
 // Define the correct order for investment ranges
 const INVESTMENT_RANGE_ORDER = [
   "Below - 50k",
@@ -92,6 +95,7 @@ const FilterPanel = React.memo(
       areaRequired: false,
       location: false,
       investment: false,
+      areaRequired: false,
     });
 
     // Fetch initial filter data
@@ -99,46 +103,39 @@ const FilterPanel = React.memo(
       dispatch(fetchFilterOptions());
     }, [dispatch]);
 
-    // // Set initial main category to "Food & Beverages" if not already set (runs once on mount)
-    // useEffect(() => {
-    //   if (!filters.maincat) {
-    //     onFilterChange("maincat", "Food & Beverages");
-    //   }
-    // }, []); // Empty dependency array to run only once
+    // Fetch subcategories and child categories when main category changes
+    useEffect(() => {
+      if (filters.maincat) {
+        dispatch(fetchFilterOptions({ main: filters.maincat }));
+        dispatch(resetChildCategories()); // Reset child categories when main category changes
+      } else {
+        dispatch(fetchFilterOptions()); // Fetch all filters if main category is cleared
+      }
+    }, [dispatch, filters.maincat]);
 
-    // // Fetch subcategories and child categories when main category changes
-    // useEffect(() => {
-    //   if (filters.maincat) {
-    //     dispatch(fetchFilterOptions({ main: filters.maincat }));
-    //     dispatch(resetChildCategories()); // Reset child categories when main category changes
-    //   } else {
-    //     dispatch(fetchFilterOptions()); // Fetch all filters if main category is cleared
-    //   }
-    // }, [dispatch, filters.maincat]);
+    // Fetch child categories when subcategory changes
+    useEffect(() => {
+      if (filters.subcat) {
+        dispatch(fetchFilterOptions({ sub: filters.subcat }));
+      }
+    }, [dispatch, filters.subcat]);
 
-    // // Fetch child categories when subcategory changes
-    // useEffect(() => {
-    //   if (filters.subcat) {
-    //     dispatch(fetchFilterOptions({ sub: filters.subcat }));
-    //   }
-    // }, [dispatch, filters.subcat]);
+    // Fetch districts when state changes
+    useEffect(() => {
+      if (filters.state) {
+        dispatch(fetchFilterOptions({ state: filters.state }));
+        dispatch(resetCities()); // Reset cities when state changes
+      } else {
+        dispatch(resetDistricts()); // Reset districts and cities when state is cleared
+      }
+    }, [dispatch, filters.state]);
 
-    // // Fetch districts when state changes
-    // useEffect(() => {
-    //   if (filters.state) {
-    //     dispatch(fetchFilterOptions({ state: filters.state }));
-    //     dispatch(resetCities()); // Reset cities when state changes
-    //   } else {
-    //     dispatch(resetDistricts()); // Reset districts and cities when state is cleared
-    //   }
-    // }, [dispatch, filters.state]);
-
-    // // Fetch cities when district changes
-    // useEffect(() => {
-    //   if (filters.district) {
-    //     dispatch(fetchFilterOptions({ district: filters.district }));
-    //   }
-    // }, [dispatch, filters.district]);
+    // Fetch cities when district changes
+    useEffect(() => {
+      if (filters.district) {
+        dispatch(fetchFilterOptions({ district: filters.district }));
+      }
+    }, [dispatch, filters.district]);
 
     // Read URL parameters on mount
     useEffect(() => {
@@ -170,17 +167,9 @@ const FilterPanel = React.memo(
       });
     };
 
-    const handleSearchTermChange = (field) => (e) => {
-      setSearchTerms((prev) => ({ ...prev, [field]: e.target.value }));
-    };
-
     // Filter and sort options based on search terms (alphabetical order)
-    // Initially (no search term), only render "Food & Beverages"
     const filteredMainCategories = useMemo(() => {
       const term = (searchTerms.mainCategory || "").toLowerCase();
-      if (!term) {
-        return ["Food & Beverages"];
-      }
       return mainCategories
         .filter((main) => {
           if (!main) return false;
@@ -307,9 +296,8 @@ const FilterPanel = React.memo(
       }
     };
 
-    const pathname = usePathname();
     return (
-      <Box sx={{ pr: 2, height: "calc(100vh - 40px)", overflowY: "auto" }}>
+      <Box sx={{ pr: 2, height: "calc(100vh - 120px)", overflowY: "auto" }}>
         <Typography
           variant="body2"
           sx={{
@@ -325,7 +313,6 @@ const FilterPanel = React.memo(
         >
           Showing {resultStats.showing || 0} of {resultStats.total || 0} brands
         </Typography>
-
         <Box
           display="flex"
           justifyContent="space-between"
@@ -348,55 +335,6 @@ const FilterPanel = React.memo(
             Clear
           </Button>
         </Box>
-        {/* 
-        <Breadcrumbs
-          separator="|"
-          sx={{ mb: 2, fontSize: "0.875rem",color: "#ff9800" ,background: "white",padding:'7px',borderRadius:'5px' }}
-          aria-label="filter sections"
-        >
-          <Link
-            underline="hover"
-            color="black"
-            onClick={() => scrollToSection(mainCategoryRef)}
-            sx={{ cursor: "pointer",color: "#000000ff" }}
-          >
-            Industries
-          </Link>
-  <Link
-            underline="hover"
-            color="black"
-            onClick={() => scrollToSection(investmentRef)}
-            sx={{ cursor: "pointer",color: "#000000ff" }}
-          >
-            Investment
-          </Link>
-           <Link
-            underline="hover"
-            color="black"
-            onClick={() => scrollToSection(areaRequiredRef)}
-            sx={{ cursor: "pointer",color: "#000000ff" }}
-          >
-            Area
-          </Link>
-          <Link
-            underline="hover"
-            color="black"
-            onClick={() => scrollToSection(locationRef)}
-            sx={{ cursor: "pointer",color: "#000000ff" }}
-          >
-            Location
-          </Link>
-          <Link
-            underline="hover"
-            color="black"
-            onClick={() => scrollToSection(modelTypeRef)}
-            sx={{ cursor: "pointer",color: "#000000ff" }}
-          >
-            Model
-          </Link>
-          
-          
-        </Breadcrumbs> */}
 
         {/* <TextField
           fullWidth
@@ -409,7 +347,6 @@ const FilterPanel = React.memo(
           }}
           sx={{ mb: 3 }}
         /> */}
-
         {/* Main Category Filter */}
         <Accordion
           ref={mainCategoryRef}
@@ -433,7 +370,7 @@ const FilterPanel = React.memo(
                 fontSize: "0.875rem",
               }}
             >
-              Category
+              Industries
             </Typography>
           </AccordionSummary>
           <AccordionDetails sx={{ p: 0 }}>
@@ -455,7 +392,7 @@ const FilterPanel = React.memo(
                 >
                   {filteredMainCategories.map((category) => (
                     <Box key={`cat-container-${category}`} sx={{ mb: 0 }}>
-                      {/* <FormControlLabel
+                      <FormControlLabel
                         key={`cat-${category}`}
                         value={category}
                         control={
@@ -474,14 +411,14 @@ const FilterPanel = React.memo(
                           </Typography>
                         }
                         sx={{ mb: 0, mr: 0 }}
-                      /> */}
+                      />
 
                       {/* Show subcategories when this main category is selected */}
                       {filters.maincat === category && (
                         <Box
                           ref={subCategoryRef}
                           sx={{
-                            ml: 0,
+                            ml: 3,
                             mt: 1,
                             // borderLeft: "2px solid #4caf50",
                             pl: 1,
@@ -586,6 +523,73 @@ const FilterPanel = React.memo(
             </Box>
           </AccordionDetails>
         </Accordion>
+
+        {/* Model Type Filter */}
+        <Accordion
+          ref={modelTypeRef}
+          expanded={expandedSections.modelType}
+          onChange={() => toggleSection("modelType")}
+          disableGutters
+          elevation={0}
+          sx={{ mb: 2, "&:before": { display: "none" } }}
+        >
+          <AccordionSummary
+            expandIcon={<ExpandMoreIcon sx={{ color: "#4caf50" }} />}
+            sx={{
+              px: 1,
+              "&.Mui-expanded": { minHeight: "48px" },
+            }}
+          >
+            <Typography
+              sx={{
+                color: "#4caf50",
+                fontWeight: "bold",
+                fontSize: "0.875rem",
+              }}
+            >
+              Model Type
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails sx={{ p: 0 }}>
+            <Box sx={{ px: 1 }}>
+              {/* <TextField
+                fullWidth
+                size="small"
+                placeholder="Search model types..."
+                value={searchTerms.modelType}
+                onChange={handleSearchTermChange("modelType")}
+                sx={{ mb: 1 }}
+                InputProps={{
+                  startAdornment: <SearchIcon fontSize="small" sx={{ mr: 1, color: "#ff9800" }} />,
+                }}
+              /> */}
+              <RadioGroup
+                value={filters.modelType || ""}
+                onChange={(e) => onFilterChange("modelType", e.target.value)}
+              >
+                {filteredModelTypes.map((type) => (
+                  <FormControlLabel
+                    key={`modeltype-${type}`}
+                    value={type}
+                    control={
+                      <Radio
+                        size="small"
+                        sx={{
+                          color: "#ff9800",
+                          "&.Mui-checked": { color: "#4caf50" },
+                          padding: "6px",
+                        }}
+                      />
+                    }
+                    label={<Typography fontSize="0.8125rem">{type}</Typography>}
+                    sx={{ mb: 0, mr: 0 }}
+                  />
+                ))}
+              </RadioGroup>
+            </Box>
+          </AccordionDetails>
+        </Accordion>
+
         {/* Investment Range Filter */}
         <Accordion
           ref={investmentRef}
@@ -593,7 +597,7 @@ const FilterPanel = React.memo(
           onChange={() => toggleSection("investment")}
           disableGutters
           elevation={0}
-          sx={{ mb: 2, borderRadius: "5px", "&:before": { display: "none" } }}
+          sx={{ mb: 2, "&:before": { display: "none" } }}
         >
           <AccordionSummary
             expandIcon={<ExpandMoreIcon sx={{ color: "#4caf50" }} />}
@@ -663,7 +667,7 @@ const FilterPanel = React.memo(
           onChange={() => toggleSection("areaRequired")}
           disableGutters
           elevation={0}
-          sx={{ mb: 2, borderRadius: "5px", "&:before": { display: "none" } }}
+          sx={{ mb: 2, "&:before": { display: "none" } }}
         >
           <AccordionSummary
             expandIcon={<ExpandMoreIcon sx={{ color: "#4caf50" }} />}
@@ -755,72 +759,6 @@ const FilterPanel = React.memo(
           </AccordionDetails>
         </Accordion>
 
-        {/* Model Type Filter */}
-        <Accordion
-          ref={modelTypeRef}
-          expanded={expandedSections.modelType}
-          onChange={() => toggleSection("modelType")}
-          disableGutters
-          elevation={0}
-          sx={{ mb: 2, borderRadius: "5px", "&:before": { display: "none" } }}
-        >
-          <AccordionSummary
-            expandIcon={<ExpandMoreIcon sx={{ color: "#4caf50" }} />}
-            sx={{
-              px: 1,
-              "&.Mui-expanded": { minHeight: "48px" },
-            }}
-          >
-            <Typography
-              sx={{
-                color: "#4caf50",
-                fontWeight: "bold",
-                fontSize: "0.875rem",
-              }}
-            >
-              Model Type
-            </Typography>
-          </AccordionSummary>
-          <AccordionDetails sx={{ p: 0 }}>
-            <Box sx={{ px: 1 }}>
-              {/* <TextField
-                fullWidth
-                size="small"
-                placeholder="Search model types..."
-                value={searchTerms.modelType}
-                onChange={handleSearchTermChange("modelType")}
-                sx={{ mb: 1 }}
-                InputProps={{
-                  startAdornment: <SearchIcon fontSize="small" sx={{ mr: 1, color: "#ff9800" }} />,
-                }}
-              /> */}
-              <RadioGroup
-                value={filters.modelType || ""}
-                onChange={(e) => onFilterChange("modelType", e.target.value)}
-              >
-                {filteredModelTypes.map((type) => (
-                  <FormControlLabel
-                    key={`modeltype-${type}`}
-                    value={type}
-                    control={
-                      <Radio
-                        size="small"
-                        sx={{
-                          color: "#ff9800",
-                          "&.Mui-checked": { color: "#4caf50" },
-                          padding: "6px",
-                        }}
-                      />
-                    }
-                    label={<Typography fontSize="0.8125rem">{type}</Typography>}
-                    sx={{ mb: 0, mr: 0 }}
-                  />
-                ))}
-              </RadioGroup>
-            </Box>
-          </AccordionDetails>
-        </Accordion>
-
         {/* Location Filters */}
         <Accordion
           ref={locationRef}
@@ -828,7 +766,7 @@ const FilterPanel = React.memo(
           onChange={() => toggleSection("location")}
           disableGutters
           elevation={0}
-          sx={{ mb: 2, borderRadius: "5px", "&:before": { display: "none" } }}
+          sx={{ mb: 2, "&:before": { display: "none" } }}
         >
           <AccordionSummary
             expandIcon={<ExpandMoreIcon sx={{ color: "#4caf50" }} />}
@@ -1037,7 +975,6 @@ const FilterPanel = React.memo(
         </Accordion>
 
         <Divider sx={{ my: 2 }} />
-        <AdSlot key={pathname} {...ADS.BrandViewPage.FILTER_BOTTOM_RECTANGLE} />
       </Box>
     );
   },
