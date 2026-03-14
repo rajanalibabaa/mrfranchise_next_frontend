@@ -217,7 +217,7 @@ const HomeSection2 = () => {
   });
 
   const subcat = encodeURIComponent(brandCategoriesName); // encode spaces/special chars
-  const url = `${slug}?subcat=${subcat}`;
+  const url = `${slug}?maincat=${subcat}`;
 
   // Open in new tab
   const newWindow = window.open(url, "_blank");
