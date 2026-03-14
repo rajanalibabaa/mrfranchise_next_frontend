@@ -34,6 +34,11 @@ const ExpandYourBrandClient = () => {
       .section-box { background:rgba(255,255,255,0.95); border-radius:18px; box-shadow:0 4px 32px #ffe08255; padding:24px; margin-bottom:32px; animation:fadeInUp 0.8s; transition:all .3s; }
       .section-box:hover { transform:translateY(-8px) scale(1.02); box-shadow:0 16px 64px #ffe08299; }
       .section-title { display:flex; align-items:center; font-weight:bold; font-size:1.4rem; color:#ff9800; margin-bottom:16px; }
+      .section-list { 
+  list-style: none; 
+  padding: 0; 
+  margin: 0; 
+}
       .section-list li { position:relative; padding-left:28px; margin-bottom:12px; font-size:1.1rem; color:#444; line-height:1.7; }
       .section-list li::before { content:''; position:absolute; left:0; top:10px; width:10px; height:10px; background:linear-gradient(90deg,#ff9800,#ffd54f); border-radius:50%; }
     `;
@@ -77,21 +82,21 @@ const ExpandYourBrandClient = () => {
   );
 
   return (
-    <Box className="expand-bg" mt={10}>
+    <Box className="expand-bg" mt={3}>
       <Box sx={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 50 }}>
         <Navbar />
       </Box>
 
-      <Container maxWidth="lg" sx={{ pt: { xs: 12, md: 16 }, pb: 8 }}>
+      <Container maxWidth="lg" sx={{ pt: { xs: 12, md: 14 }, pb: 8 }}>
         {/* Hero */}
         <Box textAlign="center" mb={6}>
           <Typography variant={isMobile ? "h4" : "h3"} fontWeight="bold" color="#ff9800" gutterBottom>
             Expand Your Brand
           </Typography>
-          <Typography variant={isMobile ? "h6" : "h4"} color="#7ad03a" fontWeight={600} gutterBottom>
+          <Typography variant={isMobile ? "h6" : "h5"} color="#7ad03a" fontWeight={600} gutterBottom>
             Transform Your Business into a Scalable Franchise with MrFranchise.in
           </Typography>
-          <Typography variant="body1" color="text.secondary" mt={3} maxWidth={900} mx="auto">
+          <Typography variant="body2" color="text.secondary" mt={3} maxWidth={900} mx="auto">
             At <Link href="/" underline="none" sx={{ fontWeight: "bold", color: "black" }}>MrFranchise.in</Link>, we help successful business owners expand nationwide through professional franchising — with zero hassle.
           </Typography>
         </Box>

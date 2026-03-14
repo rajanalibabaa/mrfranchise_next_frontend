@@ -18,7 +18,7 @@ import {
 } from "@mui/material";
 import { Phone, Favorite, ShareOutlined } from "@mui/icons-material";
 import { motion } from "framer-motion";
-import ShareDialogActions from "@/app/brands/ShareDialogActions";
+import { shareBrand } from "@/app/brands/ShareDialogActions";
 import { RiBookmark3Fill } from "react-icons/ri";
 import { useRef } from "react";
 import confetti from "canvas-confetti";
@@ -31,9 +31,6 @@ const BrandHeader = ({
   shortListed,
   handleLikeClick,
   handleToggleShortList,
-  handleOpenShareClick,
-  anchorEl,
-  setAnchorEl,
   toggleDrawer,
   getOutletRange,
 }) => {
@@ -312,23 +309,16 @@ height: 35,
                 >
                   <RiBookmark3Fill />
                 </IconButton>
-                <IconButton
-                  onClick={handleOpenShareClick}
-                  size={isMobile ? "small" : "medium"}
-                >
-                  <ShareOutlined
-                    sx={{ fontSize: isMobile ? "1.2rem" : "1.5rem",color: "rgba(0, 0, 0, 0.35)" }}
-                  />
-                </IconButton>
-                <ShareDialogActions
-                  anchorEl={anchorEl}
-                  setAnchorEl={setAnchorEl}
-                  brand={{
-                    name: brand[0]?.brandDetails?.brandName,
-                    logo: brand[0]?.uploads?.logo,
-                    // video: brand[0]?.uploads?.franchisePromotionVideo
-                  }}
-                />
+              <IconButton
+  onClick={async () => {
+    await shareBrand(brand[0]);
+  }}
+  size={isMobile ? "small" : "medium"}
+>
+  <ShareOutlined
+    sx={{ fontSize: isMobile ? "1.2rem" : "1.5rem", color: "rgba(0, 0, 0, 0.35)" }}
+  />
+</IconButton>
               </Box>
             </Box>
 <Box sx={{ mt: { xs: 1, sm: 2, md: 3}, display: "flex", flexDirection: "column", gap: 1 }}>

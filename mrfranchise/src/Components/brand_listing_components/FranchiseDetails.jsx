@@ -66,7 +66,7 @@ const FranchiseDetails = ({ data = {}, errors = {}, onChange = () => {} }) => {
   ];
  
   // State for API data
-  const [industries, setIndustries] = useState(["Food & Beverages"]);
+  const [industries, setIndustries] = useState([]);
   const [industryData, setIndustryData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [loadingIndustryDetails, setLoadingIndustryDetails] = useState(false);
@@ -113,11 +113,12 @@ const FranchiseDetails = ({ data = {}, errors = {}, onChange = () => {} }) => {
   const [showSelectedServiceTags, setShowSelectedServiceTags] = useState(false);
   // Fetch industries on component mount
   useEffect(() => {
-    // fetchIndustries();
-    fetchIndustryDetails()
+    fetchIndustries();
+    // fetchIndustryDetails()
   }, []);
   // Fetch industries list
   const fetchIndustries = async () => {
+    
     try {
       setLoading(true);
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/getIndustryByIndustryName`);
@@ -133,38 +134,94 @@ const FranchiseDetails = ({ data = {}, errors = {}, onChange = () => {} }) => {
     }
   };
   // Fetch industry details when an industry is selected
-  const fetchIndustryDetails = async (industryName) => {
-    // if (!industryName) return;
-    const industry = "Food & Beverages"
+  // const fetchIndustryDetails = async (industryName) => {
+  //   if (!industryName) return;
+  //   // const industry = "Food & Beverages"
     
-    try {
-      setLoadingIndustryDetails(true);
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/getIndustryByIndustryName?industry=${encodeURIComponent(industry)}`
-      );
-      const result = await response.json();
+  //   try {
+  //     setLoadingIndustryDetails(true);
+  //     const response = await fetch(
+  //       `${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/getIndustryByIndustryName?industry=${encodeURIComponent(industryName)}`
+  //     );
+  //     const result = await response.json();
      
-      if (result.success && result.data) {
+  //     if (result.success && result.data) {
         
-        setIndustryData(result.data);
+  //       setIndustryData(result.data);
        
-        // Update selected category state
-        const newCategory = {
-          groupId: "",
-          main: result.data.industry,
-          sub: "",
-          productTags: [],
-          serviceTags: [],
-        };
-        setSelectedCategory(newCategory);
-        onChange({ brandCategories: newCategory });
-      }
-    } catch (error) {
-      console.error('Error fetching industry details:', error);
-    } finally {
-      setLoadingIndustryDetails(false);
+  //       // Update selected category state
+  //       const newCategory = {
+  //         groupId: "",
+  //         main: result.data.industry || industryName,
+  //         sub: "",
+  //         productTags: [],
+  //         serviceTags: [],
+  //       };
+  //       setSelectedCategory(newCategory);
+  //       onChange({ brandCategories: newCategory,
+  //       franchiseTags: {}  });
+  //     }
+  //   } catch (error) {
+  //     console.error('Error fetching industry details:', error);
+  //   } finally {
+  //     setLoadingIndustryDetails(false);
+  //   }
+  // };
+  const fetchIndustryDetails = async (industryName) => {
+  if (!industryName) return;
+  
+  try {
+    setLoadingIndustryDetails(true);
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/getIndustryByIndustryName?industry=${encodeURIComponent(industryName)}`
+    );
+    const result = await response.json();
+    
+    // DEBUG: Log the actual API response structure
+    console.log("API Response:", result);
+    console.log("Data:", result.data);
+   
+    if (result.success && result.data) {
+      // Handle different possible API response structures
+      const apiData = result.data;
+      
+      // Check if categories exists directly or nested
+      const categories = apiData.categories || 
+                        apiData.category || 
+                        apiData.subCategories || 
+                        apiData.subIndustry || 
+                        [];
+      
+      console.log("Categories found:", categories);
+      
+      setIndustryData({
+        ...apiData,
+        categories: Array.isArray(categories) ? categories : [] // Ensure it's an array
+      });
+     
+      const newCategory = {
+        groupId: "",
+        main: apiData.industry || industryName,
+        sub: "",
+        productTags: [],
+        serviceTags: [],
+      };
+      setSelectedCategory(newCategory);
+      onChange({ 
+        brandCategories: newCategory,
+        franchiseTags: {} 
+      });
+    } else {
+      console.error("API returned no data or success=false", result);
+      setIndustryData(null);
     }
-  };
+  } catch (error) {
+    console.error('Error fetching industry details:', error);
+    setIndustryData(null);
+  } finally {
+    setLoadingIndustryDetails(false);
+  }
+};
   const handleChange = (e) => {
     const { name, value } = e.target;
     if (name === "companyOwnedOutlets" || name === "franchiseOutlets") {
@@ -521,7 +578,9 @@ const FranchiseDetails = ({ data = {}, errors = {}, onChange = () => {} }) => {
         groups[serviceTagGroup.parent] = serviceTagGroup.tags;
       });
       setServiceTagGroups(groups);
-    }
+    }else {
+    setServiceTagGroups({}); 
+  }
   }, [industryData]);
   // Drawer handlers
   const handleOpenDrawer = () => {
@@ -648,7 +707,9 @@ const handleDone = () => {
     serviceTags: [],
   };
   setSelectedCategory(newCategory);
-  
+  setTempProductTags([]);
+  setTempServiceTags([]);
+  setServiceTagGroups({});
   // Send both formats for validation
   onChange({ 
     brandCategories: {
@@ -658,7 +719,7 @@ const handleDone = () => {
     franchiseTags: {}  // Empty franchiseTags for validation
   });
   
-  errors.mainCategory = "";
+ if (errors.mainCategory) errors.mainCategory = "";
 };
  
  const handleSubCategoryChange = (e) => {
@@ -781,41 +842,44 @@ const handleDone = () => {
             )}
           </FormControl>
         </Grid>
-        <Grid item xs={12} sm={4}>
-          <FormControl
-            fullWidth
-            size="medium"
-            error={Boolean(errors.subCategory)}
-           
-          >
-            <InputLabel id="main-cat-label">Main Category</InputLabel>
-            <Select
-              labelId="main-cat-label"
-              id="main-cat-select"
-              value={selectedCategory.sub || ""}
-              label="Main Category"
-              onChange={handleSubCategoryChange}
-              disabled={!selectedCategory.main || loadingIndustryDetails}
-              sx={{ minHeight: 56 }}
-              MenuProps={{
-                PaperProps: { sx: { maxHeight: 320 } },
-              }}
-            >
-              {loadingIndustryDetails ? (
-                <MenuItem value="" disabled>Loading categories...</MenuItem>
-              ) : (
-                industryData?.categories?.map((category) => (
-                  <MenuItem key={category} value={category}>
-                    {category}
-                  </MenuItem>
-                ))
-              )}
-            </Select>
-            {errors.subCategory && (
-              <FormHelperText error >{errors.subCategory}</FormHelperText>
-            )}
-          </FormControl>
-        </Grid>
+      <Grid item xs={12} sm={4}>
+  <FormControl
+    fullWidth
+    size="medium"
+    error={Boolean(errors.subCategory)}
+  >
+    <InputLabel id="main-cat-label">Main Category</InputLabel>
+    <Select
+      labelId="main-cat-label"
+      id="main-cat-select"
+      value={selectedCategory.sub || ""}
+      label="Main Category"
+      onChange={handleSubCategoryChange}
+      disabled={!selectedCategory.main || loadingIndustryDetails}
+      sx={{ minHeight: 56 }}
+      MenuProps={{
+        PaperProps: { sx: { maxHeight: 320 } },
+      }}
+    >
+      {loadingIndustryDetails ? (
+        <MenuItem value="" disabled>Loading categories...</MenuItem>
+      ) : !industryData ? (
+        <MenuItem value="" disabled>Select an industry first</MenuItem>
+      ) : !industryData.categories || industryData.categories.length === 0 ? (
+        <MenuItem value="" disabled>No categories available</MenuItem>
+      ) : (
+        industryData.categories.map((category, index) => (
+          <MenuItem key={`${category}-${index}`} value={category}>
+            {category}
+          </MenuItem>
+        ))
+      )}
+    </Select>
+    {errors.subCategory && (
+      <FormHelperText error>{errors.subCategory}</FormHelperText>
+    )}
+  </FormControl>
+</Grid>
         <Grid item xs={12} sm={4}>
           {/* Button to open drawer */}
           <Button
