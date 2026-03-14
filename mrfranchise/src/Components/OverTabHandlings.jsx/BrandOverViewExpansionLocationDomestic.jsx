@@ -96,7 +96,7 @@ const ExpansionLocationGrid = ({ data }) => {
         <Box
           sx={{
             display: isMobile ? "block" : "flex",
-            height: isMobile ? "auto" : "400px",
+            height: isMobile ? "auto" : "420px",
           }}
         >
           {/* Unified scroll container for desktop */}
@@ -140,13 +140,15 @@ const ExpansionLocationGrid = ({ data }) => {
   States
 </Typography>
 
-              <Box
-                sx={{
-                  p: 1,
-                  maxHeight: "calc(75vh - 200px)",
-                  overflowY: "auto",
-                }}
-              >
+            <Box
+  sx={{
+    p: 1,
+    maxHeight: "calc(75vh - 200px)",
+    overflowY: "auto",
+    pr: 1,
+    pb: 2,   // ✅ ADD THIS
+  }}
+>
                 {/* {renderItemsWithFallback(visibleLocations, "Country").map((loc, stateIndex) => (
                   <Card
                     key={`state-${stateIndex}`}
@@ -292,13 +294,15 @@ const ExpansionLocationGrid = ({ data }) => {
                   </IconButton>
                 )}
               </Typography>
-              <Box
-                sx={{
-                  p: 1,
-                  maxHeight: "calc(75vh - 200px)",
-                  overflowY: "auto",
-                }}
-              >
+             <Box
+  sx={{
+    p: 1,
+    maxHeight: "calc(75vh - 200px)",
+    overflowY: "auto",
+    pr: 1,
+    pb: 2,   // ✅ ADD THIS
+  }}
+>
                 {expandedState !== null ? (
                   renderItemsWithFallback(
                     data.locations[expandedState]?.districts,
