@@ -1,240 +1,301 @@
-"use client"
-import React from "react";
+"use client";
+import React, { useState } from "react";
 import {
   Popover,
-  IconButton,
   Typography,
   Box,
-  useMediaQuery,
-  useTheme,
-  Tooltip,
   Snackbar,
   Alert,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
+  IconButton,
+  Divider,
+  useTheme,
+  useMediaQuery,
 } from "@mui/material";
 
-import Facebook from "@mui/icons-material/Facebook";
-import Twitter from "@mui/icons-material/Twitter";
-import LinkedIn from "@mui/icons-material/LinkedIn";
-import WhatsApp from "@mui/icons-material/WhatsApp";
-import Email from "@mui/icons-material/Email";
-import Instagram from "@mui/icons-material/Instagram";
-import ShareIcon from "@mui/icons-material/Share";
+import CloseIcon from "@mui/icons-material/Close";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-import OpenInNewIcon from "@mui/icons-material/OpenInNew";
-
-// import { Helmet } from "react-helmet-async";
+import WhatsAppIcon from "@mui/icons-material/WhatsApp";
+import FacebookIcon from "@mui/icons-material/Facebook";
+import XIcon from "@mui/icons-material/X";
+import TelegramIcon from "@mui/icons-material/Telegram";
+import LinkedInIcon from "@mui/icons-material/LinkedIn";
+import EmailIcon from "@mui/icons-material/Email";
+import CheckIcon from "@mui/icons-material/Check";
 
 const ShareDialogActions = ({ anchorEl, setAnchorEl, brand }) => {
-
-  
   const theme = useTheme();
-  const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const open = Boolean(anchorEl);
 
-  const [snackbarOpen, setSnackbarOpen] = React.useState(false);
-  const [urlDialogOpen, setUrlDialogOpen] = React.useState(false);
-  const [currentUrl, setCurrentUrl] = React.useState("");
+  const [copied, setCopied] = useState(false);
+  const [snackbar, setSnackbar] = useState({ open: false, message: "" });
 
-  React.useEffect(() => {
-    setCurrentUrl(window.location.href);
-  }, []);
+  // Brand Name
+  const brandName =
+    brand?.brandDetails?.brandName ||
+    brand?.name ||
+    "MrFranchise";
 
-  const handleClose = () => setAnchorEl(null);
-  const handleSnackbarClose = () => setSnackbarOpen(false);
-  const handleUrlDialogClose = () => setUrlDialogOpen(false);
+  // Brand Logo
+  const brandLogo =
+    brand?.brandDetails?.brandLogo ||
+    brand?.logo ||
+    "";
 
-  const copyToClipboard = () => {
-    const shareMessage = `http://localhost:3000/brands/${brand?.name}`;
-    navigator.clipboard.writeText(shareMessage);
-    setSnackbarOpen(true);
-    setUrlDialogOpen(false);
+  // Brand Slug or UUID
+  const slug =
+    brand?.brandDetails?.slug ||
+    brand?.slug ||
+    brand?.brandUUID ||
+    brandName?.toLowerCase().replace(/\s+/g, "-");
+
+  // Share URL (Direct Brand Page)
+  const shareUrl =
+    typeof window !== "undefined"
+      ? `${window.location.origin}/brands/${slug}`
+      : "";
+
+  // Share Text
+  const shareText = `Check out ${brandName} franchise opportunity on MrFranchise 🚀`;
+
+  const handleClose = () => {
+    setAnchorEl(null);
+    setCopied(false);
   };
 
-  const shareText = `http://localhost:3000/brands/${brand?.name}`;
-
-  // ✅ Social Platforms List
-  const socialPlatforms = [
-    {
-      name: "Facebook",
-      icon: <Facebook />,
-      color: "primary",
-      url: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
-        currentUrl
-      )}&quote=${encodeURIComponent(shareText)}`,
-      action: "share",
-    },
-    {
-      name: "Twitter",
-      icon: <Twitter />,
-      color: "primary",
-      url: `https://twitter.com/intent/tweet?url=${encodeURIComponent(
-        currentUrl
-      )}&text=${encodeURIComponent(shareText)}&hashtags=Franchise`,
-      action: "share",
-    },
-    {
-      name: "LinkedIn",
-      icon: <LinkedIn />,
-      color: "primary",
-      url: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(
-        currentUrl
-      )}&summary=${encodeURIComponent(shareText)}`,
-      action: "share",
-    },
-    {
-      name: "WhatsApp",
-      icon: <WhatsApp />,
-      color: "success",
-      url: `https://wa.me/?text=${encodeURIComponent(shareText)}`,
-      action: "share",
-    },
-    // {
-    //   name: "Email",
-    //   icon: <Email />,
-    //   color: "default",
-    //   url: `mailto:?subject=${encodeURIComponent(
-    //     `Check out ${brand?.name || "MrFranchise"}`
-    //   )}&body=${encodeURIComponent(shareText)}`,
-    //   action: "share",
-    // },
-    {
-      name: "Instagram",
-      icon: <Instagram />,
-      color: "secondary",
-      url: "https://www.instagram.com/yourbrand/", // Replace with your IG
-      action: "share",
-    },
-    {
-      name: "Copy Link",
-      icon: <ContentCopyIcon />,
-      color: "default",
-      action: "show-url",
-    },
-  ];
-
-  const handleAction = (platform) => {
-    if (platform.action === "share") {
-      window.open(platform.url, "_blank");
-    } else if (platform.action === "show-url") {
-      setUrlDialogOpen(true);
+  // Copy Link
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setCopied(true);
+      setSnackbar({ open: true, message: "Link copied!" });
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      setSnackbar({ open: true, message: "Failed to copy" });
     }
   };
 
+  // Social Share
+const handleShare = (platform) => {
+
+  const message = `${shareText}\n\n${shareUrl}`;
+
+  const urls = {
+    whatsapp: `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`,
+
+    facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,
+
+    twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`,
+
+    telegram: `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`,
+
+    linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`,
+
+    email: `mailto:?subject=${encodeURIComponent(brandName)}&body=${encodeURIComponent(message)}`,
+  };
+
+  window.open(urls[platform], "_blank", "width=600,height=600");
+
+  handleClose();
+};
+
+  const shareOptions = [
+    {
+      name: "Copy Link",
+      icon: copied ? <CheckIcon /> : <ContentCopyIcon />,
+      color: copied ? "#4CAF50" : "#666",
+      action: handleCopy,
+    },
+    {
+      name: "WhatsApp",
+      icon: <WhatsAppIcon />,
+      color: "#25D366",
+      action: () => handleShare("whatsapp"),
+    },
+    {
+      name: "Facebook",
+      icon: <FacebookIcon />,
+      color: "#1877F2",
+      action: () => handleShare("facebook"),
+    },
+    {
+      name: "X",
+      icon: <XIcon />,
+      color: "#000",
+      action: () => handleShare("twitter"),
+    },
+    {
+      name: "Telegram",
+      icon: <TelegramIcon />,
+      color: "#0088cc",
+      action: () => handleShare("telegram"),
+    },
+    {
+      name: "LinkedIn",
+      icon: <LinkedInIcon />,
+      color: "#0A66C2",
+      action: () => handleShare("linkedin"),
+    },
+    {
+      name: "Email",
+      icon: <EmailIcon />,
+      color: "#EA4335",
+      action: () => handleShare("email"),
+    },
+  ];
+
   return (
     <>
-      {/* ✅ Dynamic SEO Meta — uses API props */}
-
-      {/* Popover Menu */}
       <Popover
         open={open}
         anchorEl={anchorEl}
         onClose={handleClose}
-        anchorOrigin={{
-          vertical: isSmallScreen ? "top" : "center",
-          horizontal: isSmallScreen ? "right" : "left",
-        }}
-        transformOrigin={{
-          vertical: isSmallScreen ? "bottom" : "center",
-          horizontal: isSmallScreen ? "right" : "left",
-        }}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        transformOrigin={{ vertical: "top", horizontal: "center" }}
         PaperProps={{
           sx: {
-            marginLeft: isSmallScreen ? 0 : "60px",
-            marginBottom: isSmallScreen ? 0 : "30px",
-            mt: isSmallScreen ? 0 : "79px",
-            boxShadow: "none",
-            backgroundColor: "white",
-            zIndex: 1200,
+            mt: 1,
+            borderRadius: 3,
+            boxShadow: "0 4px 20px rgba(0,0,0,0.15)",
+            width: isMobile ? "90vw" : 360,
+            overflow: "hidden",
           },
         }}
       >
+        {/* Header */}
         <Box
           sx={{
-            p: isSmallScreen ? 1 : 0,
-            borderRadius: 1,
-            bgcolor: isSmallScreen ? "background.paper" : "transparent",
-            boxShadow: isSmallScreen ? 1 : "none",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            p: 2,
+            pb: 1.5,
           }}
         >
-          {isSmallScreen && (
-            <Box display="flex" alignItems="center" p={1}>
-              <ShareIcon color="primary" sx={{ mr: 1 }} />
-              <Typography variant="subtitle2">Share this content</Typography>
-            </Box>
-          )}
+          <Typography fontWeight={600} fontSize={16}>
+            Share Brand
+          </Typography>
 
-          <Box display="flex" flexDirection={isSmallScreen ? "row" : "column"} gap={1}>
-            {socialPlatforms.map((platform) => (
-              <Tooltip key={platform.name} title={`Share on ${platform.name}`} arrow>
-                <IconButton
-                  color={platform.color}
-                  onClick={() => handleAction(platform)}
-                  aria-label={`Share on ${platform.name}`}
-                  sx={{
-                    "&:hover": {
-                      transform: "scale(1.1)",
-                      transition: "transform 0.2s",
-                      backgroundColor: theme.palette.action.hover,
-                    },
-                  }}
-                >
-                  {platform.icon}
-                </IconButton>
-              </Tooltip>
-            ))}
+          <IconButton size="small" onClick={handleClose}>
+            <CloseIcon fontSize="small" />
+          </IconButton>
+        </Box>
+
+        <Divider />
+
+        {/* Brand Preview */}
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 2,
+            p: 2,
+            bgcolor: "#f9f9f9",
+          }}
+        >
+          <Box
+            sx={{
+              width: 60,
+              height: 60,
+              borderRadius: 2,
+              bgcolor: "#fff",
+              border: "1px solid #eee",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              overflow: "hidden",
+            }}
+          >
+            {brandLogo ? (
+              <img
+                src={brandLogo}
+                alt={brandName}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "contain",
+                  padding: 6,
+                }}
+              />
+            ) : (
+              <Typography fontWeight={700} fontSize={24} color="primary">
+                {brandName?.charAt(0)}
+              </Typography>
+            )}
           </Box>
+
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Typography fontWeight={600} fontSize={14} noWrap>
+              {brandName}
+            </Typography>
+
+            <Typography fontSize={12} color="text.secondary" noWrap>
+              {shareUrl}
+            </Typography>
+          </Box>
+        </Box>
+
+        <Divider />
+
+        {/* Share Options */}
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: "repeat(4, 1fr)",
+            gap: 1,
+            p: 2,
+          }}
+        >
+          {shareOptions.map((option) => (
+            <Box
+              key={option.name}
+              onClick={option.action}
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 0.5,
+                cursor: "pointer",
+                p: 1,
+                borderRadius: 2,
+                transition: "all 0.2s",
+                "&:hover": { bgcolor: "#f5f5f5" },
+              }}
+            >
+              <Box
+                sx={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: "50%",
+                  bgcolor: `${option.color}15`,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: option.color,
+                  transition: "transform 0.2s",
+                  "&:hover": { transform: "scale(1.1)" },
+                }}
+              >
+                {option.icon}
+              </Box>
+
+              <Typography fontSize={11} color="text.secondary" textAlign="center">
+                {option.name}
+              </Typography>
+            </Box>
+          ))}
         </Box>
       </Popover>
 
-      {/* Copy URL Dialog */}
-      <Dialog open={urlDialogOpen} onClose={handleUrlDialogClose}>
-        <DialogTitle>Share this content</DialogTitle>
-        <DialogContent>
-          <Typography variant="body1" sx={{ mb: 2 }}>
-            Copy the link below to share with others:
-          </Typography>
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              p: 2,
-              backgroundColor: theme.palette.grey[100],
-              borderRadius: 1,
-              mb: 2,
-            }}
-          >
-            <Typography variant="body1" sx={{ flexGrow: 1, wordBreak: "break-all" }}>
-              {currentUrl}
-            </Typography>
-            <Tooltip title="Open in new tab">
-              <IconButton onClick={() => window.open(currentUrl, "_blank")} size="small" sx={{ ml: 1 }}>
-                <OpenInNewIcon fontSize="small" />
-              </IconButton>
-            </Tooltip>
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleUrlDialogClose}>Cancel</Button>
-          <Button onClick={copyToClipboard} variant="contained" startIcon={<ContentCopyIcon />} color="primary">
-            Copy Share Message
-          </Button>
-        </DialogActions>
-      </Dialog>
-
       {/* Snackbar */}
       <Snackbar
-        open={snackbarOpen}
-        autoHideDuration={3000}
-        onClose={handleSnackbarClose}
+        open={snackbar.open}
+        autoHideDuration={2000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
         anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
       >
-        <Alert onClose={handleSnackbarClose} severity="success" sx={{ width: "100%" }}>
-          Share message copied to clipboard!
+        <Alert severity="success" sx={{ borderRadius: 2 }}>
+          {snackbar.message}
         </Alert>
       </Snackbar>
     </>
