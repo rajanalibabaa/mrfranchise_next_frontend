@@ -1,12 +1,15 @@
 "use client";
 import { Card, CardContent, Typography, Box } from "@mui/material";
 
-const PackageCard = ({ data, color = "black", background = "#dddddd4e" }) => {
+const PackageCard = ({ data, color = "black", background = "#ddddddc6" }) => {
   return (
     <Card
       sx={{
-        width: 240,
-        borderRadius: 1.5,
+Width: {
+  xs: 200,  // 📱 mobile
+  sm: 250, 
+      // tablet and above
+},        borderRadius: 1.5,
         boxShadow: 1,
         border: "1px solid #ddd",
         backgroundColor: background,

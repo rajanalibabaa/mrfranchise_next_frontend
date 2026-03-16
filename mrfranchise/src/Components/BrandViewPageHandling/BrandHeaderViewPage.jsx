@@ -18,9 +18,9 @@ import {
 } from "@mui/material";
 import { Phone, Favorite, ShareOutlined } from "@mui/icons-material";
 import { motion } from "framer-motion";
-import { shareBrand } from "@/app/brands/ShareDialogActions";
+import ShareDialogActions from "@/app/brands/ShareDialogActions";
 import { RiBookmark3Fill } from "react-icons/ri";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import confetti from "canvas-confetti";
 
 const BrandHeader = ({
@@ -36,7 +36,7 @@ const BrandHeader = ({
 }) => {
   const likeButtonRef = useRef(null);
   const shortlistButtonRef = useRef(null);
-
+const [shareAnchorEl, setShareAnchorEl] = useState(null);
   // console.log('brand loading ', brand);
   
   // 🎉 Confetti effect to use element position
@@ -309,16 +309,19 @@ height: 35,
                 >
                   <RiBookmark3Fill />
                 </IconButton>
-              <IconButton
-  onClick={async () => {
-    await shareBrand(brand[0]);
-  }}
-  size={isMobile ? "small" : "medium"}
->
-  <ShareOutlined
-    sx={{ fontSize: isMobile ? "1.2rem" : "1.5rem", color: "rgba(0, 0, 0, 0.35)" }}
-  />
-</IconButton>
+                 <ShareDialogActions
+        anchorEl={shareAnchorEl}
+        setAnchorEl={setShareAnchorEl}
+        brand={brand[0]}
+      />
+               <IconButton
+        onClick={(e) => setShareAnchorEl(e.currentTarget)} // Open the dialog
+        size={isMobile ? "small" : "medium"}
+      >
+        <ShareOutlined
+          sx={{ fontSize: isMobile ? "1.2rem" : "1.5rem", color: "rgba(0, 0, 0, 0.35)" }}
+        />
+      </IconButton>
               </Box>
             </Box>
 <Box sx={{ mt: { xs: 1, sm: 2, md: 3}, display: "flex", flexDirection: "column", gap: 1 }}>

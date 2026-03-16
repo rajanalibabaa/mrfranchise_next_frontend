@@ -205,26 +205,35 @@ const Leads = () => {
         Packages
       </Typography>
 
-      <Box
-        display="flex"
-        gap={2}
-        sx={{
-          overflowX: "auto",
-          pb: 1,
-          "&::-webkit-scrollbar": { height: 6 },
-          "&::-webkit-scrollbar-thumb": { background: "#ccc", borderRadius: 2 },
-        }}
-      >
+   <Box
+  display="grid"
+  sx={{
+    gridTemplateColumns: {
+      xs: "repeat(1, 1fr)", // mobile
+      sm: "repeat(2, 1fr)", // tablet
+      md: "repeat(5, 1fr)", // desktop
+    },
+    gap: 2,
+    overflowX: "auto",
+    pb: 1,
+    "&::-webkit-scrollbar": { height: 6 },
+    "&::-webkit-scrollbar-thumb": { background: "#ccc", borderRadius: 2 },
+  }}
+>
         {brandPackage?.activePackage && (
           <Box
-            sx={{
-              cursor: "pointer",
-              border:
-                selectedPackage?._id === brandPackage?.activePackage?._id
-                  ? "2px solid #08612c"
-                  : "2px solid transparent",
-              borderRadius: 2,
-            }}
+        sx={{
+    cursor: "pointer",
+    // border:
+    //   selectedPackage?._id === brandPackage?.activePackage?._id
+    //     ? "1px solid #08612c"
+    //     : "1px solid transparent",
+    borderRadius: 2,
+    width: {
+      xs: "100%",   // 📱 mobile smaller width
+      sm: "100%",  // desktop full width
+    },
+  }}
             onClick={() => handlePackageClick(brandPackage.activePackage)}
           >
             <PackageCard
@@ -243,10 +252,10 @@ const Leads = () => {
                 cursor: "pointer",
                 border:
                   selectedPackage?._id === pkg._id
-                    ? "2px solid #08612c"
+                    ? "2px solid #ff9800"
                     : "2px solid transparent",
-                borderRadius: 2,
-              }}
+                borderRadius: 2,  
+                            }}
               onClick={() => handlePackageClick(pkg)}
             >
               <PackageCard data={pkg} />

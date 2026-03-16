@@ -52,7 +52,8 @@ const DashboardTabs = ({ brandData }) => {
         py: isMobile ? 0.25 : 0.5,
         flexDirection: isMobile ? "column" : "row",
         minHeight: isMobile ? 48 : "auto",
-        justifyContent: "center",
+        maxWidth: isMobile ? "10%" : "auto",
+        justifyContent:isMobile ? "flex-start " : "flex-start",
       }}
     >
       <Box
@@ -144,7 +145,7 @@ const DashboardTabs = ({ brandData }) => {
           <Tab
             label={renderTabLabel("Leads", 0)}
             sx={{
-              minWidth: "unset",
+              // minWidth: "unset",
               py: isMobile ? 0.5 : 1.5,
               px: isMobile ? 2 : 3,
               "&.Mui-selected": {
