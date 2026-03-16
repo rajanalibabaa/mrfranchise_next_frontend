@@ -58,6 +58,7 @@ import {
 import { toggleBrandShortListfilter } from "@/Redux/Slices/FilterBrandSlice.jsx";
 import { useInView } from 'react-intersection-observer';
 import confetti from "canvas-confetti";
+import Image from "next/image";
 const token = getToken();
 function TopBrandVdoCards() {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -94,7 +95,7 @@ function TopBrandVdoCards() {
     },
     side: {
       width: isMobile ? "100%" : isTablet ? "100%" : "30%",
-      height: isMobile ? 200 : isTablet ? 220 : 260,
+      height: isMobile ? 200 : isTablet ? 220 : 265,
       videoWidth: isMobile ? "40%" : isTablet ? "45%" : "58%",
     },
   };
@@ -471,7 +472,7 @@ const triggerCelebration = (e, color = "#f44336") => {
     <Box
       ref={containerRef}
       sx={{
-        py: isMobile ? 0 : 2,
+        py: isMobile ? 0 : 1,
         mx: "auto",
         position: "relative",
         maxWidth: isMobile ? "100%" : 1400,
@@ -484,9 +485,9 @@ const triggerCelebration = (e, color = "#f44336") => {
       <Box
         sx={{
           display: "flex",
-          justifyContent: "space-between",
+          justifyContent: "flex-start",
           alignItems: "center",
-          mb: 3,
+          mb: 1,
           px: isMobile ? 2 : 0,
         }}
       >
@@ -513,6 +514,9 @@ const triggerCelebration = (e, color = "#f44336") => {
         >
           Premium Franchise Brands
         </Typography>
+          <Image src="/Blue Modern Corporate Profile LinkedIn Article Cover Image (1).png" alt="brand logo" loading="lazy"  width={isMobile ? 120 : 720} height={isMobile ? 50 : 90} style={{ objectFit: 'contain', transition: 'transform 0.3s ease', display: isMobile ? 'bloack' : 'block', marginLeft: '120px',borderRadius: '10px' }} />
+        
+        
       </Box>
 
       {/* Brands slider */}
@@ -520,7 +524,7 @@ const triggerCelebration = (e, color = "#f44336") => {
         sx={{
           display: "flex",
           flexDirection: isMobile ? "column" : "row",
-          gap: isMobile ? 3 : isTablet ? 3 : 3,
+          gap: isMobile ? 3 : isTablet ? 3 : 2,
           alignItems: "stretch",
           px: isMobile ? 2 : 0,
         }}
@@ -1039,7 +1043,7 @@ const triggerCelebration = (e, color = "#f44336") => {
             flex: isMobile ? "1 1 auto" : "0 0 30%",
             display: "flex",
             flexDirection: "column",
-            gap: isMobile ? 3 : isTablet ? 3 : 3.5,
+            gap: isMobile ? 3 : isTablet ? 3 : 2,
             minWidth: isMobile ? "100%" : "32%",
           }}
         >

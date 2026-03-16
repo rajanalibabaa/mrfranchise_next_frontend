@@ -216,19 +216,19 @@ const useDynamicComponents = () => {
   );
 };
 
-const BackgroundWrapper = ({ children }) => (
-  <Box
-    sx={{
-      backgroundImage: "url(/bg25.jpeg)",
-      backgroundAttachment: "fixed",
-      backgroundSize: "400px",
-      backgroundRepeat: "repeat",
-      width: "100%",
-    }}
-  >
-    {children}
-  </Box>
-);
+// const BackgroundWrapper = ({ children }) => (
+//   <Box
+//     sx={{
+//       backgroundImage: "url(/bg25.jpeg)",
+//       backgroundAttachment: "fixed",
+//       backgroundSize: "400px",
+//       backgroundRepeat: "repeat",
+//       width: "100%",
+//     }}
+//   >
+//     {children}
+//   </Box>
+// );
 
 // --- Section that lazy loads content on scroll-in-view ---
 const LazySection = memo(
@@ -250,8 +250,8 @@ const LazySection = memo(
           backgroundAttachment: "fixed",
         }}
       >
-        <Container
-          maxWidth="xl"
+        <Box
+          // maxWidth="xl"
           sx={{
             background: "transparent", // 🔑 FIX
             py: 0,
@@ -266,7 +266,7 @@ const LazySection = memo(
           ) : (
             <Box minHeight={200} />
           )}
-        </Container>
+        </Box>
       </Box>
     );
   },

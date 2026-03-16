@@ -196,14 +196,15 @@ const navigate = useRouter();
       <Box
         sx={{
           display: "grid",
-          gridTemplateColumns: {
-            xs: "repeat(2, 1fr)",
-            sm: "repeat(3, 1fr)",
-            md: "repeat(4, 1fr)",
-            lg: "repeat(5, 1fr)",
-          },
-          gap: { xs: 4, sm: 3, md: 4, lg: 5 },
+         gridTemplateColumns: {
+      xs: "repeat(2, minmax(0,1fr))",
+      sm: "repeat(3, minmax(0,1fr))",
+      md: "repeat(4, minmax(0,1fr))",
+      lg: "repeat(5, minmax(0,1fr))",
+    },
+          gap: { xs: 4, sm: 3, md: 3, lg: 2 },
           mb: 3,
+          alignItems: "center",
           width: "100%",
           px: { xs: 1, sm: 2 },
           scrollbarWidth: "none",
@@ -234,6 +235,7 @@ const navigate = useRouter();
                   boxShadow: "0 4px 12px rgba(242, 151, 36, 0.2)",
                 },
                 maxWidth: "100%",
+                minHeight: 300,
                 overflow: "hidden",
               }}
             >

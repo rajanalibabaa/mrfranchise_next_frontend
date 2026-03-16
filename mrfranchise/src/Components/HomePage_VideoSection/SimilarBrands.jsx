@@ -31,7 +31,7 @@ const token = getToken();
 const CARD_DIMENSIONS = {
   mobile: { width: 280, height: 520 },
   tablet: { width: 320, height: 560 },
-  desktop: { width: 327, height: 500 },
+  desktop: { width: 337, height: 500 },
 };
 
 const SimilarBrands = ({ brandData }) => {
@@ -367,8 +367,8 @@ const SimilarBrands = ({ brandData }) => {
             sx={{
               display: "flex",
               overflowX: "auto",
-              gap: isMobile ? 2 : 3,
-              p: 2,
+              gap: isMobile ? 2 : 1.8,
+              p: 0.5,
               scrollBehavior: "smooth",
               scrollbarWidth: "none",
               "&::-webkit-scrollbar": { display: "none" },

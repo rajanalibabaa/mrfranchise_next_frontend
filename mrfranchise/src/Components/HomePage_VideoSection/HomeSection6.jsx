@@ -30,7 +30,7 @@ const CARD_DIMENSIONS = {
   tablet: { width: 320, height: 560 },
   smallDesktop: { width: 280, height: 500 },
   desktop: { width: 267, height: 480 },
-  largeDesktop: { width: 327, height: 500 },
+  largeDesktop: { width: 337, height: 500 },
 };
 
 const HomeSection6 = () => {
@@ -350,8 +350,8 @@ const HomeSection6 = () => {
              sx={{
                display: "flex",
                overflowX: "auto",
-               gap: isMobile ? 2 : 3,
-               p: 2,
+               gap: isMobile ? 2 : 1.8,
+               p: 0.5,
                scrollBehavior: "smooth",
                scrollbarWidth: "none",
                "&::-webkit-scrollbar": { display: "none" },

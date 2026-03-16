@@ -8,7 +8,7 @@ import React, {
   useLayoutEffect,
 } from "react";
 import {
- 
+
   useMediaQuery,
   useTheme,
 } from "@mui/material";
@@ -16,30 +16,27 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
+import slugify from "slugify";
 import ArrowBack from "@mui/icons-material/ArrowBack";
 import ArrowForward from "@mui/icons-material/ArrowForward";
 import ArrowRight from "@mui/icons-material/ArrowRight";
 import { useSelector, useDispatch } from "react-redux";
-import { homeSection3  } from '../../Redux/Slices/TopCardFetchingSlice.jsx';
-import slugify from "slugify";
 import LoginPage from "@/Components/LoginPage/LoginPage.jsx";
 import { motion } from "framer-motion";
 import HomePageBrandCard from "./HomePageBrandCard.jsx";
+import { homeSection3  } from '@/Redux/Slices/TopCardFetchingSlice.jsx';
 
-// Breakpoints
 const CARD_DIMENSIONS = {
   mobile: { width: 280, height: 520 },
   tablet: { width: 320, height: 560 },
   smallDesktop: { width: 280, height: 500 },
-  desktop: { width: 267, height: 480 },
-  largeDesktop: { width: 327, height: 500 },
+  desktop: { width: 277, height: 480 },
+  largeDesktop: { width: 337, height: 500 },
 };
 
 const HomeSection3 = () => {
   const theme = useTheme();
   const dispatch = useDispatch();
-
-
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const isTablet = useMediaQuery(theme.breakpoints.between("sm", "md"));
   const isSmallDesktop = useMediaQuery(theme.breakpoints.between("md", "lg"));
@@ -55,6 +52,7 @@ const HomeSection3 = () => {
   const [showStartShadow, setShowStartShadow] = useState(false);
   const [showEndShadow, setShowEndShadow] = useState(true);
   const [visibleCardCount, setVisibleCardCount] = useState(4);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const dimensions = useMemo(() => {
     if (isMobile) return CARD_DIMENSIONS.mobile;
@@ -64,6 +62,8 @@ const HomeSection3 = () => {
     return CARD_DIMENSIONS.largeDesktop;
   }, [isMobile, isTablet, isSmallDesktop, isDesktop, isLargeDesktop]);
 
+
+   // Debugging: Add console.log to check Redux state
 const homeSection3State  = useSelector((state) => state.overAllPlatform.homeSection3);
 
 const {
@@ -73,10 +73,51 @@ const {
   pagination
 } = homeSection3State  || {};
 
-useEffect(() => {
+// console.log('home sec1',brands);
+
+  
+  // Load initial data
+  useEffect(() => {
     dispatch(homeSection3({ page: 1 }));
   }, [dispatch]);
 
+  // Handle scroll to load more
+  const handleScroll = useCallback(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const { scrollLeft, scrollWidth, clientWidth } = container;
+    setShowStartShadow(scrollLeft > 10);
+    setShowEndShadow(scrollLeft < scrollWidth - clientWidth - 10);
+
+    // Load more when scrolled to end and there are more pages
+    if (
+      scrollLeft + clientWidth >= scrollWidth - 100 && 
+      pagination?.hasNextPage && 
+      !isLoading
+    ) {
+      const nextPage = currentPage + 1;
+      setCurrentPage(nextPage);
+      dispatch(homeSection3({ page: nextPage }));
+    }
+  }, [pagination, isLoading, currentPage, dispatch]);
+
+  // Set up scroll event listener
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (container) {
+      container.addEventListener("scroll", handleScroll);
+      handleScroll(); // Initial check
+    }
+    return () => {
+      container?.removeEventListener("scroll", handleScroll);
+      if (scrollRequestRef.current) {
+        cancelAnimationFrame(scrollRequestRef.current);
+      }
+    };
+  }, [handleScroll]);
+
+  // Calculate visible cards based on container width
   useLayoutEffect(() => {
     const updateVisibleCards = () => {
       if (containerRef.current) {
@@ -93,8 +134,7 @@ useEffect(() => {
     return () => window.removeEventListener("resize", updateVisibleCards);
   }, [dimensions.width, isMobile]);
 
- 
-
+  // Smooth scroll functions
   const getScrollDistance = useCallback(() => {
     return dimensions.width + (isMobile ? 16 : 24);
   }, [dimensions.width, isMobile]);
@@ -104,8 +144,9 @@ useEffect(() => {
   const smoothScrollTo = useCallback((target, immediate = false) => {
     const container = scrollContainerRef.current;
     if (!container) return;
-    if (scrollRequestRef.current)
+    if (scrollRequestRef.current) {
       cancelAnimationFrame(scrollRequestRef.current);
+    }
 
     const start = container.scrollLeft;
     const change = target - start;
@@ -126,29 +167,6 @@ useEffect(() => {
     };
 
     scrollRequestRef.current = requestAnimationFrame(animateScroll);
-  }, []);
-
-  const handleScroll = useCallback(() => {
-    const container = scrollContainerRef.current;
-    if (!container) return;
-
-    const { scrollLeft, scrollWidth, clientWidth } = container;
-    setShowStartShadow(scrollLeft > 10);
-    setShowEndShadow(scrollLeft < scrollWidth - clientWidth - 10);
-  }, []);
-
-  useEffect(() => {
-    const container = scrollContainerRef.current;
-    if (container) {
-      container.addEventListener("scroll", handleScroll);
-      handleScroll();
-    }
-
-    return () => {
-      container?.removeEventListener("scroll", handleScroll);
-      if (scrollRequestRef.current)
-        cancelAnimationFrame(scrollRequestRef.current);
-    };
   }, [handleScroll]);
 
   const handleNextClick = () => {
@@ -168,7 +186,7 @@ useEffect(() => {
     smoothScrollTo(newScroll);
   };
 
-    const brandCategoriesName = brands[0]?.brandCategories?.main;
+  const brandCategoriesName = brands[0]?.brandCategories?.main;
   const handleClickOpenBrandCategories = () => {
      if (!brandCategoriesName) return;
      const slug = slugify(brandCategoriesName, {
@@ -186,7 +204,8 @@ useEffect(() => {
   // Optional: focus the new tab
   if (newWindow) newWindow.focus();
 };
-  if (isLoading) {
+
+  if (isLoading && brands.length === 0) {
     return (
       <Box sx={{ textAlign: "center", p: 4 }}>
         <CircularProgress />
@@ -205,56 +224,54 @@ useEffect(() => {
   }
 
   return (
-    brands.length > 0 && (
+    <Box
+      ref={containerRef}
+      sx={{
+        py: isMobile ? 1 : 1,
+        px: isMobile ? 0 : 2,
+        maxWidth: isMobile ? "100%" : 1400,
+        mx: "auto",
+        position: "relative",
+      }}
+    >
       <Box
-        ref={containerRef}
         sx={{
-          py: isMobile ? 1 : 0,
-          px: isMobile ? 0 : 2,
-          maxWidth: isMobile ? "100%" : 1400,
-          mx: "auto",
-          position: "relative",
-        }}
-      >
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            mb: 1,
-            px: isMobile ? 2 : 0,
-            gap: 2,
-             backgroundColor:'white',
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mb: 1,
+          px: isMobile ? 3 : 0,
+          gap: 2,
+          backgroundColor:'white',
             p: 1.5,
             borderRadius: 2,
+        }}
+      >
+        <Typography
+          variant={isMobile ? "body1" : "h5"}
+          fontWeight="bold"
+          sx={{
+            color: "#000000ff",
+            
+            mb: 1,
+            textAlign: "left",
+            position: "relative",
+            "&:after": {
+              content: '""',
+              display: "block",
+              width: "80px",
+              height: "4px",
+              background: theme.palette.mode === "dark" ? "#ffb74d" : "#f57c00",
+              mt: 1,
+              borderRadius: 2,
+            },
           }}
         >
-          <Typography
-            variant={isMobile ? "body1" : "h5"}
-            fontWeight="bold"
-            sx={{
-              color: "#000000ff",
-              mb: 1,
-              
-              textAlign: "left",
-              position: "relative",
-              "&:after": {
-                content: '""',
-                display: "block",
-                width: "80px",
-                height: "4px",
-                background:
-                  theme.palette.mode === "dark" ? "#ffb74d" : "#f57c00",
-                mt: 1,
-                borderRadius: 2,
-              },
-            }}
-          >
-             {/* Top Tea, Coffee & Cafe Chains  */}
-             Top {brandCategoriesName}
-          </Typography>
+          {/* Juice, Smoothie & Health Beverages */}
+          Top {brandCategoriesName}
+        </Typography>
 
-          <Button
+       <Button
   variant="contained"
   size="small"
   aria-label="view more brands"
@@ -275,103 +292,106 @@ useEffect(() => {
       boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
     },
   }}
-  onClick={handleClickOpenBrandCategories}
-
+onClick={handleClickOpenBrandCategories}
 >
   View More
 </Button>
 
-        </Box>
-
-        <Box sx={{ position: "relative" }}>
-          <Button
-            onClick={handlePrevClick}
-            disabled={!showStartShadow}
-            aria-label="previous"
-            sx={{
-              position: "absolute",
-              left: isMobile ? 2 : -10,
-              top: "63.5%",
-              transform: "translateY(-50%)",
-              zIndex: 1,
-              minWidth: 40,
-              height: 40,
-              borderRadius: "50%",
-              color:"black",
-              backgroundColor: "#ff9800",
-              boxShadow: 2,
-              "&:hover": {
-                backgroundColor: "#c28223ff",
-              },
-              "&:disabled": {
-                opacity: 0,
-                pointerEvents: "none",
-              },
-            }}
-          >
-            <ArrowBack fontSize="small" />
-          </Button>
-
-          <Button
-            onClick={handleNextClick}
-            disabled={!showEndShadow}
-            aria-label="next"
-            sx={{
-              position: "absolute",
-              right: isMobile ? 4 : -10,
-              top: "63.5%",
-              transform: "translateY(-50%)",
-              zIndex: 1,
-              minWidth: 40,
-              height: 40,
-              borderRadius: "50%",
-              backgroundColor: "#ff9800",
-              color:"black",
-              boxShadow: 2,
-              "&:hover": {
-                backgroundColor: "#c28223ff",
-              },
-              "&:disabled": {
-                opacity: 0,
-                pointerEvents: "none",
-              },
-            }}
-          >
-            <ArrowForward fontSize="small" />
-          </Button>
-
-          <Box
-            ref={scrollContainerRef}
-            sx={{
-              display: "flex",
-              overflowX: "auto",
-              gap: isMobile ? 2 : 3,
-              p: 2,
-              scrollBehavior: "smooth",
-              scrollbarWidth: "none",
-              "&::-webkit-scrollbar": { display: "none" },
-            }}
-          >
-            {brands.map((brand) => (
-              <motion.div key={brand.uuid}>
-                <HomePageBrandCard
-                  brand={brand}
-                  likeProcessing={likeProcessing}
-                  dimensions={dimensions}
-                  theme={theme}
-                  isMobile={isMobile}
-                  isTablet={isTablet}
-                />
-              </motion.div>
-            ))}
-          </Box>
-        </Box>
-
-        {showLogin && (
-          <LoginPage open={showLogin} onClose={() => setShowLogin(false)} />
-        )}
       </Box>
-    )
+
+      <Box sx={{ position: "relative" }}>
+        <Button
+          onClick={handlePrevClick}
+          aria-label="previous"
+          disabled={!showStartShadow}
+          sx={{
+            position: "absolute",
+            left: isMobile ? 4 : -10,
+            top: "63.5%",
+            transform: "translateY(-50%)",
+            zIndex: 1,
+            minWidth: 40,
+            height: 40,
+            borderRadius: "50%",
+            color:"black",
+            backgroundColor: "#ff9800",
+            boxShadow: 2,
+            "&:hover": {
+              backgroundColor: "#c28223ff",
+            },
+            "&:disabled": {
+              opacity: 0,
+              pointerEvents: "none",
+            },
+          }}
+        >
+          <ArrowBack fontSize="small" />
+        </Button>
+
+        <Button
+          onClick={handleNextClick}
+          disabled={!showEndShadow}
+          aria-label="next"
+          sx={{
+            position: "absolute",
+            right: isMobile ? 4 : -10,
+            top: "63.5%",
+            transform: "translateY(-50%)",
+            color:"black",
+            zIndex: 1,
+            minWidth: 40,
+            height: 40,
+            borderRadius: "50%",
+            backgroundColor: "#ff9800",
+            boxShadow: 2,
+            "&:hover": {
+              backgroundColor: "#c28223ff",
+            },
+            "&:disabled": {
+              opacity: 0,
+              pointerEvents: "none",
+            },
+          }}
+        >
+          <ArrowForward fontSize="small" />
+        </Button>
+
+        <Box
+          ref={scrollContainerRef}
+          sx={{
+            display: "flex",
+            overflowX: "auto",
+            gap: isMobile ? 2 : 1.8,
+            p:0.5,
+            scrollBehavior: "smooth",
+            scrollbarWidth: "none",
+            "&::-webkit-scrollbar": { display: "none" },
+          }}
+        >
+          {brands.map((brand) => (
+            <motion.div key={brand.uuid || brand.id}>
+              <HomePageBrandCard
+                brand={brand}
+                likeProcessing={likeProcessing}
+                dimensions={dimensions}
+                theme={theme}
+                isMobile={isMobile}
+                isTablet={isTablet}
+              />
+            </motion.div>
+          ))}
+          {isLoading && brands.length > 0 && (
+            <Box sx={{ display: "flex", alignItems: "center", pl: 2 }}>
+              <CircularProgress size={24} />
+            </Box>
+          )}
+        </Box>
+      </Box>
+
+      {showLogin && (
+        <LoginPage open={showLogin} onClose={() => setShowLogin(false)} />
+      )}
+    </Box>
   );
 };
 
