@@ -9,7 +9,7 @@ export const fetchBrands = createAsyncThunk(
   async ({ page = 1 }, { rejectWithValue }) => {
     try {
       const { data } = await axios.get(
-        `${API_BASE_URL}/overAllPlatformOnlyMainCategory?main=Food %26 Beverages`,
+        `${API_BASE_URL}/overAllPlatformOnlyMainCategory`,
         { params: { page, id: userId } }
       );
       // API returns { data: { brands: [...], pagination: { … } } }
