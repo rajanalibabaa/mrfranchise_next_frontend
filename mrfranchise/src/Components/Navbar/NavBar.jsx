@@ -190,7 +190,7 @@ const [ID, setId] = useState(null);
     }
 
     // ✅ 5. Hard redirect (kills memory state)
-    window.location.replace("/");
+    window.location.replace("/");   
 
     setlogoutLoading(false);
   }

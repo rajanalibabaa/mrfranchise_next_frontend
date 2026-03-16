@@ -21,7 +21,7 @@ import Close from "@mui/icons-material/Close";
 import { useSelector, useDispatch } from 'react-redux';
 import HomePageBrandCard from './HomePageBrandCard';
 import { openBrandDialog } from "@/Redux/Slices/OpenBrandNewPageSlice.jsx";
-import { fetchBrandsBySubCategory } from "@/Redux/Slices/SideMenuHoverBrandSlices.jsx";
+import { fetchBrandsBySubCategory, toggleSimilarBrandLike } from "@/Redux/Slices/SideMenuHoverBrandSlices.jsx";
 import LoginPage from "@/Components/LoginPage/LoginPage.jsx";
 import { toggleHomeCardLike } from '@/Redux/Slices/TopCardFetchingSlice.jsx';
 import { toggleBrandLike } from "@/Redux/Slices/GetAllBrandsDataUpdationFile.jsx";
@@ -166,6 +166,7 @@ const SimilarBrands = ({ brandData }) => {
 
     dispatch(toggleHomeCardLike(brandId));
     dispatch(toggleBrandLike(brandId));
+    dispatch(toggleSimilarBrandLike(brandId))
     await likeApiFunction(brandId);
   };
 
@@ -379,7 +380,7 @@ const SimilarBrands = ({ brandData }) => {
                 <HomePageBrandCard
                   brand={brand}
                   handleApply={handleApply}
-                  handleLikeClick={handleLikeClick}
+                  // handleLikeClick={handleLikeClick}
                   likeProcessing={likeProcessing}
                   dimensions={dimensions}
                   theme={theme}
