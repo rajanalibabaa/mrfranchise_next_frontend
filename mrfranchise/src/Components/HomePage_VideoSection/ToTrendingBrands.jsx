@@ -57,15 +57,15 @@ const navigate = useRouter();
     }
   }, [page, fetchedPages, dispatch]);
  
-  useEffect(() => {
-    if (Array.isArray(brands)) {
-      setAllBrands((prev) => {
-        const existingUUIDs = new Set(prev.map((b) => b.uuid));
-        const uniqueNewBrands = brands.filter((b) => !existingUUIDs.has(b.uuid));
-        return [...prev, ...uniqueNewBrands];
-      });
-    }
-  }, [brands]);
+  // useEffect(() => {
+  //   if (Array.isArray(brands)) {
+  //     setAllBrands((prev) => {
+  //       const existingUUIDs = new Set(prev.map((b) => b.uuid));
+  //       const uniqueNewBrands = brands.filter((b) => !existingUUIDs.has(b.uuid));
+  //       return [...prev, ...uniqueNewBrands];
+  //     });
+  //   }
+  // }, [brands]);
 
   // 🎉 Updated confetti effect to use element position
   const triggerCelebration = (color, brandId, buttonType) => {
@@ -125,14 +125,15 @@ const navigate = useRouter();
  
     setLikeProcessing((prev) => ({ ...prev, [brand.uuid]: true }));
     try {
+    
       dispatch(toggleSortlistBrandLike(brand.uuid));
       dispatch(toggleBrandLike(brand.uuid));
       dispatch(toggleHomeCardLike(brand.uuid));
       await likeApiFunction(brand.uuid);
 
-      if (!brand.isLiked) {
-        triggerCelebration("#f44336", brand.uuid, 'like');
-      }
+      // if (!brand.isLiked) {
+      //   triggerCelebration("#f44336", brand.uuid, 'like');
+      // }
     } catch (error) {
       console.error("Error toggling like:", error);
     } finally {
@@ -212,7 +213,7 @@ const navigate = useRouter();
           },
         }}
       >
-        {allBrands.map((brand) => (
+        {brands.map((brand) => (
           <motion.div
             key={brand.uuid}
             whileHover={{ y: -5 }}

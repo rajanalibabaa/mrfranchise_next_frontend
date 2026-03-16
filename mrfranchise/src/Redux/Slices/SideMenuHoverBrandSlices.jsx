@@ -2,6 +2,8 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import { API_BASE_URL } from "../../Api/api";
+import { getUserId } from "@/Utils/autherId";
+
 
 // Cache object to store prefetched data
 const prefetchCache = {};
@@ -10,7 +12,7 @@ const prefetchCache = {};
 export const fetchBrandsBySubCategory = createAsyncThunk(
   "brandCategory/fetchBrandsBySubCategory",
   async (
-    { subCategory, id, page = 1, limit = 30, isPrefetch = false },
+    { subCategory, _, page = 1, limit = 30, isPrefetch = false },
     { rejectWithValue, getState }
   ) => {
     try {
@@ -20,13 +22,16 @@ export const fetchBrandsBySubCategory = createAsyncThunk(
       if (isPrefetch && prefetchCache[cacheKey]) {
         return { data: prefetchCache[cacheKey], page, isPrefetch };
       }
+      const url = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/brandlisting/getBrandsByChildCategory`;
 
-      const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/brandlisting/getBrandsByChildCategory`,
-        {
-          params: { subCategory, id, page, limit },
+      const response = await axios.get(url, {
+        params: {
+          subCategory,
+          id: getUserId(),
+          page,
+          limit
         }
-      );
+      });
  
       // Ensure response has the expected structure
       if (!response.data || !response.data.data) {
@@ -123,7 +128,7 @@ const initialState = {
 const brandCategorySlice = createSlice({
   name: "brandCategory",
   initialState,
-  reducers: {
+  reducers: { 
     clearBrands: (state) => {
       state.brands = [];
       state.mainCategory = "";
@@ -135,6 +140,25 @@ const brandCategorySlice = createSlice({
     clearPrefetchCache: () => {
       Object.keys(prefetchCache).forEach((key) => delete prefetchCache[key]);
     },
+    toggleSimilarBrandLike(state, action) {
+      const id = action.payload;
+      console.log("Similar id :",id);
+      // console.log("Similar brands :",brands)
+      state.brands = state.brands.map(b =>
+        b.uuid === id ? { ...b, isLiked: !b.isLiked } : b
+      );
+      
+    },
+    toggleSimilarBrandShortList(state, action) {
+      const id = action.payload;
+      
+      
+      state.brands = state.brands.map(b =>
+        b.uuid === id
+          ? { ...b, isShortListed: !b.isShortListed }
+          : b
+      );
+    }
   },
   extraReducers: (builder) => {
     builder
@@ -186,7 +210,9 @@ const brandCategorySlice = createSlice({
         }
       });
   },
+
+  
 });
 
-export const { clearBrands, clearPrefetchCache } = brandCategorySlice.actions;
+export const { clearBrands, clearPrefetchCache,toggleSimilarBrandLike ,toggleSimilarBrandShortList} = brandCategorySlice.actions;
 export default brandCategorySlice.reducer;
