@@ -1,4 +1,6 @@
+
 "use client";
+import React from "react";
 import {
   Box,
   Typography,
@@ -22,7 +24,8 @@ import ShareDialogActions from "@/app/brands/ShareDialogActions";
 import { RiBookmark3Fill } from "react-icons/ri";
 import { useRef, useState } from "react";
 import confetti from "canvas-confetti";
-
+import { useSelector } from "react-redux";
+import LoginPage from "../LoginPage/LoginPage";
 const BrandHeader = ({
   brand,
   isMobile,
@@ -38,7 +41,20 @@ const BrandHeader = ({
   const shortlistButtonRef = useRef(null);
 const [shareAnchorEl, setShareAnchorEl] = useState(null);
   // console.log('brand loading ', brand);
-  
+
+  const [open, setOpen] = React.useState(false);
+  const { AccessToken } = useSelector((state) => state.auth);
+  console.log("AccessToken in BrandHeader:", AccessToken);
+
+  const handleviewcontact = (event) => {
+    if (AccessToken) {
+      toggleDrawer(true)(event);
+    } else {
+      setOpen(true);
+      console.log("AccessToken in FloatingApplyButton:", AccessToken);
+    }
+  };
+
   // 🎉 Confetti effect to use element position
   const triggerCelebration = (color, buttonRef) => {
     if (buttonRef && buttonRef.current) {
@@ -83,63 +99,69 @@ const [shareAnchorEl, setShareAnchorEl] = useState(null);
   // };
 
   const MobileRow = ({ label, value }) => (
-  <Box
-    sx={{
-      display: "flex",
-      justifyContent: "space-evenly",
-      py: 0.8,
-      borderBottom: "1px solid #eee",
-    }}
-    
-  >
-    <Typography fontSize="0.75rem" fontWeight={500} sx={{
-height: 30,
-                        width: 90,
-                        backgroundColor: "white",
-                        border: "1px solid #e0e0e0",
-                        borderLeft: "5px solid #ff9900" ,
-                        borderRadius: "4px",
-                        color: "#000000ff",
-                        textAlign:'left',
-                        
-                        // display: "flex",
-                        // alignItems: "center",
-                        pl:1.5 ,
-                        pt:1.5,
-                     
-                        "&:hover": {
-                          backgroundColor: "#ffffffff",
-                          color: "#000000ff",
-                          borderLeft: "2px solid #5fb52a",
-                        },
-    }}>
-      {label}
-    </Typography>
-    <Typography fontSize="0.75rem" textAlign="left" sx={{
-height: 35,
-                        width: 150,
-                        backgroundColor: "white",
-                        border: "1px solid #e0e0e0",
-                        borderLeft: "5px solid #5fb52a" ,
-                        borderRadius: "4px",
-                        color: "#000000ff",
-                        fontWeight: 500,
-                        // display: "flex",
-                        // alignItems: "center",
-                        pl: { xs: 1.5, sm: 2 },
-                        pt:1,
-                        
-                        "&:hover": {
-                          backgroundColor: "#ffffffff",
-                          color: "#000000ff",
-                          borderLeft: "2px solid #5fb52a",
-                        },
-    }}>
-      {value || "N/A"}
-    </Typography>
-  </Box>
-);
+    <Box
+      sx={{
+        display: "flex",
+        justifyContent: "space-evenly",
+        py: 0.8,
+        borderBottom: "1px solid #eee",
+      }}
+    >
+      <Typography
+        fontSize="0.75rem"
+        fontWeight={500}
+        sx={{
+          height: 30,
+          width: 90,
+          backgroundColor: "white",
+          border: "1px solid #e0e0e0",
+          borderLeft: "5px solid #ff9900",
+          borderRadius: "4px",
+          color: "#000000ff",
+          textAlign: "left",
 
+          // display: "flex",
+          // alignItems: "center",
+          pl: 1.5,
+          pt: 1.5,
+
+          "&:hover": {
+            backgroundColor: "#ffffffff",
+            color: "#000000ff",
+            borderLeft: "2px solid #5fb52a",
+          },
+        }}
+      >
+        {label}
+      </Typography>
+      <Typography
+        fontSize="0.75rem"
+        textAlign="left"
+        sx={{
+          height: 35,
+          width: 150,
+          backgroundColor: "white",
+          border: "1px solid #e0e0e0",
+          borderLeft: "5px solid #5fb52a",
+          borderRadius: "4px",
+          color: "#000000ff",
+          fontWeight: 500,
+          // display: "flex",
+          // alignItems: "center",
+          pl: { xs: 1.5, sm: 2 },
+          pt: 1,
+
+          "&:hover": {
+            backgroundColor: "#ffffffff",
+            color: "#000000ff",
+            borderLeft: "2px solid #5fb52a",
+          },
+        }}
+      >
+        {value || "N/A"}
+      </Typography>
+    </Box>
+  );
 
   // Modified handleLikeClick to include confetti
   const handleLikeClickWithConfetti = () => {
@@ -178,7 +200,11 @@ height: 35,
           gap={isMobile ? 1 : 3}
           flexDirection={isMobile ? "column" : "row"}
           width="100%"
-          sx={{background:'white',padding:{xs:'5px',sm:'5px',md:'20px'},borderRadius:'10px'}}
+          sx={{
+            background: "white",
+            padding: { xs: "5px", sm: "5px", md: "20px" },
+            borderRadius: "10px",
+          }}
         >
           <Box
             position="relative"
@@ -206,7 +232,7 @@ height: 35,
             />
           </Box>
 
-          <Box width="100%" >
+          <Box width="100%">
             {/* Brand name and actions */}
             <Box
               display="flex"
@@ -250,16 +276,22 @@ height: 35,
                     // backgroundColor: "#eedbbcff",p:1
                   }}
                 >
-                  <Typography fontSize={isMobile ? "0.8rem" : "0.9rem"} color="black">
+                  <Typography
+                    fontSize={isMobile ? "0.8rem" : "0.9rem"}
+                    color="black"
+                  >
                     Established Year:{" "}
-                    <label variant="body1" >
+                    <label variant="body1">
                       {brand?.[0]?.brandfranchisedetails?.franchiseDetails
                         ?.establishedYear || "N/A"}
                     </label>
                   </Typography>
-                  <Typography fontSize={isMobile ? "0.8rem" : "0.9rem"} color="black">
+                  <Typography
+                    fontSize={isMobile ? "0.8rem" : "0.9rem"}
+                    color="black"
+                  >
                     Franchise Since:{" "}
-                    <label variant="body1" >
+                    <label variant="body1">
                       {brand?.[0]?.brandfranchisedetails?.franchiseDetails
                         ?.franchiseSinceYear || "N/A"}
                     </label>
@@ -271,11 +303,11 @@ height: 35,
                   variant="contained"
                   size={isMobile ? "small" : "medium"}
                   startIcon={<Phone />}
-                  onClick={toggleDrawer(true)}
+                  onClick={handleviewcontact}
                   sx={{
                     px: isMobile ? 1 : 1.5,
                     py: isMobile ? 1 : 2,
-                    borderRadius: { xs: 1, sm: 2,md:'20px' },
+                    borderRadius: { xs: 1, sm: 2, md: "20px" },
                     bgcolor: "#ff9800",
                     "&:hover": { bgcolor: "#e65100" },
                     fontSize: isMobile ? "0.65rem" : "0.875rem",
@@ -324,235 +356,242 @@ height: 35,
       </IconButton>
               </Box>
             </Box>
-<Box sx={{ mt: { xs: 1, sm: 2, md: 3}, display: "flex", flexDirection: "column", gap: 1 }}>
- {(() => {
-  const productTags =
-    brand?.[0]?.brandfranchisedetails?.franchiseDetails?.brandCategories
-      ?.productTags;
+            <Box
+              sx={{
+                mt: { xs: 1, sm: 2, md: 3 },
+                display: "flex",
+                flexDirection: "column",
+                gap: 1,
+              }}
+            >
+              {(() => {
+                const productTags =
+                  brand?.[0]?.brandfranchisedetails?.franchiseDetails
+                    ?.brandCategories?.productTags;
 
+                let categoryArray = [];
 
-  let categoryArray = [];
+                // ✅ NEW FORMAT: [{ parent, tags: [] }]
+                if (Array.isArray(productTags)) {
+                  categoryArray = productTags.flatMap((item) =>
+                    Array.isArray(item?.tags) ? item.tags : [],
+                  );
+                }
 
-  // ✅ NEW FORMAT: [{ parent, tags: [] }]
-  if (Array.isArray(productTags)) {
-    categoryArray = productTags.flatMap(item =>
-      Array.isArray(item?.tags) ? item.tags : []
-    );
-  }
+                if (categoryArray.length === 0) {
+                  return (
+                    <Typography variant="caption" color="black">
+                      N/A
+                    </Typography>
+                  );
+                }
 
-  if (categoryArray.length === 0) {
-    return (
-      <Typography variant="caption" color="black">
-        N/A
-      </Typography>
-    );
-  }
-
-  return (
-    <>
-      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 ,pl:{xs:2,sm:2}}}>
-        {categoryArray.map((category, index) => (
-          <Chip
-            key={index}
-            label={category}
-            size="small"
-            variant="outlined"
-            sx={{
-              fontSize: isMobile ? "0.65rem" : "0.75rem",
-              height: "24px",
-              backgroundColor: "#ffffffff",
-              
-              borderColor: "#7cd13b",
-              color: "black",
-              "& .MuiChip-label": {
-                padding: "0 8px",
-              },
-            }}
-          />
-        ))}
-      </Box>
-    </>
-  );
-})()}
-
-  </Box>
-
-  {isMobile ? (
-  /* 📱 MOBILE VIEW */
-  <Box sx={{ borderRadius: 2, p:0.5, mt: 2 }}>
-    <MobileRow
-      label="Category"
-      value={
-        brand?.[0]?.brandfranchisedetails?.franchiseDetails
-          ?.brandCategories?.sub
-      }
-    />
-
-    <MobileRow
-      label="Area"
-      value={
-        brand?.[0]?.brandfranchisedetails?.franchiseDetails
-          ?.fico?.[0]?.areaRequired
-      }
-    />
-
-    <MobileRow
-      label="Investment"
-      value={
-        brand?.[0]?.brandfranchisedetails?.franchiseDetails
-          ?.fico?.[0]?.investmentRange
-      }
-    />
-
-    <MobileRow
-      label="Total Outlets"
-      value={getOutletRange(
-        brand?.[0]?.brandfranchisedetails?.franchiseDetails
-          ?.totalOutlets
-      )}
-    />
-
-    <MobileRow
-      label="Origin Location"
-      value={`${brand?.[0]?.brandDetails?.state || "N/A"}, ${
-        brand?.[0]?.brandDetails?.city || "N/A"
-      }`}
-    />
-  </Box>
-) : (
-  /* 💻 DESKTOP TABLE (YOUR EXISTING CODE) */
-  <Box sx={{ width: "100%", overflow: "hidden", mt: 2, mb: 1 }}>
-    <TableContainer
-                component={Paper}
-                sx={{
-                  width: "100%",
-                  borderRadius: "16px",
-                  overflowX: "auto",
-                  "&::-webkit-scrollbar": {
-                    height: "6px",
-                  },
-                  "&::-webkit-scrollbar-track": {
-                    background: "#f1f1f1",
-                  },
-                  "&::-webkit-scrollbar-thumb": {
-                    background: "#888",
-                    borderRadius: "3px",
-                  },
-                  "&::-webkit-scrollbar-thumb:hover": {
-                    background: "#555",
-                  },
-                }}
-              >
-                <Table
-                  size={isMobile ? "small" : "medium"}
-                  
-                  sx={{
-                    minWidth: isMobile ? 650 : "100%",
-                    // tableLayout: "fixed",
-                    flexDirection:isMobile ? "column" : "row",
-                  }}
-                >
-                  <TableHead>
-                    <TableRow
+                return (
+                  <>
+                    <Box
                       sx={{
-                        backgroundColor: "#7cd13b",
-                        "& th": {
-                          padding: isMobile ? "6px 8px" : "10px 12px",
-                          fontSize: isMobile ? "0.7rem" : "0.8rem",
-                          whiteSpace: "nowrap",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                        },
+                        display: "flex",
+                        flexWrap: "wrap",
+                        gap: 1,
+                        pl: { xs: 2, sm: 2 },
                       }}
                     >
-                      <TableCell sx={{ width: "25%", textAlign: "center" }}>
-                        <strong>Category</strong>
-                      </TableCell>
-                      <TableCell sx={{ width: "18%", textAlign: "center" }}>
-                        <strong>Area</strong>
-                      </TableCell>
-                      <TableCell sx={{ width: "20%", textAlign: "center" }}>
-                        <strong>Investment</strong>
-                      </TableCell>
-                      <TableCell sx={{ width: "15%", textAlign: "center" }}>
-                        <strong>Total Outlets</strong>
-                      </TableCell>
-                      <TableCell sx={{ width: "30%", textAlign: "center" }}>
-                        <strong>Origin Location</strong>
-                      </TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody >
-                    <TableRow >
-                      <TableCell
-                        sx={{
-                          width: "25%",
-                          textAlign: "center",
-                          fontSize: isMobile ? "0.7rem" : "0.8rem",
-                          wordBreak: "break-word",
-                          py: isMobile ? "8px" : "12px",
-                          backgroundColor: "#ffffffff",
-                        }}
-                      >
-                        {brand?.[0]?.brandfranchisedetails?.franchiseDetails
-                          ?.brandCategories?.sub || "N/A"}
-                      </TableCell>
-                      <TableCell
-                        sx={{
-                          width: "18%",
-                          textAlign: "center",
-                          fontSize: isMobile ? "0.7rem" : "0.8rem",
-                          wordBreak: "break-word",
-                          py: isMobile ? "8px" : "12px",
-                                                    backgroundColor: "#ffffffff",
+                      {categoryArray.map((category, index) => (
+                        <Chip
+                          key={index}
+                          label={category}
+                          size="small"
+                          variant="outlined"
+                          sx={{
+                            fontSize: isMobile ? "0.65rem" : "0.75rem",
+                            height: "24px",
+                            backgroundColor: "#ffffffff",
 
-                        }}
-                      >
-                        {brand?.[0]?.brandfranchisedetails?.franchiseDetails
-                          ?.fico?.[0]?.areaRequired || "N/A"}
-                      </TableCell>
-                      <TableCell
-                        sx={{
-                          width: "15%",
-                          textAlign: "center",
-                          fontSize: isMobile ? "0.7rem" : "0.8rem",
-                          wordBreak: "break-word",
-                          py: isMobile ? "8px" : "12px",
-                                                    backgroundColor: "#ffffffff",
+                            borderColor: "#7cd13b",
+                            color: "black",
+                            "& .MuiChip-label": {
+                              padding: "0 8px",
+                            },
+                          }}
+                        />
+                      ))}
+                    </Box>
+                  </>
+                );
+              })()}
+            </Box>
 
-                        }}
-                      >
-                        {brand?.[0]?.brandfranchisedetails?.franchiseDetails
-                          ?.fico?.[0]?.investmentRange || "N/A"}
-                      </TableCell>
-                      <TableCell
-                        sx={{
-                          width: "15%",
-                          textAlign: "center",
-                          fontSize: isMobile ? "0.7rem" : "0.8rem",
-                          wordBreak: "break-word",
-                          py: isMobile ? "8px" : "12px",
-                                                    backgroundColor: "#ffffffff",
+            {isMobile ? (
+              /* 📱 MOBILE VIEW */
+              <Box sx={{ borderRadius: 2, p: 0.5, mt: 2 }}>
+                <MobileRow
+                  label="Category"
+                  value={
+                    brand?.[0]?.brandfranchisedetails?.franchiseDetails
+                      ?.brandCategories?.sub
+                  }
+                />
 
-                        }}
-                      >
-                        {getOutletRange(
-                          brand?.[0]?.brandfranchisedetails?.franchiseDetails
-                            ?.totalOutlets || "N/A"
-                        )}
-                      </TableCell>
-                      <TableCell
-                        sx={{
-                          width: "30%",
-                          textAlign: "center",
-                          fontSize: isMobile ? "0.7rem" : "0.8rem",
-                          wordBreak: "break-word",
-                          py: isMobile ? "8px" : "12px",
-                                                    backgroundColor: "#ffffffff",
+                <MobileRow
+                  label="Area"
+                  value={
+                    brand?.[0]?.brandfranchisedetails?.franchiseDetails
+                      ?.fico?.[0]?.areaRequired
+                  }
+                />
 
+                <MobileRow
+                  label="Investment"
+                  value={
+                    brand?.[0]?.brandfranchisedetails?.franchiseDetails
+                      ?.fico?.[0]?.investmentRange
+                  }
+                />
+
+                <MobileRow
+                  label="Total Outlets"
+                  value={getOutletRange(
+                    brand?.[0]?.brandfranchisedetails?.franchiseDetails
+                      ?.totalOutlets,
+                  )}
+                />
+
+                <MobileRow
+                  label="Origin Location"
+                  value={`${brand?.[0]?.brandDetails?.state || "N/A"}, ${
+                    brand?.[0]?.brandDetails?.city || "N/A"
+                  }`}
+                />
+              </Box>
+            ) : (
+              /* 💻 DESKTOP TABLE (YOUR EXISTING CODE) */
+              <Box sx={{ width: "100%", overflow: "hidden", mt: 2, mb: 1 }}>
+                <TableContainer
+                  component={Paper}
+                  sx={{
+                    width: "100%",
+                    borderRadius: "16px",
+                    overflowX: "auto",
+                    "&::-webkit-scrollbar": {
+                      height: "6px",
+                    },
+                    "&::-webkit-scrollbar-track": {
+                      background: "#f1f1f1",
+                    },
+                    "&::-webkit-scrollbar-thumb": {
+                      background: "#888",
+                      borderRadius: "3px",
+                    },
+                    "&::-webkit-scrollbar-thumb:hover": {
+                      background: "#555",
+                    },
+                  }}
+                >
+                  <Table
+                    size={isMobile ? "small" : "medium"}
+                    sx={{
+                      minWidth: isMobile ? 650 : "100%",
+                      // tableLayout: "fixed",
+                      flexDirection: isMobile ? "column" : "row",
+                    }}
+                  >
+                    <TableHead>
+                      <TableRow
+                        sx={{
+                          backgroundColor: "#7cd13b",
+                          "& th": {
+                            padding: isMobile ? "6px 8px" : "10px 12px",
+                            fontSize: isMobile ? "0.7rem" : "0.8rem",
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                          },
                         }}
                       >
-                        {/* {(() => {
+                        <TableCell sx={{ width: "25%", textAlign: "center" }}>
+                          <strong>Category</strong>
+                        </TableCell>
+                        <TableCell sx={{ width: "18%", textAlign: "center" }}>
+                          <strong>Area</strong>
+                        </TableCell>
+                        <TableCell sx={{ width: "20%", textAlign: "center" }}>
+                          <strong>Investment</strong>
+                        </TableCell>
+                        <TableCell sx={{ width: "15%", textAlign: "center" }}>
+                          <strong>Total Outlets</strong>
+                        </TableCell>
+                        <TableCell sx={{ width: "30%", textAlign: "center" }}>
+                          <strong>Origin Location</strong>
+                        </TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      <TableRow>
+                        <TableCell
+                          sx={{
+                            width: "25%",
+                            textAlign: "center",
+                            fontSize: isMobile ? "0.7rem" : "0.8rem",
+                            wordBreak: "break-word",
+                            py: isMobile ? "8px" : "12px",
+                            backgroundColor: "#ffffffff",
+                          }}
+                        >
+                          {brand?.[0]?.brandfranchisedetails?.franchiseDetails
+                            ?.brandCategories?.sub || "N/A"}
+                        </TableCell>
+                        <TableCell
+                          sx={{
+                            width: "18%",
+                            textAlign: "center",
+                            fontSize: isMobile ? "0.7rem" : "0.8rem",
+                            wordBreak: "break-word",
+                            py: isMobile ? "8px" : "12px",
+                            backgroundColor: "#ffffffff",
+                          }}
+                        >
+                          {brand?.[0]?.brandfranchisedetails?.franchiseDetails
+                            ?.fico?.[0]?.areaRequired || "N/A"}
+                        </TableCell>
+                        <TableCell
+                          sx={{
+                            width: "15%",
+                            textAlign: "center",
+                            fontSize: isMobile ? "0.7rem" : "0.8rem",
+                            wordBreak: "break-word",
+                            py: isMobile ? "8px" : "12px",
+                            backgroundColor: "#ffffffff",
+                          }}
+                        >
+                          {brand?.[0]?.brandfranchisedetails?.franchiseDetails
+                            ?.fico?.[0]?.investmentRange || "N/A"}
+                        </TableCell>
+                        <TableCell
+                          sx={{
+                            width: "15%",
+                            textAlign: "center",
+                            fontSize: isMobile ? "0.7rem" : "0.8rem",
+                            wordBreak: "break-word",
+                            py: isMobile ? "8px" : "12px",
+                            backgroundColor: "#ffffffff",
+                          }}
+                        >
+                          {getOutletRange(
+                            brand?.[0]?.brandfranchisedetails?.franchiseDetails
+                              ?.totalOutlets || "N/A",
+                          )}
+                        </TableCell>
+                        <TableCell
+                          sx={{
+                            width: "30%",
+                            textAlign: "center",
+                            fontSize: isMobile ? "0.7rem" : "0.8rem",
+                            wordBreak: "break-word",
+                            py: isMobile ? "8px" : "12px",
+                            backgroundColor: "#ffffffff",
+                          }}
+                        >
+                          {/* {(() => {
                           const locations =
                             brand?.[0]?.brandexpansionlocationdatas
                               ?.expansionLocations?.domestic?.locations || [];
@@ -590,19 +629,17 @@ height: 35,
                             </>
                           );
                         })()} */}
+                          {brand?.[0]?.brandDetails?.state || "N/A"} ,{" "}
+                          {brand?.[0]?.brandDetails?.city || "N/A"}
+                        </TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </Box>
+            )}
 
-  {brand?.[0]?.brandDetails?.state || "N/A"} , {brand?.[0]?.brandDetails?.city || "N/A"}
-
-                      </TableCell>
-                    </TableRow>
-                  </TableBody>
-                </Table>
-              </TableContainer>
-  </Box>
-)}
-
-            
-           {/* <Typography
+            {/* <Typography
   color="#000000ff"
   mt={isMobile ? 2 : 2}
   fontSize={isMobile ? "0.8rem" : "0.9rem"}
@@ -612,12 +649,13 @@ height: 35,
   Brand Tags :
   
 </Typography> */}
-
           </Box>
         </Box>
       </Box>
+      <LoginPage open={open} onClose={() => setOpen(false)} />
     </motion.div>
   );
 };
 
 export default BrandHeader;
+

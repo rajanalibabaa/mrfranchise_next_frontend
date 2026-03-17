@@ -1,3 +1,4 @@
+
 "use client";
 import React from "react";
 import {
@@ -52,10 +53,10 @@ const FloatingApplyButton = ({ isMobile, brand, toggleDrawer }) => {
         position: "fixed",
         bottom: 0,
         left: 0,
-        right:isMobile ? 0 : 600,
-        px: isMobile ? 1.5 : 0,
         display: "flex",
-        justifyContent: isMobile ? "space-evenly" : "flex-end",
+        alignItems: "center",
+        justifyContent: "center",
+        width: "100%",
         mb:{
           xs: 2,
           sm: 2,
@@ -85,15 +86,17 @@ const FloatingApplyButton = ({ isMobile, brand, toggleDrawer }) => {
             py: 1.3,
             maxHeight:{
               xs: 70,
-              sm: 50,
+              sm: 60,
               md: 60,
               lg: 60,
               xl: 60,
             },
+            
             animation: `${bounce} 2s infinite`,
             boxShadow: "0 6px 16px rgba(0,0,0,0.25)",
             "&:hover": { backgroundColor: "#ffffff" },
             color:'black',
+            
           }}
         >
           <Box textAlign="center" display={'flex'} gap={1}> 

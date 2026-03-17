@@ -46,7 +46,7 @@ export const fetchShortListedById = createAsyncThunk(
     try {
       if (!userId) throw new Error("User ID is required");
 
-      const query = { page, limit ,main: "Food & Beverages" };
+      const query = { page, limit  };
 const baseUrl =
   api.shortListApi.base || `${process.env.NEXT_PUBLIC_API_URL}/api/v1/shortList`;
 

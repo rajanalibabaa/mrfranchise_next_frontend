@@ -58,7 +58,7 @@ export const fetchLikedBrandsById = createAsyncThunk(
 
     
 
-      const query = { page, limit, main: "Food & Beverages" };
+      const query = { page, limit,  };
       const baseUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/like`;
 
       const queryString = new URLSearchParams(query).toString();
