@@ -37,6 +37,7 @@ import {
   broadcastLogoutEvent,
   callLogoutAPI,
 } from "@/Api/logoutService.js";
+import Link from "next/link.js";
 function Navbar() {
   const router = useRouter();
   const dispatch = useDispatch();
@@ -189,7 +190,7 @@ const [ID, setId] = useState(null);
     }
 
     // ✅ 5. Hard redirect (kills memory state)
-    window.location.replace("/");
+    window.location.replace("/");   
 
     setlogoutLoading(false);
   }
@@ -279,14 +280,14 @@ const [ID, setId] = useState(null);
           },
         }}
       >
-        <AdSlot key={pathname} {...ADS.HOME.TOP_BILLBOARD} />
+        {/* <AdSlot key={pathname} {...ADS.HOME.TOP_BILLBOARD} /> */}
         <Box sx={{ 
           display:{ xs: "none", sm: "flex"}, 
           flexWrap: "wrap",
           ml: "40px", 
           gap: isMobile ? 0.5 : 1,
           position: 'relative',
-          zIndex: 1
+          zIndex: 1,
         }}>
           {/* {['Expand Your Franchise', 'Investor', 'Advertise',"Blogs","Franchise Consultant"].map((text) => (
             <motion.div
@@ -398,7 +399,12 @@ const [ID, setId] = useState(null);
               </Box>
             </motion.div>
           </Box>
+          <Link href="https://consulting.mrfranchise.in" target="_blank" rel="noopener noreferrer" >
+{!isMobile && (
+  <Image src="/Blue Modern Corporate Profile LinkedIn Article Cover Image (1).png" alt="brand logo" loading="lazy"  width={isMobile ? 120 : 720} height={isMobile ? 50 : 90} style={{ objectFit: 'contain', transition: 'transform 0.3s ease', display: isMobile ? 'bloack' : 'block', marginLeft: '120px',borderRadius: '10px' }} />
 
+)}         
+         </Link>
           <Box sx={{ flexGrow: isMobile ? 0 : 1 }} />
 
           <Box sx={{ 
@@ -698,6 +704,13 @@ const [ID, setId] = useState(null);
         )}
       </AnimatePresence>
       <NavbarSearch open={searchOpen} handleClose={() => setSearchOpen(false)} />
+                  <Link href="https://consulting.mrfranchise.in" target="_blank" rel="noopener noreferrer" >
+
+        {isMobile && (
+  <Image src="/Blue Modern Corporate Profile LinkedIn Article Cover Image (1).png" alt="brand logo" loading="lazy"  width={isMobile ? 370 : 720} height={isMobile ? 70 : 90} style={{ objectFit: 'contain', transition: 'transform 0.3s ease', display: isMobile ? 'bloack' : 'block', marginLeft: { xs: 150, sm: 130, md: 120, lg: 120, xl: 120}, }} />
+
+)} 
+</Link>
     </>
   );
 }

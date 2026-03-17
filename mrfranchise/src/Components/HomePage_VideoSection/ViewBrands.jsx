@@ -64,7 +64,7 @@ const ViewBrands = () => {
       ({
         mobile: { width: 280, height: 520 },
         tablet: { width: 320, height: 560 },
-        desktop: { width: 327, height: 500 },
+        desktop: { width: 337, height: 500 },
       }[isMobile ? "mobile" : isTablet ? "tablet" : "desktop"]),
     [isMobile, isTablet]
   );
@@ -169,7 +169,7 @@ const ViewBrands = () => {
     <Box
       ref={containerRef}
       sx={{
-        py: isMobile ? 1 : 2,
+        py: isMobile ? 1 : 0,
         px: isMobile ? 0 : 2,
         maxWidth: isMobile ? "100%" : 1400,
         mx: "auto",
@@ -302,8 +302,8 @@ const ViewBrands = () => {
           sx={{
             display: "flex",
             overflowX: "auto",
-            gap: isMobile ? 2 : 3,
-            p: 2,
+            gap: isMobile ? 2 : 1.8,
+            p: 0.5,
             scrollBehavior: "smooth",
             scrollbarWidth: "none",
             "&::-webkit-scrollbar": { display: "none" },

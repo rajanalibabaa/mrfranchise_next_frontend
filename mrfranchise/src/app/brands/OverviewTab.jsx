@@ -110,7 +110,7 @@ const serviceTags=brand?.[0]?.brandfranchisedetails?.franchiseDetails?.brandCate
         />
       )}
 
-      <AdSlot key={pathname} {...ADS.HOME.FOOTER_RECTANGLE}/>
+      {/* <AdSlot key={pathname} {...ADS.HOME.FOOTER_RECTANGLE}/> */}
       
       {hasData(serviceTags) && (
         <FranchiseTagsOverView 

@@ -21,7 +21,7 @@ export const fetchViewBrandsById = createAsyncThunk(
     try {
       if (!userId) throw new Error("User ID is required Login to continue");
 
-      const query = { page, limit,main: "Food & Beverages" };
+      const query = { page, limit };
       const queryString = new URLSearchParams(query).toString();
       const url = `${api.viewApi.get.getAllViewBrandByID}/${userId}?${queryString}`;
 

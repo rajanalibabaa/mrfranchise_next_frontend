@@ -107,12 +107,12 @@ const BrandDashboard = ({ selectedSection, sectionContent }) => {
   return (
     <>
      
-    <Box sx={{ display: "flex", flexDirection: isMobile ? "column" : "row" }}>
+    <Box sx={{ display: "flex", flexDirection: isMobile ? "column" : "row" ,justifyContent: "space-evenly", alignItems: "flex-start", minHeight: "100vh" }}>
   <Sidebar/>    
            
-      <Box sx={{ px: isMobile ? 1 : 3,display: "flex", flexDirection: isMobile ? "column" : "row" , alignItems: "flex-start", }}>
+      <Box sx={{ px: isMobile ? 1 : 3,display: "flex", flexDirection: isMobile ? "column" : "column" , width: "100%", mt: 3 }}>
         
-            <Box sx={{ flexGrow: isMobile ? 0 : 1, ml: isMobile ? 0 : 2 }}>
+          
                <BrandHeader brandData={brandData} />
 
         <DashboardTabs
@@ -128,8 +128,7 @@ const BrandDashboard = ({ selectedSection, sectionContent }) => {
           onClose={() => setDetailDialogOpen(false)}
           selectedItem={selectedItem}
         />
-            </Box>
-       
+          
       </Box>
     </Box>
     </>

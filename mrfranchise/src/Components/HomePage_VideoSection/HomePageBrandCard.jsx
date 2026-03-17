@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useRef, useState ,useCallback} from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -17,49 +17,63 @@ import Favorite from "@mui/icons-material/Favorite";
 import Business from "@mui/icons-material/Business";
 import MonetizationOn from "@mui/icons-material/MonetizationOn";
 import AreaChart from "@mui/icons-material/AreaChart";
+
 import { handleShortList } from "@/Api/shortListApi";
 import LoginPage from "@/Components/LoginPage/LoginPage";
 import { RiBookmark3Fill } from "react-icons/ri";
+
 import {
   toggleHomeCardLike,
   toggleHomeCardShortlist,
 } from "@/Redux/Slices/TopCardFetchingSlice";
+
 import { getToken } from "@/Utils/autherId.jsx";
 import { VideoPlayer } from "@/services/VideoControllerMedia/VideoPlayercomponents.jsx";
 import { postView } from "@/Utils/function/view.jsx";
 import { openBrandDialog } from "@/Redux/Slices/OpenBrandNewPageSlice.jsx";
+
 import { useDispatch } from "react-redux";
+
 import {
   addSortlist,
   removeSortList,
   toggleSortlistBrandLike,
   fetchShortListedById,
 } from "@/Redux/Slices/shortlistslice.jsx";
+
 import {
   toggleBrandLike,
   toggleBrandShortList,
 } from "@/Redux/Slices/GetAllBrandsDataUpdationFile.jsx";
+
 import { likeApiFunction } from "@/Api/likeApi.jsx";
+
 import {
   addLikedBrand,
   removeLikedBrand,
   toggleLikedSliceShortList,
   fetchLikedBrandsById,
 } from "@/Redux/Slices/likeSlice.jsx";
+
 import {
   toggleviewSliceShortList,
   toggleviewSliceLiked,
   fetchViewBrandsById,
 } from "@/Redux/Slices/viewSlice.jsx";
+
 import {
   toggleBrandShortListfilter,
   toggleBrandLikefilter,
 } from "@/Redux/Slices/FilterBrandSlice.jsx";
+
 import confetti from "canvas-confetti";
-import { Share } from "lucide-react";
-import ShareDialogActions from "@/app/brands/ShareDialogActions";
+
 import { ShareOutlined } from "@mui/icons-material";
+import ShareDialogActions from "@/app/brands/ShareDialogActions";
+import { toggleSimilarBrandLike, toggleSimilarBrandShortList } from "@/Redux/Slices/SideMenuHoverBrandSlices";
+
 const token = getToken();
+
 const cardVariants = {
   initial: { opacity: 0, y: 30 },
   animate: { opacity: 1, y: 0, transition: { duration: 0.6 } },
@@ -70,20 +84,24 @@ const AnimatedIconButton = motion(IconButton);
 const HomePageBrandCard = React.memo(
   ({ brand, likeProcessing, dimensions, theme }) => {
     const videoRef = useRef(null);
-    const [isVisible, setIsVisible] = useState(false);
     const observerRef = useRef();
-    const [showLogin, setShowLogin] = useState(false);
+
     const shortlistButtonRef = useRef(null);
     const likeButtonRef = useRef(null);
-      const [anchorEl, setAnchorEl] = useState(null);
+
+    const [isVisible, setIsVisible] = useState(false);
+    const [showLogin, setShowLogin] = useState(false);
+
+    const [anchorEl, setAnchorEl] = useState(null);
     const [selectedBrand, setSelectedBrand] = useState(null);
 
+    const dispatch = useDispatch();
 
     const brandId = brand?.uuid || "";
     const franchiseModel = brand?.fico || {};
     const category = brand?.brandCategories || {};
     const brandName = brand?.brandname || brand?.brandName;
-    const brandLogo = brand?.logo || brand?.brandName;
+    const brandLogo = brand?.logo;
 
     const {
       investmentRange = "Not specified",
@@ -102,24 +120,15 @@ const HomePageBrandCard = React.memo(
         { threshold: 0.1 }
       );
 
-      if (videoRef.current) {
-        observerRef.current.observe(videoRef.current);
-      }
+      if (videoRef.current) observerRef.current.observe(videoRef.current);
 
-      return () => {
-        if (observerRef.current) {
-          observerRef.current.disconnect();
-        }
-      };
+      return () => observerRef.current?.disconnect();
     }, []);
 
-    const [shortListed, setShortListed] = useState(brand.isShortListed);
-    const dispatch = useDispatch();
-
-    // 🎉 Updated confetti effect to use element position
     const triggerCelebration = (color, elementRef) => {
-      if (elementRef && elementRef.current) {
+      if (elementRef?.current) {
         const rect = elementRef.current.getBoundingClientRect();
+
         const x = (rect.left + rect.width / 2) / window.innerWidth;
         const y = (rect.top + rect.height / 2) / window.innerHeight;
 
@@ -130,18 +139,17 @@ const HomePageBrandCard = React.memo(
           colors: [
             color,
             "#ffffff",
-            "#fdc81cff",
-            "#76ec1cff",
-            "#ff1dd6ffff",
-            "#00eaffff",
-            "#0400ffff",
+            "#fdc81c",
+            "#76ec1c",
+            "#ff1dd6",
+            "#00eaff",
+            "#0400ff",
             "#000000",
-            "#f10808ffff",
-            "#f5f50aff",
+            "#f10808",
+            "#f5f50a",
           ],
         });
       } else {
-        // Fallback to center if element not found
         confetti({
           particleCount: 70,
           spread: 80,
@@ -157,31 +165,30 @@ const HomePageBrandCard = React.memo(
           setShowLogin(true);
           return;
         }
-        if (!brand.isShortListed) {
-          dispatch(addSortlist(brand));
-        } else {
-          dispatch(removeSortList(brand?.uuid));
-        }
+
+        if (!brand.isShortListed) dispatch(addSortlist(brand));
+        else dispatch(removeSortList(brand?.uuid));
+
         dispatch(toggleLikedSliceShortList(brand?.uuid));
         dispatch(toggleviewSliceShortList(brand?.uuid));
         dispatch(toggleBrandShortListfilter(brand?.uuid));
         dispatch(toggleBrandShortList(brand?.uuid));
         dispatch(toggleHomeCardShortlist(brand?.uuid));
+        dispatch(toggleSimilarBrandShortList(brand?.uuid));
 
         await handleShortList(brand?.uuid);
-        setShortListed(!shortListed);
-        // Refetch shortlisted brands
+
         dispatch(fetchShortListedById({ page: 1, limit: 10 }));
 
         if (!brand.isShortListed) {
-          triggerCelebration("#7ef400ff", shortlistButtonRef);
+          triggerCelebration("#7ef400", shortlistButtonRef);
         }
       } catch (error) {
         console.error("Error toggling shortlist:", error);
       }
     };
 
-    const handleLikeClick = async (brand) => {
+      const handleLikeClick = async (brand) => {
       try {
         if (!token) {
           setShowLogin(true);
@@ -190,6 +197,7 @@ const HomePageBrandCard = React.memo(
         dispatch(toggleSortlistBrandLike(brand?.uuid));
         dispatch(toggleBrandLikefilter(brand?.uuid));
         dispatch(toggleBrandLike(brand?.uuid));
+         dispatch(toggleSimilarBrandLike(brand?.uuid))
         if (!brand?.isLiked) {
           dispatch(addLikedBrand(brand));
         } else {
@@ -212,17 +220,16 @@ const HomePageBrandCard = React.memo(
     const handleApply = (brand) => {
       postView(brand?.uuid);
       dispatch(openBrandDialog(brand));
-      // Refetch viewed brands
       dispatch(fetchViewBrandsById({ page: 1, limit: 10 }));
     };
 
-
-     const handleOpenShareClick = useCallback((event) => {
-    setAnchorEl(event.currentTarget);
-    setSelectedBrand(brand);
-  }, [brand]);
-
-
+    const handleOpenShareClick = useCallback(
+      (event) => {
+        setAnchorEl(event.currentTarget);
+        setSelectedBrand(brand);
+      },
+      [brand]
+    );
 
     return (
       <motion.div
@@ -238,7 +245,7 @@ const HomePageBrandCard = React.memo(
             overflow: "hidden",
             width: "100%",
             height: dimensions.height,
-            border: "1px solid #03f507ff",
+            border: "1px solid #03f507",
           }}
         >
           <VideoPlayer
@@ -250,6 +257,7 @@ const HomePageBrandCard = React.memo(
             height={dimensions.height * 0.4}
             ref={videoRef}
           />
+
           <Box sx={{ display: "flex", flexDirection: "column" }}>
             <CardContent sx={{ pb: 1 }}>
               <Box
@@ -266,8 +274,8 @@ const HomePageBrandCard = React.memo(
                   alt={brandName}
                   loading="lazy"
                   onClick={() => handleApply(brand)}
-                  cursor="pointer"
                   sx={{
+                    cursor: "pointer",
                     width: 100,
                     height: 50,
                     border: "1px solid #f29724",
@@ -276,7 +284,8 @@ const HomePageBrandCard = React.memo(
                     objectFit: "contain",
                   }}
                 />
-{/* ❤️ Like Button with animations */}
+
+                {/* ❤️ Like */}
                 <AnimatedIconButton
                   ref={likeButtonRef}
                   onClick={() => handleLikeClick(brand)}
@@ -288,7 +297,9 @@ const HomePageBrandCard = React.memo(
                   }
                   transition={{ duration: 0.3 }}
                   sx={{
-                    color: brand?.isLiked ? "#f44336" : "rgba(0, 0, 0, 0.23)",
+                    color: brand?.isLiked
+                      ? "#f44336"
+                      : "rgba(0,0,0,0.23)",
                   }}
                 >
                   {likeProcessing[brandId] ? (
@@ -297,48 +308,44 @@ const HomePageBrandCard = React.memo(
                     <Favorite />
                   )}
                 </AnimatedIconButton>
-                {/* 🔖 ShortList Button with animations */}
+
+                {/* 🔖 Shortlist */}
                 <AnimatedIconButton
                   ref={shortlistButtonRef}
                   onClick={() => handleToggleShortList(brand)}
                   whileTap={{ scale: 0.8 }}
                   whileHover={{ scale: 1.2 }}
                   animate={
-                    brand.isShortListed ? { scale: [1, 1.3, 1] } : { scale: 1 }
+                    brand.isShortListed
+                      ? { scale: [1, 1.3, 1] }
+                      : { scale: 1 }
                   }
                   transition={{ duration: 0.3 }}
                   sx={{
                     color: brand.isShortListed
-                      ? "#7ef400ff"
-                      : "rgba(0, 0, 0, 0.23)",
+                      ? "#7ef400"
+                      : "rgba(0,0,0,0.23)",
                   }}
                 >
-                  <Tooltip title={"ShortList"}>
+                  <Tooltip title="ShortList">
                     <RiBookmark3Fill size={21} />
                   </Tooltip>
                 </AnimatedIconButton>
 
-{/* share buton fix  */}
-<AnimatedIconButton
-                  onClick={handleOpenShareClick}
-                 
-                >
-                  <Tooltip title={"Share"}>
-                    <ShareOutlined size={21} />
+                {/* 🔗 Share */}
+                <AnimatedIconButton onClick={handleOpenShareClick}>
+                  <Tooltip title="Share">
+                    <ShareOutlined fontSize="small" />
                   </Tooltip>
                 </AnimatedIconButton>
-                  
-
-
-                
               </Box>
 
               <Typography
                 variant="body1"
                 fontWeight={500}
                 onClick={() => handleApply(brand)}
-                cursor="pointer"
                 sx={{
+                  cursor: "pointer",
                   whiteSpace: "nowrap",
                   overflow: "hidden",
                   textOverflow: "ellipsis",
@@ -351,20 +358,14 @@ const HomePageBrandCard = React.memo(
 
               {category?.sub && (
                 <Box sx={{ mb: 2 }}>
-                  <Stack
-                    direction="row"
-                    spacing={3}
-                    justifyContent="space-between"
-                    alignItems="center"
-                  >
+                  <Stack direction="row" spacing={3}>
                     <Chip
                       label={category.sub}
                       size="small"
                       sx={{
-                        bgcolor: "rgba(255, 152, 0, 0.1)",
+                        bgcolor: "rgba(255,152,0,0.1)",
                         color: "orange.dark",
                         fontWeight: 500,
-                        mb: 1,
                       }}
                     />
                   </Stack>
@@ -373,66 +374,38 @@ const HomePageBrandCard = React.memo(
 
               <Stack spacing={1} sx={{ mb: 2 }}>
                 <Box display="flex" alignItems="center">
-                  <Business
-                    sx={{
-                      mr: 1.5,
-                      fontSize: "1rem",
-                      color: "text.secondary",
-                      flexShrink: 0,
-                    }}
-                  />
+                  <Business sx={{ mr: 1.5, fontSize: "1rem" }} />
                   <Typography variant="body2">
                     <strong>Investment:</strong> {investmentRange}
                   </Typography>
                 </Box>
 
                 <Box display="flex" alignItems="center">
-                  <MonetizationOn
-                    sx={{
-                      mr: 1.5,
-                      fontSize: "1rem",
-                      color: "text.secondary",
-                      flexShrink: 0,
-                    }}
-                  />
+                  <MonetizationOn sx={{ mr: 1.5, fontSize: "1rem" }} />
                   <Typography variant="body2">
                     <strong>Area:</strong> {areaRequired}
                   </Typography>
                 </Box>
 
                 <Box display="flex" alignItems="center">
-                  <AreaChart
-                    sx={{
-                      mr: 1.5,
-                      fontSize: "1rem",
-                      color: "text.secondary",
-                      flexShrink: 0,
-                    }}
-                  />
+                  <AreaChart sx={{ mr: 1.5, fontSize: "1rem" }} />
                   <Typography variant="body2">
-                    <strong>Model :</strong> {modelType}
+                    <strong>Model:</strong> {modelType}
                   </Typography>
                 </Box>
               </Stack>
-
-              {/* <Divider sx={{ my: 1 }} /> */}
             </CardContent>
 
             <Box sx={{ px: 2, pb: 2.5 }}>
               <Button
                 variant="contained"
-                aria-label="view details"
                 fullWidth
                 onClick={() => handleApply(brand)}
                 sx={{
                   backgroundColor: "#4cb04f",
-                  "&:hover": {
-                    backgroundColor: "#000000ff",
-                    boxShadow: 2,
-                  },
-                  // py: 1,
+                  "&:hover": { backgroundColor: "#000" },
                   maxWidth: 200,
-                  ml:{xs:3,sm:3,md:4,lg:3,xl:6},
+                  ml: { xs: 3, sm: 3, md: 4, lg: 3, xl: 6 },
                   borderRadius: 1,
                   textTransform: "none",
                   fontWeight: 600,
@@ -444,23 +417,30 @@ const HomePageBrandCard = React.memo(
             </Box>
           </Box>
         </Card>
+
         {showLogin && (
           <LoginPage open={showLogin} onClose={() => setShowLogin(false)} />
         )}
 
         <ShareDialogActions
-                          anchorEl={anchorEl}
-                          setAnchorEl={setAnchorEl}
-                          brand={selectedBrand ? {
-                            name: selectedBrand?.brandname || selectedBrand?.brandName,
-                            logo: selectedBrand?.logo,
-                            // video: selectedBrand?.franchiseVideos
-                          } : null}
-                        />
-
+          anchorEl={anchorEl}
+          setAnchorEl={setAnchorEl}
+          brand={
+            selectedBrand
+              ? {
+                  name:
+                    selectedBrand?.brandname ||
+                    selectedBrand?.brandName,
+                  logo: selectedBrand?.logo,
+                }
+              : null
+          }
+        />
       </motion.div>
     );
   }
 );
 
-export default HomePageBrandCard;
+HomePageBrandCard.displayName = "HomePageBrandCard";
+
+export default React.memo(HomePageBrandCard) ;

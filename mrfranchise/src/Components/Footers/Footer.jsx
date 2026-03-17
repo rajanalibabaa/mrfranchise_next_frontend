@@ -91,21 +91,21 @@ const supportLinks = [
     <Box
       component="footer"
       sx={{
-        backgroundColor: "#000",
+        background:"url(/footer_Mrfranchise.jpg) no-repeat center center/cover",
         color: "#fff",
         pt: 2.5,
-        pb: 3,
-        mt:1,
+        // pb: 3,
+        // mt:1,
         position: "relative",
-        "&::before": {
-          content: '""',
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          height: "4px",
-          background: "linear-gradient(90deg, #ffba00 0%, #ff6d00 100%)",
-        },
+        // "&::before": {
+        //   content: '""',
+        //   position: "absolute",
+        //   top: 0,
+        //   left: 0,
+        //   right: 0,
+        //   height: "4px",
+        //   background: "linear-gradient(90deg, #ffba00 0%, #ff6d00 100%)",
+        // },
       }}
     >
       <Container maxWidth="xl">
@@ -130,7 +130,7 @@ const supportLinks = [
               <Typography
                 variant="body1"
                 sx={{
-                  color: "#ffba00",
+                  color: "#000000",
                   fontWeight: 700,
                   mb: 1.5,
                   fontSize: "1.1rem",
@@ -143,7 +143,7 @@ const supportLinks = [
                 variant="body2"
                 sx={{
                   mb: 3,
-                  color: "#b0bec5",
+                  color: "#000000",
                   lineHeight: 1.6,
                   fontSize: "0.95rem",
                   textAlign: { xs: "center", md: "left" },
@@ -159,7 +159,7 @@ const supportLinks = [
             <Typography
               variant="h6"
               sx={{
-                color: "#ffba00",
+                color: "#000000",
                 fontWeight: 700,
                 mb: 2.5,
                 fontSize: "1.1rem",
@@ -171,7 +171,7 @@ const supportLinks = [
                   left: 0,
                   width: "50px",
                   height: "3px",
-                  backgroundColor: "#ff6d00",
+                  backgroundColor: "#00ff08",
                 },
               }}
             >
@@ -195,11 +195,11 @@ const supportLinks = [
           onClick={() => router.push(item.path)}
           sx={{
             cursor: "pointer",
-            color: "#b0bec5",
+            color: "#000000",
             fontSize: "0.95rem",
             transition: "all 0.3s ease",
             "&:hover": {
-              color: "#ffba00",
+              color: "#ffffff",
               transform: "translateX(5px)",
             },
           }}
@@ -215,7 +215,7 @@ const supportLinks = [
             <Typography
               variant="h6"
               sx={{
-                color: "#ffba00",
+                color: "#000000",
                 fontWeight: 700,
                 mb: 2.5,
                 fontSize: "1.1rem",
@@ -227,7 +227,7 @@ const supportLinks = [
                   left: 0,
                   width: "50px",
                   height: "3px",
-                  backgroundColor: "#ff6d00",
+                  backgroundColor: "#0dff00",
                 },
               }}
             >
@@ -251,11 +251,11 @@ const supportLinks = [
           onClick={() => router.push(item.path)}
           sx={{
             cursor: "pointer",
-            color: "#b0bec5",
+            color: "#000000",
             fontSize: "0.95rem",
             transition: "all 0.3s ease",
             "&:hover": {
-              color: "#ffba00",
+              color: "#ffffff",
               transform: "translateX(5px)",
             },
           }}
@@ -320,7 +320,7 @@ const supportLinks = [
             <Typography
               variant="h6"
               sx={{
-                color: "#ffba00",
+                color: "#000000",
                 fontWeight: 700,
                 mb: 2.5,
                 fontSize: "1.1rem",
@@ -332,13 +332,13 @@ const supportLinks = [
                   left: 0,
                   width: "50px",
                   height: "3px",
-                  backgroundColor: "#ff6d00",
+                  backgroundColor: "#ffffff",
                 },
               }}
             >
               Newsletter
             </Typography>
-            <Typography variant="body2" color="#b0bec5" mb={2}>
+            <Typography variant="body2" color="#000000" mb={2}>
               Subscribe to our newsletter for the latest franchise opportunities and industry insights.
             </Typography>
 
@@ -350,7 +350,7 @@ const supportLinks = [
                   left: "50%",
                   transform: "translateX(-50%)",
                   backgroundColor: response ? "green" : "red",
-                  color: "white",
+                  color: "black",
                   border: "1px solid #c3e6cb",
                   borderRadius: "8px",
                   padding: "8px 40px",
@@ -376,7 +376,7 @@ const supportLinks = [
                   borderRadius: "4px 0 0 4px",
                   fontSize: "0.95rem",
                   backgroundColor: "#1e3a5c",
-                  color: "#fff",
+                  color: "#ffffff",
                   outline: "none",
                 }}
                 onChange={(e) => setEmail(e.target.value)}
@@ -401,7 +401,7 @@ const supportLinks = [
 </Box>
             {/* Social Media */}
             <Box sx={{ ml: { xs: 4, md: 18}, mt: { xs: 3, sm: 0, md: 5 } }}>
-              <Typography variant="body2" color="#b0bec5" mb={1.5}>
+              <Typography variant="body2" color="#000000" mb={1.5}>
                 Connect with us:
               </Typography>
               <Box sx={{ display: "flex", gap: 1.5 }}>
@@ -445,7 +445,7 @@ const supportLinks = [
         >
           <Typography
             variant="body2"
-            color="#b0bec5"
+            color="#000000"
             sx={{ fontSize: "0.85rem", mb: { xs: 2, sm: 0 } }}
           >
             © 2025 MrFranchise.in. All Rights Reserved.

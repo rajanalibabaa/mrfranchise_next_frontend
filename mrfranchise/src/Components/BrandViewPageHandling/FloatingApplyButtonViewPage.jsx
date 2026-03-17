@@ -1,3 +1,4 @@
+
 "use client";
 import React from "react";
 import {
@@ -30,18 +31,19 @@ const FloatingApplyButton = ({ isMobile, brand, toggleDrawer }) => {
 
   
     const [open, setOpen] = React.useState(false);
-    const [hide, setHide] = React.useState(false);
     const { AccessToken } = useSelector((state) => state.auth);
 
     const handleApplyClick = (event) => {
-      setHide(true);
+      
     
     if (AccessToken) {
       toggleDrawer(true)(event);
     } else {
       setOpen(true);
+          console.log("AccessToken in FloatingApplyButton:", AccessToken);
 
     }
+      ;
   };
 
 
@@ -51,10 +53,10 @@ const FloatingApplyButton = ({ isMobile, brand, toggleDrawer }) => {
         position: "fixed",
         bottom: 0,
         left: 0,
-        right:isMobile ? 0 : 600,
-        px: isMobile ? 1.5 : 0,
         display: "flex",
-        justifyContent: isMobile ? "space-evenly" : "flex-end",
+        alignItems: "center",
+        justifyContent: "center",
+        width: "100%",
         mb:{
           xs: 2,
           sm: 2,
@@ -68,8 +70,7 @@ const FloatingApplyButton = ({ isMobile, brand, toggleDrawer }) => {
       }}
     >
       {/* APPLY NOW */}
-      {!hide && (
-        <motion.div
+      <motion.div
         animate={{ y: [0, -6, 0] }}
         transition={{ repeat: Infinity, duration: 2 }}
         whileTap={{ scale: 0.95 }}
@@ -85,14 +86,17 @@ const FloatingApplyButton = ({ isMobile, brand, toggleDrawer }) => {
             py: 1.3,
             maxHeight:{
               xs: 70,
-              sm: 50,
+              sm: 60,
               md: 60,
               lg: 60,
               xl: 60,
             },
+            
             animation: `${bounce} 2s infinite`,
             boxShadow: "0 6px 16px rgba(0,0,0,0.25)",
-            "&:hover": { backgroundColor: "#25d365b5" },
+            "&:hover": { backgroundColor: "#ffffff" },
+            color:'black',
+            
           }}
         >
           <Box textAlign="center" display={'flex'} gap={1}> 
@@ -102,7 +106,6 @@ const FloatingApplyButton = ({ isMobile, brand, toggleDrawer }) => {
           </Box>
         </Button>
       </motion.div>
-      )}
 
       {/* WHATSAPP */}
       {/* {whatsappLink && (

@@ -1,3 +1,5 @@
+
+
 "use client";
 import React, { useState, useCallback, memo, useMemo, useRef, useEffect } from "react";
 import {
@@ -47,6 +49,7 @@ import {
 import { RiBookmark3Fill } from "react-icons/ri";
 import { VideoPlayer } from "@/services/VideoControllerMedia/VideoPlayercomponents.jsx";
 import confetti from "canvas-confetti";
+import { useSelector } from "react-redux";
 
 const cardStyles = {
   width: { xs: "40vh", sm: "calc(50% - 10px)", md: 260 },
@@ -122,10 +125,9 @@ const BrandCard = memo(
     const videoRef = useRef(null);
     const likeButtonRef = useRef(null);
     const shortlistButtonRef = useRef(null);
-const [token, setToken] = useState(null);
-useEffect(() => {
-  setToken(localStorage.getItem("accessToken"));
-}, []);
+ const { AccessToken } = useSelector((state) => state.auth);
+  console.log('BrandCard token:', AccessToken); // Debug log to check token value
+  const token = AccessToken;
     // 🎉 Updated confetti effect to use element position
     const triggerCelebration = (color, buttonRef) => {
       if (buttonRef && buttonRef.current) {
@@ -176,9 +178,13 @@ useEffect(() => {
     const handleLike = useCallback(async () => {
       if (likeProcessing) return;
 
+    // Debug log to check token value
+
       if (!token) {
         onShowLogin(true);
         return;
+      }else{
+        onShowLogin(false);
       }
 
       setLikeProcessing(true);
@@ -213,6 +219,8 @@ useEffect(() => {
       if (!token) {
         onShowLogin(true);
         return;
+      }else{
+        onShowLogin(false);
       }
 
       setShortlistProcessing(true);
@@ -518,3 +526,4 @@ const DetailItem = memo(({ icon, label, value }) => {
 });
 
 export default BrandCard;
+
