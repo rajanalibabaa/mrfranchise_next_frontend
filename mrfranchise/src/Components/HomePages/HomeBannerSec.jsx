@@ -772,7 +772,6 @@ export default memo(function HomeBannerSec() {
           );
         })}
 
-     
       {/* <BackgroundWrapper>
         <Box sx={{ py: 3 }}>
           <AdSlot key={pathname} {...ADS.HOME.FOOTER_RECTANGLE} />
@@ -780,7 +779,7 @@ export default memo(function HomeBannerSec() {
       </BackgroundWrapper> */}
 
       <CompareButton />
-      <BrandComparison />
+      <BrandComparison /> 
       <Footer />
     </>
   );
