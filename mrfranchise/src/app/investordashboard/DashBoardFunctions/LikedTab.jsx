@@ -7,13 +7,13 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import  Favorite  from "@mui/icons-material/Favorite";
 import BrandCard from "./BrandCard";
-import { useMemo } from "react"; 
-
-const LikedTab = ({ 
-  items = [], 
-  isLoading, 
-  errorMessage, 
-  currentPage = 1, 
+import { useMemo } from "react";
+ 
+const LikedTab = ({
+  items = [],
+  isLoading,
+  errorMessage,
+  currentPage = 1,
   totalPages = 1,
   handlePageChange,
   likedStates = {},
@@ -25,10 +25,10 @@ const LikedTab = ({
 }) => {
    const sortedItems = useMemo(() => {
     if (!items || items.length === 0) return [];
-    
+   
     return [...items].reverse();
   }, [items]);
-
+ 
   if (isLoading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}>
@@ -36,7 +36,7 @@ const LikedTab = ({
       </Box>
     );
   }
-
+ 
   if (errorMessage) {
     return (
       <Box sx={{ py: 10, textAlign: 'center' }}>
@@ -44,7 +44,7 @@ const LikedTab = ({
       </Box>
     );
   }
-
+ 
   return (
     <>
       {isPaginating && <LinearProgress sx={{ width: '100%', mb: 2 }} />}
@@ -53,8 +53,8 @@ const LikedTab = ({
           <Grid container spacing={3} justifyContent="center">
            {sortedItems.map((item) =>(
               <Grid item xs={12} sm={6} md={4} lg={2.5} key={item?.uuid || Math.random()}>
-                <BrandCard 
-                  item={item} 
+                <BrandCard
+                  item={item}
                   type="liked"
                   likedStates={likedStates}
                   shortlistedStates={shortlistedStates}
@@ -65,7 +65,7 @@ const LikedTab = ({
               </Grid>
             ))}
           </Grid>
-          
+         
           {totalPages > 1 && (
             <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4, mb: 2 }}>
               <Pagination
@@ -88,5 +88,5 @@ const LikedTab = ({
     </>
   );
 };
-
+ 
 export default LikedTab;
