@@ -7,6 +7,7 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import  Favorite  from "@mui/icons-material/Favorite";
 import BrandCard from "./BrandCard";
+import { useMemo } from "react"; 
 
 const LikedTab = ({ 
   items = [], 
@@ -22,6 +23,12 @@ const LikedTab = ({
   onToggleShortlist,
   isPaginating
 }) => {
+   const sortedItems = useMemo(() => {
+    if (!items || items.length === 0) return [];
+    
+    return [...items].reverse();
+  }, [items]);
+
   if (isLoading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}>
@@ -41,10 +48,10 @@ const LikedTab = ({
   return (
     <>
       {isPaginating && <LinearProgress sx={{ width: '100%', mb: 2 }} />}
-      {items.length > 0 ? (
+    {sortedItems.length > 0 ? (
         <>
           <Grid container spacing={3} justifyContent="center">
-            {items.map((item) => (
+           {sortedItems.map((item) =>(
               <Grid item xs={12} sm={6} md={4} lg={2.5} key={item?.uuid || Math.random()}>
                 <BrandCard 
                   item={item} 

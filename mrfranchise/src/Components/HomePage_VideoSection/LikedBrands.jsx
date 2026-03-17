@@ -41,6 +41,13 @@ const LikedBrands = () => {
     error = null,
   } = useSelector((state) => state.likedBrands || {});
 
+  //To reverse the order of brands to show most recently liked first
+const sortedBrands = useMemo(() => {
+    if (!brands || brands.length === 0) return [];
+    
+    // Most recently liked first
+    return [...brands].reverse();
+  }, [brands]);
   // console.log("Liked Brands:", brands);
   // console.log("Pagination:", currentPage, totalPages);
 
@@ -163,7 +170,7 @@ const LikedBrands = () => {
     setNotification((prev) => ({ ...prev, open: false }));
   };
 
-  if (brands.length === 0) {
+  if (sortedBrands.length === 0) {
     return null;
   }
 
@@ -326,8 +333,8 @@ const LikedBrands = () => {
             </Box>
           ) : error ? (
             <Typography color="error">{error}</Typography>
-          ) : brands.length ? (
-            brands.map((brand) => (
+          ) : sortedBrands.length ? (
+            sortedBrands.map((brand) => (
               <motion.div
                 key={brand.uuid || brand.id}
                 initial={{ opacity: 0 }}
