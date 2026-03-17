@@ -142,14 +142,30 @@ const sortedBrands = useMemo(() => {
     smoothScrollTo(newScroll);
   }, [getScrollDistance, smoothScrollTo]);
  
-  const handleScroll = useCallback(() => {
+  const throttle = (func, limit) => {
+  let inThrottle;
+  return (...args) => {
+    if (!inThrottle) {
+      func(...args);
+      inThrottle = true;
+      setTimeout(() => (inThrottle = false), limit);
+    }
+  };
+};
+
+  const handleScroll = useCallback(
+  throttle(() => {
     const container = scrollContainerRef.current;
     if (!container) return;
+
     setShowStartShadow(container.scrollLeft > 10);
     setShowEndShadow(
-      container.scrollLeft < container.scrollWidth - container.clientWidth - 10
+      container.scrollLeft <
+        container.scrollWidth - container.clientWidth - 10
     );
-  }, []);
+  }, 100),
+  []
+);
  
   useEffect(() => {
     const container = scrollContainerRef.current;

@@ -2,31 +2,30 @@
 
 import React, { useState, useEffect, Suspense, useCallback, memo } from "react";
 import { useInView } from "react-intersection-observer";
-// import { FixedSizeList as List } from "react-window";
 import { AutoSizer } from "react-virtualized-auto-sizer";
-import { useRouter } from "next/navigation";
-import {
-  Box,
-  Typography,
-  Container,
-  useMediaQuery,
-  useTheme,
-  CircularProgress,
-} from "@mui/material";
+
+import { useMediaQuery, useTheme } from "@mui/material";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Container from "@mui/material/Container";
+import CircularProgress from "@mui/material/CircularProgress";
 import { motion, useAnimation } from "framer-motion";
 import dynamic from "next/dynamic";
 import PopupModal from "@/Components/PopUpModal/PopUpModal";
-import FilterDropdowns from "@/Components/Navbar/FilterDropdownsData";
+// import FilterDropdowns from "@/Components/Navbar/FilterDropdownsData";
 import { useDispatch } from "react-redux";
-import Footer from "@/Components/Footers/Footer";
-import Navbar from "@/Components/Navbar/NavBar";
+// import Footer from "@/Components/Footers/Footer";
+// import Navbar from "@/Components/Navbar/NavBar";
 import CompareButton from "./CompareButtonsCompenents";
-import BrandComparison from "./brandCompariosn";
-import AdSlot from "../ads/GoogleAd";
-import { ADS } from "@/config/ads.config.js";
+// import BrandComparison from "./brandCompariosn";
+// import AdSlot from "../ads/GoogleAd";
+// import { ADS } from "@/config/ads.config.js";
 import { Fragment } from "react";
-import { usePathname } from "next/navigation";
-
+import Image from "next/image";
+const Navbar = dynamic(() => import("@/Components/Navbar/NavBar"), { loading:()=> <Box height={60}/> });
+const FilterDropdowns = dynamic(() => import("@/Components/Navbar/FilterDropdownsData"), {loading:()=> <Box height={60}/> });
+const Footer = dynamic(() => import("@/Components/Footers/Footer"), { ssr: true });
+const BrandComparison = dynamic(() => import("./brandCompariosn"), { ssr: false });
 const FixedSizeList = dynamic(
   () => import("react-window").then((mod) => mod.FixedSizeList),
   { ssr: false },
@@ -47,7 +46,7 @@ class ErrorBoundary extends React.Component {
   render() {
     if (this.state.hasError) {
       return (
-        <Box p={3} textAlign="center" bgcolor="#fff5f5">
+        <Box p={0} textAlign="center" bgcolor="#12e632">
           <Typography color="error">
             Failed to load: {this.state.error?.message}
           </Typography>
@@ -57,39 +56,6 @@ class ErrorBoundary extends React.Component {
     return this.props.children;
   }
 }
-
-// // --- LazyCard and VirtualizedCardList for scalable, virtualized sections ---
-// const LazyCard = React.memo(({ component: CardComponent, index, style }) => {
-//   const [ref, inView] = useInView({
-//     triggerOnce: true,
-//     rootMargin: "400px",
-//   });
-
-//   return (
-//     <div ref={ref} style={style}>
-//       {inView ? (
-//         <Suspense
-//           fallback={
-//             <Box
-//               minHeight={100}
-//               display="flex"
-//               alignItems="center"
-//               justifyContent="center"
-//             >
-//               <CircularProgress size={24} color="success" />
-//             </Box>
-//           }
-//         >
-//           <CardComponent key={index} />
-//         </Suspense>
-//       ) : (
-//         <div style={{ height: "100%", backgroundColor: "#f5f5f5" }} />
-//       )}
-//     </div>
-//   );
-// });
-
-// LazyCard.displayName = "LazyCard";
 
 const VirtualizedCardList = memo(({ items, itemHeight = 440 }) => {
   const Row = ({ index, style }) => (
@@ -101,7 +67,7 @@ const VirtualizedCardList = memo(({ items, itemHeight = 440 }) => {
             display="flex"
             alignItems="center"
             justifyContent="center"
-            bgcolor="#fafafa"
+            bgcolor="#75e512"
           >
             <CircularProgress size={32} />
           </Box>
@@ -138,10 +104,10 @@ const ComponentLoader = memo(({ Component, ...props }) => (
           display="flex"
           justifyContent="center"
           alignItems="center"
+          
           minHeight={200}
         >
-          <CircularProgress />
-        </Box>
+<Box height={200} bgcolor="#eee" borderRadius={2} />        </Box>
       }
     >
       <Component {...props} />
@@ -194,14 +160,7 @@ const useDynamicComponents = () => {
         () => import("@/Components/HomePage_VideoSection/HomeSection6"),
         { ssr: false },
       ),
-      // HomeSection7: dynamic(
-      //   () => import("@/Components/HomePage_VideoSection/HomeSection7"),
-      //   { ssr: false },
-      // ),
-      // HomeSection8: dynamic(
-      //   () => import("@/Components/HomePage_VideoSection/HomeSection8"),
-      //   { ssr: false },
-      // ),
+
       ToTrendingBrands: dynamic(
         () => import("@/Components/HomePage_VideoSection/ToTrendingBrands"),
         { ssr: false },
@@ -216,27 +175,13 @@ const useDynamicComponents = () => {
   );
 };
 
-// const BackgroundWrapper = ({ children }) => (
-//   <Box
-//     sx={{
-//       backgroundImage: "url(/bg25.jpeg)",
-//       backgroundAttachment: "fixed",
-//       backgroundSize: "400px",
-//       backgroundRepeat: "repeat",
-//       width: "100%",
-//     }}
-//   >
-//     {children}
-//   </Box>
-// );
-
 // --- Section that lazy loads content on scroll-in-view ---
 const LazySection = memo(
   ({ componentKey, dynamicComponents, background, isMobile }) => {
     const Component = dynamicComponents[componentKey];
     const { ref, inView } = useInView({
       triggerOnce: true,
-      rootMargin: "300px",
+      rootMargin: "150px",
     });
 
     if (!Component) return null;
@@ -500,9 +445,8 @@ export default memo(function HomeBannerSec() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const dispatch = useDispatch();
-  const router = useRouter();
+ 
   const dynamicComponents = useDynamicComponents();
-  const pathname = usePathname();
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [bannerIndex, setBannerIndex] = useState(0);
   const [showPopup, setShowPopup] = useState(false);
@@ -570,20 +514,12 @@ export default memo(function HomeBannerSec() {
 
   const handlePopupClose = useCallback(() => setIsPopupOpen(false), []);
 
-  if (isLoading) {
-    return (
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "100vh",
-        }}
-      >
-        <CircularProgress color="warning" size={60} />
-      </Box>
-    );
-  }
+  // Remove blocking UI
+{isLoading && (
+  <Box position="fixed" top={10} right={10}>
+    <CircularProgress size={30} />
+  </Box>
+)}
 
   return (
     <>
@@ -601,7 +537,7 @@ export default memo(function HomeBannerSec() {
       <Box
         mt={0}
         sx={{
-          background: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${pageConfig.heroBanner.backgroundImage})`,
+          // background: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${pageConfig.heroBanner.backgroundImage})`,
           backgroundSize: "cover",
           backgroundPosition: "center",
           backgroundAttachment: isMobile ? "scroll" : "fixed",
@@ -615,6 +551,21 @@ export default memo(function HomeBannerSec() {
           justifyContent: "center",
         }}
       >
+        <Image
+        src={pageConfig.heroBanner.backgroundImage}
+        alt="Hero Banner"
+        fill
+        priority
+        style={{ objectFit: 'cover' }}
+      />
+  <Box
+        sx={{
+          position: 'absolute',
+          inset: 0,
+          background: 'linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5))',
+          zIndex: 1,
+        }}
+      />
         <Container
           sx={{
             zIndex: 2,
@@ -623,7 +574,7 @@ export default memo(function HomeBannerSec() {
             mt: 3,
           }}
         >
-          <motion.div
+          <Box
             key={bannerIndex}
             initial={{ opacity: 0, x: 80 }}
             animate={{ opacity: 1, x: 0 }}
@@ -647,9 +598,9 @@ export default memo(function HomeBannerSec() {
                 {currentText.title.text}
               </Box>
             </Typography>
-          </motion.div>
+          </Box>
 
-          <motion.div variants={pageConfig.animations.item}>
+          <Box variants={pageConfig.animations.item}>
             <Typography
               variant={isMobile ? "body1" : "subtitle1"}
               mt={isMobile ? 0 : 3}
@@ -691,41 +642,13 @@ export default memo(function HomeBannerSec() {
                 )[1]
               }
             </Typography>
-          </motion.div>
+          </Box>
 
           <FilterDropdowns />
         </Container>
       </Box>
 
-      {/* {pageConfig.sections
-        .filter((section) => {
-          if (
-            !isLoggedIn &&
-            ["ViewBrands", "ShortlistBrands", "LikedBrands"].includes(
-              section.component
-            )
-          ) {
-            return false;
-          }
-          return true;
-        })
-        .map((section, index) => (
-          <LazySection
-            key={index}
-            componentKey={section.component}
-            dynamicComponents={dynamicComponents}
-            background={{
-              backgroundImage: "url(/bg25.jpeg)",
-              backgroundAttachment: "fixed",
-              backgroundSize: "400px auto",
-              backgroundRepeat: "repeat",
-              minHeight: "87vh",
-              width: "100%",
-            }}
-            isMobile={isMobile}
-          />
-        ))} */}
-
+    
       {pageConfig.sections
         .filter(
           (s) =>
@@ -735,13 +658,13 @@ export default memo(function HomeBannerSec() {
             ),
         )
         .map((section, i) => {
-          const addIndex = Math.floor(i / 3);
+          // const addIndex = Math.floor(i / 3);
 
-          const adSlots = [
-            ADS.HOME.INLINE_1,
-            ADS.HOME.INLINE_2,
-            ADS.HOME.INLINE_3,
-          ];
+          // const adSlots = [
+          //   ADS.HOME.INLINE_1,
+          //   ADS.HOME.INLINE_2,
+          //   ADS.HOME.INLINE_3,
+          // ]; 
           return (
             <Fragment key={i}>
               {/* SECTION */}
@@ -750,7 +673,7 @@ export default memo(function HomeBannerSec() {
                 dynamicComponents={dynamicComponents}
                 background={{
                   backgroundImage: "url(/bg25.jpeg)",
-                  backgroundAttachment: "fixed",
+                  backgroundAttachment: "scroll",
                   backgroundSize: "400px",
                   backgroundRepeat: "repeat",
                 }}
@@ -779,7 +702,7 @@ export default memo(function HomeBannerSec() {
       </BackgroundWrapper> */}
 
       <CompareButton />
-      <BrandComparison /> 
+      <BrandComparison />
       <Footer />
     </>
   );

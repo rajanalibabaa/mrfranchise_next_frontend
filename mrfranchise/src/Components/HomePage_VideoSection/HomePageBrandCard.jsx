@@ -443,4 +443,4 @@ const HomePageBrandCard = React.memo(
 
 HomePageBrandCard.displayName = "HomePageBrandCard";
 
-export default HomePageBrandCard;
+export default React.memo(HomePageBrandCard) ;

@@ -81,6 +81,8 @@ const {
     dispatch(homeSection1({ page: 1 }));
   }, [dispatch]);
 
+  const isFetchingRef = useRef(false);
+
   // Handle scroll to load more
   const handleScroll = useCallback(() => {
     const container = scrollContainerRef.current;
@@ -94,19 +96,36 @@ const {
     if (
       scrollLeft + clientWidth >= scrollWidth - 100 && 
       pagination?.hasNextPage && 
-      !isLoading
+      !isLoading && !isFetchingRef.current
     ) {
+      isFetchingRef.current = true;
       const nextPage = currentPage + 1;
       setCurrentPage(nextPage);
-      dispatch(homeSection1({ page: nextPage }));
+      dispatch(homeSection1({ page: nextPage }))
+      .finally(() =>{
+        isFetchingRef.current = false
+      })
     }
   }, [pagination, isLoading, currentPage, dispatch]);
+
+  const debounce = (fn, delay) => {
+  let timer;
+  return (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn(...args), delay);
+  };
+};
+
+const debouncedHandleScroll = useMemo(
+  () => debounce(handleScroll, 100),
+  [handleScroll]
+);
 
   // Set up scroll event listener
   useEffect(() => {
     const container = scrollContainerRef.current;
     if (container) {
-      container.addEventListener("scroll", handleScroll);
+      container.addEventListener("scroll", debouncedHandleScroll);
       handleScroll(); // Initial check
     }
     return () => {
@@ -130,7 +149,8 @@ const {
     };
 
     updateVisibleCards();
-    window.addEventListener("resize", updateVisibleCards);
+const debouncedResize = debounce(updateVisibleCards, 200);
+window.addEventListener("resize", debouncedResize);
     return () => window.removeEventListener("resize", updateVisibleCards);
   }, [dimensions.width, isMobile]);
 
@@ -170,21 +190,18 @@ const {
   }, [handleScroll]);
 
   const handleNextClick = () => {
-    const container = scrollContainerRef.current;
-    if (!container) return;
-    const distance = getScrollDistance();
-    const maxScroll = container.scrollWidth - container.clientWidth;
-    const newScroll = Math.min(container.scrollLeft + distance, maxScroll);
-    smoothScrollTo(newScroll);
-  };
+  scrollContainerRef.current?.scrollBy({
+    left: getScrollDistance(),
+    behavior: "smooth",
+  });
+};
 
-  const handlePrevClick = () => {
-    const container = scrollContainerRef.current;
-    if (!container) return;
-    const distance = getScrollDistance();
-    const newScroll = Math.max(container.scrollLeft - distance, 0);
-    smoothScrollTo(newScroll);
-  };
+const handlePrevClick = () => {
+  scrollContainerRef.current?.scrollBy({
+    left: -getScrollDistance(),
+    behavior: "smooth",
+  });
+};
 
   const brandCategoriesName = brands[0]?.brandCategories?.main;
   const handleClickOpenBrandCategories = () => {
@@ -205,13 +222,11 @@ const {
   if (newWindow) newWindow.focus();
 };
 
-  if (isLoading && brands.length === 0) {
-    return (
-      <Box sx={{ textAlign: "center", p: 4 }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
+  {isLoading && brands.length === 0 && (
+  <Box sx={{ position: "absolute", top: 10, right: 10 }}>
+    <CircularProgress size={20} />
+  </Box>
+)}
 
   if (error) {
     return (
@@ -369,7 +384,7 @@ onClick={handleClickOpenBrandCategories}
           }}
         >
           {brands.map((brand) => (
-            <motion.div key={brand.uuid || brand.id}>
+            <Box key={brand.uuid || brand.id}>
               <HomePageBrandCard
                 brand={brand}
                 likeProcessing={likeProcessing}
@@ -378,7 +393,7 @@ onClick={handleClickOpenBrandCategories}
                 isMobile={isMobile}
                 isTablet={isTablet}
               />
-            </motion.div>
+            </Box>
           ))}
           {isLoading && brands.length > 0 && (
             <Box sx={{ display: "flex", alignItems: "center", pl: 2 }}>

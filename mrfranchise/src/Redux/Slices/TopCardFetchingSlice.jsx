@@ -321,109 +321,7 @@ export const homeSection8 = createAsyncThunk(
     }
   }
 );
-// // Top Hotels And Resorts Franchises
-// export const homeSection8 = createAsyncThunk(
-//   "homeSection8/fetchAll",
-//   async ({ page = 1 }, { rejectWithValue }) => {
-//     try {
-//       const response = await axios.get(
-//         `${API_BASE_URL}/overAllPlatformOnlyMainCategory?main=Bars, Pubs %26 Lounges`,
-//         {
-//           params: { page, id: userId },
-//         }
-//       );
-// console.log('sec8res',response);
 
-//       if (!response.data.data || !response.data.data.brands) {
-//         console.error("Unexpected API response structure:", response.data);
-//         throw new Error("Invalid API response structure");
-//       }
-//       return {
-//         brands: response.data.data.brands,
-//         pagination: response.data.data.pagination || {
-//           currentPage: page,
-//           totalPages: 1,
-//           totalItems: 0,
-//           hasNextPage: false,
-//           hasPreviousPage: false,
-//         },
-//       };
-//     } catch (error) {
-//       console.error("API Error:", error.response?.data || error.message);
-//       return rejectWithValue(
-//         error.response?.data || { message: error.message }
-//       );
-//     }
-//   }
-// );
-// // Top Retail Franchises
-// export const homeSection9 = createAsyncThunk(
-//   "homeSection9/fetchAll",
-//   async ({ page = 1 }, { rejectWithValue }) => {
-//     try {
-//       const response = await axios.get(
-//         `${API_BASE_URL}/overAllPlatformOnlyMainCategory?main=Retails`,
-//         {
-//           params: { page, id: userId },
-//         }
-//       );
-
-//       if (!response.data.data || !response.data.data.brands) {
-//         console.error("Unexpected API response structure:", response.data);
-//         throw new Error("Invalid API response structure");
-//       }
-//       return {
-//         brands: response.data.data.brands,
-//         pagination: response.data.data.pagination || {
-//           currentPage: page,
-//           totalPages: 1,
-//           totalItems: 0,
-//           hasNextPage: false,
-//           hasPreviousPage: false,
-//         },
-//       };
-//     } catch (error) {
-//       console.error("API Error:", error.response?.data || error.message);
-//       return rejectWithValue(
-//         error.response?.data || { message: error.message }
-//       );
-//     }
-//   }
-// );
-// // Top Sport & Fitness & Entertainment Franchises
-// export const homeSection10 = createAsyncThunk(
-//   "homeSection10/fetchAll",
-//   async ({ page = 1 }, { rejectWithValue }) => {
-//     try {
-//       const response = await axios.get(
-//         `${API_BASE_URL}/overAllPlatformOnlyMainCategory?main=Sports %26 Fitness %26 Entertainment`,
-//         {
-//           params: { page, id: userId },
-//         }
-//       );
-
-//       if (!response.data.data || !response.data.data.brands) {
-//         console.error("Unexpected API response structure:", response.data);
-//         throw new Error("Invalid API response structure");
-//       }
-//       return {
-//         brands: response.data.data.brands,
-//         pagination: response.data.data.pagination || {
-//           currentPage: page,
-//           totalPages: 1,
-//           totalItems: 0,
-//           hasNextPage: false,
-//           hasPreviousPage: false,
-//         },
-//       };
-//     } catch (error) {
-//       console.error("API Error:", error.response?.data || error.message);
-//       return rejectWithValue(
-//         error.response?.data || { message: error.message }
-//       );
-//     }
-//   }
-// );
 const initialState = {
   homeSection1: {
     brands: [],
@@ -586,14 +484,7 @@ const OverAllPlatform = createSlice({
       state.homeSection8 = initialState.homeSection8;
     },
 
-    // resethomeSection9: (state) => {
-    //   state.homeSection9 = initialState.homeSection9;
-    // },
-
-    // resethomeSection10: (state) => {
-    //   state.homeSection10 = initialState.homeSection10;
-    // },
-
+   
     // ----------------------------------------------------
     homeSection1ViewedCount: (state) => {
       state.homeSection1.viewedBrandsCount += 1;
@@ -619,13 +510,7 @@ const OverAllPlatform = createSlice({
     homeSection8ViewedCount: (state) => {
       state.homeSection8.viewedBrandsCount += 1;
     },
-    // homeSection9ViewedCount: (state) => {
-    //   state.homeSection9.viewedBrandsCount += 1;
-    // },
-    // homeSection10ViewedCount: (state) => {
-    //   state.homeSection10.viewedBrandsCount += 1;
-    // },
-
+   
     // ------------------------------------------------------------
     resetHomeSection1ViewedCount: (state) => {
       state.homeSection1.viewedBrandsCount = 0;
@@ -651,12 +536,7 @@ const OverAllPlatform = createSlice({
     resetHomeSection8ViewedCount: (state) => {
       state.homeSection8.viewedBrandsCount = 0;
     },
-    // resetHomeSection9ViewedCount: (state) => {
-    //   state.homeSection9.viewedBrandsCount = 0;
-    // },
-    // resetHomeSection10ViewedCount: (state) => {
-    //   state.homeSection10.viewedBrandsCount = 0;
-    // },
+    
 
     toggleHomeCardLike: (state, action) => {
       const brandId = action.payload;
@@ -732,24 +612,7 @@ const OverAllPlatform = createSlice({
         }
         return brand;
       });
-      // state.homeSection9.brands = state.homeSection9.brands.map((brand) => {
-      //   if (brand.uuid === brandId) {
-      //     return {
-      //       ...brand,
-      //       isLiked: !brand.isLiked,
-      //     };
-      //   }
-      //   return brand;
-      // });
-      // state.homeSection10.brands = state.homeSection10.brands.map((brand) => {
-      //   if (brand.uuid === brandId) {
-      //     return {
-      //       ...brand,
-      //       isLiked: !brand.isLiked,
-      //     };
-      //   }
-      //   return brand;
-      // });
+     
     },
 
     toggleHomeCardShortlist: (state, action) => {
@@ -826,24 +689,7 @@ const OverAllPlatform = createSlice({
         }
         return brand;
       });
-      // state.homeSection9.brands = state.homeSection9.brands.map((brand) => {
-      //   if (brand.uuid === brandId) {
-      //     return {
-      //       ...brand,
-      //       isShortListed: !brand.isShortListed,
-      //     };
-      //   }
-      //   return brand;
-      // });
-      // state.homeSection10.brands = state.homeSection10.brands.map((brand) => {
-      //   if (brand.uuid === brandId) {
-      //     return {
-      //       ...brand,
-      //       isShortListed: !brand.isShortListed,
-      //     };
-      //   }
-      //   return brand;
-      // });
+     
     },
   },
   extraReducers: (builder) => {
@@ -977,39 +823,7 @@ const OverAllPlatform = createSlice({
           action.payload?.message || action.error.message;
       })
 
-      // //restarunt
-
-      // .addCase(homeSection9.pending, (state) => {
-      //   state.homeSection9.isLoading = true;
-      //   state.homeSection9.error = null;
-      // })
-      // .addCase(homeSection9.fulfilled, (state, action) => {
-      //   state.homeSection9.isLoading = false;
-      //   state.homeSection9.brands = action.payload.brands;
-      //   state.homeSection9.pagination = action.payload.pagination;
-      // })
-      // .addCase(homeSection9.rejected, (state, action) => {
-      //   state.homeSection9.isLoading = false;
-      //   state.homeSection9.error =
-      //     action.payload?.message || action.error.message;
-      // })
-
-      // //restarunt
-
-      // .addCase(homeSection10.pending, (state) => {
-      //   state.homeSection10.isLoading = true;
-      //   state.homeSection10.error = null;
-      // })
-      // .addCase(homeSection10.fulfilled, (state, action) => {
-      //   state.homeSection10.isLoading = false;
-      //   state.homeSection10.brands = action.payload.brands;
-      //   state.homeSection10.pagination = action.payload.pagination;
-      // })
-      // .addCase(homeSection10.rejected, (state, action) => {
-      //   state.homeSection10.isLoading = false;
-      //   state.homeSection10.error =
-      //     action.payload?.message || action.error.message;
-      // });
+      
   },
 });
 
@@ -1022,8 +836,7 @@ export const {
   resethomeSection6,
   resethomeSection7,
   resethomeSection8,
-  // resethomeSection9,
-  // resethomeSection10,
+ 
 
   homeSection1ViewedCount,
   homeSection2ViewedCount,
@@ -1033,8 +846,7 @@ export const {
   homeSection6ViewedCount,
   homeSection7ViewedCount,
   homeSection8ViewedCount,
-  // homeSection9ViewedCount,
-  // homeSection10ViewedCount,
+  
 
   resetHomeSection1ViewedCount,
   resetHomeSection2ViewedCount,
@@ -1044,8 +856,7 @@ export const {
   resetHomeSection6ViewedCount,
   resetHomeSection7ViewedCount,
   resetHomeSection8ViewedCount,
-  // resetHomeSection9ViewedCount,
-  // resetHomeSection10ViewedCount,
+ 
 
   toggleHomeCardLike,
   toggleHomeCardShortlist,
