@@ -365,7 +365,7 @@ const HomePageBrandCard = React.memo(
                       sx={{
                         bgcolor: "rgba(255,152,0,0.1)",
                         color: "orange.dark",
-                        fontWeight: 500,
+                        fontWeight: 700,
                       }}
                     />
                   </Stack>

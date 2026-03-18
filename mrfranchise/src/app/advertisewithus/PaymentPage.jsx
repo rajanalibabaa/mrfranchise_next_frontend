@@ -1,9 +1,8 @@
 "use client";
 
 import { useState } from "react";
-// import { useLocation, useNavigate } from "react-router-dom";
-import { useParams,useRouter} from "next/navigation"
-import { useTheme, keyframes } from "@mui/material";
+import { useRouter} from "next/navigation"
+import {  keyframes } from "@mui/material";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
@@ -40,10 +39,7 @@ const pulseAnimation = keyframes`
   100% { transform: scale(1); }
 `;
 
-const shimmerAnimation = keyframes`
-  0% { background-position: -200px 0; }
-  100% { background-position: 200px 0; }
-`;
+
 
 const gradientShift = keyframes`
   0% { background-position: 0% 50%; }
@@ -57,10 +53,7 @@ const PaymentPage = ({
   selectedListing,
   selectedPlan,
   onBack,
-  snackbar,
-  handleCloseSnackbar,
   isSubmitting,
-  setSnackbar,
   submitSuccess,
 }) => {
   const [paymentMethod, setPaymentMethod] = useState("upi");
@@ -72,9 +65,7 @@ const PaymentPage = ({
   });
   const [showQR, setShowQR] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
-  const theme = useTheme();
 
-  const location =useParams ();
   const navigate = useRouter();
 
   // const { selectedPlan } = location.state || {};
@@ -184,19 +175,7 @@ const PaymentPage = ({
     }
   };
 
-  const formatCardNumber = (value) => {
-    const v = value.replace(/\s+/g, "").replace(/[^0-9]/gi, "");
-    const matches = v.match(/\d{4,16}/g);
-    const match = (matches && matches[0]) || "";
-    const parts = [];
-    for (let i = 0, len = match.length; i < len; i += 4) {
-      parts.push(match.substring(i, i + 4));
-    }
-    if (parts.length) {
-      return parts.join(" ");
-    }
-    return value;
-  };
+
 
   return (
     <Box
@@ -798,20 +777,7 @@ const PaymentPage = ({
         )}
       </Box>
 
-      {/* <Snackbar
-                open={snackbar}
-                autoHideDuration={6000}
-                onClose={handleCloseSnackbar}
-                anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-              >
-                <Alert
-                  onClose={handleCloseSnackbar}
-                  severity={snackbar.severity}
-                  sx={{ width: "100%" }}
-                >
-                  {snackbar.message}
-                </Alert>
-              </Snackbar> */}
+     
     </Box>
   );
 };

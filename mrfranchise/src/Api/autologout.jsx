@@ -2,7 +2,7 @@
 import { logout } from "@/Redux/Slices/AuthSlice/authSlice";
 import { api } from "./api";
 import { postApi } from "./DefaultApi";
-import { use, useEffect } from "react";
+import {  useEffect } from "react";
 
 export const autoLogOut = async (dispatch) => {
 

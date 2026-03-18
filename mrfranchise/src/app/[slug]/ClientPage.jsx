@@ -5,13 +5,11 @@ import { Box } from "@mui/material";
 import dynamic from "next/dynamic";
 import Navbar from "@/Components/Navbar/NavBar";
 import Footer from "@/Components/Footers/Footer";
-// import Loading from "../all-franchise-brands/loading";
-//chaged
-// Dynamic import for better code splitting
+
 const BrandListNew = dynamic(
   () => import("../../Components/allbarndviewpage/brandListAllbrands"),
   {
-    // loading: () => <Loading />,
+    
     ssr: true,
   }
 );

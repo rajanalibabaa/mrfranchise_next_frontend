@@ -5,35 +5,36 @@ import React, {
   useEffect,
   useCallback,
   useMemo,
-  lazy,
   Suspense,
   useRef,
   startTransition,
   Fragment,
 } from "react";
 import {
-  Container,
-  Box,
-  Typography,
-  Button,
-  Divider,
-  CircularProgress,
-  Badge,
-  Drawer,
-  IconButton,
+  
   useMediaQuery,
   useTheme,
-  Tooltip,
-  Pagination,
-  Fade,
-  Skeleton,
+ 
 } from "@mui/material";
-import {
-  Close,
-  FilterAlt,
-  Clear as ClearIcon,
-  Compare,
-} from "@mui/icons-material";
+import Container from "@mui/material/Container";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Button from "@mui/material/Button";
+import Divider from "@mui/material/Divider";
+import CircularProgress from "@mui/material/CircularProgress";
+import Badge from "@mui/material/Badge";
+import Fade from "@mui/material/Fade";
+import Skeleton from "@mui/material/Skeleton";
+import Drawer from "@mui/material/Drawer";
+import IconButton from "@mui/material/IconButton";
+import Tooltip from "@mui/material/Tooltip";
+import Pagination from "@mui/material/Pagination";
+;
+import Close from "@mui/icons-material/Close";
+import FilterAlt from "@mui/icons-material/FilterAlt";
+import ClearIcon from "@mui/icons-material/Clear";
+import Compare from "@mui/icons-material/Compare";
+
 import dynamic from "next/dynamic";
 import { useDispatch, useSelector, shallowEqual } from "react-redux";
 import {
@@ -284,17 +285,7 @@ const pathname = usePathname();
     [],
   );
 
-  // ============================================
-  // EFFECTS
-  // ============================================
-
-  // Initial data fetch (only once)
-  // useEffect(() => {
-  //   if (!isInitialized) {
-  //     dispatch(fetchFilterOptions());
-  //     setIsInitialized(true);
-  //   }
-  // }, [dispatch, isInitialized]);
+ 
 
 useEffect(() => {
   dispatch(fetchFilterOptions());
@@ -306,27 +297,7 @@ useEffect(() => {
     searchTerm: filters.searchTerm || "",
   };
 
-  // Fetch brands when debounced filters change
-  // useEffect(() => {
-  //   if (isInitialized) {
-  //     const storedFilters = localStorageData.searchData
-  //     if (storedFilters?.searchTerm) {
-  //       filterdata.searchTerm = storedFilters.searchTerm;
-  //       localStorage.removeItem("franchiseFilters");
-  //       startTransition(() => {
-  //         dispatch(fetchFilteredBrands(storedFilters));
-  //       });
-  //     } else {
-  //       startTransition(() => {
-  //         dispatch(fetchFilteredBrands(debouncedFilters));
-  //       });
-  //     }
-  //   }
-  // }, [dispatch, isInitialized, debouncedFilters]);
-
-
-  // === FIXED: Only ONE fetch, no double calls ===
-
+ 
 
   useEffect(() => {
   if (!isInitialized) return;
