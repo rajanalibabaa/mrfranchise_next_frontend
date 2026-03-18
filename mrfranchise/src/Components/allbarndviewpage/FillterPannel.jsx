@@ -1,29 +1,21 @@
 "use client";
 import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  Box,
-  Typography,
-  Button,
-  TextField,
-  FormControl,
-  Divider,
-  Radio,
-  RadioGroup,
-  FormControlLabel,
-  CircularProgress,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  Collapse,
-  Breadcrumbs,
-  Link,
-} from "@mui/material";
-import {
-  Clear as ClearIcon,
-  Search as SearchIcon,
-  ExpandMore as ExpandMoreIcon,
-} from "@mui/icons-material";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Button from "@mui/material/Button";
+import Divider from "@mui/material/Divider";
+import Radio from "@mui/material/Radio";
+import RadioGroup from "@mui/material/RadioGroup";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import CircularProgress from "@mui/material/CircularProgress";
+import Accordion from "@mui/material/Accordion";
+import AccordionSummary from "@mui/material/AccordionSummary";
+import AccordionDetails from "@mui/material/AccordionDetails";
+import ClearIcon from "@mui/icons-material/Clear";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+
+
 import {
   fetchFilterOptions,
   resetChildCategories,
@@ -64,9 +56,7 @@ const FilterPanel = React.memo(
       areaRequired,
       states,
       districts,
-      cities,
       loading,
-      loadingChildCategories,
       loadingDistricts,
       loadingCities,
     } = useSelector((state) => state.filterDropdown);
@@ -194,11 +184,7 @@ const FilterPanel = React.memo(
         .slice(0, 100);
     }, [subCategories, searchTerms.subCategory]);
 
-    const sortedChildCategories = useMemo(() => {
-      return childCategories
-        .filter((cat) => cat && typeof cat === "string" && cat.trim() !== "")
-        .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
-    }, [childCategories]);
+   
 
     const filteredModelTypes = useMemo(() => {
       const term = (searchTerms.modelType || "").toLowerCase().trim();
@@ -278,23 +264,7 @@ const FilterPanel = React.memo(
         .slice(0, 100);
     }, [filters.state, districts, searchTerms.district]);
 
-    // const filteredCities = useMemo(() => {
-    //   if (!filters.district) return [];
-    //   const term = (searchTerms.city || '').toLowerCase();
-    //   return cities
-    //     .filter((c) => {
-    //       if (!c) return false;
-    //       return c.toLowerCase().includes(term);
-    //     })
-    //     .sort((a, b) => (a || '').toLowerCase().localeCompare((b || '').toLowerCase()))
-    //     .slice(0, 100);
-    // }, [filters.district, cities, searchTerms.city]);
-
-    const scrollToSection = (ref) => {
-      if (ref.current) {
-        ref.current.scrollIntoView({ behavior: "smooth", block: "start" });
-      }
-    };
+   
 
     return (
       <Box sx={{ pr: 2, height: "calc(100vh - 120px)", overflowY: "auto" }}>

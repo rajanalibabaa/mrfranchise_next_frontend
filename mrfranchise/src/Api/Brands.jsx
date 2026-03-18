@@ -1,7 +1,7 @@
 // api/brands.js
 import axios from "axios"
 import { api, API_BASE_URL } from "./api";
-import { use, useEffect, useState } from "react";
+import {  useEffect, useState } from "react";
 
 // Create a single axios instance with default headers
 const apiClient = axios.create({
@@ -144,6 +144,3 @@ export const recordBrandView = async (brandID) => {
   }
 };
 
-export const redux = () => {
-  
-}

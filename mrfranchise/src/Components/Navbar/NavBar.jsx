@@ -119,7 +119,7 @@ const [ID, setId] = useState(null);
   //   setlogoutLoading(true);
   //   try {
   //     const response = await axios.post(
-  //       `http://localhost:5000/api/v1/logout/${ID}`,
+  //       `https://mrfranchisebackend.mrfranchise.in/api/v1/logout/${ID}`,
   //       {},
   //       {
   //         headers: {
@@ -358,6 +358,7 @@ const [ID, setId] = useState(null);
             justifyContent: isMobile ? "space-evenly" : "space-between",
             alignItems: "center",
             px: { xs: 1, sm: 2 },
+            mb: 1,
             minHeight: "64px !important",
             gap: isMobile ? 0 : 2
           }}
@@ -401,7 +402,7 @@ const [ID, setId] = useState(null);
           </Box>
           <Link href="https://consulting.mrfranchise.in" target="_blank" rel="noopener noreferrer" >
 {!isMobile && (
-  <Image src="/Blue Modern Corporate Profile LinkedIn Article Cover Image (1).png" alt="brand logo" loading="lazy"  width={isMobile ? 120 : 720} height={isMobile ? 50 : 90} style={{ objectFit: 'contain', transition: 'transform 0.3s ease', display: isMobile ? 'bloack' : 'block', marginLeft: '120px',borderRadius: '10px' }} />
+  <Image src="/Blue Modern Corporate Profile LinkedIn Article Cover Image (1).png" alt="brand logo" loading="lazy"  width={isMobile ? 120 : 900} height={isMobile ? 50 : 90} style={{ objectFit: 'contain', transition: 'transform 0.3s ease', display: isMobile ? 'bloack' : 'block', marginLeft: '20px',borderRadius: '6px' }} />
 
 )}         
          </Link>

@@ -505,8 +505,10 @@ const triggerCelebration = (e, color = "#f44336") => {
         >
           Premium Franchise Brands
         </Typography>
-          <Image src="/Blue Modern Corporate Profile LinkedIn Article Cover Image (1).png" alt="brand logo" loading="lazy"  width={isMobile ? 120 : 720} height={isMobile ? 50 : 90} style={{ objectFit: 'contain', transition: 'transform 0.3s ease', display: isMobile ? 'bloack' : 'block', marginLeft: '120px',borderRadius: '10px' }} />
-        
+{!isMobile && (
+            <Image src="/Blue Modern Corporate Profile LinkedIn Article Cover Image (1).png" alt="brand logo" loading="lazy"  width={isMobile ? 120 : 820} height={isMobile ? 50 : 90} style={{ objectFit: 'contain', transition: 'transform 0.3s ease', display: isMobile ? 'bloack' : 'block', marginLeft: '120px',borderRadius: '10px' }} />
+
+)}        
         
       </Box>
 
@@ -1364,7 +1366,7 @@ const triggerCelebration = (e, color = "#f44336") => {
                         color="Black"
                         sx={{ fontSize: "0.7rem", lineHeight: 1.1 }}
                       >
-                        Categories: {brand.brandCategories?.sub}
+                        {brand.brandCategories?.sub}
                       </Typography>
 
                       <Typography
@@ -1372,7 +1374,7 @@ const triggerCelebration = (e, color = "#f44336") => {
                         color="Black"
                         sx={{ fontSize: "0.7rem", lineHeight: 1.4 }}
                       >
-                        Investment: {brand.fico?.investmentRange}
+                         {brand.fico?.investmentRange}
                       </Typography>
 
                       <Typography
@@ -1380,7 +1382,7 @@ const triggerCelebration = (e, color = "#f44336") => {
                         color="Black"
                         sx={{ fontSize: "0.7rem", lineHeight: 1.4 }}
                       >
-                        Area: {brand.fico?.areaRequired}
+                        {brand.fico?.areaRequired}
                       </Typography>
 
                       <Typography
@@ -1392,7 +1394,7 @@ const triggerCelebration = (e, color = "#f44336") => {
                           mb: isMobile ? 1.5 : 0,
                         }}
                       >
-                        Model: {brand.fico?.franchiseModel}
+                         {brand.fico?.franchiseModel}
                       </Typography>
                     </Box>
                   </Box>

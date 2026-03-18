@@ -428,7 +428,7 @@ const FindFranchiseLocations = () => {
           }}
         >
           {brands?.length > 0 ? (
-            brands.map((brand) => (
+            brands.slice(0, 10).map((brand) => (
               <motion.div key={brand.uuid}>
                 <HomePageBrandCard
                   brand={brand}
