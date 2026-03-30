@@ -531,8 +531,8 @@ const triggerCelebration = (e, color = "#f44336") => {
             position: "relative",
           }}
         >
-          <AnimatePresence mode="wait">
-            <motion.div
+          {/* <AnimatePresence mode="wait"> */}
+            <Box
               key={mainBrand.uuid}
               initial={{ opacity: 0, x: -50 }}
               animate={{ opacity: 1, x: 0 }}
@@ -589,7 +589,7 @@ const triggerCelebration = (e, color = "#f44336") => {
                         sx={{
                           textTransform: "none",
                           color:
-                            "black",
+                            "white",
                           borderColor:
                             theme.palette.mode === "dark"
                               ? "#43ea5e"
@@ -639,7 +639,7 @@ const triggerCelebration = (e, color = "#f44336") => {
                           sx={{
                             textTransform: "none",
                             color:
-                              "black",
+                              "white",
                             borderColor:
                               theme.palette.mode === "dark"
                                 ? "#ffb74d"
@@ -680,7 +680,7 @@ const triggerCelebration = (e, color = "#f44336") => {
                           sx={{
                             textTransform: "none",
                             color:
-                              "black",
+                              "white",
                             borderColor:
                               theme.palette.mode === "dark"
                                 ? "#ffb74d"
@@ -969,8 +969,8 @@ const triggerCelebration = (e, color = "#f44336") => {
                   </Stack>
                 </CardContent>
               </Card>
-            </motion.div>
-          </AnimatePresence>
+            </Box>
+          {/* </AnimatePresence> */}
 
           {isMobile && (
             <Box
@@ -1041,7 +1041,7 @@ const triggerCelebration = (e, color = "#f44336") => {
           }}
         >
           {nextBrands.map((brand, i) => (
-            <motion.div
+            <Box
               key={brand.uuid}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -1428,7 +1428,7 @@ const triggerCelebration = (e, color = "#f44336") => {
                   </Button>
                 </CardContent>
               </Card>
-            </motion.div>
+            </Box>
           ))}
         </Box>
       </Box>

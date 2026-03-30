@@ -54,7 +54,7 @@ const navigate = useRouter();
   useEffect(() => {
     if (!fetchedPages.includes(page)) {
       dispatch(fetchBrands({ page }));
-      console.log("toptrending",fetchBrands);
+      // console.log("toptrending",fetchBrands);
       
     }
   }, [page, fetchedPages, dispatch]);

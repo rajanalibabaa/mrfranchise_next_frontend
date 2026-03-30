@@ -17,7 +17,7 @@ const BrandListNew = dynamic(
 
 
 
-export default function BrandCategoryViewPage() {
+export default function BrandCategoryViewPage({ maincat }) {
   
    
 
@@ -43,7 +43,7 @@ export default function BrandCategoryViewPage() {
         }}
       >
         <Suspense fallback={<div>Loading...</div>}>
-            <BrandListNew />
+            <BrandListNew maincat={maincat} />
         </Suspense>
       </Box>
 

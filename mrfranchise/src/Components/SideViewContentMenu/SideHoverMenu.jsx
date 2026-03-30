@@ -507,7 +507,7 @@ const SideViewContent = ({ hoverCategory, onHoverLeave, onBrandClick }) => {
   // Navigate to brand detail page
   if (brandId) {
     const encodedBrandName = encodeURIComponent(brandName);
-    navigate(`/brands/${brandId}?name=${encodedBrandName}`);
+    navigate(`/franchise-brands/${brandId}?name=${encodedBrandName}`);
   }
   
   // Also call the original onBrandClick if provided

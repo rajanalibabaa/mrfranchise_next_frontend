@@ -10,6 +10,7 @@ const nextConfig = {
   experimental: {
     workerThreads: false,
     cpus: 2,
+    turbo:false
   },
 };
 
