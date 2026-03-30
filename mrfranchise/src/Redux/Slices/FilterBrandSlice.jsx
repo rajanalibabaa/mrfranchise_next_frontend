@@ -11,6 +11,8 @@ export const fetchFilteredBrands = createAsyncThunk(
   async (filters, { signal, rejectWithValue }) => {
     try {
       const params = new URLSearchParams();
+            console.log("sub data from slug",params);
+
  const currentUserId = getUserId();
       // Pagination (always safe)
       params.append("page", filters.page ?? 1);
@@ -39,6 +41,7 @@ export const fetchFilteredBrands = createAsyncThunk(
         `${API_BASE_URL}filter/getAllBrandsAndFilter?${params.toString()}`,
         { signal }
       );
+      
 
       const brands =
         response.data?.data?.brands?.map((brand) => ({

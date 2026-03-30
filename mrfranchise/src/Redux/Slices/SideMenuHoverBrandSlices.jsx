@@ -142,7 +142,6 @@ const brandCategorySlice = createSlice({
     },
     toggleSimilarBrandLike(state, action) {
       const id = action.payload;
-      console.log("Similar id :",id);
       // console.log("Similar brands :",brands)
       state.brands = state.brands.map(b =>
         b.uuid === id ? { ...b, isLiked: !b.isLiked } : b

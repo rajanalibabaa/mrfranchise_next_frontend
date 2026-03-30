@@ -4,10 +4,8 @@ import React from "react";
 const API_BASE =  `${process.env.NEXT_PUBLIC_API_URL}`;
 const SITE_URL =  "https://mrfranchise.in";
 
-export const dynamic = "force-dynamic";
-// const REVALIDATE_TIME = 3600; // 1 hour
-
-
+// export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 /**
  * Fetches brand data from API
@@ -26,10 +24,7 @@ async function getBrandData(slug) {
       }
     );
 
-    if (!res.ok) {
-      console.error(`Failed to fetch brand: ${slug}, Status: ${res.status}`);
-      return null;
-    }
+   
 
     const json = await res.json();
     return Array.isArray(json?.data) ? json.data[0] : json.data;
@@ -44,9 +39,7 @@ async function getBrandData(slug) {
  * @param {string} brandName - Brand name
  * @returns {string} SEO title
  */
-function generateSEOTitle(brandName) {
-  return `${brandName} Franchise | Top Franchise Opportunities | Best Franchise Business Opportunities`;
-}
+
 
 /**
  * Generates SEO-optimized description for brand
@@ -62,28 +55,6 @@ function generateSEODescription(brandName) {
  * @param {string} brandName - Brand name
  * @returns {string} Comma-separated keywords
  */
-function generateSEOKeywords(brandName) {
-  const keywords = [
-    `${brandName} franchise in India`,
-    `${brandName} franchise cost`,
-    `${brandName} franchise contact number`,
-    `how to get ${brandName} franchise`,
-    `${brandName} franchise profit`,
-    `${brandName} franchise enquiry`,
-    `${brandName} franchise requirements`,
-    `${brandName} franchise apply`,
-    `${brandName} franchise fee`,
-    `${brandName} franchise monthly income`,
-    `${brandName} franchise reviews`,
-    `${brandName} franchise opportunity`,
-    `${brandName} franchise business`,
-    "best franchise opportunities in India",
-    "top franchise business",
-    "franchise investment",
-  ];
-
-  return keywords.join(", ");
-}
 
 /**
  * Formats brand name from various sources
@@ -149,7 +120,7 @@ function generateStructuredData(brand, slug) {
     "name": brandName,
     "image": logo,
     "description": generateSEODescription(brandName),
-    "url": `${SITE_URL}/brands/${slug}`,
+    "url": `${SITE_URL}/franchise-brands/${slug}`,
     "logo": logo,
     "address": {
       "@type": "PostalAddress",
@@ -171,92 +142,92 @@ function generateStructuredData(brand, slug) {
  * @param {Object} params - Route parameters
  * @returns {Promise<Object>} Next.js metadata object
  */
-export async function generateMetadata({ params }) {
-  const { slug } = await params;
+// export async function generateMetadata({ params }) {
+//   const { slug } = await params;
 
-  const brand = await getBrandData(slug);
+//   const brand = await getBrandData(slug);
 
-  // Handle brand not found
-  if (!brand) {
-    return {
-      title: "Brand Not Found | Mr Franchise",
-      description: "This franchise brand does not exist or is no longer available.",
-      robots: {
-        index: false,
-        follow: false,
-      },
-    };
-  }
+//   // Handle brand not found
+//   if (!brand) {
+//     return {
+//       title: "Brand Not Found | Mr Franchise",
+//       description: "This franchise brand does not exist or is no longer available.",
+//       robots: {
+//         index: false,
+//         follow: false,
+//       },
+//     };
+//   }
 
-  const brandName = getBrandName(brand);
-  const logo = getBrandLogo(brand);
-  const location = getBrandLocation(brand);
-  const investment = getInvestmentRange(brand);
+//   const brandName = getBrandName(brand);
+//   const logo = getBrandLogo(brand);
+//   const location = getBrandLocation(brand);
+//   const investment = getInvestmentRange(brand);
 
-  // SEO optimized metadata
-  const title = generateSEOTitle(brandName);
-  const description = generateSEODescription(brandName);
-  const keywords = generateSEOKeywords(brandName);
-  const canonicalUrl = `${SITE_URL}/brands/${slug}`;
+//   // SEO optimized metadata
+//   const title = generateSEOTitle(brandName);
+//   const description = generateSEODescription(brandName);
+//   const keywords = generateSEOKeywords(brandName);
+//   const canonicalUrl = `${SITE_URL}/brands/${slug}`;
 
-  return {
-    title,
-    description,
-    keywords,
+//   return {
+//     title,
+//     description,
+//     keywords,
     
-    // Canonical URL
-    alternates: {
-      canonical: canonicalUrl,
-    },
+//     // Canonical URL
+//     alternates: {
+//       canonical: canonicalUrl,
+//     },
 
-    // Open Graph
-    openGraph: {
-      title,
-      description,
-      url: canonicalUrl,
-      siteName: "Mr Franchise",
-      locale: "en_IN",
-      type: "website",
-      images: [
-        {
-          url: logo,
-          width: 1200,
-          height: 630,
-          alt: `${brandName} Franchise Logo`,
-        },
-      ],
-    },
+//     // Open Graph
+//     openGraph: {
+//       title,
+//       description,
+//       url: canonicalUrl,
+//       siteName: "Mr Franchise",
+//       locale: "en_IN",
+//       type: "website",
+//       images: [
+//         {
+//           url: logo,
+//           width: 1200,
+//           height: 630,
+//           alt: `${brandName} Franchise Logo`,
+//         },
+//       ],
+//     },
 
-    // Twitter Card
-    twitter: {
-      card: "summary_large_image",
-      title,
-      description,
-      images: [logo],
-      creator: "@mrfranchise",
-    },
+//     // Twitter Card
+//     twitter: {
+//       card: "summary_large_image",
+//       title,
+//       description,
+//       images: [logo],
+//       creator: "@mrfranchise",
+//     },
 
-    // Additional metadata
-    other: {
-      "franchise-name": brandName,
-      "franchise-location": location,
-      "franchise-investment": investment || "Contact for details",
-    },
+//     // Additional metadata
+//     other: {
+//       "franchise-name": brandName,
+//       "franchise-location": location,
+//       "franchise-investment": investment || "Contact for details",
+//     },
 
-    // Robots
-    robots: {
-      index: true,
-      follow: true,
-      googleBot: {
-        index: true,
-        follow: true,
-        "max-video-preview": -1,
-        "max-image-preview": "large",
-        "max-snippet": -1,
-      },
-    },
-  };
-}
+//     // Robots
+//     robots: {
+//       index: true,
+//       follow: true,
+//       googleBot: {
+//         index: true,
+//         follow: true,
+//         "max-video-preview": -1,
+//         "max-image-preview": "large",
+//         "max-snippet": -1,
+//       },
+//     },
+//   };
+// }
 
 
 
@@ -295,54 +266,64 @@ const logo = brand?.uploads?.logo
   );
 }
 
+function cleanSlug(slug) {
+  return slug
+    ?.toLowerCase()
+    .replace(/[^a-z0-9-]/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, 60); // 🔥 VERY IMPORTANT (keep small)
+}
 
+export async function generateStaticParams() {
+  try {
+    let allSlugs = [];
+    let page = 1;
+    let hasMore = true;
 
-/**
- * Generates static params for pre-rendering popular brands
- * Uncomment and customize if you want static generation
- */
-// export async function generateStaticParams() {
-//   try {
-//     let allBrands = [];
-//     let page = 1;
-//     const limit = 20; // backend default
-//     let hasMore = true;
+    while (hasMore) {
+      const res = await fetch(
+        `https://mrfranchisebackend.mrfranchise.in/api/v1/overAllPlatformOnlyMainCategory?page=${page}&limit=20`,
+        { next: { revalidate: 3600 } }
+      );
 
-//     while (hasMore) {
-//       const res = await fetch(
-//         `https://mrfranchisebackend.mrfranchise.in/api/v1/filter/getAllBrandsAndFilter?page=${page}&limit=${limit}`,
-//         { cache: "no-store" }
-//       );
+      if (!res.ok) break;
 
-//       const json = await res.json();
+      const json = await res.json();
 
-//       const brands = Array.isArray(json?.data?.brands)
-//         ? json.data.brands
-//         : [];
+      const data = json?.data ?? {};
+      const brands = Array.isArray(data) ? data : data?.brands || [];
 
-//       allBrands.push(...brands);
+      // ✅ Extract slug
+       const slugs = brands
+      .filter((b) => b?.slug)
+      .map((b) => ({
+        slug: cleanSlug(b.slug), // ✅ MUST USE THIS
+      }));
 
-//       // STOP when API returns less than limit
-//       if (brands.length < limit) {
-//         hasMore = false;
-//       } else {
-//         page++;
-//       }
-//     }
+      allSlugs.push(...slugs);
 
-//     console.log("Total brands exported:", allBrands.length);
+      // ✅ Pagination logic
+      const pagination = data?.pagination ?? json?.pagination ?? {};
 
-//     return allBrands.map((brand) => ({
-//       slug:
-//         brand.slug ||
-//         brand.brandname
-//           ?.toLowerCase()
-//           .replace(/\s+/g, "-")
-//           .replace(/[^a-z0-9-]/g, "") ||
-//         String(brand.uuid),
-//     }));
-//   } catch (error) {
-//     console.error("Failed to generate static params:", error);
-//     return [];
-//   }
-// }
+      if (pagination?.hasNext !== undefined) {
+        hasMore = pagination.hasNext;
+      } else if (pagination?.hasNextPage !== undefined) {
+        hasMore = pagination.hasNextPage;
+      } else if (pagination?.totalPages !== undefined) {
+        hasMore = page < pagination.totalPages;
+      } else {
+        hasMore = false;
+      }
+
+      page += 1;
+    }
+
+    // console.log("✅ Total slugs generated:", allSlugs.length);
+
+    return allSlugs;
+  } catch (error) {
+    console.error("❌ Static params error:", error);
+    return [];
+  }
+}

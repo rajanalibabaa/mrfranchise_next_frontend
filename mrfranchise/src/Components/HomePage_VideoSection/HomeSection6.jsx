@@ -213,10 +213,10 @@ const handlePrevClick = () => {
   });
 
   const subcat = encodeURIComponent(brandCategoriesName); // encode spaces/special chars
-  const url = `${slug}?maincat=${subcat}`;
+  const url = `${slug}-franchise-opportunities?maincat=${subcat}`;
 
   // Open in new tab
-  const newWindow = window.open(url, "_blank");
+  const newWindow = window.open(url, "_blank"); 
 
   // Optional: focus the new tab
   if (newWindow) newWindow.focus();

@@ -8,7 +8,7 @@ const CANONICAL_URL = `${SITE_URL}${PAGE_PATH}`;
 export const metadata = {
   // Title Configuration
   title: {
-    default: "All Franchise Opportunities in India 2024 | 1000+ Verified Brands | Mr Franchise",
+    default: "All Franchise Opportunities in India 2026 | 1000+ Verified Brands | Mr Franchise",
     template: "%s | Mr Franchise - India's #1 Franchise Marketplace",
   },
 

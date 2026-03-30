@@ -126,7 +126,6 @@ const BrandCard = memo(
     const likeButtonRef = useRef(null);
     const shortlistButtonRef = useRef(null);
  const { AccessToken } = useSelector((state) => state.auth);
-  console.log('BrandCard token:', AccessToken); // Debug log to check token value
   const token = AccessToken;
     // 🎉 Updated confetti effect to use element position
     const triggerCelebration = (color, buttonRef) => {
@@ -325,7 +324,7 @@ const BrandCard = memo(
           >
             <VideoPlayer
               id={brand.uuid}
-              videoUrl={brand.franchiseVideos || brand.logo}
+              videoUrl={brand.franchiseVideos ||  brand.logo}
               poster={brand.logo}
               preload="auto"
               width="100%"

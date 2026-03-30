@@ -13,13 +13,13 @@ export const metadata = {
 
   // Title Configuration
   title: {
-    default: `${SITE_NAME} – India's #1 Franchise & Business Opportunities Marketplace | ${CURRENT_YEAR}`,
+    default: `Franchise Opportunities in India | Buy Franchise Business |${SITE_NAME} – India's #1 Franchise & Business Opportunities Marketplace | Top Franchise Brands in ${CURRENT_YEAR}`,
     template: `%s | ${SITE_NAME} - Buy, Sell & Invest in Franchises`,
   },
 
   // Enhanced Description
   description:
-    `${SITE_NAME} is India's largest and most trusted franchise & business opportunities marketplace. Discover 10,000+ verified franchises across 50+ categories including Food & Beverage, Retail, Education, Healthcare & more. Compare investment costs (₹50K - ₹5Cr+), ROI, profit margins, and connect directly with franchise owners, investors & buyers. Whether you want to buy a franchise, sell your business, or find investment opportunities - Mr Franchise is your one-stop destination. Featured brands: Zomato, Swiggy, Domino's, McDonald's, Subway & 10,000+ more. Start your franchise journey today!`,
+    `Discover top franchise opportunities in India across food, retail, education, services & more. Buy franchise business with low investment and connect with brands instantly via WhatsApp.`,
 
   // Comprehensive Keywords
   keywords: [
@@ -135,7 +135,7 @@ export const metadata = {
     locale: "en_IN",
     url: SITE_URL,
     siteName: SITE_NAME,
-    title: `${SITE_NAME} – India's #1 Franchise & Business Opportunities Marketplace`,
+    title: `${SITE_NAME} – Franchise & Business Opportunities Marketplace`,
     description:
       "Explore 10,000+ verified franchise and business opportunities in India. Compare investment costs, ROI, and connect with franchise owners. Buy, sell, and grow your business with India's most trusted franchise marketplace.",
     images: [

@@ -40,7 +40,7 @@ const FloatingApplyButton = ({ isMobile, brand, toggleDrawer }) => {
       toggleDrawer(true)(event);
     } else {
       setOpen(true);
-          console.log("AccessToken in FloatingApplyButton:", AccessToken);
+          // console.log("AccessToken in FloatingApplyButton:", AccessToken);
 
     }
       ;

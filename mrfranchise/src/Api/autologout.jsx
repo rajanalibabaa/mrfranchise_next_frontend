@@ -24,7 +24,6 @@ export const autoLogOut = async (dispatch) => {
       autoLogOutResponse?.data?.statuscode === 409 ||
       autoLogOutResponse?.data?.statuscode === 401
     ) {
-      // console.log("Auto logout response:", autoLogOutResponse.data);
       dispatch(logout());
       window.location.href = '/';
     }

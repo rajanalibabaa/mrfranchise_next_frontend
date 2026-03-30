@@ -32,7 +32,6 @@ import Pagination from "@mui/material/Pagination";
 ;
 import Close from "@mui/icons-material/Close";
 import FilterAlt from "@mui/icons-material/FilterAlt";
-import ClearIcon from "@mui/icons-material/Clear";
 import Compare from "@mui/icons-material/Compare";
 
 import dynamic from "next/dynamic";
@@ -47,7 +46,8 @@ import { fetchFilterOptions } from "@/Redux/Slices/filterDropdownData";
 import AdSlot from "../ads/GoogleAd";
 import { ADS } from "@/config/ads.config";
 import { getLocalStorageData } from "@/Utils/localStorage";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
+import BrandTags from "./brandTags";
 const BrandCardSkeleton = React.memo(() => (
   <Box
     sx={{
@@ -195,7 +195,7 @@ LazyBrandCard.displayName = "LazyBrandCard";
 // ============================================
 // MAIN COMPONENT
 // ============================================
-function BrandList() {
+function BrandList({ maincat }) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const dispatch = useDispatch();
@@ -222,6 +222,8 @@ const pathname = usePathname();
     (state) => state.filterBrands,
     shallowEqual,
   );
+  console.log('brands data',brands);
+  
 
   const {
     mainCategories,
@@ -274,7 +276,7 @@ const pathname = usePathname();
 
   const containerStyles = useMemo(
     () => ({
-      mt: 0,
+      mt: { xs: -8, sm: -8, md: 0 },
       mb: 0,
       backgroundImage: "url(/bg25.jpeg)",
       backgroundSize: "400px auto",
@@ -287,15 +289,22 @@ const pathname = usePathname();
 
  
 
-useEffect(() => {
-  dispatch(fetchFilterOptions());
-  setIsInitialized(true);
-}, [dispatch]);
+const searchParams = useSearchParams();
 
-  const filterdata = {
-    maincat: "Food & Beverages",
-    searchTerm: filters.searchTerm || "",
-  };
+useEffect(() => {
+  const selectedMainCat = maincat ?? searchParams.get("maincat");
+
+  if (selectedMainCat) {
+    dispatch(setFilter({ filterName: "maincat", value: selectedMainCat }));
+    dispatch(fetchFilterOptions({ main: selectedMainCat }));
+  } else {
+    dispatch(fetchFilterOptions());
+  }
+
+  setIsInitialized(true);
+}, [dispatch, maincat, searchParams]);
+
+ 
 
  
 
@@ -484,32 +493,7 @@ useEffect(() => {
     }
 
    
-    // if (brands.length === 0 && !?.searchData) {
-    //   return (
-    //     <Box textAlign="center" py={26}>
-    //       <Typography
-    //         variant="h5"
-    //         color="orange"
-    //         bgcolor="white"
-    //         display="inline-block"
-    //         p={2}
-    //         borderRadius={2}
-    //       >
-    //         No brands match your filters
-    //       </Typography>
-    //       <br />
-    //       <Button
-    //         variant="outlined"
-    //         onClick={handleClearFilters}
-    //         startIcon={<ClearIcon />}
-    //         size="large"
-    //         sx={{ mt: 2, borderColor: "#ff9800", color: "#ff0000" }}
-    //       >
-    //         Clear All Filters
-    //       </Button>
-    //     </Box>
-    //   );
-    // }
+  
 
     return (
       <>
@@ -649,10 +633,10 @@ useEffect(() => {
               maxHeight: "calc(100vh - 32px)",
               overflowY: "auto",
               "&::-webkit-scrollbar": { width: "6px" },
-              "&::-webkit-scrollbar-thumb": {
-                backgroundColor: "#ff9800",
-                borderRadius: "3px",
-              },
+              // "&::-webkit-scrollbar-thumb": {
+              //   backgroundColor: "#ff9800",
+              //   borderRadius: "3px",
+              // },
             }}
           >
             <Suspense fallback={<FilterPanelSkeleton />}>
@@ -685,7 +669,7 @@ useEffect(() => {
 
         {/* Mobile Filters Button */}
         {isMobile && (
-          <Box sx={{ mb: 2, mt: 8 }}>
+          <Box sx={{ mb: 2, mt: 1 }}>
             <Button
               variant="outlined"
               startIcon={<FilterAlt sx={{ color: "#ff9800" }} />}
@@ -709,6 +693,13 @@ useEffect(() => {
 
         {/* Main Content */}
         <Box flexGrow={1} ml={{ md: 3 }}>
+          <BrandTags  filters={filters}  loadingSubCategories={loadingSubCategories}
+                loadingChildCategories={loadingChildCategories} onFilterChange={handleFilterChange}  mainCategories={mainCategories}
+                subCategories={subCategories}   resultStats={{
+                  showing: brands.length,
+                  total: pagination.total,
+                }}
+                isLoading={loading || dropdownLoading}/>
           {renderBrandGrid}
         </Box>
       </Box>
@@ -746,8 +737,10 @@ useEffect(() => {
             <Suspense fallback={<FilterPanelSkeleton />}>
               <FilterPanel
                 filters={filters}
-                onFilterChange={handleFilterChange}
-                onClearFilters={handleClearFilters}
+ onFilterChange={(...args) => {
+    handleFilterChange(...args);
+    closeMobileFilters(); // 👈 close drawer immediately
+  }}                onClearFilters={handleClearFilters}
                 activeFilterCount={activeFilterCount}
                 mainCategories={mainCategories}
                 subCategories={subCategories}
@@ -766,6 +759,7 @@ useEffect(() => {
                   total: pagination.total,
                 }}
                 isLoading={loading || dropdownLoading}
+                
               />
             </Suspense>
           </Box>

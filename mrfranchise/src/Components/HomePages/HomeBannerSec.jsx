@@ -12,14 +12,8 @@ import CircularProgress from "@mui/material/CircularProgress";
 import { motion, useAnimation } from "framer-motion";
 import dynamic from "next/dynamic";
 import PopupModal from "@/Components/PopUpModal/PopUpModal";
-// import FilterDropdowns from "@/Components/Navbar/FilterDropdownsData";
 import { useDispatch } from "react-redux";
-// import Footer from "@/Components/Footers/Footer";
-// import Navbar from "@/Components/Navbar/NavBar";
 import CompareButton from "./CompareButtonsCompenents";
-// import BrandComparison from "./brandCompariosn";
-// import AdSlot from "../ads/GoogleAd";
-// import { ADS } from "@/config/ads.config.js";
 import { Fragment } from "react";
 import Image from "next/image";
 const Navbar = dynamic(() => import("@/Components/Navbar/NavBar"), { loading:()=> <Box height={60}/> });
@@ -625,7 +619,7 @@ export default memo(function HomeBannerSec() {
                 )[0]
               }
               <Typography
-                variant="outlined"
+                variant="inherit"
                 sx={{
                   fontWeight: currentText.subtitle.highlight.fontWeight,
                   color: currentText.subtitle.highlight.color,

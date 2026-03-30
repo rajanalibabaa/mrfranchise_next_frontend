@@ -28,6 +28,7 @@ import {
 const FilterDropdowns = ({ onFilterChange }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const router = useRouter();
   // const navigate = useRouter();
   const dispatch = useDispatch();
   const [filters, setFilters] = useState({
@@ -133,12 +134,23 @@ const FilterDropdowns = ({ onFilterChange }) => {
       ...sortedRanges.map((range) => ({ label: range, value: range })),
     ];
   }, [investmentRanges]);
+const toSlug = (str) =>
+  str
+    ?.toLowerCase()
+    .replace(/&/g, "and")
+    .replace(/\s+/g, "-")
+    .trim();
 
   // Handle search button click
   const handleFindBrands = useCallback(() => {
     const queryParams = new URLSearchParams();
-    
+    let slug = "";
+    let slugState = "";
+    if(!filters.selectedMainCategory && !filters.selectedState && !filters.selectedInvestmentRange){
+   window.open(`/all-franchise-brands`, "_blank", "noopener,noreferrer");
+    }
     if (filters.selectedMainCategory) {
+      slug = toSlug(filters.selectedMainCategory);
       // 🔸 Changed from subcat to main to match your API expectations
       queryParams.append("maincat", filters.selectedMainCategory);
     }
@@ -146,11 +158,12 @@ const FilterDropdowns = ({ onFilterChange }) => {
       queryParams.append("investmentRange", filters.selectedInvestmentRange);
     }
     if (filters.selectedState) {
+      slugState = toSlug(filters.selectedState);
       queryParams.append("state", filters.selectedState);
     }
 
     // Open in a new browser tab instead of same tab
-   window.open(`/all-franchise-brands?${queryParams.toString()}`, "_blank", "noopener,noreferrer");
+   window.open(`/${slug}-franchise-opportunities-${slugState}?${queryParams.toString()}`, "_blank", "noopener,noreferrer");
   }, [filters]);
 
 
