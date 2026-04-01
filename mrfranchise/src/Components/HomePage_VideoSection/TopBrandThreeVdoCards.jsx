@@ -777,7 +777,7 @@ function TopBrandVdoCards() {
 
                 <video
                   ref={(el) => (videoRefs.current[0] = el)}
-                  src={mainBrand?.franchiseVideos || ""}
+                  src={mainBrand?.franchiseVideos || mainBrand?.logo}
                   poster={mainBrand?.logo}
                   style={{
                     width: "100%",
@@ -786,7 +786,7 @@ function TopBrandVdoCards() {
                   }}
                   preload="auto"
                   playsInline
-                  muted={false}
+                  muted={true}
                   autoPlay
                   controls
                   onPlay={() => setActiveVideo(0)}
