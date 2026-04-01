@@ -251,7 +251,7 @@ function Navbar() {
     { label: "Blogs", path: "/", external: false },
     {
       label: "Franchise Consulting",
-      path: "https://franchiseconsulting.mrfranchise.in",
+      path: "https://consulting.mrfranchise.in",
       external: true,
     },
   ];
@@ -303,45 +303,7 @@ function Navbar() {
             zIndex: 1,
           }}
         >
-          {/* {['Expand Your Franchise', 'Investor', 'Advertise',"Blogs","Franchise Consultant"].map((text) => (
-            <motion.div
-              key={text}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-             <Button
-  component="a"
-  href={
-    text === 'Franchise Consultant'
-      ? 'https://franchiseconsulting.mrfranchise.in'
-      : text === 'Expand Your Franchise'
-      ? '/expandyourbrand'
-      : text === 'Investor'
-      ? '/investfranchise'
-      : text === 'Advertise'
-      ? '/advertisewithus'
-      : text === 'Blogs'
-      ? '/'
-      : '/'
-  }
-  target={text === 'Franchise Consultant' ? '_blank' : undefined}
-  rel={text === 'Franchise Consultant' ? 'noopener noreferrer' : undefined}
-  size="small"
-  sx={{
-    fontSize: isMobile ? '0.75rem' : '0.875rem',
-    textTransform: 'none',
-    color: 'black',
-    '&:hover': {
-      color: '#ff9800',
-      backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    },
-  }}
->
-  {text}
-</Button>
-
-            </motion.div>
-          ))} */}
+          
           {menuItems.map((item) => (
             <motion.div
               key={item.label}
@@ -369,7 +331,7 @@ function Navbar() {
         <Toolbar
           sx={{
             display: "flex",
-            justifyContent: isMobile ? "space-evenly" : "space-between",
+            justifyContent: isMobile ? "space-evenly" : "space-around",
             alignItems: "center",
             px: { xs: 1, sm: 2 },
             mb: 1,
@@ -410,10 +372,10 @@ function Navbar() {
                   src="/logo.png"
                   alt="brand logo"
                   loading="lazy"
-                  width={isMobile ? 120 : 170}
-                  height={isMobile ? 50 : 70}
+                  width={isMobile ? 120 : 150}
+                  height={isMobile ? 50 : 50}
                   style={{
-                    objectFit: "contain",
+                    objectFit: "cover",
                     transition: "transform 0.3s ease",
                   }}
                 />
