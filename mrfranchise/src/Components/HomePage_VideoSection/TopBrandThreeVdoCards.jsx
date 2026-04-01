@@ -1,9 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import {
-  useMediaQuery,
-  
-} from "@mui/material";
+import { useMediaQuery } from "@mui/material";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Card from "@mui/material/Card";
@@ -11,7 +8,7 @@ import CircularProgress from "@mui/material/CircularProgress";
 import CardContent from "@mui/material/CardContent";
 import Typography from "@mui/material/Typography";
 import Avatar from "@mui/material/Avatar";
-import IconButton from '@mui/material/IconButton'
+import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
 import Stack from "@mui/material/Stack";
 import Chip from "@mui/material/Chip";
@@ -20,7 +17,6 @@ import ChevronRight from "@mui/icons-material/ChevronRight";
 import ChevronLeft from "@mui/icons-material/ChevronLeft";
 import FavoriteBorder from "@mui/icons-material/FavoriteBorder";
 import Favorite from "@mui/icons-material/Favorite";
-import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "@mui/material/styles";
 import LoginPage from "@/Components/LoginPage/LoginPage";
 import { postView } from "@/Utils/function/view";
@@ -39,7 +35,7 @@ import {
 } from "@/Redux/Slices/TopCardFetchingSlice";
 import { getToken } from "@/Utils/autherId";
 import { RiBookmark3Fill } from "react-icons/ri";
-import { VideoPlayer } from "@/services/VideoControllerMedia/VideoPlayercomponents.jsx";
+// import { VideoPlayer } from "@/services/VideoControllerMedia/VideoPlayercomponents.jsx";
 import { handleShortList } from "@/Api/shortListApi.jsx";
 import {
   addSortlist,
@@ -56,7 +52,7 @@ import {
   toggleviewSliceLiked,
 } from "@/Redux/Slices/viewSlice.jsx";
 import { toggleBrandShortListfilter } from "@/Redux/Slices/FilterBrandSlice.jsx";
-import { useInView } from 'react-intersection-observer';
+import { useInView } from "react-intersection-observer";
 import confetti from "canvas-confetti";
 import Image from "next/image";
 const token = getToken();
@@ -71,14 +67,19 @@ function TopBrandVdoCards() {
   const [hasMore, setHasMore] = useState(true);
   const [initialAutoplayDone, setInitialAutoplayDone] = useState(false);
 
+
+  const [isMuted, setIsMuted] = useState(true);
+
+
+  
   const timeoutRef = useRef(null);
   const videoRefs = useRef([]);
-  
+
   // const containerRef = useRef(null);
 
- const [containerRef, inView] = useInView({
+  const [containerRef, inView] = useInView({
     threshold: 0.3,
-    triggerOnce: false
+    triggerOnce: false,
   });
 
   const theme = useTheme();
@@ -101,7 +102,7 @@ function TopBrandVdoCards() {
 
   const dispatch = useDispatch();
   const { brands, isLoading, pagination, error } = useSelector(
-    (state) => state.brands
+    (state) => state.brands,
   );
 
   // Initial load - runs only once
@@ -153,91 +154,77 @@ function TopBrandVdoCards() {
     }
   }, [brands.length]);
 
-  const startAutoSlide = () => {
-    clearTimeout(timeoutRef.current);
-    if (!isHovered && brands.length > 0) {
-      timeoutRef.current = setTimeout(() => handleNext(), 15000);
-    }
-  };
-
   // Handle clicks outside the component to pause videos
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (containerRef.current && !containerRef.current.contains(event.target)) {
-        // Pause the main video when clicking outside the component
-        const mainVideo = videoRefs.current[0];
-        if (mainVideo) {
-          mainVideo.pause();
-          handleVideoPause(0);
-        }
-      }
-    };
+  // useEffect(() => {
+  //   const handleClickOutside = (event) => {
+  //     if (
+  //       containerRef.current &&
+  //       !containerRef.current.contains(event.target)
+  //     ) {
+  //       const mainVideo = videoRefs.current[0];
+  //       if (mainVideo) {
+  //         mainVideo.pause();
+  //         handleVideoPause(0);
+  //       }
+  //     }
+  //   };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
+  //   document.addEventListener("mousedown", handleClickOutside);
+  //   return () => {
+  //     document.removeEventListener("mousedown", handleClickOutside);
+  //   };
+  // }, []);
 
   // Video controls for main video only
+  // useEffect(() => {
+  //   const mainVideo = videoRefs.current[0];
+  //   if (mainVideo) {
+  //     mainVideo.loop = true;
+  //     mainVideo.playsInline = true;
+
+  //     // Add event listeners
+  //     mainVideo.addEventListener("play", () => handleVideoPlay(0));
+  //     mainVideo.addEventListener("pause", () => handleVideoPause(0));
+  //   }
+
+  //   return () => {
+  //     const mainVideo = videoRefs.current[0];
+  //     if (mainVideo) {
+  //       mainVideo.removeEventListener("play", () => handleVideoPlay(0));
+  //       mainVideo.removeEventListener("pause", () => handleVideoPause(0));
+  //     }
+  //   };
+  // }, [brands]);
+
+  // Autoplay the main video whenever it enters view or currentIndex changes
   useEffect(() => {
-    const mainVideo = videoRefs.current[0];
-    if (mainVideo) {
-      mainVideo.loop = true;
-      mainVideo.playsInline = true;
+    const video = videoRefs.current[0];
+    if (!video) return;
 
-      // Add event listeners
-      mainVideo.addEventListener("play", () => handleVideoPlay(0));
-      mainVideo.addEventListener("pause", () => handleVideoPause(0));
-    }
+    if (inView) {
+      // Try to play; browser may block autoplay with sound, so mute fallback if necessary.
+      const playPromise = video.play();
 
-    return () => {
-      const mainVideo = videoRefs.current[0];
-      if (mainVideo) {
-        mainVideo.removeEventListener("play", () => handleVideoPlay(0));
-        mainVideo.removeEventListener("pause", () => handleVideoPause(0));
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            video.muted = false; // unmute after successful playback
+            setActiveVideo(0);
+          })
+          .catch((error) => {
+            console.warn("Autoplay blocked on first attempt", error);
+            video.muted = true; // fallback to muted autoplay
+            video.play().catch((err) => {
+              console.warn("Muted autoplay also failed", err);
+            });
+            setActiveVideo(null);
+          });
       }
-    };
-  }, [brands]);
-
-  // Autoplay the main video on initial load
- useEffect(() => {
-    if (brands.length > 0 && videoRefs.current[0]) {
-      const mainVideo = videoRefs.current[0];
-      
-      if (inView) {
-        // Only attempt autoplay when in view
-        if (!initialAutoplayDone) {
-          const playPromise = mainVideo.play();
-          
-          if (playPromise !== undefined) {
-            playPromise
-              .then(() => {
-                mainVideo.muted = false;
-                setActiveVideo(0);
-                setInitialAutoplayDone(true);
-              })
-              .catch(error => {
-                mainVideo.muted = true;
-                mainVideo.play()
-                  .then(() => {
-                    setActiveVideo(0);
-                    setInitialAutoplayDone(true);
-                  })
-                  .catch(err => {
-                    console.error("Autoplay completely prevented:", err);
-                  });
-              });
-          }
-        }
-      } else {
-        // Pause video when out of view
-        mainVideo.pause();
-        setActiveVideo(null);
-      }
+    } else {
+      video.pause();
+      setActiveVideo(null);
     }
-  }, [brands, initialAutoplayDone, inView]);
-  
+  }, [inView, currentIndex]);
   // Pause main video when out of view
   useEffect(() => {
     if (!inView) {
@@ -249,30 +236,17 @@ function TopBrandVdoCards() {
     }
   }, [inView]);
 
-
-
-useEffect(() => {
-  // Only start auto-slide when in view
-  if (inView) {
-    startAutoSlide();
-  } else {
-    clearTimeout(timeoutRef.current);
-  }
-  return () => clearTimeout(timeoutRef.current);
-}, [currentIndex, startAutoSlide, inView]);
-
   // Add this effect to clean up resources
   useEffect(() => {
     return () => {
       // Clean up main video resources when component unmounts
       const mainVideo = videoRefs.current[0];
       if (mainVideo) {
-        mainVideo.src = '';
+        mainVideo.src = "";
         mainVideo.load();
       }
     };
   }, []);
-
 
   const handleVideoPlay = (index) => {
     // Only handle main video
@@ -282,11 +256,21 @@ useEffect(() => {
   };
 
   const handleVideoPause = (index) => {
-    // Only handle main video
-    if (index === 0) {
-      if (activeVideo === 0) {
-        setActiveVideo(null);
-      }
+    if (index === 0 && activeVideo === 0) {
+      setActiveVideo(null);
+    }
+  };
+
+  const handleVideoEnded = () => {
+    setActiveVideo(null);
+    handleNext();
+  };
+
+  const handleVideoError = (event, brand) => {
+    console.warn("Video load error", event, "brand", brand?.brandname);
+    setActiveVideo(null);
+    if (brand?.uuid === brands[currentIndex]?.uuid) {
+      handleNext();
     }
   };
 
@@ -294,52 +278,60 @@ useEffect(() => {
   const handleSideVideoClick = (index) => {
     // Calculate the actual brand index from the side video index (i + 1)
     const clickedBrandIndex = (currentIndex + index + 1) % brands.length;
-    
+
     // Update currentIndex to show the clicked brand in the main video
     setCurrentIndex(clickedBrandIndex);
-    
+
     // Play the new main video
     const mainVideo = videoRefs.current[0];
     if (mainVideo) {
       mainVideo.play().then(() => handleVideoPlay(0));
     }
-    
+
     // Update viewed brands count
     setViewedBrandsCount((prev) => prev + 1);
   };
 
-  const togglePlayPause = useCallback((index) => {
-  if (index === 0) {
+  const togglePlayPause = () => {
     const video = videoRefs.current[0];
-    if (video) {
-      if (video.paused) {
-        video.play().then(() => handleVideoPlay(0));
-      } else {
-        video.pause();
-        handleVideoPause(0);
-      }
+    if (!video) return;
+
+    if (video.paused) {
+      video
+        .play()
+        .then(() => setActiveVideo(0))
+        .catch((err) => console.error(err));
+    } else {
+      video.pause();
+      setActiveVideo(null);
     }
-  }
-}, []);
+  };
 
+  const triggerCelebration = (e, color = "#f44336") => {
+    const rect = e.currentTarget.getBoundingClientRect(); // icon position
+    const x = (rect.left + rect.width / 2) / window.innerWidth;
+    const y = (rect.top + rect.height / 2) / window.innerHeight;
 
+    confetti({
+      particleCount: 40,
+      spread: 150,
+      origin: { x, y }, // 🎯 confetti comes from icon position
+      colors: [
+        color,
+        "#ffffff",
+        "#fdc81cff",
+        "#76ec1cff",
+        "#ff1dd6ffff",
+        "#00eaffff",
+        "#0400ffff",
+        "#000000",
+        "#f10808ffff",
+        "#f5f50aff",
+      ],
+    });
+  };
 
-const triggerCelebration = (e, color = "#f44336") => {
-  const rect = e.currentTarget.getBoundingClientRect(); // icon position
-  const x = (rect.left + rect.width / 2) / window.innerWidth;
-  const y = (rect.top + rect.height / 2) / window.innerHeight;
-
-  confetti({
-    particleCount: 40,
-    spread: 150,
-    origin: { x, y },  // 🎯 confetti comes from icon position
-          colors: [color, "#ffffff", "#fdc81cff", "#76ec1cff", "#ff1dd6ffff", "#00eaffff", "#0400ffff", "#000000", "#f10808ffff", "#f5f50aff"],
-  });
-};
-
-
-
-  const handleLikeClick = async (brand,e) => {
+  const handleLikeClick = async (brand, e) => {
     if (!token) {
       setShowLogin(true);
       return;
@@ -347,7 +339,7 @@ const triggerCelebration = (e, color = "#f44336") => {
 
     if (!brand.isLiked) {
       dispatch(addLikedBrand(brand));
-      triggerCelebration(e,"#f44336"); // ❤️ Fire confetti when liked
+      triggerCelebration(e, "#f44336"); // ❤️ Fire confetti when liked
     } else {
       dispatch(removeLikedBrand(brand.uuid));
     }
@@ -359,7 +351,7 @@ const triggerCelebration = (e, color = "#f44336") => {
     await likeApiFunction(brand.uuid);
   };
 
-  const handleToggleShortList = async (mainBrand,e) => {
+  const handleToggleShortList = async (mainBrand, e) => {
     if (!token) {
       setShowLogin(true);
       return;
@@ -370,7 +362,7 @@ const triggerCelebration = (e, color = "#f44336") => {
     dispatch(toggleHomeCardShortlist(mainBrand.uuid));
     if (!mainBrand.isShortListed) {
       dispatch(addSortlist(mainBrand));
-      triggerCelebration(e,"#7ef400ff"); // 🔖 Fire confetti when shortlisted
+      triggerCelebration(e, "#7ef400ff"); // 🔖 Fire confetti when shortlisted
     } else {
       dispatch(removeSortList(mainBrand.uuid));
     }
@@ -487,7 +479,7 @@ const triggerCelebration = (e, color = "#f44336") => {
           fontWeight="bold"
           sx={{
             color: theme.palette.mode === "dark" ? "#ffb74d" : "#000000ff",
-            backgroundColor:'white',
+            backgroundColor: "white",
             p: 1.5,
             borderRadius: 2,
             textAlign: "left",
@@ -497,7 +489,8 @@ const triggerCelebration = (e, color = "#f44336") => {
               display: "block",
               width: "80px",
               height: "4px",
-              background: theme.palette.mode === "dark" ? "#ffb74d" : "#29f500ff",
+              background:
+                theme.palette.mode === "dark" ? "#ffb74d" : "#29f500ff",
               mt: 1,
               borderRadius: 2,
             },
@@ -505,11 +498,22 @@ const triggerCelebration = (e, color = "#f44336") => {
         >
           Premium Franchise Brands
         </Typography>
-{!isMobile && (
-            <Image src="/Blue Modern Corporate Profile LinkedIn Article Cover Image (1).png" alt="brand logo" loading="lazy"  width={isMobile ? 120 : 820} height={isMobile ? 50 : 90} style={{ objectFit: 'contain', transition: 'transform 0.3s ease', display: isMobile ? 'bloack' : 'block', marginLeft: '120px',borderRadius: '10px' }} />
-
-)}        
-        
+        {!isMobile && (
+          <Image
+            src="/Blue Modern Corporate Profile LinkedIn Article Cover Image (1).png"
+            alt="brand logo"
+            loading="lazy"
+            width={isMobile ? 120 : 820}
+            height={isMobile ? 50 : 90}
+            style={{
+              objectFit: "contain",
+              transition: "transform 0.3s ease",
+              display: isMobile ? "bloack" : "block",
+              marginLeft: "120px",
+              borderRadius: "10px",
+            }}
+          />
+        )}
       </Box>
 
       {/* Brands slider */}
@@ -532,179 +536,229 @@ const triggerCelebration = (e, color = "#f44336") => {
           }}
         >
           {/* <AnimatePresence mode="wait"> */}
-            <Box
-              key={mainBrand.uuid}
-              initial={{ opacity: 0, x: -50 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 50 }}
-              transition={{ duration: 0.3, ease: "easeInOut" }}
+          <Box
+            key={mainBrand.uuid}
+            initial={{ opacity: 0, x: -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 50 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+          >
+            <Card
+              sx={{
+                height: CARD_SIZES.main.height,
+                borderRadius: 3,
+                overflow: "hidden",
+                boxShadow: 6,
+                background:
+                  theme.palette.mode === "dark" ? "#424242" : "#ffffff",
+                position: "relative",
+                transition: "transform 0.3s, box-shadow 0.3s",
+                "&:hover": {
+                  transform: "translateY(-5px)",
+                  boxShadow: theme.shadows[12],
+                },
+              }}
             >
-              <Card
+              {/* Video section */}
+              <Box
                 sx={{
-                  height: CARD_SIZES.main.height,
-                  borderRadius: 3,
-                  overflow: "hidden",
-                  boxShadow: 6,
-                  background:
-                    theme.palette.mode === "dark" ? "#424242" : "#ffffff",
+                  height: CARD_SIZES.main.videoHeight,
                   position: "relative",
-                  transition: "transform 0.3s, box-shadow 0.3s",
-                  "&:hover": {
-                    transform: "translateY(-5px)",
-                    boxShadow: theme.shadows[12],
-                  },
+                  cursor: "pointer",
+                  backgroundColor: "white",
+                  overflow: "hidden",
+                }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  togglePlayPause();
                 }}
               >
-                {/* Video section */}
                 <Box
-                  sx={{
-                    height: CARD_SIZES.main.videoHeight,
-                    position: "relative",
-                    cursor: "pointer",
-                    backgroundColor: "white",
-                    overflow: "hidden",
-                  }}
                   onClick={(e) => {
                     e.stopPropagation();
-                    togglePlayPause(0);
+                    togglePlayPause();
+                  }}
+                  sx={{
+                    position: "absolute",
+                    top: "50%",
+                    left: "50%",
+                    transform: "translate(-50%, -50%)",
+                    width: 70,
+                    height: 70,
+                    borderRadius: "50%",
+                    backgroundColor: "rgba(0,0,0,0.6)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    cursor: "pointer",
+                    zIndex: 10,
+                    transition: "0.3s",
+                    "&:hover": {
+                      backgroundColor: "rgba(0,0,0,0.8)",
+                    },
                   }}
                 >
-                  {!isMobile && (
+                  {activeVideo === 0 ? (
+                    // Pause Icon
+                    <Box sx={{ display: "flex", gap: "6px" }}>
+                      <Box
+                        sx={{
+                          width: "8px",
+                          height: "24px",
+                          background: "#fff",
+                        }}
+                      />
+                      <Box
+                        sx={{
+                          width: "8px",
+                          height: "24px",
+                          background: "#fff",
+                        }}
+                      />
+                    </Box>
+                  ) : (
+                    // Play Icon
                     <Box
                       sx={{
-                        position: "absolute",
-                        top: 16,
-                        left: 16,
-                        zIndex: 2,
+                        width: 0,
+                        height: 0,
+                        borderTop: "12px solid transparent",
+                        borderBottom: "12px solid transparent",
+                        borderLeft: "20px solid white",
+                        marginLeft: "4px",
                       }}
-                    >
-                      <Button
-                        variant="outlined"
-                        aria-label="previous brand"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handlePrev();
-                        }}
-                        startIcon={<ChevronLeft />}
-                        sx={{
-                          textTransform: "none",
-                          color:
-                            "white",
+                    />
+                  )}
+                </Box>
+
+                {!isMobile && (
+                  <Box
+                    sx={{
+                      position: "absolute",
+                      top: 16,
+                      left: 16,
+                      zIndex: 2,
+                    }}
+                  >
+                    <Button
+                      variant="outlined"
+                      aria-label="previous brand"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handlePrev();
+                      }}
+                      startIcon={<ChevronLeft />}
+                      sx={{
+                        textTransform: "none",
+                        color: "black",
+                        borderColor:
+                          theme.palette.mode === "dark" ? "#43ea5e" : "#43ea5e",
+                        "&:hover": {
                           borderColor:
                             theme.palette.mode === "dark"
-                              ? "#43ea5e"
-                              : "#43ea5e",
+                              ? "#ff9800"
+                              : "#e65100",
+                          backgroundColor:
+                            theme.palette.mode === "dark"
+                              ? "rgba(255, 167, 38, 0.08)"
+                              : "rgba(245, 124, 0, 0.08)",
+                        },
+                      }}
+                    >
+                      Previous
+                    </Button>
+                  </Box>
+                )}
+
+                {!isMobile && (
+                  <Box
+                    sx={{
+                      position: "absolute",
+                      top: 16,
+                      right: 16,
+                      zIndex: 2,
+                    }}
+                  >
+                    {/* Show Load More only after all brands viewed */}
+                    {viewedBrandsCount >= brands.length - 1 && hasMore ? (
+                      <Button
+                        variant="outlined"
+                        aria-label="next brand"
+                        onClick={() => {
+                          const nextPage = page + 1;
+                          setPage(nextPage);
+                          dispatch(fetchBrands({ page: nextPage })).then(() => {
+                            setCurrentIndex(0);
+                            setViewedBrandsCount(0);
+                          });
+                        }}
+                        disabled={isLoading}
+                        sx={{
+                          textTransform: "none",
+                          color: "black",
+                          borderColor:
+                            theme.palette.mode === "dark"
+                              ? "#ffb74d"
+                              : "#f57c00",
                           "&:hover": {
                             borderColor:
                               theme.palette.mode === "dark"
-                                ? "#ff9800"
-                                : "#e65100",
+                                ? "#43ea5e"
+                                : "#43ea5e",
                             backgroundColor:
                               theme.palette.mode === "dark"
-                                ? "rgba(255, 167, 38, 0.08)"
-                                : "rgba(245, 124, 0, 0.08)",
+                                ? "rgba(67, 234, 94, 0.15)"
+                                : "rgba(67, 234, 94, 0.10)",
                           },
                         }}
                       >
-                        Previous
+                        {isLoading ? (
+                          <>
+                            <CircularProgress
+                              size={20}
+                              sx={{ color: "white", mr: 1 }}
+                            />
+                            Loading...
+                          </>
+                        ) : (
+                          "Load More Brands"
+                        )}
                       </Button>
-                    </Box>
-                  )}
-
-                  {!isMobile && (
-                    <Box
-                      sx={{
-                        position: "absolute",
-                        top: 16,
-                        right: 16,
-                        zIndex: 2,
-                      }}
-                    >
-                      {/* Show Load More only after all brands viewed */}
-                      {viewedBrandsCount >= brands.length - 1 && hasMore ? (
-                        <Button
-                          variant="outlined"
-                          aria-label="next brand"
-                          onClick={() => {
-                            const nextPage = page + 1;
-                            setPage(nextPage);
-                            dispatch(fetchBrands({ page: nextPage })).then(
-                              () => {
-                                setCurrentIndex(0);
-                                setViewedBrandsCount(0);
-                              }
-                            );
-                          }}
-                          disabled={isLoading}
-                          sx={{
-                            textTransform: "none",
-                            color:
-                              "white",
+                    ) : (
+                      <Button
+                        variant="outlined"
+                        aria-label="next brand"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleNext();
+                        }}
+                        endIcon={<ChevronRight />}
+                        sx={{
+                          textTransform: "none",
+                          color: "black",
+                          borderColor:
+                            theme.palette.mode === "dark"
+                              ? "#ffb74d"
+                              : "#f57c00",
+                          "&:hover": {
                             borderColor:
                               theme.palette.mode === "dark"
-                                ? "#ffb74d"
-                                : "#f57c00",
-                            "&:hover": {
-                              borderColor:
-                                theme.palette.mode === "dark"
-                                  ? "#43ea5e"
-                                  : "#43ea5e",
-                              backgroundColor:
-                                theme.palette.mode === "dark"
-                                  ? "rgba(67, 234, 94, 0.15)"
-                                  : "rgba(67, 234, 94, 0.10)",
-                            },
-                          }}
-                        >
-                          {isLoading ? (
-                            <>
-                              <CircularProgress
-                                size={20}
-                                sx={{ color: "white", mr: 1 }}
-                              />
-                              Loading...
-                            </>
-                          ) : (
-                            "Load More Brands"
-                          )}
-                        </Button>
-                      ) : (
-                        <Button
-                          variant="outlined"
-                          aria-label="next brand"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleNext();
-                          }}
-                          endIcon={<ChevronRight />}
-                          sx={{
-                            textTransform: "none",
-                            color:
-                              "white",
-                            borderColor:
+                                ? "#43ea5e"
+                                : "#43ea5e",
+                            backgroundColor:
                               theme.palette.mode === "dark"
-                                ? "#ffb74d"
-                                : "#f57c00",
-                            "&:hover": {
-                              borderColor:
-                                theme.palette.mode === "dark"
-                                  ? "#43ea5e"
-                                  : "#43ea5e",
-                              backgroundColor:
-                                theme.palette.mode === "dark"
-                                  ? "rgba(67, 234, 94, 0.15)"
-                                  : "rgba(67, 234, 94, 0.10)",
-                            },
-                          }}
-                        >
-                          Next Brand
-                        </Button>
-                      )}
-                    </Box>
-                  )}
-                  
+                                ? "rgba(67, 234, 94, 0.15)"
+                                : "rgba(67, 234, 94, 0.10)",
+                          },
+                        }}
+                      >
+                        Next Brand
+                      </Button>
+                    )}
+                  </Box>
+                )}
 
-                  <VideoPlayer
+                {/* <VideoPlayer
                     id={mainBrand.uuid}
                     videoUrl={mainBrand.franchiseVideos}
                     // poster={mainBrand.logo}
@@ -719,211 +773,114 @@ const triggerCelebration = (e, color = "#f44336") => {
                     loop={true}
                     muted={false}
                     ref={(el) => (videoRefs.current[0] = el?.videoRef || null)}
-                  />
-                  
-                </Box>
+                  /> */}
 
-                <CardContent
-                  sx={{
-                    bgcolor: "background.paper",
-                    px: { xs: 0, sm: 2 },
-                    py: 0,
-                    height: `calc(${CARD_SIZES.main.height}px - ${CARD_SIZES.main.videoHeight}px)`,
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "space-between",
+                <video
+                  ref={(el) => (videoRefs.current[0] = el)}
+                  src={mainBrand?.franchiseVideos || ""}
+                  poster={mainBrand?.logo}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "contain",
                   }}
+                  preload="auto"
+                  playsInline
+                  muted={false}
+                  autoPlay
+                  controls
+                  onPlay={() => setActiveVideo(0)}
+                  onPause={() => setActiveVideo(null)}
+                  onEnded={handleVideoEnded}
+                  onError={(e) => handleVideoError(e, mainBrand)}
+                />
+              </Box>
+
+              <CardContent
+                sx={{
+                  bgcolor: "background.paper",
+                  px: { xs: 0, sm: 2 },
+                  py: 0,
+                  height: `calc(${CARD_SIZES.main.height}px - ${CARD_SIZES.main.videoHeight}px)`,
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "space-between",
+                }}
+              >
+                <Stack
+                  direction={{ xs: "column", sm: "row" }}
+                  alignItems={{ xs: "flex-start", sm: "center" }}
+                  ml={{ xs: 2 }}
+                  mt={1}
+                  spacing={1}
                 >
                   <Stack
-                    direction={{ xs: "column", sm: "row" }}
-                    alignItems={{ xs: "flex-start", sm: "center" }}
-                    ml={{ xs: 2 }}
-                    mt={1}
+                    direction="row"
                     spacing={1}
+                    alignItems="center"
+                    sx={{ minWidth: 0, flex: 1, paddingBottom: "10px" }}
                   >
-                    <Stack
-                      direction="row"
-                      spacing={1}
-                      alignItems="center"
-                      sx={{ minWidth: 0, flex: 1, paddingBottom: "10px" }}
-                    >
-                      {isMobile && (
-                        <Avatar
-                          onClick={() => handleApply(mainBrand)}
-                          src={mainBrand.logo}
-                          alt={mainBrand.brandname}
-                          sx={{
-                            width: 50,
-                            height: 50,
-                            border: `2px solid ${
-                              theme.palette.mode === "dark"
-                                ? "#ffb74d"
-                                : "#f57c00"
-                            }`,
-                            boxShadow: theme.shadows[2],
-                            cursor: "pointer",
-                          }}
-                        />
-                      )}
-                      {!isMobile && (
-                        <Box
-                          component="img"
-                          onClick={() => handleApply(mainBrand)}
-                          src={mainBrand.logo}
-                          alt={mainBrand.brandname}
-                          sx={{
-                            width: 100,
-                            height: 50,
-                            border: `2px solid ${
-                              theme.palette.mode === "dark"
-                                ? "#ffb74d"
-                                : "#f57c00"
-                            }`,
-                            boxShadow: theme.shadows[2],
-                            cursor: "pointer",
-                            borderRadius: 0,
-                            objectFit: "contain",
-                            display: "block",
-                            marginRight: 2,
-                          }}
-                        />
-                      )}
+                    {isMobile && (
+                      <Avatar
+                        onClick={() => handleApply(mainBrand)}
+                        src={mainBrand.logo}
+                        alt={mainBrand.brandname}
+                        sx={{
+                          width: 50,
+                          height: 50,
+                          border: `2px solid ${
+                            theme.palette.mode === "dark"
+                              ? "#ffb74d"
+                              : "#f57c00"
+                          }`,
+                          boxShadow: theme.shadows[2],
+                          cursor: "pointer",
+                        }}
+                      />
+                    )}
+                    {!isMobile && (
+                      <Box
+                        component="img"
+                        onClick={() => handleApply(mainBrand)}
+                        src={mainBrand.logo}
+                        alt={mainBrand.brandname}
+                        sx={{
+                          width: 100,
+                          height: 50,
+                          border: `2px solid ${
+                            theme.palette.mode === "dark"
+                              ? "#ffb74d"
+                              : "#f57c00"
+                          }`,
+                          boxShadow: theme.shadows[2],
+                          cursor: "pointer",
+                          borderRadius: 0,
+                          objectFit: "contain",
+                          display: "block",
+                          marginRight: 2,
+                        }}
+                      />
+                    )}
 
-                      <Box sx={{ minWidth: 0, flex: 1 }}>
-                        <Box display="flex" alignItems="center">
-                          <Typography
-                            variant="body2"
-                            fontWeight={700}
-                            noWrap
-                            sx={{
-                              backgroundColor: "black",
-                              WebkitBackgroundClip: "text",
-                              WebkitTextFillColor: "transparent",
-                              whiteSpace: "normal",
-                              wordBreak: "break-word",
-                              overflowWrap: "break-word",
-                            }}
-                          >
-                            {mainBrand.brandname}
-                          </Typography>
-                          <Box>
-                            {isMobile && (
-                              <Tooltip
-                                title={
-                                  mainBrand.isLiked
-                                    ? "Remove from favorites"
-                                    : "Add to favorites"
-                                }
-                              >
-                                <IconButton
-                                  onClick={(e) => handleLikeClick(mainBrand,e)}
-                                  disabled={
-                                    isLoading || likeProcessing[mainBrand.uuid]
-                                  }
-                                  sx={{
-                                    color: mainBrand.isLiked ? "red" : "gray",
-                                  }}
-                                >
-                                  {mainBrand.isLiked ? (
-                                    <Favorite color="error" />
-                                  ) : (
-                                    <FavoriteBorder />
-                                  )}
-                                </IconButton>
-                              </Tooltip>
-                            )}
-                          </Box>
-                        </Box>
-
+                    <Box sx={{ minWidth: 0, flex: 1 }}>
+                      <Box display="flex" alignItems="center">
                         <Typography
                           variant="body2"
+                          fontWeight={700}
                           noWrap
-                          overflow="hidden"
-                          textOverflow="ellipsis"
-                          color="text.secondary"
+                          sx={{
+                            backgroundColor: "black",
+                            WebkitBackgroundClip: "text",
+                            WebkitTextFillColor: "transparent",
+                            whiteSpace: "normal",
+                            wordBreak: "break-word",
+                            overflowWrap: "break-word",
+                          }}
                         >
-                          {mainBrand.brandCategories?.sub || "N/A"}
+                          {mainBrand.brandname}
                         </Typography>
-                      </Box>
-                    </Stack>
-
-                    <Stack
-                      direction={{ xs: "row" }}
-                      alignItems={{ xs: "flex-start", sm: "center" }}
-                      spacing={6}
-                    >
-                      <Stack direction="column" spacing={1}>
-                        <Fact
-                          label="Investment"
-                          value={mainBrand.fico?.investmentRange}
-                        />
-                        <Fact
-                          label="Area Required"
-                          value={mainBrand.fico?.areaRequired}
-                        />
-                        <Fact
-                          label="Franchise Model"
-                          value={mainBrand.fico?.franchiseModel}
-                        />
-                        {isMobile && (
-                          <Button
-                            variant="contained"
-                            aria-label="view details"
-                            onClick={() => handleApply(mainBrand)}
-                            sx={{
-                              width: "35vh",
-                              fontWeight: 800,
-                              textTransform: "none",
-                              color: "#fff",
-                              background:
-                                theme.palette.mode === "dark"
-                                  ? "linear-gradient(45deg, #4cb04f, #4cb04f)"
-                                  : "linear-gradient(45deg, #4cb04f, #4cb04f)",
-                              "&:hover": {
-                                background:
-                                  theme.palette.mode === "dark"
-                                    ? "linear-gradient(45deg, #000000ff, #000000ff)"
-                                    : "linear-gradient(45deg, #000000ff, #000000ff)",
-                                boxShadow: theme.shadows[4],
-                              },
-                            }}
-                          >
-                            View Details
-                          </Button>
-                        )}
-                      </Stack>
-
-                      <Stack direction="row" spacing={1} alignItems="center">
-                        {!isMobile && (
-                          <Button
-                            variant="contained"
-                            aria-label="view details"
-                            onClick={() => handleApply(mainBrand)}
-                            sx={{
-                              px: 3,
-                              fontWeight: 600,
-                              fontSize: '1rem',
-                              textTransform: "none",
-                              color: "#fff",
-                              background:
-                                theme.palette.mode === "dark"
-                                  ? "linear-gradient(45deg, #4cb04f, #4cb04f)"
-                                  : "linear-gradient(45deg, #4cb04f, #4cb04f)",
-                              "&:hover": {
-                                background:
-                                  theme.palette.mode === "dark"
-                                    ? "linear-gradient(45deg, #000000ffrgba(0, 0, 0, 1)4d)"
-                                    : "linear-gradient(45deg, #000000ff, #000000ff)",
-                                boxShadow: theme.shadows[4],
-                              },
-                            }}
-                          >
-                            View Details
-                          </Button>
-                        )}
-
-                        {!isMobile && (
-                          <>
+                        <Box>
+                          {isMobile && (
                             <Tooltip
                               title={
                                 mainBrand.isLiked
@@ -932,10 +889,13 @@ const triggerCelebration = (e, color = "#f44336") => {
                               }
                             >
                               <IconButton
-                                onClick={(e) => handleLikeClick(mainBrand,e)}
+                                onClick={(e) => handleLikeClick(mainBrand, e)}
                                 disabled={
                                   isLoading || likeProcessing[mainBrand.uuid]
                                 }
+                                sx={{
+                                  color: mainBrand.isLiked ? "red" : "gray",
+                                }}
                               >
                                 {mainBrand.isLiked ? (
                                   <Favorite color="error" />
@@ -944,32 +904,147 @@ const triggerCelebration = (e, color = "#f44336") => {
                                 )}
                               </IconButton>
                             </Tooltip>
-                            <Tooltip
-                              title={
-                                mainBrand.isShortListed
-                                  ? "Remove from shortlist"
-                                  : "Add to shortlist"
+                          )}
+                        </Box>
+                      </Box>
+
+                      <Typography
+                        variant="body2"
+                        noWrap
+                        overflow="hidden"
+                        textOverflow="ellipsis"
+                        color="text.secondary"
+                      >
+                        {mainBrand.brandCategories?.sub || "N/A"}
+                      </Typography>
+                    </Box>
+                  </Stack>
+
+                  <Stack
+                    direction={{ xs: "row" }}
+                    alignItems={{ xs: "flex-start", sm: "center" }}
+                    spacing={6}
+                  >
+                    <Stack direction="column" spacing={1}>
+                      <Fact
+                        label="Investment"
+                        value={mainBrand.fico?.investmentRange}
+                      />
+                      <Fact
+                        label="Area Required"
+                        value={mainBrand.fico?.areaRequired}
+                      />
+                      <Fact
+                        label="Franchise Model"
+                        value={mainBrand.fico?.franchiseModel}
+                      />
+                      {isMobile && (
+                        <Button
+                          variant="contained"
+                          aria-label="view details"
+                          onClick={() => handleApply(mainBrand)}
+                          sx={{
+                            width: "35vh",
+                            fontWeight: 800,
+                            textTransform: "none",
+                            color: "#fff",
+                            background:
+                              theme.palette.mode === "dark"
+                                ? "linear-gradient(45deg, #4cb04f, #4cb04f)"
+                                : "linear-gradient(45deg, #4cb04f, #4cb04f)",
+                            "&:hover": {
+                              background:
+                                theme.palette.mode === "dark"
+                                  ? "linear-gradient(45deg, #000000ff, #000000ff)"
+                                  : "linear-gradient(45deg, #000000ff, #000000ff)",
+                              boxShadow: theme.shadows[4],
+                            },
+                          }}
+                        >
+                          View Details
+                        </Button>
+                      )}
+                    </Stack>
+
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      {!isMobile && (
+                        <Button
+                          variant="contained"
+                          aria-label="view details"
+                          onClick={() => handleApply(mainBrand)}
+                          sx={{
+                            px: 3,
+                            fontWeight: 600,
+                            fontSize: "1rem",
+                            textTransform: "none",
+                            color: "#fff",
+                            background:
+                              theme.palette.mode === "dark"
+                                ? "linear-gradient(45deg, #4cb04f, #4cb04f)"
+                                : "linear-gradient(45deg, #4cb04f, #4cb04f)",
+                            "&:hover": {
+                              background:
+                                theme.palette.mode === "dark"
+                                  ? "linear-gradient(45deg, #000000ffrgba(0, 0, 0, 1)4d)"
+                                  : "linear-gradient(45deg, #000000ff, #000000ff)",
+                              boxShadow: theme.shadows[4],
+                            },
+                          }}
+                        >
+                          View Details
+                        </Button>
+                      )}
+
+                      {!isMobile && (
+                        <>
+                          <Tooltip
+                            title={
+                              mainBrand.isLiked
+                                ? "Remove from favorites"
+                                : "Add to favorites"
+                            }
+                          >
+                            <IconButton
+                              onClick={(e) => handleLikeClick(mainBrand, e)}
+                              disabled={
+                                isLoading || likeProcessing[mainBrand.uuid]
                               }
                             >
-                              <IconButton
-                                onClick={(e) => handleToggleShortList(mainBrand,e)}
-                                sx={{
-                                  color: mainBrand.isShortListed
-                                    ? "#7ef400ff"
-                                    : "rgba(0, 0, 0, 0.23)",
-                                }}
-                              >
-                                <RiBookmark3Fill size={21} />
-                              </IconButton>
-                            </Tooltip>
-                          </>
-                        )}
-                      </Stack>
+                              {mainBrand.isLiked ? (
+                                <Favorite color="error" />
+                              ) : (
+                                <FavoriteBorder />
+                              )}
+                            </IconButton>
+                          </Tooltip>
+                          <Tooltip
+                            title={
+                              mainBrand.isShortListed
+                                ? "Remove from shortlist"
+                                : "Add to shortlist"
+                            }
+                          >
+                            <IconButton
+                              onClick={(e) =>
+                                handleToggleShortList(mainBrand, e)
+                              }
+                              sx={{
+                                color: mainBrand.isShortListed
+                                  ? "#7ef400ff"
+                                  : "rgba(0, 0, 0, 0.23)",
+                              }}
+                            >
+                              <RiBookmark3Fill size={21} />
+                            </IconButton>
+                          </Tooltip>
+                        </>
+                      )}
                     </Stack>
                   </Stack>
-                </CardContent>
-              </Card>
-            </Box>
+                </Stack>
+              </CardContent>
+            </Card>
+          </Box>
           {/* </AnimatePresence> */}
 
           {isMobile && (
@@ -1023,8 +1098,8 @@ const triggerCelebration = (e, color = "#f44336") => {
                 {isLoading
                   ? "Loading..."
                   : viewedBrandsCount >= brands.length - 1 && hasMore
-                  ? "Load More"
-                  : "Next"}
+                    ? "Load More"
+                    : "Next"}
               </Button>
             </Box>
           )}
@@ -1082,21 +1157,22 @@ const triggerCelebration = (e, color = "#f44336") => {
                     ref={(el) => (videoRefs.current[i + 1] = el)}
                     loading="lazy"
                     preload="none"
-                    src={brand.franchiseVideos}
-                    alt={brand.brandname}
-                    poster={brand.logo}
+                    src={brand?.franchiseVideos || ""}
+                    alt={brand?.brandname}
+                    poster={brand?.logo}
                     style={{
                       width: "100%",
                       height: "100%",
                       objectFit: "contain",
                     }}
                     muted
-                    loop
                     playsInline
                     onPlay={() => handleVideoPlay(i + 1)}
                     onPause={() => handleVideoPause(i + 1)}
+                    onEnded={handleVideoEnded}
+                    onError={(e) => handleVideoError(e, brand)}
                   />
-                  
+
                   {/* Play/Pause Icon */}
                   {activeVideo !== i + 1 && (
                     <Box
@@ -1137,7 +1213,7 @@ const triggerCelebration = (e, color = "#f44336") => {
                       />
                     </Box>
                   )}
-                  
+
                   {/* Pause Icon (when video is playing) */}
                   {activeVideo === i + 1 && (
                     <Box
@@ -1314,7 +1390,7 @@ const triggerCelebration = (e, color = "#f44336") => {
                         >
                           <IconButton
                             size="small"
-                            onClick={(e) => handleToggleShortList(brand,e)}
+                            onClick={(e) => handleToggleShortList(brand, e)}
                             sx={{
                               color: brand.isShortListed
                                 ? "#7ef400ff"
@@ -1374,7 +1450,7 @@ const triggerCelebration = (e, color = "#f44336") => {
                         color="Black"
                         sx={{ fontSize: "0.7rem", lineHeight: 1.4 }}
                       >
-                         {brand.fico?.investmentRange}
+                        {brand.fico?.investmentRange}
                       </Typography>
 
                       <Typography
@@ -1394,7 +1470,7 @@ const triggerCelebration = (e, color = "#f44336") => {
                           mb: isMobile ? 1.5 : 0,
                         }}
                       >
-                         {brand.fico?.franchiseModel}
+                        {brand.fico?.franchiseModel}
                       </Typography>
                     </Box>
                   </Box>
@@ -1413,7 +1489,7 @@ const triggerCelebration = (e, color = "#f44336") => {
                       fontSize: "1rem",
                       color: "#fff",
                       fontWeight: 600,
-                      
+
                       minWidth: 100,
                       "&:hover": {
                         background:

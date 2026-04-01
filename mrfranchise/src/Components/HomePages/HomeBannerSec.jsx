@@ -215,13 +215,13 @@ const LazySection = memo(
 const bannerTexts = [
   {
     title: {
-      text: "1000+ Food Brands \n One Platform Endless Possibilities",
+      text: "India’s #1 Franchise Marketplace",
       gradient:
         "linear-gradient(0deg, rgba(255, 255, 255, 1) 10%, rgba(250, 250, 250, 1) 100%)",
       fontSize: { mobile: "2rem", tablet: "3.5rem", desktop: "2rem" },
     },
     subtitle: {
-      text: "Discover A Universe Of F&B Franchise Opportunities From Quick Service Restaurants To Gourmet Cafes All Under On Powerful Portal",
+      text: "Discover verified franchise opportunities, compare investment, and connect directly with brands.",
       highlight: {
         text: " F&B franchise opportunities",
         color: "#ff9800",
@@ -231,12 +231,12 @@ const bannerTexts = [
   },
   {
     title: {
-      text: "Turn Your Investment \n Into A Tasteful Venture",
+      text: "Start Your Business with the Right Franchise",
       gradient: "linear-gradient(90deg, #ffffffff 10%, #ffffffff 100%)",
       fontSize: { mobile: "2rem", tablet: "3.5rem", desktop: "2rem" },
     },
     subtitle: {
-      text: "Explore Curated Restaurant And Cafe Franchises With Proven Models Designed For ROI Stability And Low Opertational Hassle",
+      text: "Explore low investment franchise opportunities in food, retail, education, and more. Find the perfect fit for your business.",
       highlight: {
         text: " proven models",
         color: "#ff9800",
@@ -246,13 +246,13 @@ const bannerTexts = [
   },
   {
     title: {
-      text: "India's #1 F&B Franchise Marketplace\n Your Food Business Starts Here",
+      text: "Connect with Top Franchise Brands Instantly",
       gradient:
         "linear-gradient(0deg, rgba(255, 255, 255, 1) 10%, rgba(250, 250, 250, 1) 100%)",
       fontSize: { mobile: "2rem", tablet: "3.5rem", desktop: "2rem" },
     },
     subtitle: {
-      text: "From Startup Food kiosks To International Food Chains We Have Everything You Need To Start Your Franchise ",
+      text: "Get complete franchise details and investor support directly on WhatsApp. ",
       highlight: {
         text: "food franchise journey",
         color: "#ff9800",
@@ -261,114 +261,114 @@ const bannerTexts = [
       },
     },
   },
-  {
-    title: {
-      text: "Serve Success Hot \n Choose the Right F&B Franchise Today",
-      gradient: "linear-gradient(90deg, #ffffffff 10%, #ffffffff 100%)",
-      fontSize: { mobile: "2rem", tablet: "3.5rem", desktop: "2rem" },
-    },
-    subtitle: {
-      text: "Invest in hot-selling food concepts with high demand, fast scalability, and support from trusted food brands ",
-      highlight: {
-        text: "F&B Franchise",
-        color: "#ff9800",
-        fontWeight: "bold",
-      },
-    },
-  },
-  {
-    title: {
-      text: "From Local Taste to Global Plates \n Start Your Food Business Now",
-      gradient:
-        "linear-gradient(0deg, rgba(255, 255, 255, 1) 10%, rgba(250, 250, 250, 1) 100%)",
-      fontSize: { mobile: "2rem", tablet: "3.5rem", desktop: "2rem" },
-    },
-    subtitle: {
-      text: "Franchise options available in street food, bakeries, ice cream parlors, multicusine restaurants, and more.",
-      highlight: {
-        text: "Food Business",
-        color: "#ff9800",
-        fontWeight: "bold",
-      },
-    },
-  },
-  {
-    title: {
-      text: "Low Investment.\nHigh Appetite for Growth",
-      gradient: "linear-gradient(90deg, #ffffffff 10%, #ffffffff 100%)",
-      fontSize: { mobile: "2rem", tablet: "3.5rem", desktop: "2rem" },
-    },
-    subtitle: {
-      text: "Start from just ₹5 Lakhs with multiple profitable options in cafes, cloud kitchens, and food trucks.",
-      highlight: {
-        text: "Low Investment",
-        color: "#ff9800",
-        fontWeight: "bold",
-      },
-    },
-  },
-  {
-    title: {
-      text: "Franchise a Restaurant.\n Own a Cafe Lead a Cloud Kitchen",
-      gradient:
-        "linear-gradient(0deg, rgba(255, 255, 255, 1) 10%, rgba(250, 250, 250, 1) 100%)",
-      fontSize: { mobile: "2rem", tablet: "3.5rem", desktop: "2rem" },
-    },
-    subtitle: {
-      text: "Find franchise businesses across every food format to suit your budget, location, and business dream.",
-      highlight: {
-        text: "franchise businesses",
-        color: "#ff9800",
-        fontWeight: "bold",
-      },
-    },
-  },
-  {
-    title: {
-      text: "F&B Franchise Made Easy \n with www.MrFranchise.in",
-      gradient: "linear-gradient(90deg, #ffffffff 10%, #ffffffff 100%)",
-      fontSize: { mobile: "2rem", tablet: "3.5rem", desktop: "2rem" },
-    },
-    subtitle: {
-      text: "Step-by-step guidance, brand comparisons, and expert consultation to help you confidently invest.",
-      highlight: {
-        text: "consultation",
-        color: "#ff9800",
-        fontWeight: "bold",
-      },
-    },
-  },
-  {
-    title: {
-      text: "No Experience? No Problem!\n Proven Food Franchise Models Await You",
-      gradient:
-        "linear-gradient(0deg, rgba(255, 255, 255, 1) 10%, rgba(250, 250, 250, 1) 100%)",
-      fontSize: { mobile: "2rem", tablet: "3.5rem", desktop: "2rem" },
-    },
-    subtitle: {
-      text: "Get full training, support, marketing tools, and setup assistance with our zero-hassle franchise options.",
-      highlight: {
-        text: "zero-hassle",
-        color: "#ff9800",
-        fontWeight: "bold",
-      },
-    },
-  },
-  {
-    title: {
-      text: "Your Food Franchise Future\n Starts At food and beverage www.MrFranchise.in",
-      gradient: "linear-gradient(90deg, #ffffffff 10%, #ffffffff 100%)",
-      fontSize: { mobile: "2rem", tablet: "3.5rem", desktop: "2rem" },
-    },
-    subtitle: {
-      text: "The one-stop portal for serious F&B investors looking to explore, compare, and close franchise deals.",
-      highlight: {
-        text: "franchise deals",
-        color: "#ff9800",
-        fontWeight: "bold",
-      },
-    },
-  },
+  // {
+  //   title: {
+  //     text: "Serve Success Hot \n Choose the Right F&B Franchise Today",
+  //     gradient: "linear-gradient(90deg, #ffffffff 10%, #ffffffff 100%)",
+  //     fontSize: { mobile: "2rem", tablet: "3.5rem", desktop: "2rem" },
+  //   },
+  //   subtitle: {
+  //     text: "Invest in hot-selling food concepts with high demand, fast scalability, and support from trusted food brands ",
+  //     highlight: {
+  //       text: "F&B Franchise",
+  //       color: "#ff9800",
+  //       fontWeight: "bold",
+  //     },
+  //   },
+  // },
+  // {
+  //   title: {
+  //     text: "From Local Taste to Global Plates \n Start Your Food Business Now",
+  //     gradient:
+  //       "linear-gradient(0deg, rgba(255, 255, 255, 1) 10%, rgba(250, 250, 250, 1) 100%)",
+  //     fontSize: { mobile: "2rem", tablet: "3.5rem", desktop: "2rem" },
+  //   },
+  //   subtitle: {
+  //     text: "Franchise options available in street food, bakeries, ice cream parlors, multicusine restaurants, and more.",
+  //     highlight: {
+  //       text: "Food Business",
+  //       color: "#ff9800",
+  //       fontWeight: "bold",
+  //     },
+  //   },
+  // },
+  // {
+  //   title: {
+  //     text: "Low Investment.\nHigh Appetite for Growth",
+  //     gradient: "linear-gradient(90deg, #ffffffff 10%, #ffffffff 100%)",
+  //     fontSize: { mobile: "2rem", tablet: "3.5rem", desktop: "2rem" },
+  //   },
+  //   subtitle: {
+  //     text: "Start from just ₹5 Lakhs with multiple profitable options in cafes, cloud kitchens, and food trucks.",
+  //     highlight: {
+  //       text: "Low Investment",
+  //       color: "#ff9800",
+  //       fontWeight: "bold",
+  //     },
+  //   },
+  // },
+  // {
+  //   title: {
+  //     text: "Franchise a Restaurant.\n Own a Cafe Lead a Cloud Kitchen",
+  //     gradient:
+  //       "linear-gradient(0deg, rgba(255, 255, 255, 1) 10%, rgba(250, 250, 250, 1) 100%)",
+  //     fontSize: { mobile: "2rem", tablet: "3.5rem", desktop: "2rem" },
+  //   },
+  //   subtitle: {
+  //     text: "Find franchise businesses across every food format to suit your budget, location, and business dream.",
+  //     highlight: {
+  //       text: "franchise businesses",
+  //       color: "#ff9800",
+  //       fontWeight: "bold",
+  //     },
+  //   },
+  // },
+  // {
+  //   title: {
+  //     text: "F&B Franchise Made Easy \n with www.MrFranchise.in",
+  //     gradient: "linear-gradient(90deg, #ffffffff 10%, #ffffffff 100%)",
+  //     fontSize: { mobile: "2rem", tablet: "3.5rem", desktop: "2rem" },
+  //   },
+  //   subtitle: {
+  //     text: "Step-by-step guidance, brand comparisons, and expert consultation to help you confidently invest.",
+  //     highlight: {
+  //       text: "consultation",
+  //       color: "#ff9800",
+  //       fontWeight: "bold",
+  //     },
+  //   },
+  // },
+  // {
+  //   title: {
+  //     text: "No Experience? No Problem!\n Proven Food Franchise Models Await You",
+  //     gradient:
+  //       "linear-gradient(0deg, rgba(255, 255, 255, 1) 10%, rgba(250, 250, 250, 1) 100%)",
+  //     fontSize: { mobile: "2rem", tablet: "3.5rem", desktop: "2rem" },
+  //   },
+  //   subtitle: {
+  //     text: "Get full training, support, marketing tools, and setup assistance with our zero-hassle franchise options.",
+  //     highlight: {
+  //       text: "zero-hassle",
+  //       color: "#ff9800",
+  //       fontWeight: "bold",
+  //     },
+  //   },
+  // },
+  // {
+  //   title: {
+  //     text: "Your Food Franchise Future\n Starts At food and beverage www.MrFranchise.in",
+  //     gradient: "linear-gradient(90deg, #ffffffff 10%, #ffffffff 100%)",
+  //     fontSize: { mobile: "2rem", tablet: "3.5rem", desktop: "2rem" },
+  //   },
+  //   subtitle: {
+  //     text: "The one-stop portal for serious F&B investors looking to explore, compare, and close franchise deals.",
+  //     highlight: {
+  //       text: "franchise deals",
+  //       color: "#ff9800",
+  //       fontWeight: "bold",
+  //     },
+  //   },
+  // },
 ];
 
 const pageConfig = {

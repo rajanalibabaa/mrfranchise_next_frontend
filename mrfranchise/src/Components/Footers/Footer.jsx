@@ -121,7 +121,7 @@ const supportLinks = [
                 alt="MR FRANCHISE Logo"
                 sx={{
                   width: "auto",
-                  height: { xs: 50, sm: 60, md: 70 },
+                  height: { xs: 50, sm: 60, md: 140 },
                   mb: 2,
                   cursor: "pointer",
                   alignSelf: { xs: "center", md: "flex-start" },
@@ -149,8 +149,7 @@ const supportLinks = [
                   textAlign: { xs: "center", md: "left" },
                 }}
               >
-                Empowering franchise growth by connecting brands with serious investors through innovative digital solutions.
-              </Typography>
+MR FRANCHISE is a leading franchise marketplace in India designed to connect brands, investors, and entrepreneurs.<br/> Whether you're looking to buy a franchise in India, explore business opportunities, or invest in a low investment franchise business,<br/> we provide access to verified and high-growth brands.              </Typography>
             </Box>
           </Grid>
 
@@ -315,8 +314,8 @@ const supportLinks = [
           </Grid> */}
         </Grid>
  {/* Newsletter Column */}
-          <Box display={'flex'} flexDirection={{ xs: 'column', sm: 'row' }} >
-            <Box ml={{ xs: 0, md:8 }} >
+          <Box display={'flex'} flexDirection={{ xs: 'column', sm: 'row' }} justifyContent={{ xs: 'center', sm: 'space-between' }} >
+            <Box ml={{ xs: 0, md:4 }} >
             <Typography
               variant="h6"
               sx={{
