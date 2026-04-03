@@ -1,6 +1,6 @@
 
 "use client";
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import {
 
   useMediaQuery,
@@ -36,6 +36,15 @@ const FilterDropdowns = ({ onFilterChange }) => {
     selectedState: "",
     selectedInvestmentRange: "",
   });
+
+  const [isNavigating, setIsNavigating] = useState(false);
+  const isMountedRef = useRef(true);
+
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   // Get filter data from Redux store
   const {
@@ -142,29 +151,54 @@ const toSlug = (str) =>
     .trim();
 
   // Handle search button click
-  const handleFindBrands = useCallback(() => {
-    const queryParams = new URLSearchParams();
-    let slug = "";
-    let slugState = "";
-    if(!filters.selectedMainCategory && !filters.selectedState && !filters.selectedInvestmentRange){
-   window.open(`/all-franchise-brands`, "_blank", "noopener,noreferrer");
-    }
-    if (filters.selectedMainCategory) {
-      slug = toSlug(filters.selectedMainCategory);
-      // 🔸 Changed from subcat to main to match your API expectations
-      queryParams.append("maincat", filters.selectedMainCategory);
-    }
-    if (filters.selectedInvestmentRange) {
-      queryParams.append("investmentRange", filters.selectedInvestmentRange);
-    }
-    if (filters.selectedState) {
-      slugState = toSlug(filters.selectedState);
-      queryParams.append("state", filters.selectedState);
-    }
+// In handleFindBrands function - ensure proper URL generation
+const handleFindBrands = useCallback(() => {
+  if (isNavigating) return;
+  setIsNavigating(true);
 
-    // Open in a new browser tab instead of same tab
-   window.open(`/${slug}-franchise-opportunities-${slugState}?${queryParams.toString()}`, "_blank", "noopener,noreferrer");
-  }, [filters]);
+  const { selectedMainCategory, selectedState, selectedInvestmentRange } = filters;
+
+  // Build query params
+  const queryParams = new URLSearchParams();
+
+  if (selectedMainCategory) {
+    queryParams.append("maincat", selectedMainCategory);
+  }
+  if (selectedState) {
+    queryParams.append("state", selectedState);
+  }
+  if (selectedInvestmentRange) {
+    queryParams.append("investmentRange", selectedInvestmentRange);
+  }
+
+  // Generate URL
+  let url;
+  if (!selectedMainCategory && !selectedState && !selectedInvestmentRange) {
+    url = "/all-franchise-brands";
+  } else {
+    const slugParts = [];
+    if (selectedMainCategory) slugParts.push(toSlug(selectedMainCategory));
+    if (selectedState) slugParts.push(toSlug(selectedState));
+    
+    const slug = slugParts.length > 0 
+      ? `${slugParts.join("-")}-franchise-opportunities`
+      : "all-franchise-brands";
+    
+    url = `/${slug}?${queryParams.toString()}`;
+  }
+
+  console.log("Navigating to:", url);
+  
+  // Open in new tab
+  window.open(url, "_blank", "noopener,noreferrer");
+
+  // Force reset navigation lock after a short delay, guarding with isMountedRef
+  setTimeout(() => {
+    if (isMountedRef.current) {
+      setIsNavigating(false);
+    }
+  }, 500);
+}, [filters, isNavigating]);
 
 
   // 🔸 Changed to check mainCategories instead of subCategories
