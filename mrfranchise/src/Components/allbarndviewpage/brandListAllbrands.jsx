@@ -7,9 +7,15 @@ import React, {
   useMemo,
   Suspense,
   useRef,
+  startTransition,
   Fragment,
 } from "react";
-import { useMediaQuery, useTheme } from "@mui/material";
+import {
+  
+  useMediaQuery,
+  useTheme,
+ 
+} from "@mui/material";
 import Container from "@mui/material/Container";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -23,7 +29,7 @@ import Drawer from "@mui/material/Drawer";
 import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
 import Pagination from "@mui/material/Pagination";
-
+;
 import Close from "@mui/icons-material/Close";
 import FilterAlt from "@mui/icons-material/FilterAlt";
 import Compare from "@mui/icons-material/Compare";
@@ -37,28 +43,11 @@ import {
   setPage,
 } from "@/Redux/Slices/FilterBrandSlice";
 import { fetchFilterOptions } from "@/Redux/Slices/filterDropdownData";
+import AdSlot from "../ads/GoogleAd";
+import { ADS } from "@/config/ads.config";
 import { getLocalStorageData } from "@/Utils/localStorage";
-import { useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import BrandTags from "./brandTags";
-
-// ============================================
-// FILTER KEYS (Only actual filters, not pagination)
-// ============================================
-const ACTUAL_FILTER_KEYS = [
-  "maincat",
-  "subcat",
-  "childcat",
-  "state",
-  "district",
-  "city",
-  "investmentRange",
-  "franchiseModel",
-  "searchTerm",
-];
-
-// ============================================
-// SKELETON COMPONENTS (Optimized)
-// ============================================
 const BrandCardSkeleton = React.memo(() => (
   <Box
     sx={{
@@ -69,13 +58,17 @@ const BrandCardSkeleton = React.memo(() => (
       boxShadow: 1,
     }}
   >
-    <Skeleton variant="rectangular" height={160} sx={{ borderRadius: 1, mb: 2 }} animation="wave" />
-    <Skeleton variant="text" width="70%" height={28} animation="wave" />
-    <Skeleton variant="text" width="50%" height={20} animation="wave" />
-    <Skeleton variant="text" width="40%" height={20} animation="wave" />
+    <Skeleton
+      variant="rectangular"
+      height={160}
+      sx={{ borderRadius: 1, mb: 2 }}
+    />
+    <Skeleton variant="text" width="70%" height={28} />
+    <Skeleton variant="text" width="50%" height={20} />
+    <Skeleton variant="text" width="40%" height={20} />
     <Box sx={{ display: "flex", gap: 1, mt: 2 }}>
-      <Skeleton variant="rounded" width={60} height={28} animation="wave" />
-      <Skeleton variant="rounded" width={80} height={28} animation="wave" />
+      <Skeleton variant="rounded" width={60} height={28} />
+      <Skeleton variant="rounded" width={80} height={28} />
     </Box>
   </Box>
 ));
@@ -84,18 +77,15 @@ BrandCardSkeleton.displayName = "BrandCardSkeleton";
 const FilterPanelSkeleton = React.memo(() => (
   <Box sx={{ p: 2, bgcolor: "rgba(255, 255, 255, 0.59)", borderRadius: 2 }}>
     {[...Array(6)].map((_, i) => (
-      <Box key={i} sx={{ mb: 3 }}>
-        <Skeleton variant="text" width="60%" height={24} sx={{ mb: 1 }} animation="wave" />
-        <Skeleton variant="rounded" height={40} animation="wave" />
+      <Box key={`filter-skeleton-${i}`} sx={{ mb: 3 }}>
+        <Skeleton variant="text" width="60%" height={24} sx={{ mb: 1 }} />
+        <Skeleton variant="rounded" height={40} />
       </Box>
     ))}
   </Box>
 ));
 FilterPanelSkeleton.displayName = "FilterPanelSkeleton";
 
-// ============================================
-// DYNAMIC IMPORTS (Preloaded)
-// ============================================
 const BrandCard = dynamic(() => import("./brandCard"), {
   loading: () => <BrandCardSkeleton />,
   ssr: false,
@@ -108,24 +98,37 @@ const FilterPanel = dynamic(() => import("./FillterPannel"), {
 
 const BrandComparison = dynamic(
   () => import("@/Components/HomePages/brandCompariosn"),
-  { ssr: false }
+  {
+    loading: () => <Skeleton />,
+    ssr: false,
+  },
 );
 
 const LoginPage = dynamic(() => import("@/Components/LoginPage/LoginPage"), {
+  loading: () => <Skeleton />,
   ssr: false,
 });
 
 // ============================================
-// OPTIMIZED INTERSECTION OBSERVER HOOK
+// CUSTOM HOOKS
 // ============================================
-const useIntersectionObserver = () => {
+const useDebounce = (value, delay = 300) => {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedValue(value), delay);
+    return () => clearTimeout(timer);
+  }, [value, delay]);
+
+  return debouncedValue;
+};
+
+// Intersection Observer Hook for Lazy Loading
+const useIntersectionObserver = (options = {}) => {
   const [isVisible, setIsVisible] = useState(false);
   const ref = useRef(null);
 
   useEffect(() => {
-    const currentRef = ref.current;
-    if (!currentRef) return;
-
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -133,12 +136,14 @@ const useIntersectionObserver = () => {
           observer.disconnect();
         }
       },
-      { threshold: 0.1, rootMargin: "200px" }
+      { threshold: 0.1, rootMargin: "100px", ...options },
     );
 
-    observer.observe(currentRef);
+    const currentRef = ref.current;
+    if (currentRef) observer.observe(currentRef);
+
     return () => observer.disconnect();
-  }, []);
+  }, [options]);
 
   return [ref, isVisible];
 };
@@ -146,23 +151,45 @@ const useIntersectionObserver = () => {
 // ============================================
 // LAZY BRAND CARD WRAPPER
 // ============================================
-const LazyBrandCard = React.memo(({ brand, ...props }) => {
-  const [ref, isVisible] = useIntersectionObserver();
+const LazyBrandCard = React.memo(
+  ({
+    brand,
+    handleLikeClick,
+    likeProcessing,
+    enableComparison,
+    isSelectedForComparison,
+    onToggleBrandComparison,
+    maxComparisonReached,
+    onShowLogin,
+  }) => {
+    const [ref, isVisible] = useIntersectionObserver();
 
-  return (
-    <Box ref={ref} sx={{ minHeight: 350 }}>
-      {isVisible ? (
-        <Fade in timeout={200}>
-          <Box>
-            <BrandCard brand={brand} {...props} />
-          </Box>
-        </Fade>
-      ) : (
-        <BrandCardSkeleton />
-      )}
-    </Box>
-  );
-});
+    return (
+      <Box ref={ref} sx={{ minHeight: 350 }}>
+        {isVisible ? (
+          <Fade in timeout={300}>
+            <Box>
+              <Suspense fallback={<BrandCardSkeleton />}>
+                <BrandCard
+                  brand={brand}
+                  handleLikeClick={handleLikeClick}
+                  likeProcessing={likeProcessing}
+                  enableComparison={enableComparison}
+                  isSelectedForComparison={isSelectedForComparison}
+                  onToggleBrandComparison={onToggleBrandComparison}
+                  maxComparisonReached={maxComparisonReached}
+                  onShowLogin={onShowLogin}
+                />
+              </Suspense>
+            </Box>
+          </Fade>
+        ) : (
+          <BrandCardSkeleton />
+        )}
+      </Box>
+    );
+  },
+);
 LazyBrandCard.displayName = "LazyBrandCard";
 
 // ============================================
@@ -172,16 +199,7 @@ function BrandList({ maincat }) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const dispatch = useDispatch();
-  const searchParams = useSearchParams();
-
-  // ============================================
-  // REFS (Critical for preventing double fetch)
-  // ============================================
-  const isInitializedRef = useRef(false);
-  const lastFilterKeyRef = useRef("");
-  const abortControllerRef = useRef(null);
-  const fetchTimeoutRef = useRef(null);
-
+const pathname = usePathname();
   // ============================================
   // LOCAL STATE
   // ============================================
@@ -191,15 +209,21 @@ function BrandList({ maincat }) {
   const [comparisonOpen, setComparisonOpen] = useState(false);
   const [enableComparison, setEnableComparison] = useState(false);
   const [selectedForComparison, setSelectedForComparison] = useState([]);
-  const [isFirstLoad, setIsFirstLoad] = useState(true);
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  // Refs for performance
+  const filtersRef = useRef(null);
+  const brandsContainerRef = useRef(null);
 
   // ============================================
-  // REDUX SELECTORS
+  // REDUX SELECTORS (Optimized with shallowEqual)
   // ============================================
   const { brands, loading, error, filters, pagination } = useSelector(
     (state) => state.filterBrands,
-    shallowEqual
+    shallowEqual,
   );
+  console.log('brands data',brands);
+  
 
   const {
     mainCategories,
@@ -219,168 +243,148 @@ function BrandList({ maincat }) {
 
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
 
+  // Debounce filters for API calls
+  const debouncedFilters = useDebounce(filters, 300);
+
   // ============================================
   // MEMOIZED VALUES
   // ============================================
   const activeFilterCount = useMemo(() => {
-    return ACTUAL_FILTER_KEYS.reduce((count, key) => {
-      const value = filters[key];
-      if (value && (!Array.isArray(value) || value.length > 0)) {
-        return count + 1;
-      }
-      return count;
-    }, 0);
+    return Object.values(filters).filter(
+      (value) =>
+        value !== undefined &&
+        value !== null &&
+        value !== "" &&
+        (!Array.isArray(value) || value.length > 0),
+    ).length;
   }, [filters]);
 
-  const filterKey = useMemo(() => {
-    return JSON.stringify({
-      ...filters,
-      page: pagination.currentPage,
-    });
-  }, [filters, pagination.currentPage]);
-
-  // ============================================
-  // SINGLE FETCH FUNCTION (Prevents double loading)
-  // ============================================
-  const fetchBrands = useCallback(
-    (filtersToFetch, forceRefresh = false) => {
-      const currentKey = JSON.stringify(filtersToFetch);
-
-      // Skip if same filters already fetched (unless forced)
-      if (!forceRefresh && lastFilterKeyRef.current === currentKey) {
-        return;
-      }
-
-      // Cancel any pending request
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
-
-      // Clear any pending timeout
-      if (fetchTimeoutRef.current) {
-        clearTimeout(fetchTimeoutRef.current);
-      }
-
-      // Create new abort controller
-      abortControllerRef.current = new AbortController();
-      lastFilterKeyRef.current = currentKey;
-
-      // Fetch with minimal delay (50ms for batching rapid changes)
-      fetchTimeoutRef.current = setTimeout(() => {
-        dispatch(fetchFilteredBrands(filtersToFetch));
-        
-        if (isFirstLoad) {
-          setIsFirstLoad(false);
-        }
-      }, 50);
-    },
-    [dispatch, isFirstLoad]
+  const gridStyles = useMemo(
+    () => ({
+      display: "grid",
+      gridTemplateColumns: {
+        xs: "1fr",
+        sm: "repeat(2, 1fr)",
+        md: "repeat(3, 1fr)",
+        lg: "repeat(3, 1fr)",
+        xl: "repeat(4, 1fr)",
+      },
+      gap: 2,
+    }),
+    [],
   );
 
-  // ============================================
-  // INITIALIZATION (Runs once)
-  // ============================================
+  const containerStyles = useMemo(
+    () => ({
+      mt: { xs: -8, sm: -8, md: 0 },
+      mb: 0,
+      backgroundImage: "url(/bg25.jpeg)",
+      backgroundSize: "400px auto",
+      backgroundRepeat: "repeat",
+      minHeight: "87vh",
+      width: "100%",
+    }),
+    [],
+  );
+
+ 
+
+const searchParams = useSearchParams();
+
+useEffect(() => {
+  const selectedMainCat = maincat ?? searchParams.get("maincat");
+
+  if (selectedMainCat) {
+    dispatch(setFilter({ filterName: "maincat", value: selectedMainCat }));
+    dispatch(fetchFilterOptions({ main: selectedMainCat }));
+  } else {
+    dispatch(fetchFilterOptions());
+  }
+
+  setIsInitialized(true);
+}, [dispatch, maincat, searchParams]);
+
+ 
+
+ 
+
   useEffect(() => {
-    if (isInitializedRef.current) return;
-    isInitializedRef.current = true;
+  if (!isInitialized) return;
 
-    const selectedMainCat = maincat ?? searchParams.get("maincat");
-    const stored = getLocalStorageData();
+  let finalFilters = { ...debouncedFilters };
 
-    // Build initial filters
-    const initialFilters = { ...filters };
+  // Only apply stored search term from localStorage ONCE on mount
+  const stored = getLocalStorageData();
+  if (stored?.searchTerm && !debouncedFilters.searchTerm) {
+    finalFilters.searchTerm = stored.searchTerm;
+    localStorage.removeItem("franchiseFilters"); // clean up
+  }
 
-    if (selectedMainCat) {
-      initialFilters.maincat = selectedMainCat;
-      dispatch(setFilter({ filterName: "maincat", value: selectedMainCat }));
-      dispatch(fetchFilterOptions({ main: selectedMainCat }));
-    } else {
-      dispatch(fetchFilterOptions());
-    }
+  startTransition(() => {
+    dispatch(fetchFilteredBrands(finalFilters));
+  });
+}, [dispatch, isInitialized, debouncedFilters]); // Only these deps!
 
-    // Apply stored search term
-    if (stored?.searchTerm && !initialFilters.searchTerm) {
-      initialFilters.searchTerm = stored.searchTerm;
-      dispatch(setFilter({ filterName: "searchTerm", value: stored.searchTerm }));
-      localStorage.removeItem("franchiseFilters");
-    }
 
-    // Check comparison mode
-    if (stored?.enableComparison === "true") {
+
+  // Check for comparison mode from URL/storage
+  useEffect(() => {
+    const enableFromStorage = getLocalStorageData()?.enableComparison;
+    if (enableFromStorage === "true") {
       setEnableComparison(true);
       localStorage.removeItem("enableComparison");
     }
+  }, []);
 
-    // Fetch brands with initial filters
-    fetchBrands(initialFilters, true);
-
-    // Preload background
+  // Preload background image
+  useEffect(() => {
     const img = new Image();
     img.src = "/bg25.jpeg";
-
-    return () => {
-      if (fetchTimeoutRef.current) clearTimeout(fetchTimeoutRef.current);
-      if (abortControllerRef.current) abortControllerRef.current.abort();
-    };
-  }, []); // Empty deps - runs once
+  }, []);
 
   // ============================================
-  // FILTER CHANGE EFFECT (After initialization)
-  // ============================================
-  useEffect(() => {
-    if (!isInitializedRef.current) return;
-
-    // Skip the first render after initialization
-    if (lastFilterKeyRef.current === "") return;
-
-    fetchBrands(filters);
-  }, [filterKey]); // Only re-run when filterKey changes
-
-  // ============================================
-  // CALLBACKS
+  // CALLBACKS (Optimized)
   // ============================================
   const handleFilterChange = useCallback(
     (name, value) => {
-      dispatch(setFilter({ filterName: name, value }));
+      startTransition(() => {
+        dispatch(setFilter({ filterName: name, value }));
 
-      // Fetch dependent dropdown data
-      const dependentFetches = {
-        maincat: { main: value },
-        subcat: { sub: value },
-        state: { state: value },
-        district: { district: value },
-      };
+        // Fetch dependent data
+        const dependentFetches = {
+          maincat: { main: value },
+          subcat: { sub: value },
+          state: { state: value },
+          district: { district: value },
+        };
 
-      if (dependentFetches[name]) {
-        dispatch(fetchFilterOptions(dependentFetches[name]));
-      }
+        if (dependentFetches[name]) {
+          dispatch(fetchFilterOptions(dependentFetches[name]));
+        }
+      });
     },
-    [dispatch]
-  );
-
-  const handleMobileFilterChange = useCallback(
-    (name, value) => {
-      handleFilterChange(name, value);
-      setMobileFiltersOpen(false);
-    },
-    [handleFilterChange]
+    [dispatch],
   );
 
   const handleClearFilters = useCallback(() => {
-    lastFilterKeyRef.current = ""; // Force refresh
-    dispatch(resetFilters());
+    startTransition(() => {
+      dispatch(resetFilters());
+    });
   }, [dispatch]);
 
   const handlePageChange = useCallback(
-    (_, page) => {
-      dispatch(setPage(page));
+    (event, page) => {
+      startTransition(() => {
+        dispatch(setPage(page));
+      });
+      // Smooth scroll to top
       window.scrollTo({ top: 0, behavior: "smooth" });
     },
-    [dispatch]
+    [dispatch],
   );
 
   const handleLikeClick = useCallback(
-    async (brandId) => {
+    async (brandId, isLiked) => {
       if (likeProcessing[brandId]) return;
 
       if (!isAuthenticated) {
@@ -391,16 +395,17 @@ function BrandList({ maincat }) {
       setLikeProcessing((prev) => ({ ...prev, [brandId]: true }));
 
       try {
-        // Handle like logic
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        fetchBrands(filters, true);
+        // Import and use toggle like
+        const { useToggleLike } = await import("@/Hooks/Fetchbrands");
+        // Handle like logic here
+        dispatch(fetchFilteredBrands(filters));
       } catch (error) {
-        console.error("Like failed:", error);
+        console.error("Like operation failed:", error);
       } finally {
         setLikeProcessing((prev) => ({ ...prev, [brandId]: false }));
       }
     },
-    [likeProcessing, isAuthenticated, filters, fetchBrands]
+    [likeProcessing, isAuthenticated, dispatch, filters],
   );
 
   const toggleBrandComparison = useCallback((brand) => {
@@ -414,15 +419,23 @@ function BrandList({ maincat }) {
       if (prev.length >= 3) return prev;
 
       const updated = [...prev, brand];
-      if (updated.length === 3) setComparisonOpen(true);
+
+      // Auto-open dialog when 3 brands selected
+      if (updated.length === 3) {
+        setComparisonOpen(true);
+      }
 
       return updated;
     });
   }, []);
 
   const handleCompareClick = useCallback(() => {
-    if (!enableComparison) setEnableComparison(true);
-    if (selectedForComparison.length > 0) setComparisonOpen(true);
+    if (!enableComparison) {
+      setEnableComparison(true);
+    }
+    if (selectedForComparison.length > 0) {
+      setComparisonOpen(true);
+    }
   }, [enableComparison, selectedForComparison.length]);
 
   const handleCloseComparison = useCallback(() => {
@@ -431,143 +444,70 @@ function BrandList({ maincat }) {
     setEnableComparison(false);
   }, []);
 
-  // ============================================
-  // MEMOIZED STYLES
-  // ============================================
-  const gridStyles = useMemo(
-    () => ({
-      display: "grid",
-      gridTemplateColumns: {
-        xs: "1fr",
-        sm: "repeat(2, 1fr)",
-        md: "repeat(3, 1fr)",
-        lg: "repeat(3, 1fr)",
-        xl: "repeat(4, 1fr)",
-      },
-      gap: 2,
-    }),
-    []
-  );
+  const handleRemoveFromComparison = useCallback((uuid) => {
+    setSelectedForComparison((prev) => prev.filter((b) => b.uuid !== uuid));
+  }, []);
 
-  const containerStyles = useMemo(
-    () => ({
-      mt: { xs: -8, sm: -8, md: 0 },
-      mb: 0,
-      backgroundImage: "url(/bg25.jpeg)",
-      backgroundSize: "400px auto",
-      backgroundRepeat: "repeat",
-      minHeight: "87vh",
-      width: "100%",
-    }),
-    []
-  );
+  const toggleMobileFilters = useCallback(() => {
+    setMobileFiltersOpen((prev) => !prev);
+  }, []);
+
+  const closeMobileFilters = useCallback(() => {
+    setMobileFiltersOpen(false);
+  }, []);
+
+  const closeLogin = useCallback(() => {
+    setShowLogin(false);
+  }, []);
 
   // ============================================
-  // RENDER CONTENT
+  // RENDER HELPERS
   // ============================================
-  const renderContent = () => {
-    // First load - show skeleton grid
-    if (isFirstLoad && loading) {
-      return (
-        <Box sx={gridStyles}>
-          {[...Array(8)].map((_, i) => (
-            <BrandCardSkeleton key={i} />
-          ))}
-        </Box>
-      );
-    }
-
-    // Subsequent loading - show spinner overlay
+  const renderBrandGrid = useMemo(() => {
     if (loading) {
       return (
-        <Box sx={{ position: "relative", minHeight: "60vh" }}>
-          {/* Show existing content with overlay */}
-          {brands.length > 0 && (
-            <Box sx={{ ...gridStyles, opacity: 0.5 }}>
-              {brands.map((brand, i) => (
-                <BrandCardSkeleton key={brand.uuid || i} />
-              ))}
-            </Box>
-          )}
-          {/* Loading spinner */}
-          <Box
-            sx={{
-              position: "absolute",
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
-              zIndex: 10,
-            }}
-          >
-            <CircularProgress size={50} sx={{ color: "#ff9800" }} />
-          </Box>
+        <Box
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          minHeight="60vh"
+        >
+          <CircularProgress size={60} thickness={4} sx={{ color: "#ff9800" }} />
         </Box>
       );
     }
 
-    // Error state
     if (error) {
       return (
         <Box
           display="flex"
-          flexDirection="column"
           justifyContent="center"
           alignItems="center"
-          minHeight="40vh"
-          gap={2}
+          minHeight="60vh"
         >
           <Typography color="error" variant="h6">
             {error}
           </Typography>
-          <Button
-            variant="contained"
-            onClick={() => fetchBrands(filters, true)}
-            sx={{ bgcolor: "#ff9800" }}
-          >
-            Retry
-          </Button>
         </Box>
       );
     }
 
-    // No results
-    if (!brands || brands.length === 0) {
-      return (
-        <Box
-          display="flex"
-          flexDirection="column"
-          justifyContent="center"
-          alignItems="center"
-          minHeight="40vh"
-          gap={2}
-        >
-         <CircularProgress size={50} sx={{ color: "#ff9800" }} />
-          {activeFilterCount > 0 && (
-            <Button
-              variant="outlined"
-              onClick={handleClearFilters}
-              sx={{ borderColor: "#ff9800", color: "#ff9800" }}
-            >
-              Clear Filters
-            </Button>
-          )}
-        </Box>
-      );
-    }
+   
+  
 
-    // Brand grid
     return (
       <>
-        <Box sx={gridStyles}>
+        <Box sx={gridStyles} ref={brandsContainerRef}>
           {brands.map((brand, index) => (
             <Fragment key={brand.uuid || index}>
               <LazyBrandCard
+                // key={brand.uuid || index}
                 brand={brand}
                 handleLikeClick={handleLikeClick}
                 likeProcessing={likeProcessing}
                 enableComparison={enableComparison}
                 isSelectedForComparison={selectedForComparison.some(
-                  (b) => b.uuid === brand.uuid
+                  (b) => b.uuid === brand.uuid,
                 )}
                 onToggleBrandComparison={toggleBrandComparison}
                 maxComparisonReached={
@@ -576,6 +516,21 @@ function BrandList({ maincat }) {
                 }
                 onShowLogin={setShowLogin}
               />
+              {/* {index === 7 && (
+              <Box   sx={{
+            gridColumn: "1 / -1", // ⬅ spans full grid width
+            my: 1,
+          }}> <AdSlot {...ADS.HOME.TOP_LEADERBOARD}/>
+          </Box>
+            )} */}
+              {/* {index === 7 && (
+          //     <Box   sx={{
+          //   gridColumn: "1 / -1", // ⬅ spans full grid width
+          //   my: 1,
+          // }}> 
+          <AdSlot {...ADS.HOME.TOP_LEADERBOARD}/>
+          // </Box>
+            )} */}
             </Fragment>
           ))}
         </Box>
@@ -606,26 +561,47 @@ function BrandList({ maincat }) {
                 "& .MuiPaginationItem-root.Mui-selected": {
                   backgroundColor: "#ff9800",
                   color: "white",
+                  "&:hover": { backgroundColor: "#fb8c00" },
                 },
               }}
             />
           </Box>
         )}
+        {/* <AdSlot key={pathname} {...ADS.HOME.FOOTER_RECTANGLE} /> */}
       </>
     );
-  };
+  }, [
+    loading,
+    error,
+    brands,
+    gridStyles,
+    handleLikeClick,
+    likeProcessing,
+    enableComparison,
+    selectedForComparison,
+    toggleBrandComparison,
+    pagination,
+    handlePageChange,
+    handleClearFilters,
+    isMobile,
+  ]);
 
   // ============================================
   // MAIN RENDER
   // ============================================
   return (
     <Container maxWidth="xl" sx={containerStyles}>
-      {/* Compare Button */}
+      {/* Comparison Button */}
       <Box sx={{ position: "fixed", top: "30%", right: 12, zIndex: 1000 }}>
         <Badge badgeContent={selectedForComparison.length} color="primary">
-          <Tooltip title="Compare brands" placement="left" arrow>
+          <Tooltip
+            title="Click to compare selected brands"
+            placement="left"
+            arrow
+          >
             <Button
               variant="contained"
+              color="primary"
               startIcon={<Compare />}
               onClick={handleCompareClick}
               sx={{
@@ -634,7 +610,7 @@ function BrandList({ maincat }) {
                 borderRadius: 2,
                 boxShadow: 3,
                 bgcolor: "#ff9800",
-                "&:hover": { bgcolor: "#fb8c00" },
+                "&:hover": { bgcolor: "#fb8c00", boxShadow: 6 },
               }}
             >
               Compare
@@ -647,6 +623,7 @@ function BrandList({ maincat }) {
         {/* Desktop Filters */}
         {!isMobile && (
           <Box
+            ref={filtersRef}
             sx={{
               width: 280,
               flexShrink: 0,
@@ -656,6 +633,10 @@ function BrandList({ maincat }) {
               maxHeight: "calc(100vh - 32px)",
               overflowY: "auto",
               "&::-webkit-scrollbar": { width: "6px" },
+              // "&::-webkit-scrollbar-thumb": {
+              //   backgroundColor: "#ff9800",
+              //   borderRadius: "3px",
+              // },
             }}
           >
             <Suspense fallback={<FilterPanelSkeleton />}>
@@ -686,74 +667,68 @@ function BrandList({ maincat }) {
           </Box>
         )}
 
-        {/* Mobile Filter Button */}
+        {/* Mobile Filters Button */}
         {isMobile && (
-          <Box sx={{ mb: 2, mt: 1,  }}>
+          <Box sx={{ mb: 2, mt: 1 }}>
             <Button
               variant="outlined"
               startIcon={<FilterAlt sx={{ color: "#ff9800" }} />}
-              onClick={() => setMobileFiltersOpen(true)}
+              endIcon={
+                <Badge badgeContent={activeFilterCount} color="primary" />
+              }
+              onClick={toggleMobileFilters}
               fullWidth
               sx={{
                 py: 1.5,
                 borderColor: "#ff9800",
                 color: "#ff9800",
                 bgcolor: "white",
-                justifyContent: "center",
-                "&:hover": { borderColor: "#fb8c00" },
+                "&:hover": { borderColor: "#fb8c00", bgcolor: "white" },
               }}
             >
-              <Typography sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                Filters
-                {activeFilterCount > 0 && (
-                  <Badge
-                    badgeContent={activeFilterCount}
-                    color="warning"
-                    sx={{
-                      "& .MuiBadge-badge": {
-                        bgcolor: "#ff9800",
-                        color: "white",
-                      },
-                    }}
-                  />
-                )}
-              </Typography>
+              Filters
             </Button>
           </Box>
         )}
 
         {/* Main Content */}
         <Box flexGrow={1} ml={{ md: 3 }}>
-          <BrandTags
-            filters={filters}
-            loadingSubCategories={loadingSubCategories}
-            loadingChildCategories={loadingChildCategories}
-            onFilterChange={handleFilterChange}
-            mainCategories={mainCategories}
-            subCategories={subCategories}
-            resultStats={{
-              showing: brands.length,
-              total: pagination.total,
-            }}
-            isLoading={loading || dropdownLoading}
-          />
-          {renderContent()}
+          <BrandTags  filters={filters}  loadingSubCategories={loadingSubCategories}
+                loadingChildCategories={loadingChildCategories} onFilterChange={handleFilterChange}  mainCategories={mainCategories}
+                subCategories={subCategories}   resultStats={{
+                  showing: brands.length,
+                  total: pagination.total,
+                }}
+                isLoading={loading || dropdownLoading}/>
+          {renderBrandGrid}
         </Box>
       </Box>
 
-      {/* Mobile Filter Drawer */}
+      {/* Mobile Filters Drawer */}
       <Drawer
         anchor="left"
         open={mobileFiltersOpen}
-        onClose={() => setMobileFiltersOpen(false)}
+        onClose={closeMobileFilters}
         sx={{ "& .MuiDrawer-paper": { width: 300 } }}
       >
-        <Box sx={{ p: 2, height: "100%", display: "flex", flexDirection: "column" }}>
-          <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+        <Box
+          sx={{
+            p: 2,
+            height: "100%",
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          <Box
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+            mb={2}
+          >
             <Typography variant="h6" fontWeight="bold">
-              Filters {activeFilterCount > 0 && `(${activeFilterCount})`}
+              Filters
             </Typography>
-            <IconButton onClick={() => setMobileFiltersOpen(false)}>
+            <IconButton onClick={closeMobileFilters}>
               <Close />
             </IconButton>
           </Box>
@@ -762,11 +737,10 @@ function BrandList({ maincat }) {
             <Suspense fallback={<FilterPanelSkeleton />}>
               <FilterPanel
                 filters={filters}
-                onFilterChange={handleMobileFilterChange}
-                onClearFilters={() => {
-                  handleClearFilters();
-                  setMobileFiltersOpen(false);
-                }}
+ onFilterChange={(...args) => {
+    handleFilterChange(...args);
+    closeMobileFilters(); // 👈 close drawer immediately
+  }}                onClearFilters={handleClearFilters}
                 activeFilterCount={activeFilterCount}
                 mainCategories={mainCategories}
                 subCategories={subCategories}
@@ -785,30 +759,33 @@ function BrandList({ maincat }) {
                   total: pagination.total,
                 }}
                 isLoading={loading || dropdownLoading}
+                
               />
             </Suspense>
           </Box>
           <Button
             variant="contained"
             fullWidth
-            onClick={() => setMobileFiltersOpen(false)}
-            sx={{ mt: 2, bgcolor: "#ff9800", "&:hover": { bgcolor: "#fb8c00" } }}
+            onClick={closeMobileFilters}
+            sx={{
+              mt: 2,
+              bgcolor: "#ff9800",
+              "&:hover": { bgcolor: "#fb8c00" },
+            }}
           >
             Apply Filters
           </Button>
         </Box>
       </Drawer>
 
-      {/* Comparison Modal */}
+      {/* Brand Comparison Modal */}
       {comparisonOpen && (
         <Suspense fallback={null}>
           <BrandComparison
             open={comparisonOpen}
             onClose={handleCloseComparison}
             selectedBrands={selectedForComparison}
-            onRemoveFromComparison={(uuid) =>
-              setSelectedForComparison((prev) => prev.filter((b) => b.uuid !== uuid))
-            }
+            onRemoveFromComparison={handleRemoveFromComparison}
           />
         </Suspense>
       )}
@@ -816,7 +793,7 @@ function BrandList({ maincat }) {
       {/* Login Modal */}
       {showLogin && (
         <Suspense fallback={null}>
-          <LoginPage open={showLogin} onClose={() => setShowLogin(false)} />
+          <LoginPage open={showLogin} onClose={closeLogin} />
         </Suspense>
       )}
     </Container>
