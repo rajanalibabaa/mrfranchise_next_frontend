@@ -1,8 +1,30 @@
-"use client";
+ {/* <video
+                  ref={(el) => (videoRefs.current[0] = el)}
+                  src={mainBrand?.franchiseVideos || mainBrand?.logo}
+                  poster={mainBrand?.logo}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "contain",
+                  }}
+                  preload="auto"
+                  playsInline
+                  muted={false}
+                  autoPlay
+                  controls
+                  onPlay={() => setActiveVideo(0)}
+                  onPause={() => setActiveVideo(null)}
+                  onEnded={handleVideoEnded}
+                  onError={(e) => handleVideoError(e, mainBrand)}
+                /> */}
+
+
+
+
+
+                "use client";
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import {
-  useMediaQuery,
-} from "@mui/material";
+import { useMediaQuery } from "@mui/material";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Card from "@mui/material/Card";
@@ -10,7 +32,7 @@ import CircularProgress from "@mui/material/CircularProgress";
 import CardContent from "@mui/material/CardContent";
 import Typography from "@mui/material/Typography";
 import Avatar from "@mui/material/Avatar";
-import IconButton from '@mui/material/IconButton';
+import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
 import Stack from "@mui/material/Stack";
 import Chip from "@mui/material/Chip";
@@ -19,6 +41,8 @@ import ChevronRight from "@mui/icons-material/ChevronRight";
 import ChevronLeft from "@mui/icons-material/ChevronLeft";
 import FavoriteBorder from "@mui/icons-material/FavoriteBorder";
 import Favorite from "@mui/icons-material/Favorite";
+import VolumeUp from "@mui/icons-material/VolumeUp";
+import VolumeOff from "@mui/icons-material/VolumeOff";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "@mui/material/styles";
 import LoginPage from "@/Components/LoginPage/LoginPage";
@@ -55,41 +79,30 @@ import {
   toggleviewSliceLiked,
 } from "@/Redux/Slices/viewSlice.jsx";
 import { toggleBrandShortListfilter } from "@/Redux/Slices/FilterBrandSlice.jsx";
-import { useInView } from 'react-intersection-observer';
+import { useInView } from "react-intersection-observer";
 import confetti from "canvas-confetti";
 import Image from "next/image";
 
 const token = getToken();
 
-// ✅ FIX: Helper to safely extract the actual <video> DOM element from VideoPlayer ref
-function extractVideoElement(el) {
-  if (!el) return null;
-
-  // Case 1: el IS the video element directly
-  if (el.tagName === 'VIDEO') return el;
-  if (typeof el.play === 'function') return el;
-
-  // Case 2: el.videoRef is a React ref object { current: <video> }
-  if (el.videoRef?.current?.tagName === 'VIDEO') return el.videoRef.current;
-  if (el.videoRef?.current && typeof el.videoRef.current.play === 'function') {
-    return el.videoRef.current;
-  }
-
-  // Case 3: el.videoRef IS the video element directly
-  if (el.videoRef?.tagName === 'VIDEO') return el.videoRef;
-  if (el.videoRef && typeof el.videoRef.play === 'function') return el.videoRef;
-
-  // Case 4: el.video (some components use this)
-  if (el.video?.current?.tagName === 'VIDEO') return el.video.current;
-  if (el.video?.tagName === 'VIDEO') return el.video;
-  if (el.video && typeof el.video.play === 'function') return el.video;
-
-  // Case 5: Try querySelector as last resort (if el is a DOM node)
-  if (el.querySelector) {
-    const found = el.querySelector('video');
+// ✅ FIX: Robust video element extraction
+function getVideoElement(ref) {
+  if (!ref) return null;
+  // Direct video element
+  if (ref.tagName === "VIDEO" || typeof ref.play === "function") return ref;
+  // React ref object
+  if (ref.current?.tagName === "VIDEO") return ref.current;
+  if (ref.current && typeof ref.current.play === "function") return ref.current;
+  // VideoPlayer component patterns
+  if (ref.videoRef?.current) return ref.videoRef.current;
+  if (ref.videoRef && typeof ref.videoRef.play === "function") return ref.videoRef;
+  if (ref.video?.current) return ref.video.current;
+  if (ref.video && typeof ref.video.play === "function") return ref.video;
+  // querySelector fallback
+  if (ref.querySelector) {
+    const found = ref.querySelector("video");
     if (found) return found;
   }
-
   return null;
 }
 
@@ -102,33 +115,37 @@ function TopBrandVdoCards() {
   const [initialLoadComplete, setInitialLoadComplete] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const [initialAutoplayDone, setInitialAutoplayDone] = useState(false);
-  const [videoReady, setVideoReady] = useState(false); // ✅ Track when video ref is available
+  const [viewedBrandsCount, setViewedBrandsCount] = useState(0);
+
+  // ✅ FIX: Track muted state and user interaction
+  const [isMuted, setIsMuted] = useState(true); // Start muted for autoplay
+  const [hasUserInteracted, setHasUserInteracted] = useState(false);
+  const [videoReady, setVideoReady] = useState(false);
 
   const userPausedRef = useRef(false);
   const timeoutRef = useRef(null);
   const videoRefs = useRef([]);
-  const containerElRef = useRef(null); // ✅ Separate DOM ref for click outside detection
-  const mainVideoPlayerRef = useRef(null); // ✅ Raw ref from VideoPlayer component
-  const retryTimerRef = useRef(null); // ✅ For retry logic
+  const containerElRef = useRef(null);
+  const mainVideoPlayerRef = useRef(null);
+  const retryTimerRef = useRef(null);
+  const isTransitioningRef = useRef(false); // ✅ Track AnimatePresence transitions
 
-  // ✅ FIX: useInView returns a callback ref, NOT a ref object
-  // We need a separate ref for DOM access (handleClickOutside)
   const [inViewRef, inView] = useInView({
     threshold: 0.3,
     triggerOnce: false,
   });
 
-  // ✅ Combine both refs into one callback ref
-  const setContainerRef = useCallback((node) => {
-    containerElRef.current = node;
-    inViewRef(node);
-  }, [inViewRef]);
+  const setContainerRef = useCallback(
+    (node) => {
+      containerElRef.current = node;
+      inViewRef(node);
+    },
+    [inViewRef]
+  );
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const isTablet = useMediaQuery(theme.breakpoints.between("sm", "md"));
-  const [viewedBrandsCount, setViewedBrandsCount] = useState(0);
 
   const CARD_SIZES = {
     main: {
@@ -148,54 +165,142 @@ function TopBrandVdoCards() {
     (state) => state.brands
   );
 
-  // ✅ FIX: Safely get the main video element, with retry capability
+  // ✅ FIX: Safe video access with null checks
   const getMainVideo = useCallback(() => {
-    // First try the cached ref
     let video = videoRefs.current[0];
-    if (video && typeof video.play === 'function') return video;
+    if (video && typeof video.play === "function") return video;
 
-    // Re-extract from the raw component ref
     if (mainVideoPlayerRef.current) {
-      video = extractVideoElement(mainVideoPlayerRef.current);
+      video = getVideoElement(mainVideoPlayerRef.current);
       if (video) {
         videoRefs.current[0] = video;
         return video;
       }
     }
-
     return null;
   }, []);
 
-  // ✅ FIX: Ref callback that properly extracts video element
+  // ✅ FIX: Safe play that handles all browser restrictions
+  const safePlay = useCallback(
+    (video) => {
+      if (!video || isTransitioningRef.current) return Promise.resolve();
+
+      return new Promise((resolve) => {
+        // Always ensure muted state matches our state
+        video.muted = isMuted;
+
+        const playPromise = video.play();
+        if (playPromise !== undefined) {
+          playPromise
+            .then(() => {
+              setActiveVideo(0);
+              resolve(true);
+            })
+            .catch((err) => {
+              if (err.name === "NotAllowedError") {
+                // Browser blocked — force muted autoplay
+                video.muted = true;
+                setIsMuted(true);
+                video
+                  .play()
+                  .then(() => {
+                    setActiveVideo(0);
+                    resolve(true);
+                  })
+                  .catch(() => resolve(false));
+              } else if (err.name === "AbortError") {
+                // Play was interrupted (rapid index changes) — ignore
+                resolve(false);
+              } else {
+                resolve(false);
+              }
+            });
+        } else {
+          resolve(true);
+        }
+      });
+    },
+    [isMuted]
+  );
+
+  // ✅ FIX: Safe pause
+  const safePause = useCallback((video) => {
+    if (!video) return;
+    try {
+      video.pause();
+    } catch (e) {
+      // Ignore — video might already be disposed
+    }
+    setActiveVideo(null);
+  }, []);
+
+  // ✅ FIX: Ref callback with retry for AnimatePresence timing
   const handleMainVideoRef = useCallback((el) => {
     mainVideoPlayerRef.current = el;
 
     if (el) {
-      const videoEl = extractVideoElement(el);
+      const videoEl = getVideoElement(el);
       if (videoEl) {
         videoRefs.current[0] = videoEl;
+
+        // ✅ FIX: Attach HLS error recovery
+        setupHlsErrorRecovery(videoEl);
+
         setVideoReady(true);
       } else {
-        // VideoPlayer might not have rendered the <video> yet
-        // Retry after a short delay
         videoRefs.current[0] = null;
         setVideoReady(false);
 
-        // Retry extraction after mount completes
         clearTimeout(retryTimerRef.current);
         retryTimerRef.current = setTimeout(() => {
-          const retryEl = extractVideoElement(mainVideoPlayerRef.current);
-          if (retryEl) {
-            videoRefs.current[0] = retryEl;
-            setVideoReady(true);
+          if (mainVideoPlayerRef.current) {
+            const retryEl = getVideoElement(mainVideoPlayerRef.current);
+            if (retryEl) {
+              videoRefs.current[0] = retryEl;
+              setupHlsErrorRecovery(retryEl);
+              setVideoReady(true);
+            }
           }
-        }, 200);
+        }, 300);
       }
     } else {
       videoRefs.current[0] = null;
       mainVideoPlayerRef.current = null;
       setVideoReady(false);
     }
+  }, []);
+
+  // ✅ FIX: HLS buffer error recovery
+  const setupHlsErrorRecovery = useCallback((videoEl) => {
+    if (!videoEl) return;
+
+    const handleStall = () => {
+      if (videoEl.buffered.length > 0) {
+        const bufferedStart = videoEl.buffered.start(0);
+        const currentTime = videoEl.currentTime;
+
+        // If current time is before buffered region, seek past the hole
+        if (currentTime < bufferedStart) {
+          videoEl.currentTime = bufferedStart + 0.1;
+        }
+      }
+    };
+
+    const handleWaiting = () => {
+      // If stuck waiting, try to seek past buffer hole
+      setTimeout(() => {
+        if (videoEl && !videoEl.paused && videoEl.readyState < 3) {
+          handleStall();
+        }
+      }, 2000);
+    };
+
+    videoEl.addEventListener("stalled", handleStall);
+    videoEl.addEventListener("waiting", handleWaiting);
+
+    // Store cleanup refs
+    videoEl._stallHandler = handleStall;
+    videoEl._waitHandler = handleWaiting;
   }, []);
 
   // Initial load
@@ -209,9 +314,7 @@ function TopBrandVdoCards() {
   }, [dispatch, initialLoadComplete]);
 
   useEffect(() => {
-    if (pagination) {
-      setHasMore(pagination.hasNext);
-    }
+    if (pagination) setHasMore(pagination.hasNext);
   }, [pagination]);
 
   useEffect(() => {
@@ -220,22 +323,26 @@ function TopBrandVdoCards() {
     }
   }, [page, dispatch, hasMore]);
 
-  // Reset video ready state when currentIndex changes
+  // ✅ FIX: Track AnimatePresence transitions to prevent play during unmount
   useEffect(() => {
+    isTransitioningRef.current = true;
     setVideoReady(false);
-    // Re-extract after AnimatePresence swap completes
+
     const timer = setTimeout(() => {
+      isTransitioningRef.current = false;
+
       if (mainVideoPlayerRef.current) {
-        const videoEl = extractVideoElement(mainVideoPlayerRef.current);
+        const videoEl = getVideoElement(mainVideoPlayerRef.current);
         if (videoEl) {
           videoRefs.current[0] = videoEl;
+          setupHlsErrorRecovery(videoEl);
           setVideoReady(true);
         }
       }
-    }, 350); // slightly longer than AnimatePresence duration (300ms)
+    }, 400); // Slightly longer than AnimatePresence 300ms
 
     return () => clearTimeout(timer);
-  }, [currentIndex]);
+  }, [currentIndex, setupHlsErrorRecovery]);
 
   const handleNext = useCallback(() => {
     if (brands.length === 0) return;
@@ -268,105 +375,85 @@ function TopBrandVdoCards() {
     }
   }, [isHovered, brands.length, handleNext]);
 
-  // ✅ FIX: Click outside using containerElRef (not the inView callback ref)
+  // Click outside handler
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (containerElRef.current && !containerElRef.current.contains(event.target)) {
+      if (
+        containerElRef.current &&
+        !containerElRef.current.contains(event.target)
+      ) {
         const mainVideo = getMainVideo();
         if (mainVideo && !mainVideo.paused) {
-          mainVideo.pause();
           userPausedRef.current = true;
-          setActiveVideo(null);
+          safePause(mainVideo);
           clearTimeout(timeoutRef.current);
         }
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [getMainVideo]);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [getMainVideo, safePause]);
 
-  // Video event listeners — rebind when videoReady or currentIndex changes
+  // Video event listeners
   useEffect(() => {
     const mainVideo = getMainVideo();
-    if (!mainVideo) return;
+    if (!mainVideo || !videoReady) return;
 
     mainVideo.loop = true;
     mainVideo.playsInline = true;
 
     const onPlay = () => setActiveVideo(0);
     const onPause = () => setActiveVideo((prev) => (prev === 0 ? null : prev));
+    const onError = (e) => {
+      // ✅ FIX: Handle video errors gracefully
+      const error = e.target?.error;
+      if (error) {
+        console.warn("Video error:", error.code, error.message);
+        // Try to recover by reloading
+        if (error.code === MediaError.MEDIA_ERR_DECODE) {
+          setTimeout(() => {
+            if (mainVideo && !mainVideo.paused) {
+              mainVideo.load();
+              safePlay(mainVideo);
+            }
+          }, 1000);
+        }
+      }
+    };
 
     mainVideo.addEventListener("play", onPlay);
     mainVideo.addEventListener("pause", onPause);
+    mainVideo.addEventListener("error", onError);
 
     return () => {
       mainVideo.removeEventListener("play", onPlay);
       mainVideo.removeEventListener("pause", onPause);
+      mainVideo.removeEventListener("error", onError);
     };
-  }, [videoReady, currentIndex, getMainVideo]);
+  }, [videoReady, getMainVideo, safePlay]);
 
-  // ✅ FIX: Autoplay when video becomes ready and in view
+  // ✅ FIX: Autoplay with proper muted-first strategy
   useEffect(() => {
-    const mainVideo = getMainVideo();
-    if (!mainVideo || !videoReady) return;
-
-    if (inView && !userPausedRef.current) {
-      if (!initialAutoplayDone) {
-        const playPromise = mainVideo.play();
-        if (playPromise !== undefined) {
-          playPromise
-            .then(() => {
-              mainVideo.muted = false;
-              setActiveVideo(0);
-              setInitialAutoplayDone(true);
-            })
-            .catch(() => {
-              mainVideo.muted = true;
-              mainVideo.play()
-                .then(() => {
-                  setActiveVideo(0);
-                  setInitialAutoplayDone(true);
-                })
-                .catch(() => {
-                  // Autoplay completely blocked by browser
-                });
-            });
-        }
-      }
-    } else if (!inView) {
-      mainVideo.pause();
-      setActiveVideo(null);
-    }
-  }, [videoReady, initialAutoplayDone, inView, getMainVideo]);
-
-  // ✅ FIX: Play video when index changes AND video is ready
-  useEffect(() => {
-    if (!initialAutoplayDone || !videoReady) return;
-    if (!inView || userPausedRef.current) return;
+    if (!videoReady || !initialLoadComplete || isTransitioningRef.current) return;
 
     const mainVideo = getMainVideo();
     if (!mainVideo) return;
 
-    mainVideo.play()
-      .then(() => setActiveVideo(0))
-      .catch(() => {
-        // Silently fail — user interaction may be needed
-      });
-  }, [currentIndex, videoReady, inView, initialAutoplayDone, getMainVideo]);
+    if (inView && !userPausedRef.current) {
+      safePlay(mainVideo);
+    } else if (!inView) {
+      safePause(mainVideo);
+    }
+  }, [videoReady, initialLoadComplete, inView, getMainVideo, safePlay, safePause]);
 
-  // Pause when out of view
+  // Pause when scrolled out of view
   useEffect(() => {
     if (!inView) {
       const mainVideo = getMainVideo();
-      if (mainVideo) {
-        mainVideo.pause();
-      }
-      setActiveVideo(null);
+      if (mainVideo) safePause(mainVideo);
     }
-  }, [inView, getMainVideo]);
+  }, [inView, getMainVideo, safePause]);
 
   // Auto-slide timer
   useEffect(() => {
@@ -383,57 +470,74 @@ function TopBrandVdoCards() {
     return () => {
       clearTimeout(retryTimerRef.current);
       clearTimeout(timeoutRef.current);
+
       const mainVideo = videoRefs.current[0];
       if (mainVideo) {
+        // Remove custom handlers
+        if (mainVideo._stallHandler) {
+          mainVideo.removeEventListener("stalled", mainVideo._stallHandler);
+        }
+        if (mainVideo._waitHandler) {
+          mainVideo.removeEventListener("waiting", mainVideo._waitHandler);
+        }
         mainVideo.pause();
-        mainVideo.src = '';
+        mainVideo.src = "";
         mainVideo.load();
       }
     };
   }, []);
 
-  const handleVideoPlay = (index) => {
-    if (index === 0) setActiveVideo(0);
-  };
-
-  const handleVideoPause = (index) => {
-    if (index === 0) setActiveVideo((prev) => (prev === 0 ? null : prev));
-  };
-
   const handleSideVideoClick = (index) => {
     userPausedRef.current = false;
     const clickedBrandIndex = (currentIndex + index + 1) % brands.length;
+
+    // Pause current video before transitioning
+    const mainVideo = getMainVideo();
+    if (mainVideo) safePause(mainVideo);
+
     setCurrentIndex(clickedBrandIndex);
     setViewedBrandsCount((prev) => prev + 1);
   };
 
-  // ✅ FIX: togglePlayPause with safe video access and no console spam
-  const togglePlayPause = useCallback((index) => {
-    if (index !== 0) return;
+  // ✅ FIX: Toggle play/pause — core fix for "video won't pause"
+  const togglePlayPause = useCallback(
+    (index) => {
+      if (index !== 0) return;
+      if (isTransitioningRef.current) return; // Don't toggle during transitions
 
-    const video = getMainVideo();
-    if (!video) {
-      // Video not mounted yet (AnimatePresence transition) — silently ignore
-      return;
-    }
+      const video = getMainVideo();
+      if (!video) return; // Silently ignore if ref not ready
 
-    if (video.paused) {
-      userPausedRef.current = false;
-      video.play()
-        .then(() => {
-          setActiveVideo(0);
-          startAutoSlide();
-        })
-        .catch(() => {
-          // Play blocked — possibly needs user gesture
-        });
-    } else {
-      userPausedRef.current = true;
-      video.pause();
-      setActiveVideo(null);
-      clearTimeout(timeoutRef.current);
-    }
-  }, [getMainVideo, startAutoSlide]);
+      // ✅ Track that user has interacted (for unmuting)
+      if (!hasUserInteracted) setHasUserInteracted(true);
+
+      if (video.paused) {
+        userPausedRef.current = false;
+        safePlay(video).then(() => startAutoSlide());
+      } else {
+        userPausedRef.current = true;
+        safePause(video);
+        clearTimeout(timeoutRef.current);
+      }
+    },
+    [getMainVideo, safePlay, safePause, startAutoSlide, hasUserInteracted]
+  );
+
+  // ✅ FIX: Mute/Unmute toggle
+  const toggleMute = useCallback(
+    (e) => {
+      e.stopPropagation();
+      setHasUserInteracted(true);
+
+      const video = getMainVideo();
+      if (!video) return;
+
+      const newMuted = !isMuted;
+      video.muted = newMuted;
+      setIsMuted(newMuted);
+    },
+    [isMuted, getMainVideo]
+  );
 
   const triggerCelebration = (e, color = "#f44336") => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -443,7 +547,10 @@ function TopBrandVdoCards() {
       particleCount: 40,
       spread: 150,
       origin: { x, y },
-      colors: [color, "#ffffff", "#fdc81cff", "#76ec1cff", "#ff1dd6ffff", "#00eaffff", "#0400ffff", "#000000", "#f10808ffff", "#f5f50aff"],
+      colors: [
+        color, "#ffffff", "#fdc81cff", "#76ec1cff",
+        "#ff1dd6ffff", "#00eaffff", "#0400ffff", "#000000",
+      ],
     });
   };
 
@@ -487,9 +594,7 @@ function TopBrandVdoCards() {
     if (!isLoading && hasMore) {
       const nextPage = page + 1;
       setPage(nextPage);
-      dispatch(fetchBrands({ page: nextPage })).then(() => {
-        setCurrentIndex(0);
-      });
+      dispatch(fetchBrands({ page: nextPage })).then(() => setCurrentIndex(0));
     }
   };
 
@@ -499,7 +604,7 @@ function TopBrandVdoCards() {
     }
   }, [currentIndex, hasMore, isLoading]);
 
-  // Loading states
+  // Loading/error states
   if (!initialLoadComplete || (isLoading && brands.length === 0)) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight={200}>
@@ -510,7 +615,7 @@ function TopBrandVdoCards() {
 
   if (error) {
     return (
-      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: 300, borderRadius: 2, boxShadow: 1 }}>
+      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: 300 }}>
         <Typography color="error">Error loading brands: {error}</Typography>
       </Box>
     );
@@ -518,7 +623,7 @@ function TopBrandVdoCards() {
 
   if (!brands || brands.length === 0) {
     return (
-      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: 300, borderRadius: 2, boxShadow: 1 }}>
+      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: 300 }}>
         <CircularProgress color="warning" />
       </Box>
     );
@@ -538,7 +643,7 @@ function TopBrandVdoCards() {
 
   return (
     <Box
-      ref={setContainerRef} // ✅ Combined ref: inView + DOM access
+      ref={setContainerRef}
       sx={{
         py: isMobile ? 0 : 1,
         mx: "auto",
@@ -564,7 +669,7 @@ function TopBrandVdoCards() {
           fontWeight="bold"
           sx={{
             color: theme.palette.mode === "dark" ? "#ffb74d" : "#000000ff",
-            backgroundColor: 'white',
+            backgroundColor: "white",
             p: 1.5,
             borderRadius: 2,
             textAlign: "left",
@@ -590,11 +695,11 @@ function TopBrandVdoCards() {
             width={820}
             height={90}
             style={{
-              objectFit: 'contain',
-              transition: 'transform 0.3s ease',
-              display: 'block',
-              marginLeft: '120px',
-              borderRadius: '10px',
+              objectFit: "contain",
+              transition: "transform 0.3s ease",
+              display: "block",
+              marginLeft: "120px",
+              borderRadius: "10px",
             }}
           />
         )}
@@ -620,12 +725,19 @@ function TopBrandVdoCards() {
           }}
         >
           <AnimatePresence mode="wait">
+            {/* ✅ FIX: Use motion.div instead of motion() */}
             <motion.div
               key={mainBrand.uuid}
               initial={{ opacity: 0, x: -50 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 50 }}
               transition={{ duration: 0.3, ease: "easeInOut" }}
+              onAnimationStart={() => {
+                isTransitioningRef.current = true;
+              }}
+              onAnimationComplete={() => {
+                isTransitioningRef.current = false;
+              }}
             >
               <Card
                 sx={{
@@ -656,6 +768,7 @@ function TopBrandVdoCards() {
                     togglePlayPause(0);
                   }}
                 >
+                  {/* Previous Button */}
                   {!isMobile && (
                     <Box sx={{ position: "absolute", top: 16, left: 16, zIndex: 2 }}>
                       <Button
@@ -668,10 +781,8 @@ function TopBrandVdoCards() {
                           color: "black",
                           borderColor: "#43ea5e",
                           "&:hover": {
-                            borderColor: theme.palette.mode === "dark" ? "#ff9800" : "#e65100",
-                            backgroundColor: theme.palette.mode === "dark"
-                              ? "rgba(255, 167, 38, 0.08)"
-                              : "rgba(245, 124, 0, 0.08)",
+                            borderColor: "#ff9800",
+                            backgroundColor: "rgba(255, 167, 38, 0.08)",
                           },
                         }}
                       >
@@ -680,38 +791,29 @@ function TopBrandVdoCards() {
                     </Box>
                   )}
 
+                  {/* Next / Load More Button */}
                   {!isMobile && (
                     <Box sx={{ position: "absolute", top: 16, right: 16, zIndex: 2 }}>
                       {viewedBrandsCount >= brands.length - 1 && hasMore ? (
                         <Button
                           variant="outlined"
-                          aria-label="load more brands"
                           onClick={(e) => {
                             e.stopPropagation();
-                            const nextPage = page + 1;
-                            setPage(nextPage);
                             userPausedRef.current = false;
-                            dispatch(fetchBrands({ page: nextPage })).then(() => {
-                              setCurrentIndex(0);
-                              setViewedBrandsCount(0);
-                            });
+                            handleLoadMore();
+                            setViewedBrandsCount(0);
                           }}
                           disabled={isLoading}
                           sx={{
                             textTransform: "none",
                             color: "black",
-                            borderColor: theme.palette.mode === "dark" ? "#ffb74d" : "#f57c00",
-                            "&:hover": {
-                              borderColor: "#43ea5e",
-                              backgroundColor: theme.palette.mode === "dark"
-                                ? "rgba(67, 234, 94, 0.15)"
-                                : "rgba(67, 234, 94, 0.10)",
-                            },
+                            borderColor: "#f57c00",
+                            "&:hover": { borderColor: "#43ea5e" },
                           }}
                         >
                           {isLoading ? (
                             <>
-                              <CircularProgress size={20} sx={{ color: "white", mr: 1 }} />
+                              <CircularProgress size={20} sx={{ mr: 1 }} />
                               Loading...
                             </>
                           ) : (
@@ -721,24 +823,72 @@ function TopBrandVdoCards() {
                       ) : (
                         <Button
                           variant="outlined"
-                          aria-label="next brand"
                           onClick={(e) => { e.stopPropagation(); handleNext(); }}
                           endIcon={<ChevronRight />}
                           sx={{
                             textTransform: "none",
                             color: "black",
-                            borderColor: theme.palette.mode === "dark" ? "#ffb74d" : "#f57c00",
-                            "&:hover": {
-                              borderColor: "#43ea5e",
-                              backgroundColor: theme.palette.mode === "dark"
-                                ? "rgba(67, 234, 94, 0.15)"
-                                : "rgba(67, 234, 94, 0.10)",
-                            },
+                            borderColor: "#f57c00",
+                            "&:hover": { borderColor: "#43ea5e" },
                           }}
                         >
                           Next Brand
                         </Button>
                       )}
+                    </Box>
+                  )}
+
+                  {/* ✅ FIX: Mute/Unmute button */}
+                  <Box
+                    sx={{
+                      position: "absolute",
+                      bottom: 16,
+                      right: 16,
+                      zIndex: 3,
+                    }}
+                  >
+                    <IconButton
+                      onClick={toggleMute}
+                      sx={{
+                        backgroundColor: "rgba(0,0,0,0.6)",
+                        color: "white",
+                        "&:hover": { backgroundColor: "rgba(0,0,0,0.8)" },
+                      }}
+                    >
+                      {isMuted ? <VolumeOff /> : <VolumeUp />}
+                    </IconButton>
+                  </Box>
+
+                  {/* ✅ FIX: Play/Pause overlay indicator */}
+                  {activeVideo !== 0 && (
+                    <Box
+                      sx={{
+                        position: "absolute",
+                        top: "50%",
+                        left: "50%",
+                        transform: "translate(-50%, -50%)",
+                        width: 70,
+                        height: 70,
+                        borderRadius: "50%",
+                        backgroundColor: "rgba(0, 0, 0, 0.5)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        zIndex: 2,
+                        pointerEvents: "none",
+                      }}
+                    >
+                      <Box
+                        component="span"
+                        sx={{
+                          width: 0,
+                          height: 0,
+                          borderTop: "15px solid transparent",
+                          borderBottom: "15px solid transparent",
+                          borderLeft: "25px solid white",
+                          marginLeft: "5px",
+                        }}
+                      />
                     </Box>
                   )}
 
@@ -749,12 +899,13 @@ function TopBrandVdoCards() {
                     height="100%"
                     preload="none"
                     objectFit="contain"
-                    onPlay={() => handleVideoPlay(0)}
-                    onPause={() => handleVideoPause(0)}
-                    autoPlay={inView && initialLoadComplete && !userPausedRef.current}
+                    onPlay={() => setActiveVideo(0)}
+                    onPause={() => setActiveVideo((prev) => (prev === 0 ? null : prev))}
+                    // ✅ FIX: Always start muted, manage mute state separately
+                    autoPlay={false} // We manage play ourselves
                     loop={true}
-                    muted
-                    ref={handleMainVideoRef} // ✅ Robust ref handler
+                    muted={isMuted}
+                    ref={handleMainVideoRef}
                   />
                 </Box>
 
@@ -782,27 +933,28 @@ function TopBrandVdoCards() {
                       alignItems="center"
                       sx={{ minWidth: 0, flex: 1, paddingBottom: "10px" }}
                     >
-                      {isMobile && (
+                      {isMobile ? (
                         <Avatar
                           onClick={() => handleApply(mainBrand)}
                           src={mainBrand.logo}
                           alt={mainBrand.brandname}
                           sx={{
-                            width: 50, height: 50,
+                            width: 50,
+                            height: 50,
                             border: `2px solid ${theme.palette.mode === "dark" ? "#ffb74d" : "#f57c00"}`,
                             boxShadow: theme.shadows[2],
                             cursor: "pointer",
                           }}
                         />
-                      )}
-                      {!isMobile && (
+                      ) : (
                         <Box
                           component="img"
                           onClick={() => handleApply(mainBrand)}
                           src={mainBrand.logo}
                           alt={mainBrand.brandname}
                           sx={{
-                            width: 100, height: 50,
+                            width: 100,
+                            height: 50,
                             border: `2px solid ${theme.palette.mode === "dark" ? "#ffb74d" : "#f57c00"}`,
                             boxShadow: theme.shadows[2],
                             cursor: "pointer",
@@ -813,6 +965,7 @@ function TopBrandVdoCards() {
                           }}
                         />
                       )}
+
                       <Box sx={{ minWidth: 0, flex: 1 }}>
                         <Box display="flex" alignItems="center">
                           <Typography
@@ -830,21 +983,19 @@ function TopBrandVdoCards() {
                           >
                             {mainBrand.brandname}
                           </Typography>
-                          <Box>
-                            {isMobile && (
-                              <Tooltip title={mainBrand.isLiked ? "Remove from favorites" : "Add to favorites"}>
-                                <IconButton
-                                  onClick={(e) => handleLikeClick(mainBrand, e)}
-                                  disabled={isLoading || likeProcessing[mainBrand.uuid]}
-                                  sx={{ color: mainBrand.isLiked ? "red" : "gray" }}
-                                >
-                                  {mainBrand.isLiked ? <Favorite color="error" /> : <FavoriteBorder />}
-                                </IconButton>
-                              </Tooltip>
-                            )}
-                          </Box>
+                          {isMobile && (
+                            <Tooltip title={mainBrand.isLiked ? "Remove from favorites" : "Add to favorites"}>
+                              <IconButton
+                                onClick={(e) => handleLikeClick(mainBrand, e)}
+                                disabled={isLoading || likeProcessing[mainBrand.uuid]}
+                                sx={{ color: mainBrand.isLiked ? "red" : "gray" }}
+                              >
+                                {mainBrand.isLiked ? <Favorite color="error" /> : <FavoriteBorder />}
+                              </IconButton>
+                            </Tooltip>
+                          )}
                         </Box>
-                        <Typography variant="body2" noWrap overflow="hidden" textOverflow="ellipsis" color="text.secondary">
+                        <Typography variant="body2" noWrap color="text.secondary">
                           {mainBrand.brandCategories?.sub || "N/A"}
                         </Typography>
                       </Box>
@@ -858,13 +1009,15 @@ function TopBrandVdoCards() {
                         {isMobile && (
                           <Button
                             variant="contained"
-                            aria-label="view details"
                             onClick={() => handleApply(mainBrand)}
                             sx={{
-                              width: "35vh", fontWeight: 800, textTransform: "none", color: "#fff",
+                              width: "35vh",
+                              fontWeight: 800,
+                              textTransform: "none",
+                              color: "#fff",
                               background: "linear-gradient(45deg, #4cb04f, #4cb04f)",
                               "&:hover": {
-                                background: "linear-gradient(45deg, #000000ff, #000000ff)",
+                                background: "linear-gradient(45deg, #000, #000)",
                                 boxShadow: theme.shadows[4],
                               },
                             }}
@@ -876,24 +1029,25 @@ function TopBrandVdoCards() {
 
                       <Stack direction="row" spacing={1} alignItems="center">
                         {!isMobile && (
-                          <Button
-                            variant="contained"
-                            aria-label="view details"
-                            onClick={() => handleApply(mainBrand)}
-                            sx={{
-                              px: 3, fontWeight: 600, fontSize: '1rem', textTransform: "none", color: "#fff",
-                              background: "linear-gradient(45deg, #4cb04f, #4cb04f)",
-                              "&:hover": {
-                                background: "linear-gradient(45deg, #000000ff, #000000ff)",
-                                boxShadow: theme.shadows[4],
-                              },
-                            }}
-                          >
-                            View Details
-                          </Button>
-                        )}
-                        {!isMobile && (
                           <>
+                            <Button
+                              variant="contained"
+                              onClick={() => handleApply(mainBrand)}
+                              sx={{
+                                px: 3,
+                                fontWeight: 600,
+                                fontSize: "1rem",
+                                textTransform: "none",
+                                color: "#fff",
+                                background: "linear-gradient(45deg, #4cb04f, #4cb04f)",
+                                "&:hover": {
+                                  background: "linear-gradient(45deg, #000, #000)",
+                                  boxShadow: theme.shadows[4],
+                                },
+                              }}
+                            >
+                              View Details
+                            </Button>
                             <Tooltip title={mainBrand.isLiked ? "Remove from favorites" : "Add to favorites"}>
                               <IconButton
                                 onClick={(e) => handleLikeClick(mainBrand, e)}
@@ -920,6 +1074,7 @@ function TopBrandVdoCards() {
             </motion.div>
           </AnimatePresence>
 
+          {/* Mobile nav buttons */}
           {isMobile && (
             <Box sx={{ display: "flex", justifyContent: "center", gap: 2, mt: 2, width: "100%" }}>
               <Button
@@ -929,10 +1084,8 @@ function TopBrandVdoCards() {
                 fullWidth
                 sx={{
                   textTransform: "none",
-                  color: "#ffffff",
-                  background: theme.palette.mode === "dark"
-                    ? "linear-gradient(45deg, #ffb74d, #ff9800)"
-                    : "linear-gradient(45deg, #f57c00, #ff9800)",
+                  color: "#fff",
+                  background: "linear-gradient(45deg, #f57c00, #ff9800)",
                 }}
               >
                 Previous
@@ -946,17 +1099,25 @@ function TopBrandVdoCards() {
                     handleNext();
                   }
                 }}
-                endIcon={isLoading ? <CircularProgress size={20} sx={{ color: "inherit" }} /> : <ChevronRight />}
+                endIcon={
+                  isLoading ? (
+                    <CircularProgress size={20} sx={{ color: "inherit" }} />
+                  ) : (
+                    <ChevronRight />
+                  )
+                }
                 disabled={!hasMore && currentIndex === brands.length - 1}
                 fullWidth
                 sx={{
                   textTransform: "none",
-                  background: theme.palette.mode === "dark"
-                    ? "linear-gradient(45deg, #ffb74d, #ff9800)"
-                    : "linear-gradient(45deg, #f57c00, #ff9800)",
+                  background: "linear-gradient(45deg, #f57c00, #ff9800)",
                 }}
               >
-                {isLoading ? "Loading..." : viewedBrandsCount >= brands.length - 1 && hasMore ? "Load More" : "Next"}
+                {isLoading
+                  ? "Loading..."
+                  : viewedBrandsCount >= brands.length - 1 && hasMore
+                  ? "Load More"
+                  : "Next"}
               </Button>
             </Box>
           )}
@@ -1003,29 +1164,37 @@ function TopBrandVdoCards() {
                     backgroundColor: "white",
                     flexShrink: 0,
                   }}
-                  onClick={(e) => { e.stopPropagation(); handleSideVideoClick(i); }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleSideVideoClick(i);
+                  }}
                 >
+                  {/* ✅ FIX: Side videos are just thumbnails — no autoplay, no play events */}
                   <video
                     ref={(el) => (videoRefs.current[i + 1] = el)}
-                    loading="lazy"
                     preload="none"
                     src={brand.franchiseVideos}
-                    alt={brand.brandname}
                     poster={brand.logo}
-                    style={{ width: "100%", height: "100%", objectFit: "contain" }}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "contain",
+                    }}
                     muted
-                    loop
                     playsInline
+                    // ✅ No loop, no autoplay, no play/pause handlers
+                    // Side videos just show poster — clicking swaps to main
                   />
 
-                  {/* Always show play icon on side cards (they swap to main on click) */}
+                  {/* Play icon — always visible (side videos are thumbnails) */}
                   <Box
                     sx={{
                       position: "absolute",
                       top: "50%",
                       left: "50%",
                       transform: "translate(-50%, -50%)",
-                      width: 60, height: 60,
+                      width: 60,
+                      height: 60,
                       borderRadius: "50%",
                       backgroundColor: "rgba(0, 0, 0, 0.6)",
                       display: "flex",
@@ -1035,12 +1204,16 @@ function TopBrandVdoCards() {
                       zIndex: 10,
                       "&:hover": { backgroundColor: "rgba(0, 0, 0, 0.8)" },
                     }}
-                    onClick={(e) => { e.stopPropagation(); handleSideVideoClick(i); }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleSideVideoClick(i);
+                    }}
                   >
                     <Box
                       component="span"
                       sx={{
-                        width: 0, height: 0,
+                        width: 0,
+                        height: 0,
                         borderTop: "12px solid transparent",
                         borderBottom: "12px solid transparent",
                         borderLeft: "20px solid white",
@@ -1054,10 +1227,9 @@ function TopBrandVdoCards() {
                     size="small"
                     sx={{
                       position: "absolute",
-                      top: 8, left: 8,
-                      background: theme.palette.mode === "dark"
-                        ? "linear-gradient(45deg, #ffb74d, #ff9800)"
-                        : "linear-gradient(45deg, #f57c00, #ff9800)",
+                      top: 8,
+                      left: 8,
+                      background: "linear-gradient(45deg, #f57c00, #ff9800)",
                       color: "#fff",
                       fontWeight: "bold",
                       fontSize: "0.65rem",
@@ -1076,7 +1248,14 @@ function TopBrandVdoCards() {
                   }}
                 >
                   <Box sx={{ overflow: "hidden" }}>
-                    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 0.5 }}>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "flex-start",
+                        gap: 0.5,
+                      }}
+                    >
                       <Box
                         component="img"
                         onClick={() => handleApply(brand)}
@@ -1101,14 +1280,20 @@ function TopBrandVdoCards() {
                             disabled={isLoading || likeProcessing[brand.uuid]}
                             sx={{ color: brand.isLiked ? "red" : "gray" }}
                           >
-                            {brand.isLiked ? <Favorite fontSize="small" /> : <FavoriteBorder fontSize="small" />}
+                            {brand.isLiked ? (
+                              <Favorite fontSize="small" />
+                            ) : (
+                              <FavoriteBorder fontSize="small" />
+                            )}
                           </IconButton>
                         </Tooltip>
                         <Tooltip title={brand.isShortListed ? "Remove from shortlist" : "Add to shortlist"}>
                           <IconButton
                             size="small"
                             onClick={(e) => handleToggleShortList(brand, e)}
-                            sx={{ color: brand.isShortListed ? "#7ef400ff" : "rgba(0, 0, 0, 0.23)" }}
+                            sx={{
+                              color: brand.isShortListed ? "#7ef400ff" : "rgba(0, 0, 0, 0.23)",
+                            }}
                           >
                             <RiBookmark3Fill size={18} />
                           </IconButton>
@@ -1125,7 +1310,10 @@ function TopBrandVdoCards() {
                         gap: 0.8,
                         scrollbarWidth: "thin",
                         "&::-webkit-scrollbar": { width: "4px" },
-                        "&::-webkit-scrollbar-thumb": { backgroundColor: "#ccc", borderRadius: "2px" },
+                        "&::-webkit-scrollbar-thumb": {
+                          backgroundColor: "#ccc",
+                          borderRadius: "2px",
+                        },
                       }}
                     >
                       <Tooltip title={brand.brandname}>
@@ -1133,7 +1321,12 @@ function TopBrandVdoCards() {
                           variant={isMobile ? "caption" : "body1"}
                           color="black"
                           mt={1}
-                          sx={{ flex: 1, minWidth: 0, whiteSpace: "normal", wordBreak: "break-word", overflowWrap: "break-word" }}
+                          sx={{
+                            flex: 1,
+                            minWidth: 0,
+                            whiteSpace: "normal",
+                            wordBreak: "break-word",
+                          }}
                         >
                           {brand.brandname}
                         </Typography>
@@ -1147,7 +1340,11 @@ function TopBrandVdoCards() {
                       <Typography variant="caption" color="Black" sx={{ fontSize: "0.7rem", lineHeight: 1.4 }}>
                         {brand.fico?.areaRequired}
                       </Typography>
-                      <Typography variant="caption" color="Black" sx={{ fontSize: "0.7rem", lineHeight: 1.5, mb: isMobile ? 1.5 : 0 }}>
+                      <Typography
+                        variant="caption"
+                        color="Black"
+                        sx={{ fontSize: "0.7rem", lineHeight: 1.5, mb: isMobile ? 1.5 : 0 }}
+                      >
                         {brand.fico?.franchiseModel}
                       </Typography>
                     </Box>
@@ -1166,7 +1363,7 @@ function TopBrandVdoCards() {
                       fontWeight: 600,
                       minWidth: 100,
                       "&:hover": {
-                        background: "linear-gradient(45deg, #000000ff, #000000ff)",
+                        background: "linear-gradient(45deg, #000, #000)",
                         boxShadow: theme.shadows[2],
                       },
                     }}
@@ -1180,7 +1377,9 @@ function TopBrandVdoCards() {
         </Box>
       </Box>
 
-      {showLogin && <LoginPage open={showLogin} onClose={() => setShowLogin(false)} />}
+      {showLogin && (
+        <LoginPage open={showLogin} onClose={() => setShowLogin(false)} />
+      )}
     </Box>
   );
 }

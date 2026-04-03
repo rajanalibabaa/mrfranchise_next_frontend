@@ -8,7 +8,7 @@ import {
   useTheme,
   
 } from "@mui/material";
-
+import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Avatar from "@mui/material/Avatar";
