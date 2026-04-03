@@ -7,15 +7,9 @@ import React, {
   useMemo,
   Suspense,
   useRef,
-  startTransition,
   Fragment,
 } from "react";
-import {
-  
-  useMediaQuery,
-  useTheme,
- 
-} from "@mui/material";
+import { useMediaQuery, useTheme } from "@mui/material";
 import Container from "@mui/material/Container";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -29,7 +23,7 @@ import Drawer from "@mui/material/Drawer";
 import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
 import Pagination from "@mui/material/Pagination";
-;
+
 import Close from "@mui/icons-material/Close";
 import FilterAlt from "@mui/icons-material/FilterAlt";
 import Compare from "@mui/icons-material/Compare";
@@ -43,11 +37,29 @@ import {
   setPage,
 } from "@/Redux/Slices/FilterBrandSlice";
 import { fetchFilterOptions } from "@/Redux/Slices/filterDropdownData";
-import AdSlot from "../ads/GoogleAd";
-import { ADS } from "@/config/ads.config";
 import { getLocalStorageData } from "@/Utils/localStorage";
-import { usePathname, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import BrandTags from "./brandTags";
+
+// ============================================
+// FILTER KEYS (Only actual filters)
+// ============================================
+const ACTUAL_FILTER_KEYS = [
+  "maincat",
+  "subcat",
+  "childcat",
+  "state",
+  "district",
+  "city",
+  "investmentRange",
+  "franchiseModel",
+  "searchTerm",
+  "areaRequired",
+];
+
+// ============================================
+// SKELETON COMPONENTS
+// ============================================
 const BrandCardSkeleton = React.memo(() => (
   <Box
     sx={{
@@ -62,13 +74,14 @@ const BrandCardSkeleton = React.memo(() => (
       variant="rectangular"
       height={160}
       sx={{ borderRadius: 1, mb: 2 }}
+      animation="wave"
     />
-    <Skeleton variant="text" width="70%" height={28} />
-    <Skeleton variant="text" width="50%" height={20} />
-    <Skeleton variant="text" width="40%" height={20} />
+    <Skeleton variant="text" width="70%" height={28} animation="wave" />
+    <Skeleton variant="text" width="50%" height={20} animation="wave" />
+    <Skeleton variant="text" width="40%" height={20} animation="wave" />
     <Box sx={{ display: "flex", gap: 1, mt: 2 }}>
-      <Skeleton variant="rounded" width={60} height={28} />
-      <Skeleton variant="rounded" width={80} height={28} />
+      <Skeleton variant="rounded" width={60} height={28} animation="wave" />
+      <Skeleton variant="rounded" width={80} height={28} animation="wave" />
     </Box>
   </Box>
 ));
@@ -77,58 +90,61 @@ BrandCardSkeleton.displayName = "BrandCardSkeleton";
 const FilterPanelSkeleton = React.memo(() => (
   <Box sx={{ p: 2, bgcolor: "rgba(255, 255, 255, 0.59)", borderRadius: 2 }}>
     {[...Array(6)].map((_, i) => (
-      <Box key={`filter-skeleton-${i}`} sx={{ mb: 3 }}>
-        <Skeleton variant="text" width="60%" height={24} sx={{ mb: 1 }} />
-        <Skeleton variant="rounded" height={40} />
+      <Box key={i} sx={{ mb: 3 }}>
+        <Skeleton variant="text" width="60%" height={24} sx={{ mb: 1 }} animation="wave" />
+        <Skeleton variant="rounded" height={40} animation="wave" />
       </Box>
     ))}
   </Box>
 ));
 FilterPanelSkeleton.displayName = "FilterPanelSkeleton";
 
-const BrandCard = dynamic(() => import("./brandCard"), {
-  loading: () => <BrandCardSkeleton />,
-  ssr: false,
-});
-
-const FilterPanel = dynamic(() => import("./FillterPannel"), {
-  loading: () => <FilterPanelSkeleton />,
-  ssr: false,
-});
-
-const BrandComparison = dynamic(
-  () => import("@/Components/HomePages/brandCompariosn"),
+// ============================================
+// DYNAMIC IMPORTS WITH ERROR HANDLING
+// ============================================
+const BrandCard = dynamic(
+  () => import("./brandCard").catch((err) => {
+    console.error("Failed to load BrandCard:", err);
+    return { default: () => <BrandCardSkeleton /> };
+  }),
   {
-    loading: () => <Skeleton />,
+    loading: () => <BrandCardSkeleton />,
     ssr: false,
-  },
+  }
 );
 
-const LoginPage = dynamic(() => import("@/Components/LoginPage/LoginPage"), {
-  loading: () => <Skeleton />,
-  ssr: false,
-});
+const FilterPanel = dynamic(
+  () => import("./FillterPannel").catch((err) => {
+    console.error("Failed to load FilterPanel:", err);
+    return { default: () => <FilterPanelSkeleton /> };
+  }),
+  {
+    loading: () => <FilterPanelSkeleton />,
+    ssr: false,
+  }
+);
+
+const BrandComparison = dynamic(
+  () => import("@/Components/HomePages/brandCompariosn").catch(() => ({ default: () => null })),
+  { ssr: false }
+);
+
+const LoginPage = dynamic(
+  () => import("@/Components/LoginPage/LoginPage").catch(() => ({ default: () => null })),
+  { ssr: false }
+);
 
 // ============================================
-// CUSTOM HOOKS
+// INTERSECTION OBSERVER HOOK
 // ============================================
-const useDebounce = (value, delay = 300) => {
-  const [debouncedValue, setDebouncedValue] = useState(value);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setDebouncedValue(value), delay);
-    return () => clearTimeout(timer);
-  }, [value, delay]);
-
-  return debouncedValue;
-};
-
-// Intersection Observer Hook for Lazy Loading
-const useIntersectionObserver = (options = {}) => {
+const useIntersectionObserver = () => {
   const [isVisible, setIsVisible] = useState(false);
   const ref = useRef(null);
 
   useEffect(() => {
+    const currentRef = ref.current;
+    if (!currentRef) return;
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -136,14 +152,12 @@ const useIntersectionObserver = (options = {}) => {
           observer.disconnect();
         }
       },
-      { threshold: 0.1, rootMargin: "100px", ...options },
+      { threshold: 0.1, rootMargin: "200px" }
     );
 
-    const currentRef = ref.current;
-    if (currentRef) observer.observe(currentRef);
-
+    observer.observe(currentRef);
     return () => observer.disconnect();
-  }, [options]);
+  }, []);
 
   return [ref, isVisible];
 };
@@ -151,45 +165,23 @@ const useIntersectionObserver = (options = {}) => {
 // ============================================
 // LAZY BRAND CARD WRAPPER
 // ============================================
-const LazyBrandCard = React.memo(
-  ({
-    brand,
-    handleLikeClick,
-    likeProcessing,
-    enableComparison,
-    isSelectedForComparison,
-    onToggleBrandComparison,
-    maxComparisonReached,
-    onShowLogin,
-  }) => {
-    const [ref, isVisible] = useIntersectionObserver();
+const LazyBrandCard = React.memo(({ brand, ...props }) => {
+  const [ref, isVisible] = useIntersectionObserver();
 
-    return (
-      <Box ref={ref} sx={{ minHeight: 350 }}>
-        {isVisible ? (
-          <Fade in timeout={300}>
-            <Box>
-              <Suspense fallback={<BrandCardSkeleton />}>
-                <BrandCard
-                  brand={brand}
-                  handleLikeClick={handleLikeClick}
-                  likeProcessing={likeProcessing}
-                  enableComparison={enableComparison}
-                  isSelectedForComparison={isSelectedForComparison}
-                  onToggleBrandComparison={onToggleBrandComparison}
-                  maxComparisonReached={maxComparisonReached}
-                  onShowLogin={onShowLogin}
-                />
-              </Suspense>
-            </Box>
-          </Fade>
-        ) : (
-          <BrandCardSkeleton />
-        )}
-      </Box>
-    );
-  },
-);
+  return (
+    <Box ref={ref} sx={{ minHeight: 350 }}>
+      {isVisible ? (
+        <Fade in timeout={200}>
+          <Box>
+            <BrandCard brand={brand} {...props} />
+          </Box>
+        </Fade>
+      ) : (
+        <BrandCardSkeleton />
+      )}
+    </Box>
+  );
+});
 LazyBrandCard.displayName = "LazyBrandCard";
 
 // ============================================
@@ -199,7 +191,16 @@ function BrandList({ maincat }) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const dispatch = useDispatch();
-const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  // ============================================
+  // REFS - Critical for preventing issues
+  // ============================================
+  const isInitializedRef = useRef(false);
+  const lastFetchKeyRef = useRef("");
+  const abortControllerRef = useRef(null);
+  const isMountedRef = useRef(true);
+
   // ============================================
   // LOCAL STATE
   // ============================================
@@ -209,21 +210,16 @@ const pathname = usePathname();
   const [comparisonOpen, setComparisonOpen] = useState(false);
   const [enableComparison, setEnableComparison] = useState(false);
   const [selectedForComparison, setSelectedForComparison] = useState([]);
-  const [isInitialized, setIsInitialized] = useState(false);
-
-  // Refs for performance
-  const filtersRef = useRef(null);
-  const brandsContainerRef = useRef(null);
+  const [isFirstLoad, setIsFirstLoad] = useState(true);
+  const [initialFiltersApplied, setInitialFiltersApplied] = useState(false);
 
   // ============================================
-  // REDUX SELECTORS (Optimized with shallowEqual)
+  // REDUX SELECTORS
   // ============================================
   const { brands, loading, error, filters, pagination } = useSelector(
     (state) => state.filterBrands,
-    shallowEqual,
+    shallowEqual
   );
-  console.log('brands data',brands);
-  
 
   const {
     mainCategories,
@@ -243,20 +239,17 @@ const pathname = usePathname();
 
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
 
-  // Debounce filters for API calls
-  const debouncedFilters = useDebounce(filters, 300);
-
   // ============================================
   // MEMOIZED VALUES
   // ============================================
   const activeFilterCount = useMemo(() => {
-    return Object.values(filters).filter(
-      (value) =>
-        value !== undefined &&
-        value !== null &&
-        value !== "" &&
-        (!Array.isArray(value) || value.length > 0),
-    ).length;
+    return ACTUAL_FILTER_KEYS.reduce((count, key) => {
+      const value = filters[key];
+      if (value && (!Array.isArray(value) || value.length > 0)) {
+        return count + 1;
+      }
+      return count;
+    }, 0);
   }, [filters]);
 
   const gridStyles = useMemo(
@@ -271,7 +264,7 @@ const pathname = usePathname();
       },
       gap: 2,
     }),
-    [],
+    []
   );
 
   const containerStyles = useMemo(
@@ -284,107 +277,198 @@ const pathname = usePathname();
       minHeight: "87vh",
       width: "100%",
     }),
-    [],
+    []
   );
 
- 
+  // ============================================
+  // SINGLE FETCH FUNCTION
+  // ============================================
+  const fetchBrands = useCallback(
+    (filtersToFetch, forceRefresh = false) => {
+      if (!isMountedRef.current) return;
 
-const searchParams = useSearchParams();
+      const fetchKey = JSON.stringify(filtersToFetch);
 
-useEffect(() => {
-  const selectedMainCat = maincat ?? searchParams.get("maincat");
+      // Skip if same filters already fetched
+      if (!forceRefresh && lastFetchKeyRef.current === fetchKey) {
+        console.log("Skipping duplicate fetch");
+        return;
+      }
 
-  if (selectedMainCat) {
-    dispatch(setFilter({ filterName: "maincat", value: selectedMainCat }));
-    dispatch(fetchFilterOptions({ main: selectedMainCat }));
-  } else {
-    dispatch(fetchFilterOptions());
-  }
+      // Cancel previous request
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+      abortControllerRef.current = new AbortController();
 
-  setIsInitialized(true);
-}, [dispatch, maincat, searchParams]);
+      lastFetchKeyRef.current = fetchKey;
 
- 
+      console.log("Fetching brands with filters:", filtersToFetch);
+      dispatch(fetchFilteredBrands(filtersToFetch));
 
- 
+      if (isFirstLoad) {
+        setIsFirstLoad(false);
+      }
+    },
+    [dispatch, isFirstLoad]
+  );
 
+  // ============================================
+  // INITIALIZATION - Read URL params and apply filters
+  // ============================================
   useEffect(() => {
-  if (!isInitialized) return;
+    if (isInitializedRef.current) return;
+    isInitializedRef.current = true;
+    isMountedRef.current = true;
 
-  let finalFilters = { ...debouncedFilters };
+    console.log("Initializing BrandList...");
 
-  // Only apply stored search term from localStorage ONCE on mount
-  const stored = getLocalStorageData();
-  if (stored?.searchTerm && !debouncedFilters.searchTerm) {
-    finalFilters.searchTerm = stored.searchTerm;
-    localStorage.removeItem("franchiseFilters"); // clean up
-  }
+    // Get filters from multiple sources
+    const urlMaincat = searchParams?.get("maincat");
+    const urlState = searchParams?.get("state");
+    const urlInvestmentRange = searchParams?.get("investmentRange");
+    const propMaincat = maincat;
+    const stored = getLocalStorageData();
 
-  startTransition(() => {
-    dispatch(fetchFilteredBrands(finalFilters));
-  });
-}, [dispatch, isInitialized, debouncedFilters]); // Only these deps!
+    // Build initial filters
+    const initialFilters = {};
 
+    // Priority: URL params > Props > localStorage
+    if (urlMaincat) {
+      initialFilters.maincat = urlMaincat;
+    } else if (propMaincat) {
+      initialFilters.maincat = propMaincat;
+    }
 
+    if (urlState) {
+      initialFilters.state = urlState;
+    }
 
-  // Check for comparison mode from URL/storage
-  useEffect(() => {
-    const enableFromStorage = getLocalStorageData()?.enableComparison;
-    if (enableFromStorage === "true") {
+    if (urlInvestmentRange) {
+      initialFilters.investmentRange = urlInvestmentRange;
+    }
+
+    if (stored?.searchTerm) {
+      initialFilters.searchTerm = stored.searchTerm;
+      localStorage.removeItem("franchiseFilters");
+    }
+
+    // Check comparison mode
+    if (stored?.enableComparison === "true") {
       setEnableComparison(true);
       localStorage.removeItem("enableComparison");
     }
-  }, []);
 
-  // Preload background image
-  useEffect(() => {
+    console.log("Initial filters:", initialFilters);
+
+    // Apply filters to Redux
+    Object.entries(initialFilters).forEach(([key, value]) => {
+      if (value) {
+        dispatch(setFilter({ filterName: key, value }));
+      }
+    });
+
+    // Fetch dropdown options
+    if (initialFilters.maincat) {
+      dispatch(fetchFilterOptions({ main: initialFilters.maincat }));
+    } else {
+      dispatch(fetchFilterOptions());
+    }
+
+    // Fetch brands with initial filters
+    // Small delay to ensure Redux state is updated
+    setTimeout(() => {
+      if (isMountedRef.current) {
+        fetchBrands(initialFilters, true);
+        setInitialFiltersApplied(true);
+      }
+    }, 50);
+
+    // Preload background
     const img = new Image();
     img.src = "/bg25.jpeg";
-  }, []);
+
+    return () => {
+      isMountedRef.current = false;
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, []); // Empty deps - runs once
 
   // ============================================
-  // CALLBACKS (Optimized)
+  // FILTER CHANGE EFFECT (After initialization)
+  // ============================================
+  useEffect(() => {
+    // Skip if not initialized or initial filters not applied
+    if (!initialFiltersApplied) return;
+
+    // Skip the initial render
+    const filterKey = JSON.stringify(filters);
+    if (lastFetchKeyRef.current === filterKey) return;
+
+    // Debounce filter changes
+    const timer = setTimeout(() => {
+      if (isMountedRef.current) {
+        fetchBrands(filters);
+      }
+    }, 150);
+
+    return () => clearTimeout(timer);
+  }, [filters, initialFiltersApplied, fetchBrands]);
+
+  // ============================================
+  // CALLBACKS
   // ============================================
   const handleFilterChange = useCallback(
     (name, value) => {
-      startTransition(() => {
-        dispatch(setFilter({ filterName: name, value }));
+      console.log("Filter changed:", name, value);
+      
+      dispatch(setFilter({ filterName: name, value }));
 
-        // Fetch dependent data
-        const dependentFetches = {
-          maincat: { main: value },
-          subcat: { sub: value },
-          state: { state: value },
-          district: { district: value },
-        };
+      // Fetch dependent data
+      const dependentFetches = {
+        maincat: { main: value },
+        subcat: { sub: value },
+        state: { state: value },
+        district: { district: value },
+      };
 
-        if (dependentFetches[name]) {
-          dispatch(fetchFilterOptions(dependentFetches[name]));
-        }
-      });
+      if (dependentFetches[name] && value) {
+        dispatch(fetchFilterOptions(dependentFetches[name]));
+      }
     },
-    [dispatch],
+    [dispatch]
   );
 
+  const handleMobileFilterChange = useCallback(
+    (name, value) => {
+      handleFilterChange(name, value);
+    },
+    [handleFilterChange]
+  );
+
+  const handleApplyMobileFilters = useCallback(() => {
+    setMobileFiltersOpen(false);
+  }, []);
+
   const handleClearFilters = useCallback(() => {
-    startTransition(() => {
-      dispatch(resetFilters());
-    });
+    lastFetchKeyRef.current = ""; // Force refresh
+    dispatch(resetFilters());
+    dispatch(fetchFilterOptions()); // Reset to initial options
   }, [dispatch]);
 
   const handlePageChange = useCallback(
-    (event, page) => {
-      startTransition(() => {
-        dispatch(setPage(page));
-      });
-      // Smooth scroll to top
+    (_, page) => {
+      lastFetchKeyRef.current = ""; // Force refresh
+      dispatch(setPage(page));
       window.scrollTo({ top: 0, behavior: "smooth" });
     },
-    [dispatch],
+    [dispatch]
   );
 
   const handleLikeClick = useCallback(
-    async (brandId, isLiked) => {
+    async (brandId) => {
       if (likeProcessing[brandId]) return;
 
       if (!isAuthenticated) {
@@ -395,17 +479,16 @@ useEffect(() => {
       setLikeProcessing((prev) => ({ ...prev, [brandId]: true }));
 
       try {
-        // Import and use toggle like
-        const { useToggleLike } = await import("@/Hooks/Fetchbrands");
         // Handle like logic here
-        dispatch(fetchFilteredBrands(filters));
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        fetchBrands(filters, true);
       } catch (error) {
-        console.error("Like operation failed:", error);
+        console.error("Like failed:", error);
       } finally {
         setLikeProcessing((prev) => ({ ...prev, [brandId]: false }));
       }
     },
-    [likeProcessing, isAuthenticated, dispatch, filters],
+    [likeProcessing, isAuthenticated, filters, fetchBrands]
   );
 
   const toggleBrandComparison = useCallback((brand) => {
@@ -419,23 +502,15 @@ useEffect(() => {
       if (prev.length >= 3) return prev;
 
       const updated = [...prev, brand];
-
-      // Auto-open dialog when 3 brands selected
-      if (updated.length === 3) {
-        setComparisonOpen(true);
-      }
+      if (updated.length === 3) setComparisonOpen(true);
 
       return updated;
     });
   }, []);
 
   const handleCompareClick = useCallback(() => {
-    if (!enableComparison) {
-      setEnableComparison(true);
-    }
-    if (selectedForComparison.length > 0) {
-      setComparisonOpen(true);
-    }
+    if (!enableComparison) setEnableComparison(true);
+    if (selectedForComparison.length > 0) setComparisonOpen(true);
   }, [enableComparison, selectedForComparison.length]);
 
   const handleCloseComparison = useCallback(() => {
@@ -444,70 +519,111 @@ useEffect(() => {
     setEnableComparison(false);
   }, []);
 
-  const handleRemoveFromComparison = useCallback((uuid) => {
-    setSelectedForComparison((prev) => prev.filter((b) => b.uuid !== uuid));
-  }, []);
-
-  const toggleMobileFilters = useCallback(() => {
-    setMobileFiltersOpen((prev) => !prev);
-  }, []);
-
-  const closeMobileFilters = useCallback(() => {
-    setMobileFiltersOpen(false);
-  }, []);
-
-  const closeLogin = useCallback(() => {
-    setShowLogin(false);
-  }, []);
-
   // ============================================
-  // RENDER HELPERS
+  // RENDER CONTENT
   // ============================================
-  const renderBrandGrid = useMemo(() => {
-    if (loading) {
+  const renderContent = () => {
+    // First load - show skeleton grid
+    if (isFirstLoad || (loading && brands.length === 0)) {
       return (
-        <Box
-          display="flex"
-          justifyContent="center"
-          alignItems="center"
-          minHeight="60vh"
-        >
-          <CircularProgress size={60} thickness={4} sx={{ color: "#ff9800" }} />
+        <Box sx={gridStyles}>
+          {[...Array(isMobile ? 4 : 8)].map((_, i) => (
+            <BrandCardSkeleton key={i} />
+          ))}
         </Box>
       );
     }
 
+    // Loading with existing data - show overlay
+    if (loading && brands.length > 0) {
+      return (
+        <Box sx={{ position: "relative" }}>
+          <Box sx={{ ...gridStyles, opacity: 0.5 }}>
+            {brands.slice(0, isMobile ? 4 : 8).map((brand, i) => (
+              <BrandCardSkeleton key={brand.uuid || i} />
+            ))}
+          </Box>
+          <Box
+            sx={{
+              position: "absolute",
+              top: "30%",
+              left: "50%",
+              transform: "translateX(-50%)",
+              zIndex: 10,
+            }}
+          >
+            <CircularProgress size={50} sx={{ color: "#ff9800" }} />
+          </Box>
+        </Box>
+      );
+    }
+
+    // Error state
     if (error) {
       return (
         <Box
           display="flex"
+          flexDirection="column"
           justifyContent="center"
           alignItems="center"
-          minHeight="60vh"
+          minHeight="40vh"
+          gap={2}
         >
-          <Typography color="error" variant="h6">
+          <Typography color="error" variant="h6" textAlign="center">
             {error}
           </Typography>
+          <Button
+            variant="contained"
+            onClick={() => fetchBrands(filters, true)}
+            sx={{ bgcolor: "#ff9800", "&:hover": { bgcolor: "#fb8c00" } }}
+          >
+            Retry
+          </Button>
         </Box>
       );
     }
 
-   
-  
+    // No results
+    if (!brands || brands.length === 0) {
+      return (
+        <Box
+          display="flex"
+          flexDirection="column"
+          justifyContent="center"
+          alignItems="center"
+          minHeight="40vh"
+          gap={2}
+          p={2}
+        >
+          <Typography variant="h6" color="text.secondary" textAlign="center">
+            No brands found matching your criteria
+          </Typography>
+          {activeFilterCount > 0 && (
+            <Button
+              variant="outlined"
+              onClick={handleClearFilters}
+              sx={{ borderColor: "#ff9800", color: "#ff9800" }}
+            >
+              Clear All Filters
+            </Button>
+          )}
+        </Box>
+      );
+    }
 
+    // Brand grid
     return (
       <>
-        <Box sx={gridStyles} ref={brandsContainerRef}>
+        <Box sx={gridStyles}>
           {brands.map((brand, index) => (
             <Fragment key={brand.uuid || index}>
               <LazyBrandCard
-                // key={brand.uuid || index}
                 brand={brand}
                 handleLikeClick={handleLikeClick}
                 likeProcessing={likeProcessing}
                 enableComparison={enableComparison}
                 isSelectedForComparison={selectedForComparison.some(
-                  (b) => b.uuid === brand.uuid,
+                  (b) => b.uuid === brand.uuid
                 )}
                 onToggleBrandComparison={toggleBrandComparison}
                 maxComparisonReached={
@@ -516,21 +632,6 @@ useEffect(() => {
                 }
                 onShowLogin={setShowLogin}
               />
-              {/* {index === 7 && (
-              <Box   sx={{
-            gridColumn: "1 / -1", // ⬅ spans full grid width
-            my: 1,
-          }}> <AdSlot {...ADS.HOME.TOP_LEADERBOARD}/>
-          </Box>
-            )} */}
-              {/* {index === 7 && (
-          //     <Box   sx={{
-          //   gridColumn: "1 / -1", // ⬅ spans full grid width
-          //   my: 1,
-          // }}> 
-          <AdSlot {...ADS.HOME.TOP_LEADERBOARD}/>
-          // </Box>
-            )} */}
             </Fragment>
           ))}
         </Box>
@@ -561,47 +662,26 @@ useEffect(() => {
                 "& .MuiPaginationItem-root.Mui-selected": {
                   backgroundColor: "#ff9800",
                   color: "white",
-                  "&:hover": { backgroundColor: "#fb8c00" },
                 },
               }}
             />
           </Box>
         )}
-        {/* <AdSlot key={pathname} {...ADS.HOME.FOOTER_RECTANGLE} /> */}
       </>
     );
-  }, [
-    loading,
-    error,
-    brands,
-    gridStyles,
-    handleLikeClick,
-    likeProcessing,
-    enableComparison,
-    selectedForComparison,
-    toggleBrandComparison,
-    pagination,
-    handlePageChange,
-    handleClearFilters,
-    isMobile,
-  ]);
+  };
 
   // ============================================
   // MAIN RENDER
   // ============================================
   return (
     <Container maxWidth="xl" sx={containerStyles}>
-      {/* Comparison Button */}
+      {/* Compare Button */}
       <Box sx={{ position: "fixed", top: "30%", right: 12, zIndex: 1000 }}>
         <Badge badgeContent={selectedForComparison.length} color="primary">
-          <Tooltip
-            title="Click to compare selected brands"
-            placement="left"
-            arrow
-          >
+          <Tooltip title="Compare brands" placement="left" arrow>
             <Button
               variant="contained"
-              color="primary"
               startIcon={<Compare />}
               onClick={handleCompareClick}
               sx={{
@@ -610,7 +690,7 @@ useEffect(() => {
                 borderRadius: 2,
                 boxShadow: 3,
                 bgcolor: "#ff9800",
-                "&:hover": { bgcolor: "#fb8c00", boxShadow: 6 },
+                "&:hover": { bgcolor: "#fb8c00" },
               }}
             >
               Compare
@@ -623,7 +703,6 @@ useEffect(() => {
         {/* Desktop Filters */}
         {!isMobile && (
           <Box
-            ref={filtersRef}
             sx={{
               width: 280,
               flexShrink: 0,
@@ -633,10 +712,6 @@ useEffect(() => {
               maxHeight: "calc(100vh - 32px)",
               overflowY: "auto",
               "&::-webkit-scrollbar": { width: "6px" },
-              // "&::-webkit-scrollbar-thumb": {
-              //   backgroundColor: "#ff9800",
-              //   borderRadius: "3px",
-              // },
             }}
           >
             <Suspense fallback={<FilterPanelSkeleton />}>
@@ -667,68 +742,78 @@ useEffect(() => {
           </Box>
         )}
 
-        {/* Mobile Filters Button */}
+        {/* Mobile Filter Button */}
         {isMobile && (
           <Box sx={{ mb: 2, mt: 1 }}>
             <Button
               variant="outlined"
               startIcon={<FilterAlt sx={{ color: "#ff9800" }} />}
-              endIcon={
-                <Badge badgeContent={activeFilterCount} color="primary" />
-              }
-              onClick={toggleMobileFilters}
+              onClick={() => setMobileFiltersOpen(true)}
               fullWidth
               sx={{
                 py: 1.5,
                 borderColor: "#ff9800",
                 color: "#ff9800",
                 bgcolor: "white",
-                "&:hover": { borderColor: "#fb8c00", bgcolor: "white" },
+                justifyContent: "space-evenly",
+                "&:hover": { borderColor: "#fb8c00" },
               }}
             >
-              Filters
+              <span>Filters</span>
+              {activeFilterCount > 0 && (
+                <Badge
+                  badgeContent={activeFilterCount}
+                  color="warning"
+                  sx={{
+                    "& .MuiBadge-badge": {
+                      bgcolor: "#ff9800",
+                      color: "white",
+                    },
+                  }}
+                />
+              )}
             </Button>
           </Box>
         )}
 
         {/* Main Content */}
         <Box flexGrow={1} ml={{ md: 3 }}>
-          <BrandTags  filters={filters}  loadingSubCategories={loadingSubCategories}
-                loadingChildCategories={loadingChildCategories} onFilterChange={handleFilterChange}  mainCategories={mainCategories}
-                subCategories={subCategories}   resultStats={{
-                  showing: brands.length,
-                  total: pagination.total,
-                }}
-                isLoading={loading || dropdownLoading}/>
-          {renderBrandGrid}
+          <BrandTags
+            filters={filters}
+            loadingSubCategories={loadingSubCategories}
+            loadingChildCategories={loadingChildCategories}
+            onFilterChange={handleFilterChange}
+            mainCategories={mainCategories}
+            subCategories={subCategories}
+            resultStats={{
+              showing: brands.length,
+              total: pagination.total,
+            }}
+            isLoading={loading || dropdownLoading}
+          />
+          {renderContent()}
         </Box>
       </Box>
 
-      {/* Mobile Filters Drawer */}
+      {/* Mobile Filter Drawer */}
       <Drawer
         anchor="left"
         open={mobileFiltersOpen}
-        onClose={closeMobileFilters}
-        sx={{ "& .MuiDrawer-paper": { width: 300 } }}
+        onClose={() => setMobileFiltersOpen(false)}
+        sx={{
+  "& .MuiDrawer-paper": {
+    width: "85vw", // Mobile first
+    maxWidth: "300px", // Won't go over 300px
+  },
+}}
+
       >
-        <Box
-          sx={{
-            p: 2,
-            height: "100%",
-            display: "flex",
-            flexDirection: "column",
-          }}
-        >
-          <Box
-            display="flex"
-            justifyContent="space-between"
-            alignItems="center"
-            mb={2}
-          >
+        <Box sx={{ p: 2, height: "100%", display: "flex", flexDirection: "column" }}>
+          <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
             <Typography variant="h6" fontWeight="bold">
-              Filters
+              Filters {activeFilterCount > 0 && `(${activeFilterCount})`}
             </Typography>
-            <IconButton onClick={closeMobileFilters}>
+            <IconButton onClick={() => setMobileFiltersOpen(false)}>
               <Close />
             </IconButton>
           </Box>
@@ -737,10 +822,11 @@ useEffect(() => {
             <Suspense fallback={<FilterPanelSkeleton />}>
               <FilterPanel
                 filters={filters}
- onFilterChange={(...args) => {
-    handleFilterChange(...args);
-    closeMobileFilters(); // 👈 close drawer immediately
-  }}                onClearFilters={handleClearFilters}
+                onFilterChange={handleMobileFilterChange}
+                onClearFilters={() => {
+                  handleClearFilters();
+                  setMobileFiltersOpen(false);
+                }}
                 activeFilterCount={activeFilterCount}
                 mainCategories={mainCategories}
                 subCategories={subCategories}
@@ -759,41 +845,37 @@ useEffect(() => {
                   total: pagination.total,
                 }}
                 isLoading={loading || dropdownLoading}
-                
               />
             </Suspense>
           </Box>
           <Button
             variant="contained"
             fullWidth
-            onClick={closeMobileFilters}
-            sx={{
-              mt: 2,
-              bgcolor: "#ff9800",
-              "&:hover": { bgcolor: "#fb8c00" },
-            }}
+            onClick={handleApplyMobileFilters}
+            sx={{ mt: 2, bgcolor: "#ff9800", "&:hover": { bgcolor: "#fb8c00" } }}
           >
             Apply Filters
           </Button>
         </Box>
       </Drawer>
 
-      {/* Brand Comparison Modal */}
+      {/* Modals */}
       {comparisonOpen && (
         <Suspense fallback={null}>
           <BrandComparison
             open={comparisonOpen}
             onClose={handleCloseComparison}
             selectedBrands={selectedForComparison}
-            onRemoveFromComparison={handleRemoveFromComparison}
+            onRemoveFromComparison={(uuid) =>
+              setSelectedForComparison((prev) => prev.filter((b) => b.uuid !== uuid))
+            }
           />
         </Suspense>
       )}
 
-      {/* Login Modal */}
       {showLogin && (
         <Suspense fallback={null}>
-          <LoginPage open={showLogin} onClose={closeLogin} />
+          <LoginPage open={showLogin} onClose={() => setShowLogin(false)} />
         </Suspense>
       )}
     </Container>
