@@ -15,6 +15,9 @@ import PopupModal from "@/Components/PopUpModal/PopUpModal";
 import { useDispatch } from "react-redux";
 import CompareButton from "./CompareButtonsCompenents";
 import { Fragment } from "react";
+import { usePathname } from "next/navigation";
+import FranchiseOverview from "../about_mrfranchise/FranchiseOverview";
+
 import Image from "next/image";
 const Navbar = dynamic(() => import("@/Components/Navbar/NavBar"), { loading:()=> <Box height={60}/> });
 const FilterDropdowns = dynamic(() => import("@/Components/Navbar/FilterDropdownsData"), {loading:()=> <Box height={60}/> });
@@ -164,6 +167,11 @@ const useDynamicComponents = () => {
           import("@/Components/HomePage_VideoSection/FindFranchiseLocations"),
         { ssr: false },
       ),
+      FranchiseOverview: dynamic(
+        () => import("@/Components/about_mrfranchise/FranchiseOverview"),
+        { ssr: false }
+      ),
+
     }),
     [],
   );
@@ -405,11 +413,13 @@ const pageConfig = {
     { component: "HomeSection6", background: "#fff" },
     { component: "HomeSection8", background: "#fff" },
     { component: "FindFranchiseLocations", background: "#fff" },
+
     {
       component: "ToTrendingBrands",
       title: "Trending Brands",
       background: "#fff",
     },
+    { component: "FranchiseOverview", title: "Franchise Overview", background: "#fff" },
   ],
   animations: {
     banner: {

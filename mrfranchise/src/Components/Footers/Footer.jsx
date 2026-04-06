@@ -109,10 +109,22 @@ const supportLinks = [
       }}
     >
       <Container maxWidth="xl">
-        <Grid container spacing={4} justifyContent="space-around">
-          {/* Brand Column */}
-          <Grid item xs={12} md={3}>
-            <Box sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
+       
+ {/* Newsletter Column */}
+        
+        {/* Bottom Bar */}
+        
+        <Box
+          sx={{
+            mt: 1,
+            display: "flex",
+            flexDirection: { xs: "column", sm: "row" },
+            justifyContent: "space-between",
+            alignItems: "center",
+            pt: 0,
+          }}
+        >
+           <Box sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
               <Box
                 component="img"
                 src="/logo.png"
@@ -127,194 +139,18 @@ const supportLinks = [
                   alignSelf: { xs: "center", md: "flex-start" },
                 }}
               />
-              <Typography
-                variant="body1"
-                sx={{
-                  color: "#000000",
-                  fontWeight: 700,
-                  mb: 1.5,
-                  fontSize: "1.1rem",
-                  alignSelf: { xs: "center", md: "flex-start" },
-                }}
-              >
-                BUSINESS INVESTORS' BEST CHOICE
-              </Typography>
-              <Typography
-                variant="body2"
-                sx={{
-                  mb: 3,
-                  color: "#000000",
-                  lineHeight: 1.6,
-                  fontSize: "0.95rem",
-                  textAlign: { xs: "center", md: "left" },
-                }}
-              >
-MR FRANCHISE is a leading franchise marketplace in India designed to connect brands, investors, and entrepreneurs.<br/> Whether you're looking to buy a franchise in India, explore business opportunities, or invest in a low investment franchise business,<br/> we provide access to verified and high-growth brands.              </Typography>
-            </Box>
-          </Grid>
-
-          {/* Quick Links Column */}
-          <Grid item xs={12} sm={6} md={2}>
-            <Typography
-              variant="h6"
-              sx={{
-                color: "#000000",
-                fontWeight: 700,
-                mb: 2.5,
-                fontSize: "1.1rem",
-                position: "relative",
-                "&::after": {
-                  content: '""',
-                  position: "absolute",
-                  bottom: -8,
-                  left: 0,
-                  width: "50px",
-                  height: "3px",
-                  backgroundColor: "#00ff08",
-                },
-              }}
-            >
-              Quick Links
-            </Typography>
-             <Box
-      component="nav"
-      aria-label="Footer Quick Links"
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        gap: 1.2,
-      }}
-    >
-      {footerLinks.map((item, index) => (
-        <Typography
-          key={index}
-          component="span"
-          role="link"
-          title={item.title}
-          onClick={() => router.push(item.path)}
-          sx={{
-            cursor: "pointer",
-            color: "#000000",
-            fontSize: "0.95rem",
-            transition: "all 0.3s ease",
-            "&:hover": {
-              color: "#ffffff",
-              transform: "translateX(5px)",
-            },
-          }}
-        >
-          {item.text}
-        </Typography>
-      ))}
-    </Box>
-          </Grid>
-
-          {/* Support Column */}
-          <Grid item xs={12} sm={6} md={2}>
-            <Typography
-              variant="h6"
-              sx={{
-                color: "#000000",
-                fontWeight: 700,
-                mb: 2.5,
-                fontSize: "1.1rem",
-                position: "relative",
-                "&::after": {
-                  content: '""',
-                  position: "absolute",
-                  bottom: -8,
-                  left: 0,
-                  width: "50px",
-                  height: "3px",
-                  backgroundColor: "#0dff00",
-                },
-              }}
-            >
-              Support
-            </Typography>
-             <Box
-      component="nav"
-      aria-label="Footer Support"
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        gap: 1.2,
-      }}
-    >
-      {supportLinks.map((item, index) => (
-        <Typography
-          key={index}
-          component="span"
-          role="link"
-          title={item.text}
-          onClick={() => router.push(item.path)}
-          sx={{
-            cursor: "pointer",
-            color: "#000000",
-            fontSize: "0.95rem",
-            transition: "all 0.3s ease",
-            "&:hover": {
-              color: "#ffffff",
-              transform: "translateX(5px)",
-            },
-          }}
-        >
-          {item.text}
-        </Typography>
-      ))}
-    </Box>
-          </Grid>
-
-         
-
-          {/* Contact Details Column */}
-          {/* <Grid item xs={12} md={2}>
-            <Typography
-              variant="h6"
-              sx={{
-                color: "#ffba00",
-                fontWeight: 700,
-                mb: 2.5,
-                fontSize: "1.1rem",
-                position: "relative",
-                "&::after": {
-                  content: '""',
-                  position: "absolute",
-                  bottom: -8,
-                  left: 0,
-                  width: "50px",
-                  height: "3px",
-                  backgroundColor: "#ff6d00",
-                },
-              }}
-            >
-              Contact Details
-            </Typography>
+           
             
-            <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-              <Phone sx={{ color: "#ffba00", mr: 1.5, fontSize: "1.2rem" }} />
-              <Link
-                href="tel:+917449213799"
-                color="#b0bec5"
-                underline="hover"
-                variant="body2"
-              >
-                +91 7449213799
-              </Link>
             </Box>
-            
-            <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
-              <LocationOn sx={{ color: "#ffba00", mr: 1.5, fontSize: "1.2rem" }} />
-              <Typography variant="body2" color="#b0bec5">
-                India
-              </Typography>
-            </Box>
-            
-          
-          </Grid> */}
-        </Grid>
- {/* Newsletter Column */}
-          <Box display={'flex'} flexDirection={{ xs: 'column', sm: 'row' }} justifyContent={{ xs: 'center', sm: 'space-between' }} >
+          <Typography
+            variant="body2"
+            color="#000000"
+            sx={{ fontSize: "0.85rem", mb: { xs: 2, sm: 0 } }}
+          >
+            © 2025 MrFranchise.in. All Rights Reserved.
+          </Typography>
+            <Box display={'flex'} flexDirection={{ xs: 'column', sm: 'row' }} justifyContent={{ xs: 'center', sm: 'space-between' }} >
+              
             <Box ml={{ xs: 0, md:4 }} >
             <Typography
               variant="h6"
@@ -331,7 +167,7 @@ MR FRANCHISE is a leading franchise marketplace in India designed to connect bra
                   left: 0,
                   width: "50px",
                   height: "3px",
-                  backgroundColor: "#ffffff",
+                  backgroundColor: "#0dff00",
                 },
               }}
             >
@@ -430,25 +266,7 @@ MR FRANCHISE is a leading franchise marketplace in India designed to connect bra
               </Box>
             </Box>
           </Box>
-        {/* Bottom Bar */}
-        <Box
-          sx={{
-            mt: 4,
-            display: "flex",
-            flexDirection: { xs: "column", sm: "row" },
-            justifyContent: "space-between",
-            alignItems: "center",
-            pt: 2,
-            borderTop: "1px solid #1e3a5c",
-          }}
-        >
-          <Typography
-            variant="body2"
-            color="#000000"
-            sx={{ fontSize: "0.85rem", mb: { xs: 2, sm: 0 } }}
-          >
-            © 2025 MrFranchise.in. All Rights Reserved.
-          </Typography>
+          
 
           <IconButton
             onClick={scrollToTop}
@@ -463,6 +281,132 @@ MR FRANCHISE is a leading franchise marketplace in India designed to connect bra
             <ArrowUpward />
           </IconButton>
         </Box>
+
+
+         <Grid container spacing={4} justifyContent={"flex-end"} >
+        
+
+          {/* Quick Links Column */}
+          <Grid item xs={12} sm={6} md={2}>
+           
+             <Box
+      component="nav"
+      aria-label="Footer Quick Links"
+      sx={{
+        display: "flex",
+        flexDirection: "row",
+        gap: 1.7,
+      }}
+    >
+      {footerLinks.map((item, index) => (
+        <Typography
+          key={index}
+          component="span"
+          role="link"
+          title={item.title}
+          onClick={() => router.push(item.path)}
+          sx={{
+            cursor: "pointer",
+            color: "#000000",
+
+            fontSize: "0.85rem",
+            transition: "all 0.3s ease",
+            "&:hover": {
+              color: "#ffffff",
+              transform: "translateX(5px)",
+            },
+          }}
+        >
+          {item.text}
+        </Typography>
+      ))}
+    </Box>
+          </Grid>
+
+          {/* Support Column */}
+          <Grid item xs={12} sm={6} md={2}>
+          
+             <Box
+      component="nav"
+      aria-label="Footer Support"
+      sx={{
+        display: "flex",
+        flexDirection: "row",
+        gap: 1.7,
+      }}
+    >
+      {supportLinks.map((item, index) => (
+        <Typography
+          key={index}
+          component="span"
+          role="link"
+          title={item.text}
+          onClick={() => router.push(item.path)}
+          sx={{
+            cursor: "pointer",
+            color: "#000000",
+            fontSize: "0.85rem",
+            transition: "all 0.3s ease",
+            "&:hover": {
+              color: "#ffffff",
+              transform: "translateX(5px)",
+            },
+          }}
+        >
+          {item.text}
+        </Typography>
+      ))}
+    </Box>
+          </Grid>
+
+         
+
+          {/* Contact Details Column */}
+          {/* <Grid item xs={12} md={2}>
+            <Typography
+              variant="h6"
+              sx={{
+                color: "#ffba00",
+                fontWeight: 700,
+                mb: 2.5,
+                fontSize: "1.1rem",
+                position: "relative",
+                "&::after": {
+                  content: '""',
+                  position: "absolute",
+                  bottom: -8,
+                  left: 0,
+                  width: "50px",
+                  height: "3px",
+                  backgroundColor: "#ff6d00",
+                },
+              }}
+            >
+              Contact Details
+            </Typography>
+            
+            <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+              <Phone sx={{ color: "#ffba00", mr: 1.5, fontSize: "1.2rem" }} />
+              <Link
+                href="tel:+917449213799"
+                color="#b0bec5"
+                underline="hover"
+                variant="body2"
+              >
+                +91 7449213799
+              </Link>
+            </Box>
+            
+            <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
+              <LocationOn sx={{ color: "#ffba00", mr: 1.5, fontSize: "1.2rem" }} />
+              <Typography variant="body2" color="#b0bec5">
+                India
+              </Typography>
+            </Box>
+            
+          
+          </Grid> */}
+        </Grid>
       </Container>
     </Box>
   );
