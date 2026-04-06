@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useRef, useEffect } from 'react';
+import React, { createContext, useContext, useState, useRef, useEffect, useCallback } from 'react';
 
 const VideoControllerContext = createContext();
 
@@ -8,12 +8,29 @@ export const VideoControllerProvider = ({ children }) => {
   const [currentPlayingId, setCurrentPlayingId] = useState(null);
   const videoRefs = useRef(new Map());
   const eventListeners = useRef(new Map());
+  const isPausedByUser = useRef(new Set()); // Track manual pauses
 
-  /** Add listeners (replace old ones if any) */
-  const addEventListeners = (id, video) => {
+  /** Remove event listeners safely */
+  const removeEventListeners = useCallback((id, video) => {
+    if (eventListeners.current.has(id) && video) {
+      const { play, pause } = eventListeners.current.get(id);
+      video.removeEventListener('play', play);
+      video.removeEventListener('pause', pause);
+      eventListeners.current.delete(id);
+    }
+  }, []);
+
+  /** Add event listeners */
+  const addEventListeners = useCallback((id, video) => {
     removeEventListeners(id, video); // cleanup old first
 
-    const handlePlay = () => setCurrentPlayingId(id);
+    const handlePlay = () => {
+      // Only update if not paused by user
+      if (!isPausedByUser.current.has(id)) {
+        setCurrentPlayingId(id);
+      }
+    };
+    
     const handlePause = () => {
       if (currentPlayingId === id) setCurrentPlayingId(null);
     };
@@ -22,48 +39,48 @@ export const VideoControllerProvider = ({ children }) => {
     video.addEventListener('pause', handlePause);
 
     eventListeners.current.set(id, { play: handlePlay, pause: handlePause });
-  };
-
-  /** Remove listeners safely */
-  const removeEventListeners = (id, video) => {
-    if (eventListeners.current.has(id) && video) {
-      const { play, pause } = eventListeners.current.get(id);
-      video.removeEventListener('play', play);
-      video.removeEventListener('pause', pause);
-      eventListeners.current.delete(id);
-    }
-  };
+  }, [removeEventListeners]);
 
   /** Register video element */
-  const registerVideo = (id, videoEl) => {
+  const registerVideo = useCallback((id, videoEl) => {
     if (videoEl) {
       videoRefs.current.set(id, videoEl);
       addEventListeners(id, videoEl);
     }
     return () => unregisterVideo(id);
-  };
+  }, [addEventListeners]);
 
   /** Unregister */
-  const unregisterVideo = (id) => {
+  const unregisterVideo = useCallback((id) => {
     const video = videoRefs.current.get(id);
     if (video) {
       removeEventListeners(id, video);
     }
     videoRefs.current.delete(id);
-  };
+    isPausedByUser.current.delete(id);
+  }, [removeEventListeners]);
 
   /** Play selected video & pause others */
-  const playVideo = async (id) => {
+  const playVideo = useCallback(async (id) => {
     try {
+      // Remove user pause flag
+      isPausedByUser.current.delete(id);
+
       // Pause all others first
       videoRefs.current.forEach((vid, vidId) => {
-        if (vidId !== id && !vid.paused) vid.pause();
+        if (vidId !== id && !vid.paused) {
+          vid.pause();
+        }
       });
 
       const video = videoRefs.current.get(id);
-      if (!video) return;
+      if (!video) {
+        console.warn(`Video ${id} not found in registry`);
+        return;
+      }
 
-      addEventListeners(id, video); // ensure up-to-date listeners
+      // Ensure listeners are attached
+      addEventListeners(id, video);
 
       // Try to play
       await video.play();
@@ -71,24 +88,28 @@ export const VideoControllerProvider = ({ children }) => {
 
     } catch (err) {
       if (err.name === 'AbortError') {
-        console.warn("play() aborted, possibly due to pause or removal:", err);
+        console.warn("play() aborted:", err);
+      } else if (err.name === 'NotAllowedError') {
+        console.warn("Autoplay blocked, user interaction required");
       } else {
         console.error("playVideo failed:", err);
+        throw err; // Re-throw for component error handling
       }
     }
-  };
+  }, [addEventListeners]);
 
   /** Pause video */
-  const pauseVideo = (id) => {
+  const pauseVideo = useCallback((id) => {
     const video = videoRefs.current.get(id);
     if (video && !video.paused) {
+      // Mark as user-paused to prevent auto-resume
+      isPausedByUser.current.add(id);
       video.pause();
     }
     if (currentPlayingId === id) {
       setCurrentPlayingId(null);
     }
-    // Note: DO NOT remove event listeners here — keep for resume
-  };
+  }, [currentPlayingId]);
 
   /** Cleanup all on unmount */
   useEffect(() => {
@@ -99,8 +120,9 @@ export const VideoControllerProvider = ({ children }) => {
       });
       videoRefs.current.clear();
       eventListeners.current.clear();
+      isPausedByUser.current.clear();
     };
-  }, []);
+  }, [removeEventListeners]);
 
   return (
     <VideoControllerContext.Provider

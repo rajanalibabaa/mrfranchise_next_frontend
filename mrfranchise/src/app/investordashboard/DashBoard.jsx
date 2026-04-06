@@ -268,7 +268,7 @@ const allDocs = appliedRes.data?.data?.results?.flatMap(result => result.data) |
     const brandId = brand?.uuid || brand?.brandID?.uuid || brand?.brandID || brand?.originalItem?.brandDetails?.uuid;
     
     if (brandId) {
-      navigate(`/brands/${brandId}`);
+      navigate(`/franchise-brands/${brandId}`);
     } else {
       console.error('Brand ID not found:', brand);
     }

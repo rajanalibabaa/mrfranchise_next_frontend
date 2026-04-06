@@ -3,7 +3,7 @@ import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import axios from 'axios';
 import { getUserId } from '@/Utils/autherId';
 
-const API_BASE_URL = 'http://localhost:5000/api/v1/';
+const API_BASE_URL = 'https://mrfranchisebackend.mrfranchise.in/api/v1/';
 
 const id = getUserId();
 export const fetchFilteredBrands = createAsyncThunk(
@@ -11,6 +11,8 @@ export const fetchFilteredBrands = createAsyncThunk(
   async (filters, { signal, rejectWithValue }) => {
     try {
       const params = new URLSearchParams();
+            console.log("sub data from slug",params);
+
  const currentUserId = getUserId();
       // Pagination (always safe)
       params.append("page", filters.page ?? 1);
@@ -39,6 +41,7 @@ export const fetchFilteredBrands = createAsyncThunk(
         `${API_BASE_URL}filter/getAllBrandsAndFilter?${params.toString()}`,
         { signal }
       );
+      
 
       const brands =
         response.data?.data?.brands?.map((brand) => ({

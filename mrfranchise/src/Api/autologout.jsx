@@ -2,7 +2,7 @@
 import { logout } from "@/Redux/Slices/AuthSlice/authSlice";
 import { api } from "./api";
 import { postApi } from "./DefaultApi";
-import { use, useEffect } from "react";
+import {  useEffect } from "react";
 
 export const autoLogOut = async (dispatch) => {
 
@@ -24,7 +24,6 @@ export const autoLogOut = async (dispatch) => {
       autoLogOutResponse?.data?.statuscode === 409 ||
       autoLogOutResponse?.data?.statuscode === 401
     ) {
-      // console.log("Auto logout response:", autoLogOutResponse.data);
       dispatch(logout());
       window.location.href = '/';
     }

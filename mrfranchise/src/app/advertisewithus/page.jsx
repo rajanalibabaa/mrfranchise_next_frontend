@@ -1,14 +1,9 @@
-"use client";
-import { useState } from 'react';
+
 import Box from '@mui/material/Box';
 import MembershipSelection from './MembershipPayment';
-// import BannerAdsSelection from './PaymentPAge/HomePageAdsLeads';
-// import PaymentPage from './PaymentPage';
 import Navbar from '@/Components/Navbar/NavBar';
 import Footer from '@/Components/Footers/Footer';
-// import { useNavigate, useLocation } from 'react-router-dom';
 
-// const steps = ['Select Membership', 'Banner Ads', 'Payment'];
 
 const AdvertisingPage = ({ handleSubmit, onBack }) => {
   

@@ -16,23 +16,23 @@ import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
-
+ 
 import ArrowBack from "@mui/icons-material/ArrowBack";
 import ArrowForward from "@mui/icons-material/ArrowForward";
 import ArrowRight from "@mui/icons-material/ArrowRight";
-
+ 
 import { motion } from "framer-motion";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchLikedBrandsById } from "@/Redux/Slices/likeSlice.jsx";
 import HomePageBrandCard from "./HomePageBrandCard.jsx";
 import LoginPage from "@/Components/LoginPage/LoginPage.jsx";
-
+ 
 const LikedBrands = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const isTablet = useMediaQuery(theme.breakpoints.between("sm", "md"));
   const dispatch = useDispatch();
-
+ 
   // Redux state
   const {
     brands = [],
@@ -40,22 +40,22 @@ const LikedBrands = () => {
     isLoading = false,
     error = null,
   } = useSelector((state) => state.likedBrands || {});
-
+ 
   //To reverse the order of brands to show most recently liked first
 const sortedBrands = useMemo(() => {
     if (!brands || brands.length === 0) return [];
-    
+   
     // Most recently liked first
     return [...brands].reverse();
   }, [brands]);
   // console.log("Liked Brands:", brands);
   // console.log("Pagination:", currentPage, totalPages);
-
+ 
   // Data fetching
   useEffect(() => {
     dispatch(fetchLikedBrandsById({ page: 1 }));
   }, [dispatch]);
-
+ 
   // Local state
   const [notification, setNotification] = useState({
     open: false,
@@ -66,12 +66,12 @@ const sortedBrands = useMemo(() => {
   const [showStartShadow, setShowStartShadow] = useState(false);
   const [showEndShadow, setShowEndShadow] = useState(true);
   const [showLogin, setShowLogin] = useState(false);
-
+ 
   // Refs
   const containerRef = useRef(null);
   const scrollContainerRef = useRef(null);
   const scrollRequestRef = useRef(null);
-
+ 
   // Dimensions
   const dimensions = useMemo(
     () =>
@@ -82,49 +82,49 @@ const sortedBrands = useMemo(() => {
       }[isMobile ? "mobile" : isTablet ? "tablet" : "desktop"]),
     [isMobile, isTablet]
   );
-
+ 
   // Scroll handlers
   const easeInOutQuad = useCallback(
     (t) => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t),
     []
   );
-
+ 
   const smoothScrollTo = useCallback(
     (target, immediate = false) => {
       const container = scrollContainerRef.current;
       if (!container) return;
-
+ 
       if (scrollRequestRef.current) {
         cancelAnimationFrame(scrollRequestRef.current);
       }
-
+ 
       const start = container.scrollLeft;
       const change = target - start;
       const duration = immediate ? 0 : 500;
       const startTime = performance.now();
-
+ 
       const animateScroll = (currentTime) => {
         const elapsed = currentTime - startTime;
         const progress = Math.min(elapsed / duration, 1);
         const ease = easeInOutQuad(progress);
         container.scrollLeft = start + change * ease;
-
+ 
         if (progress < 1) {
           scrollRequestRef.current = requestAnimationFrame(animateScroll);
         } else {
           handleScroll();
         }
       };
-
+ 
       scrollRequestRef.current = requestAnimationFrame(animateScroll);
     },
     [easeInOutQuad]
   );
-
+ 
   const getScrollDistance = useCallback(() => {
     return dimensions.width + (isMobile ? 16 : 24);
   }, [dimensions.width, isMobile]);
-
+ 
   const handlePrevClick = useCallback(() => {
     const container = scrollContainerRef.current;
     if (!container) return;
@@ -132,7 +132,7 @@ const sortedBrands = useMemo(() => {
     const newScroll = Math.max(container.scrollLeft - distance, 0);
     smoothScrollTo(newScroll);
   }, [getScrollDistance, smoothScrollTo]);
-
+ 
   const handleNextClick = useCallback(() => {
     const container = scrollContainerRef.current;
     if (!container) return;
@@ -141,23 +141,39 @@ const sortedBrands = useMemo(() => {
     const newScroll = Math.min(container.scrollLeft + distance, maxScroll);
     smoothScrollTo(newScroll);
   }, [getScrollDistance, smoothScrollTo]);
+ 
+  const throttle = (func, limit) => {
+  let inThrottle;
+  return (...args) => {
+    if (!inThrottle) {
+      func(...args);
+      inThrottle = true;
+      setTimeout(() => (inThrottle = false), limit);
+    }
+  };
+};
 
-  const handleScroll = useCallback(() => {
+  const handleScroll = useCallback(
+  throttle(() => {
     const container = scrollContainerRef.current;
     if (!container) return;
+
     setShowStartShadow(container.scrollLeft > 10);
     setShowEndShadow(
-      container.scrollLeft < container.scrollWidth - container.clientWidth - 10
+      container.scrollLeft <
+        container.scrollWidth - container.clientWidth - 10
     );
-  }, []);
-
+  }, 100),
+  []
+);
+ 
   useEffect(() => {
     const container = scrollContainerRef.current;
     if (!container) return;
-
+ 
     container.addEventListener("scroll", handleScroll);
     handleScroll();
-
+ 
     return () => {
       container.removeEventListener("scroll", handleScroll);
       if (scrollRequestRef.current) {
@@ -165,15 +181,15 @@ const sortedBrands = useMemo(() => {
       }
     };
   }, [handleScroll]);
-
+ 
   const handleCloseNotification = () => {
     setNotification((prev) => ({ ...prev, open: false }));
   };
-
+ 
   if (sortedBrands.length === 0) {
     return null;
   }
-
+ 
   return (
     <Box
       ref={containerRef}
@@ -199,7 +215,7 @@ const sortedBrands = useMemo(() => {
           {notification.message}
         </Alert>
       </Snackbar>
-
+ 
       <Box
         sx={{
           display: "flex",
@@ -234,7 +250,7 @@ const sortedBrands = useMemo(() => {
         >
           Your Liked Brands
         </Typography>
-
+ 
         <Button
   variant="contained"
   size="small"
@@ -243,15 +259,15 @@ const sortedBrands = useMemo(() => {
   sx={{
     textTransform: "none",
     fontSize: isMobile ? 14 : 16,
-    background: theme.palette.mode === "dark" 
-      ? "linear-gradient(90deg, #ff9800, #ffb74d)" 
+    background: theme.palette.mode === "dark"
+      ? "linear-gradient(90deg, #ff9800, #ffb74d)"
       : "linear-gradient(90deg, #f57c00, #ff9800)",
     color: "#fff",
     borderRadius: "8px",
     px: 2,
     "&:hover": {
-      background: theme.palette.mode === "dark" 
-        ? "linear-gradient(90deg, #ffb74d, #ff9800)" 
+      background: theme.palette.mode === "dark"
+        ? "linear-gradient(90deg, #ffb74d, #ff9800)"
         : "linear-gradient(90deg, #ff9800, #f57c00)",
       boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
     },
@@ -260,9 +276,9 @@ const sortedBrands = useMemo(() => {
 >
   View More
 </Button>
-
+ 
       </Box>
-
+ 
       <Box sx={{ position: "relative" }}>
         <Button
           onClick={handlePrevClick}
@@ -285,7 +301,7 @@ const sortedBrands = useMemo(() => {
         >
           <ArrowBack fontSize="small" />
         </Button>
-
+ 
         <Button
           onClick={handleNextClick}
           disabled={!showEndShadow}
@@ -307,7 +323,7 @@ const sortedBrands = useMemo(() => {
         >
           <ArrowForward fontSize="small" />
         </Button>
-
+ 
         <Box
           ref={scrollContainerRef}
           sx={{
@@ -360,5 +376,6 @@ const sortedBrands = useMemo(() => {
     </Box>
   );
 };
-
+ 
 export default LikedBrands;
+ 

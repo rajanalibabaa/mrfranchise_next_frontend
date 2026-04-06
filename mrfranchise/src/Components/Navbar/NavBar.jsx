@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
-import {useRouter } from "next/navigation.js";
+import { useRouter } from "next/navigation.js";
 import AppBar from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
 import IconButton from "@mui/material/IconButton";
@@ -14,7 +14,15 @@ import Divider from "@mui/material/Divider";
 import { useMediaQuery, useTheme } from "@mui/material";
 import Menu from "@mui/material/Menu";
 import MenuIcon from "@mui/icons-material/Menu";
-import { User, LogOut, LogIn, UserPlus, Home, Plus, Search } from "lucide-react";
+import {
+  User,
+  LogOut,
+  LogIn,
+  UserPlus,
+  Home,
+  Plus,
+  Search,
+} from "lucide-react";
 import SideViewContent from "../SideViewContentMenu/SideHoverMenu.jsx";
 import LoginPage from "@/Components/LoginPage/LoginPage.jsx";
 import { useSelector, useDispatch } from "react-redux";
@@ -42,8 +50,8 @@ function Navbar() {
   const router = useRouter();
   const dispatch = useDispatch();
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const isTablet = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const isTablet = useMediaQuery(theme.breakpoints.down("md"));
 
   const { sidebarView, menuOpen } = useSelector((state) => state.navbar);
   const { isLogin } = useSelector((state) => state.auth);
@@ -57,21 +65,23 @@ function Navbar() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [logoutLoading, setlogoutLoading] = useState(false);
-const [ID, setId] = useState(null);
+  const [ID, setId] = useState(null);
   useEffect(() => {
-    setId(localStorage.getItem("brandUUID") || localStorage.getItem("investorUUID"));
+    setId(
+      localStorage.getItem("brandUUID") || localStorage.getItem("investorUUID"),
+    );
   }, []);
-    // const ID =
-    //   localStorage.getItem("brandUUID") ||
-    //   localStorage.getItem("investorUUID") 
-    //   ;
- 
+  // const ID =
+  //   localStorage.getItem("brandUUID") ||
+  //   localStorage.getItem("investorUUID")
+  //   ;
+
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 10);
     };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   useEffect(() => {
@@ -97,11 +107,10 @@ const [ID, setId] = useState(null);
   };
 
   const handleRegisterNavigate = () => {
-  router.push("/registerhandleuser");
+    router.push("/registerhandleuser");
 
-  dispatch(toggleMenu(false));
-};
-
+    dispatch(toggleMenu(false));
+  };
 
   const handleLoginSuccess = (userData) => {
     dispatch(loginSuccess(userData));
@@ -109,7 +118,6 @@ const [ID, setId] = useState(null);
   };
 
   const handleSignOut = () => {
-    
     setAnchorEl(null); // Close the menu when signing out
     dispatch(toggleMenu(false));
     setPopupLogout(true);
@@ -119,7 +127,7 @@ const [ID, setId] = useState(null);
   //   setlogoutLoading(true);
   //   try {
   //     const response = await axios.post(
-  //       `http://localhost:5000/api/v1/logout/${ID}`,
+  //       `https://mrfranchisebackend.mrfranchise.in/api/v1/logout/${ID}`,
   //       {},
   //       {
   //         headers: {
@@ -150,51 +158,50 @@ const [ID, setId] = useState(null);
   //   }
   // };
 
+  const handleVerifySignOut = async () => {
+    setlogoutLoading(true);
 
-  const handleVerifySignOut  = async () => {
-  setlogoutLoading(true);
-
-  try {
-    await axios.post(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/logout/${ID}`,
-      {},
-      {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+    try {
+      await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/logout/${ID}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
+          withCredentials: true,
         },
-        withCredentials: true,
-      }
-    );
-  } catch (error) {
-    console.error("Logout API error:", error);
-  } finally {
-    // ✅ 1. Redux reset
-    dispatch(logout());
+      );
+    } catch (error) {
+      console.error("Logout API error:", error);
+    } finally {
+      // ✅ 1. Redux reset
+      dispatch(logout());
 
-    // ✅ 2. Clear ALL storage
-    localStorage.clear();
-    sessionStorage.clear();
+      // ✅ 2. Clear ALL storage
+      localStorage.clear();
+      sessionStorage.clear();
 
-    // ✅ 3. Clear cookies (important)
-    document.cookie.split(";").forEach((cookie) => {
-      document.cookie = cookie
-        .replace(/^ +/, "")
-        .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
-    });
-
-    // ✅ 4. Disable caching
-    if ("caches" in window) {
-      caches.keys().then((names) => {
-        names.forEach((name) => caches.delete(name));
+      // ✅ 3. Clear cookies (important)
+      document.cookie.split(";").forEach((cookie) => {
+        document.cookie = cookie
+          .replace(/^ +/, "")
+          .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
       });
+
+      // ✅ 4. Disable caching
+      if ("caches" in window) {
+        caches.keys().then((names) => {
+          names.forEach((name) => caches.delete(name));
+        });
+      }
+
+      // ✅ 5. Hard redirect (kills memory state)
+      window.location.replace("/");
+
+      setlogoutLoading(false);
     }
-
-    // ✅ 5. Hard redirect (kills memory state)
-    window.location.replace("/");   
-
-    setlogoutLoading(false);
-  }
-};
+  };
   const handleMyProfileNavigate = () => {
     const investorUUID = localStorage.getItem("investorUUID");
     const brandUUID = localStorage.getItem("brandUUID");
@@ -233,18 +240,21 @@ const [ID, setId] = useState(null);
     router.push("/");
   };
 
-
   const menuItems = [
-  { label: "Expand Your Franchise", path: "/expandyourbrand", external: false },
-  { label: "Investor", path: "/investfranchise", external: false },
-  { label: "Advertise", path: "/advertisewithus", external: false },
-  { label: "Blogs", path: "/", external: false },
-  {
-    label: "Franchise Consulting",
-    path: "https://franchiseconsulting.mrfranchise.in",
-    external: true,
-  },
-];
+    {
+      label: "Expand Your Franchise",
+      path: "/expandyourbrand",
+      external: false,
+    },
+    { label: "Investor", path: "/investfranchise", external: false },
+    { label: "Advertise", path: "/advertisewithus", external: false },
+    { label: "Blogs", path: "/", external: false },
+    {
+      label: "Franchise Consulting",
+      path: "https://consulting.mrfranchise.in",
+      external: true,
+    },
+  ];
 
   const handleNavigation = (item) => {
     if (item.external) {
@@ -258,188 +268,181 @@ const [ID, setId] = useState(null);
 
   return (
     <>
-      <AppBar 
-        position="sticky" 
-        color="transparent" 
+      <AppBar
+        position="sticky"
+        color="transparent"
         elevation={0}
         sx={{
           backdropFilter: scrolled ? "blur(12px)" : "blur(8px)",
-          background: scrolled ? "rgba(255, 255, 255, 0.95)" : "rgba(255, 255, 255, 0.9)",
-          borderBottom: '1px solid rgba(0, 0, 0, 0.12)',
-          position: 'relative',
-          transition: 'all 0.3s ease',
-          '&::before': {
+          background: scrolled
+            ? "rgba(255, 255, 255, 0.95)"
+            : "rgba(255, 255, 255, 0.9)",
+          borderBottom: "1px solid rgba(0, 0, 0, 0.12)",
+          position: "relative",
+          transition: "all 0.3s ease",
+          "&::before": {
             content: '""',
-            position: 'absolute',
+            position: "absolute",
             top: 0,
             left: 0,
             right: 0,
-            height: '4px',
-            backgroundSize: '200% 100%',
-            animation: 'gradient 3s ease infinite',
+            height: "4px",
+            backgroundSize: "200% 100%",
+            animation: "gradient 3s ease infinite",
           },
         }}
       >
         {/* <AdSlot key={pathname} {...ADS.HOME.TOP_BILLBOARD} /> */}
-        <Box sx={{ 
-          display:{ xs: "none", sm: "flex"}, 
-          flexWrap: "wrap",
-          ml: "40px", 
-          gap: isMobile ? 0.5 : 1,
-          position: 'relative',
-          zIndex: 1,
-        }}>
-          {/* {['Expand Your Franchise', 'Investor', 'Advertise',"Blogs","Franchise Consultant"].map((text) => (
+        <Box
+          sx={{
+            display: { xs: "none", sm: "flex" },
+            flexWrap: "wrap",
+            ml: "40px",
+            gap: isMobile ? 0.5 : 1,
+            position: "relative",
+            zIndex: 1,
+          }}
+        >
+          
+          {menuItems.map((item) => (
             <motion.div
-              key={text}
+              key={item.label}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-             <Button
-  component="a"
-  href={
-    text === 'Franchise Consultant'
-      ? 'https://franchiseconsulting.mrfranchise.in'
-      : text === 'Expand Your Franchise'
-      ? '/expandyourbrand'
-      : text === 'Investor'
-      ? '/investfranchise'
-      : text === 'Advertise'
-      ? '/advertisewithus'
-      : text === 'Blogs'
-      ? '/'
-      : '/'
-  }
-  target={text === 'Franchise Consultant' ? '_blank' : undefined}
-  rel={text === 'Franchise Consultant' ? 'noopener noreferrer' : undefined}
-  size="small"
-  sx={{
-    fontSize: isMobile ? '0.75rem' : '0.875rem',
-    textTransform: 'none',
-    color: 'black',
-    '&:hover': {
-      color: '#ff9800',
-      backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    },
-  }}
->
-  {text}
-</Button>
-
+              <Button
+                size="small"
+                onClick={() => handleNavigation(item)}
+                sx={{
+                  fontSize: isMobile ? "0.75rem" : "0.875rem",
+                  textTransform: "none",
+                  color: "black",
+                  "&:hover": {
+                    color: "#ff9800",
+                    backgroundColor: "rgba(255, 255, 255, 0.1)",
+                  },
+                }}
+              >
+                {item.label}
+              </Button>
             </motion.div>
-          ))} */}
-          {menuItems.map((item) => (
-        <motion.div
-          key={item.label}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <Button
-            size="small"
-            onClick={() => handleNavigation(item)}
-            sx={{
-              fontSize: isMobile ? "0.75rem" : "0.875rem",
-              textTransform: "none",
-              color: "black",
-              "&:hover": {
-                color: "#ff9800",
-                backgroundColor: "rgba(255, 255, 255, 0.1)",
-              },
-            }}
-          >
-            {item.label}
-          </Button>
-        </motion.div>
-      ))}
+          ))}
         </Box>
         <Toolbar
           sx={{
             display: "flex",
-            justifyContent: isMobile ? "space-evenly" : "space-between",
+            justifyContent: isMobile ? "space-evenly" : "space-around",
             alignItems: "center",
             px: { xs: 1, sm: 2 },
+            mb: 1,
             minHeight: "64px !important",
-            gap: isMobile ? 0 : 2
+            gap: isMobile ? 0 : 2,
           }}
         >
-          <Box sx={{ display: 'flex', alignItems: 'center', gap:isMobile?0: 1 }}>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: isMobile ? 0 : 1,
+            }}
+          >
             <motion.div whileHover={{ scale: 1.1 }}>
-              <IconButton 
-                edge="start" 
+              <IconButton
+                edge="start"
                 onClick={() => dispatch(toggleSidebar(true))}
-                sx={{ color: '#ff9800' }}
+                sx={{ color: "#ff9800" }}
               >
                 <MenuIcon />
               </IconButton>
             </motion.div>
-            
+
             <motion.div
               whileHover={{ scale: 1.03 }}
               transition={{ type: "spring", stiffness: 400, damping: 10 }}
             >
-              <Box 
+              <Box
                 onClick={handleLogoClick}
-                sx={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  textDecoration: 'none',
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  textDecoration: "none",
                 }}
               >
-                <Image 
-                  src="/logo.png" 
-                  alt="brand logo" 
+                <Image
+                  src="/logo.png"
+                  alt="brand logo"
                   loading="lazy"
-                  width={isMobile ? 120 : 170}
-                  height={isMobile ? 50 : 70}
-                  style={{ 
-                    objectFit: 'contain',
-                    transition: 'transform 0.3s ease',
-                  }} 
+                  width={isMobile ? 120 : 150}
+                  height={isMobile ? 50 : 50}
+                  style={{
+                    objectFit: "cover",
+                    transition: "transform 0.3s ease",
+                  }}
                 />
               </Box>
             </motion.div>
           </Box>
-          <Link href="https://consulting.mrfranchise.in" target="_blank" rel="noopener noreferrer" >
-{!isMobile && (
-  <Image src="/Blue Modern Corporate Profile LinkedIn Article Cover Image (1).png" alt="brand logo" loading="lazy"  width={isMobile ? 120 : 720} height={isMobile ? 50 : 90} style={{ objectFit: 'contain', transition: 'transform 0.3s ease', display: isMobile ? 'bloack' : 'block', marginLeft: '120px',borderRadius: '10px' }} />
-
-)}         
-         </Link>
+          <Link
+            href="https://consulting.mrfranchise.in"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {!isMobile && (
+              <Image
+                src="/Blue Modern Corporate Profile LinkedIn Article Cover Image (1).png"
+                alt="brand logo"
+                loading="lazy"
+                width={isMobile ? 120 : 900}
+                height={isMobile ? 50 : 90}
+                style={{
+                  objectFit: "contain",
+                  transition: "transform 0.3s ease",
+                  display: isMobile ? "bloack" : "block",
+                  marginLeft: "20px",
+                  borderRadius: "6px",
+                }}
+              />
+            )}
+          </Link>
           <Box sx={{ flexGrow: isMobile ? 0 : 1 }} />
 
-          <Box sx={{ 
-            display: 'flex', 
-            gap:isMobile?1: 5,
-            flex: isTablet ? 1 : 'none',
-            justifyContent: isTablet ? 'center' : 'flex-end',
-            alignItems:"center"
-          }}>
+          <Box
+            sx={{
+              display: "flex",
+              gap: isMobile ? 1 : 5,
+              flex: isTablet ? 1 : "none",
+              justifyContent: isTablet ? "center" : "flex-end",
+              alignItems: "center",
+            }}
+          >
             <motion.div>
               <IconButton onClick={() => setSearchOpen(true)}>
                 <Search size={25} />
-                <Typography sx={{display:{xs:"none", sm:"flex"}}}>Search</Typography>
+                <Typography sx={{ display: { xs: "none", sm: "flex" } }}>
+                  Search
+                </Typography>
               </IconButton>
             </motion.div>
             <motion.div whileHover={{ y: -2 }}>
-              <Button 
+              <Button
                 onClick={() => {
                   const url = `/brand_listing_creation_form?source=${encodeURIComponent("mr franchise")}&ref=${encodeURIComponent("homepage")}`;
                   window.open(url, "_blank");
                 }}
                 // startIcon={<Plus size={20} />}
                 sx={{
-                  color: 'black',  
-                  backgroundColor: ' #6fff00fa',
-                  borderRadius: '8px',
-                  px: {4: 3, xs: 1.9},
-                  py:isMobile?0: 1,
-                  margin:{ xs:"5px"},
-                  textTransform: 'none',
-                  fontSize: isMobile ? '0.1': '1rem',
+                  color: "black",
+                  backgroundColor: " #6fff00fa",
+                  borderRadius: "8px",
+                  px: { 4: 3, xs: 1.9 },
+                  py: isMobile ? 0 : 1,
+                  margin: { xs: "5px" },
+                  textTransform: "none",
+                  fontSize: isMobile ? "0.1" : "1rem",
                   fontWeight: 500,
-                  '&:hover': {
-                    backgroundColor: '#7ad03a'
-                  }
+                  "&:hover": {
+                    backgroundColor: "#7ad03a",
+                  },
                 }}
               >
                 Add Brand
@@ -448,24 +451,18 @@ const [ID, setId] = useState(null);
           </Box>
 
           <Box ref={avatarRef} sx={{ position: "relative" }}>
-            <motion.div
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-            >
-              <IconButton 
-                onClick={handleMenuOpen}
-                sx={{ p: 0 }}
-              >
+            <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+              <IconButton onClick={handleMenuOpen} sx={{ p: 0 }}>
                 <Avatar
                   sx={{
                     bgcolor: "rgba(255, 152, 0, 0.8)",
                     width: 36,
                     height: 36,
-                    '&:hover': { 
+                    "&:hover": {
                       bgcolor: "rgba(255, 152, 0, 1)",
-                      boxShadow: '0 0 10px rgba(255, 152, 0, 0.5)'
+                      boxShadow: "0 0 10px rgba(255, 152, 0, 0.5)",
                     },
-                    transition: 'all 0.3s ease'
+                    transition: "all 0.3s ease",
                   }}
                 >
                   <User size={20} color="white" />
@@ -483,117 +480,115 @@ const [ID, setId] = useState(null);
                   mt: 1,
                   minWidth: 200,
                   borderRadius: 2,
-                  overflow: 'hidden',
-                  boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
-                  '& .MuiMenuItem-root': {
+                  overflow: "hidden",
+                  boxShadow: "0 4px 20px rgba(0,0,0,0.15)",
+                  "& .MuiMenuItem-root": {
                     px: 2,
                     py: 1.5,
-                    transition: 'all 0.2s ease',
-                  }
-                }
+                    transition: "all 0.2s ease",
+                  },
+                },
               }}
-              transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-              anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+              transformOrigin={{ horizontal: "right", vertical: "top" }}
+              anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
             >
-              {!isLogin ? (
-                [
-                  <MenuItem 
-                    key="signin" 
-                    onClick={() => {
-                      setLoginModalOpen(true);
-                      handleMenuClose();
-                    }}
-                    sx={{
-                      '&:hover': {
-                        backgroundColor: 'rgba(255, 152, 0, 0.1)',
-                        transform: 'translateX(5px)'
-                      }
-                    }}
-                    component={motion.div}
-                    whileHover={{ x: 5 }}
-                  >
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <LogIn size={18} style={{ marginRight: 12 }} />
-                      <Typography variant="body1">Sign In</Typography>
-                    </Box>
-                  </MenuItem>,
-                  <Divider key="divider" />,
-                  <MenuItem 
-                    key="register" 
-                    onClick={handleRegisterNavigate}
-                    sx={{
-                      '&:hover': {
-                        backgroundColor: 'rgba(255, 152, 0, 0.1)',
-                        transform: 'translateX(5px)'
-                      }
-                    }}
-                    component={motion.div}
-                    whileHover={{ x: 5 }}
-                  >
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <UserPlus size={18} style={{ marginRight: 12 }} />
-                      <Typography variant="body1">Register</Typography>
-                    </Box>
-                  </MenuItem>
-                ]
-              ) : (
-                [
-                  <MenuItem 
-                    key="profile" 
-                    onClick={handleMyProfileNavigate}
-                    sx={{
-                      '&:hover': {
-                        backgroundColor: 'rgba(255, 152, 0, 0.1)',
-                        transform: 'translateX(5px)'
-                      }
-                    }}
-                    component={motion.div}
-                    whileHover={{ x: 5 }}
-                  >
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <User size={18} style={{ marginRight: 12 }} />
-                      <Typography variant="body1">My Profile</Typography>
-                    </Box>
-                  </MenuItem>,
-                  <Divider key="divider" />,
-                  <MenuItem 
-                    key="home" 
-                    onClick={() => handleNavigate("/")}
-                    sx={{
-                      '&:hover': {
-                        backgroundColor: 'rgba(255, 152, 0, 0.1)',
-                        transform: 'translateX(5px)'
-                      }
-                    }}
-                    component={motion.div}
-                    whileHover={{ x: 5 }}
-                  >
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <Home size={18} style={{ marginRight: 12 }} />
-                      <Typography variant="body1">Home</Typography>
-                    </Box>
-                  </MenuItem>,
-                  <Divider key="divider2" />,
-                  <MenuItem 
-                    key="logout" 
-                    onClick={handleSignOut}
-                    sx={{
-                      '&:hover': {
-                        backgroundColor: 'rgba(255, 152, 0, 0.1)',
-                        transform: 'translateX(5px)',
-                        color: 'error.main'
-                      }
-                    }}
-                    component={motion.div}
-                    whileHover={{ x: 5 }}
-                  >
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <LogOut size={18} style={{ marginRight: 12 }} />
-                      <Typography variant="body1">Sign Out</Typography>
-                    </Box>
-                  </MenuItem>
-                ]
-              )}
+              {!isLogin
+                ? [
+                    <MenuItem
+                      key="signin"
+                      onClick={() => {
+                        setLoginModalOpen(true);
+                        handleMenuClose();
+                      }}
+                      sx={{
+                        "&:hover": {
+                          backgroundColor: "rgba(255, 152, 0, 0.1)",
+                          transform: "translateX(5px)",
+                        },
+                      }}
+                      component={motion.div}
+                      whileHover={{ x: 5 }}
+                    >
+                      <Box sx={{ display: "flex", alignItems: "center" }}>
+                        <LogIn size={18} style={{ marginRight: 12 }} />
+                        <Typography variant="body1">Sign In</Typography>
+                      </Box>
+                    </MenuItem>,
+                    <Divider key="divider" />,
+                    <MenuItem
+                      key="register"
+                      onClick={handleRegisterNavigate}
+                      sx={{
+                        "&:hover": {
+                          backgroundColor: "rgba(255, 152, 0, 0.1)",
+                          transform: "translateX(5px)",
+                        },
+                      }}
+                      component={motion.div}
+                      whileHover={{ x: 5 }}
+                    >
+                      <Box sx={{ display: "flex", alignItems: "center" }}>
+                        <UserPlus size={18} style={{ marginRight: 12 }} />
+                        <Typography variant="body1">Register</Typography>
+                      </Box>
+                    </MenuItem>,
+                  ]
+                : [
+                    <MenuItem
+                      key="profile"
+                      onClick={handleMyProfileNavigate}
+                      sx={{
+                        "&:hover": {
+                          backgroundColor: "rgba(255, 152, 0, 0.1)",
+                          transform: "translateX(5px)",
+                        },
+                      }}
+                      component={motion.div}
+                      whileHover={{ x: 5 }}
+                    >
+                      <Box sx={{ display: "flex", alignItems: "center" }}>
+                        <User size={18} style={{ marginRight: 12 }} />
+                        <Typography variant="body1">My Profile</Typography>
+                      </Box>
+                    </MenuItem>,
+                    <Divider key="divider" />,
+                    <MenuItem
+                      key="home"
+                      onClick={() => handleNavigate("/")}
+                      sx={{
+                        "&:hover": {
+                          backgroundColor: "rgba(255, 152, 0, 0.1)",
+                          transform: "translateX(5px)",
+                        },
+                      }}
+                      component={motion.div}
+                      whileHover={{ x: 5 }}
+                    >
+                      <Box sx={{ display: "flex", alignItems: "center" }}>
+                        <Home size={18} style={{ marginRight: 12 }} />
+                        <Typography variant="body1">Home</Typography>
+                      </Box>
+                    </MenuItem>,
+                    <Divider key="divider2" />,
+                    <MenuItem
+                      key="logout"
+                      onClick={handleSignOut}
+                      sx={{
+                        "&:hover": {
+                          backgroundColor: "rgba(255, 152, 0, 0.1)",
+                          transform: "translateX(5px)",
+                          color: "error.main",
+                        },
+                      }}
+                      component={motion.div}
+                      whileHover={{ x: 5 }}
+                    >
+                      <Box sx={{ display: "flex", alignItems: "center" }}>
+                        <LogOut size={18} style={{ marginRight: 12 }} />
+                        <Typography variant="body1">Sign Out</Typography>
+                      </Box>
+                    </MenuItem>,
+                  ]}
             </Menu>
           </Box>
         </Toolbar>
@@ -606,12 +601,12 @@ const [ID, setId] = useState(null);
         onClose={() => dispatch(toggleSidebar(false))}
         PaperProps={{
           sx: {
-            backgroundColor: 'rgba(25, 25, 25, 0.97)',
-            backdropFilter: 'blur(10px)',
-            color: 'white',
-            width: isMobile ? '85%' : '300px',
-            borderRight: '1px solid rgba(255, 152, 0, 0.2)'
-          }
+            backgroundColor: "rgba(25, 25, 25, 0.97)",
+            backdropFilter: "blur(10px)",
+            color: "white",
+            width: isMobile ? "85%" : "300px",
+            borderRight: "1px solid rgba(255, 152, 0, 0.2)",
+          },
         }}
       >
         <SideViewContent
@@ -642,14 +637,14 @@ const [ID, setId] = useState(null);
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              backdropFilter: 'blur(5px)'
+              backdropFilter: "blur(5px)",
             }}
           >
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              transition={{ type: 'spring', stiffness: 300 }}
+              transition={{ type: "spring", stiffness: 300 }}
             >
               <Box
                 sx={{
@@ -658,40 +653,51 @@ const [ID, setId] = useState(null);
                   p: 3,
                   borderRadius: 2,
                   width: 300,
-                  textAlign: 'center'
+                  textAlign: "center",
                 }}
               >
                 <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
                   Confirm Logout
                 </Typography>
-                <Typography variant="body2" sx={{ mb: 3, color: 'text.secondary' }}>
+                <Typography
+                  variant="body2"
+                  sx={{ mb: 3, color: "text.secondary" }}
+                >
                   Are you sure you want to sign out?
                 </Typography>
-                <Box sx={{ display: "flex", justifyContent: "center", gap: 2, mt: 2 }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center",
+                    gap: 2,
+                    mt: 2,
+                  }}
+                >
                   <motion.div whileHover={{ scale: 1.05 }}>
-                    <Button 
-                      variant="outlined" 
+                    <Button
+                      variant="outlined"
                       onClick={() => setPopupLogout(false)}
                       sx={{
-                        textTransform: 'none',
+                        textTransform: "none",
                         borderRadius: 50,
-                        px: 3
+                        px: 3,
                       }}
                     >
                       Cancel
                     </Button>
                   </motion.div>
                   <motion.div whileHover={{ scale: 1.05 }}>
-                    <Button 
-                      variant="contained" 
-                      color="primary" 
+                    <Button
+                      variant="contained"
+                      color="primary"
                       onClick={handleVerifySignOut}
                       sx={{
-                        textTransform: 'none',
+                        textTransform: "none",
                         borderRadius: 50,
                         px: 3,
-                        background: 'linear-gradient(45deg, #FF9800 30%, #FFC107 90%)',
-                        boxShadow: '0 3px 5px 2px rgba(255, 152, 0, .3)'
+                        background:
+                          "linear-gradient(45deg, #FF9800 30%, #FFC107 90%)",
+                        boxShadow: "0 3px 5px 2px rgba(255, 152, 0, .3)",
                       }}
                     >
                       {logoutLoading ? "Signing out..." : "Sign Out"}
@@ -703,14 +709,31 @@ const [ID, setId] = useState(null);
           </Box>
         )}
       </AnimatePresence>
-      <NavbarSearch open={searchOpen} handleClose={() => setSearchOpen(false)} />
-                  <Link href="https://consulting.mrfranchise.in" target="_blank" rel="noopener noreferrer" >
-
+      <NavbarSearch
+        open={searchOpen}
+        handleClose={() => setSearchOpen(false)}
+      />
+      <Link
+        href="https://consulting.mrfranchise.in"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
         {isMobile && (
-  <Image src="/Blue Modern Corporate Profile LinkedIn Article Cover Image (1).png" alt="brand logo" loading="lazy"  width={isMobile ? 370 : 720} height={isMobile ? 70 : 90} style={{ objectFit: 'contain', transition: 'transform 0.3s ease', display: isMobile ? 'bloack' : 'block', marginLeft: { xs: 150, sm: 130, md: 120, lg: 120, xl: 120}, }} />
-
-)} 
-</Link>
+          <Image
+            src="/Blue Modern Corporate Profile LinkedIn Article Cover Image (1).png"
+            alt="brand logo"
+            loading="lazy"
+            width={isMobile ? 370 : 720}
+            height={isMobile ? 70 : 90}
+            style={{
+              objectFit: "contain",
+              transition: "transform 0.3s ease",
+              display: isMobile ? "bloack" : "block",
+              marginLeft: { xs: 150, sm: 130, md: 120, lg: 120, xl: 120 },
+            }}
+          />
+        )}
+      </Link>
     </>
   );
 }

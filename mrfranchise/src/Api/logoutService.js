@@ -1,12 +1,4 @@
-/**
- * Logout Service
- * Centralized logout logic with cross-tab synchronization
- * Handles Redux, storage, cookies, cache, and tab synchronization
- */
 
-/**
- * Clear all user data from browser
- */
 export const clearAllUserData = () => {
   try {
     // ✅ 1. Clear ALL storage

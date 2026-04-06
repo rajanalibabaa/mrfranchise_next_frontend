@@ -20,7 +20,7 @@ import {
 } from "@mui/material";
 import { Phone, Favorite, ShareOutlined } from "@mui/icons-material";
 import { motion } from "framer-motion";
-import ShareDialogActions from "@/app/brands/ShareDialogActions";
+import ShareDialogActions from "@/app/franchise-brands/ShareDialogActions";
 import { RiBookmark3Fill } from "react-icons/ri";
 import { useRef, useState } from "react";
 import confetti from "canvas-confetti";
@@ -40,18 +40,18 @@ const BrandHeader = ({
   const likeButtonRef = useRef(null);
   const shortlistButtonRef = useRef(null);
 const [shareAnchorEl, setShareAnchorEl] = useState(null);
-  // console.log('brand loading ', brand);
+  console.log('brand loading ', brand);
 
   const [open, setOpen] = React.useState(false);
   const { AccessToken } = useSelector((state) => state.auth);
-  console.log("AccessToken in BrandHeader:", AccessToken);
+  // console.log("AccessToken in BrandHeader:", AccessToken);
 
   const handleviewcontact = (event) => {
     if (AccessToken) {
       toggleDrawer(true)(event);
     } else {
       setOpen(true);
-      console.log("AccessToken in FloatingApplyButton:", AccessToken);
+      // console.log("AccessToken in FloatingApplyButton:", AccessToken);
     }
   };
 
@@ -97,7 +97,6 @@ const [shareAnchorEl, setShareAnchorEl] = useState(null);
   //     element.scrollIntoView({ behavior: "smooth" });
   //   }
   // };
-
   const MobileRow = ({ label, value }) => (
     <Box
       sx={{
@@ -459,7 +458,7 @@ const [shareAnchorEl, setShareAnchorEl] = useState(null);
                 <MobileRow
                   label="Origin Location"
                   value={`${brand?.[0]?.brandDetails?.state || "N/A"}, ${
-                    brand?.[0]?.brandDetails?.city || "N/A"
+                    brand?.[0]?.brandDetails?.district || "N/A"
                   }`}
                 />
               </Box>
@@ -630,7 +629,7 @@ const [shareAnchorEl, setShareAnchorEl] = useState(null);
                           );
                         })()} */}
                           {brand?.[0]?.brandDetails?.state || "N/A"} ,{" "}
-                          {brand?.[0]?.brandDetails?.city || "N/A"}
+                          {brand?.[0]?.brandDetails?.district || "N/A"}
                         </TableCell>
                       </TableRow>
                     </TableBody>

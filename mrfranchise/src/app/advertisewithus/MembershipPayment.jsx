@@ -32,7 +32,7 @@ import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import StarIcon from "@mui/icons-material/Star";
 import BoltIcon from "@mui/icons-material/Bolt";
 
-// import Navbar from '../../../Navbar/NavBar';
+
 // Animation keyframes
 const floatAnimation = keyframes`
   0%, 100% { transform: translateY(0px) rotate(0deg); }

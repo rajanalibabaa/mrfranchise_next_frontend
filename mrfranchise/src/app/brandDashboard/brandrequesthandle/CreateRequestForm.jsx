@@ -61,18 +61,7 @@ const CreateRequestForm = () => {
     setFormData((prev) => ({ ...prev, contactDetails: updatedContacts }));
   };
 
-  // const addContact = () =>
-  //   setFormData((prev) => ({
-  //     ...prev,
-  //     contactDetails: [
-  //       ...prev.contactDetails,
-  //       {
-  //         emergencyContactName: "",
-  //         emergencyContactEmail: "",
-  //         emergencyContactPhone: "",
-  //       },
-  //     ],
-  //   }));
+
 
   const removeContact = (index) => {
     const updatedContacts = [...formData.contactDetails];

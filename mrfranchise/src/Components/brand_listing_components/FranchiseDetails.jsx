@@ -178,8 +178,8 @@ const FranchiseDetails = ({ data = {}, errors = {}, onChange = () => {} }) => {
     const result = await response.json();
     
     // DEBUG: Log the actual API response structure
-    console.log("API Response:", result);
-    console.log("Data:", result.data);
+    // console.log("API Response:", result);
+    // console.log("Data:", result.data);
    
     if (result.success && result.data) {
       // Handle different possible API response structures
@@ -192,7 +192,7 @@ const FranchiseDetails = ({ data = {}, errors = {}, onChange = () => {} }) => {
                         apiData.subIndustry || 
                         [];
       
-      console.log("Categories found:", categories);
+      // console.log("Categories found:", categories);
       
       setIndustryData({
         ...apiData,

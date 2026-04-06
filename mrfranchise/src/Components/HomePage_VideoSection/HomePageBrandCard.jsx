@@ -69,7 +69,7 @@ import {
 import confetti from "canvas-confetti";
 
 import { ShareOutlined } from "@mui/icons-material";
-import ShareDialogActions from "@/app/brands/ShareDialogActions";
+import ShareDialogActions from "@/app/franchise-brands/ShareDialogActions";
 import { toggleSimilarBrandLike, toggleSimilarBrandShortList } from "@/Redux/Slices/SideMenuHoverBrandSlices";
 
 const token = getToken();
@@ -365,7 +365,7 @@ const HomePageBrandCard = React.memo(
                       sx={{
                         bgcolor: "rgba(255,152,0,0.1)",
                         color: "orange.dark",
-                        fontWeight: 500,
+                        fontWeight: 700,
                       }}
                     />
                   </Stack>
@@ -443,4 +443,4 @@ const HomePageBrandCard = React.memo(
 
 HomePageBrandCard.displayName = "HomePageBrandCard";
 
-export default HomePageBrandCard;
+export default React.memo(HomePageBrandCard) ;

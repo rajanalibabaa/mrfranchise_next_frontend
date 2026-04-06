@@ -8,7 +8,9 @@ import {
   useTheme,
   
 } from "@mui/material";
-
+import AppBar from "@mui/material/AppBar";
+import Tab from "@mui/material/Tab";
+import Tabs from "@mui/material/Tabs";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Avatar from "@mui/material/Avatar";
@@ -31,7 +33,7 @@ import { useDispatch } from "react-redux";
 import { openBrandDialog } from "@/Redux/Slices/OpenBrandNewPageSlice";
 // Create axios instance with base config
 const api = axios.create({
-  baseURL: "http://localhost:5000/api/v1/",
+  baseURL: "https://mrfranchisebackend.mrfranchise.in/api/v1/",
   headers: {
     "Content-Type": "application/json",
   },
@@ -507,7 +509,7 @@ const SideViewContent = ({ hoverCategory, onHoverLeave, onBrandClick }) => {
   // Navigate to brand detail page
   if (brandId) {
     const encodedBrandName = encodeURIComponent(brandName);
-    navigate(`/brands/${brandId}?name=${encodedBrandName}`);
+    navigate(`/franchise-brands/${brandId}?name=${encodedBrandName}`);
   }
   
   // Also call the original onBrandClick if provided

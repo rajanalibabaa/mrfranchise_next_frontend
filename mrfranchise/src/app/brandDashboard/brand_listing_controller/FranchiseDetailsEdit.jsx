@@ -50,7 +50,6 @@ const FranchiseDetailsEdit = ({
   data = {},
   errors = {},
   onChange = () => {},
-  onNestedChange = () => {},
   onArrayChange = () => {},
   onObjectChange = () => {},
   isEditing = false,

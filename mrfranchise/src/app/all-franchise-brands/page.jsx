@@ -1,6 +1,4 @@
 
-;
-//server side rendering 
 
 import { Suspense } from "react";
 import { Box } from "@mui/material";
@@ -24,15 +22,7 @@ const BrandListNew = dynamic(
 
 
 export default async function BrandCategoryViewPage() {
-  // Extract filters from URL
-  // const initialFilters = {
-  //   subcat: searchParams?.subcat || "",
-  //   state: searchParams?.state || "",
-  //   investmentRange: searchParams?.investmentRange || "",
-  //   maincat: searchParams?.maincat || "",
-  //   childcat: searchParams?.childcat || "",
-  //   searchTerm: searchParams?.searchTerm || "",
-  // };
+ 
 
   
   return (
