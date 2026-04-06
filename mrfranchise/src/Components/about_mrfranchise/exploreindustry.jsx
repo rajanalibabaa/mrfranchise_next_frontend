@@ -18,7 +18,7 @@ const industries = [
       "Fast food franchise opportunities",
       "Cafe franchise in India",
     ],
-    link: "/food-franchise-india",
+    link: "/food-and-beverages-franchise-opportunities-/?maincat=Food%20%26%20Beverages",
   },
   {
     emoji: "🛍",
@@ -29,7 +29,7 @@ const industries = [
       "Supermarkets and convenience stores",
       "Specialty retail outlets",
     ],
-    link: "/retail-franchise-india",
+    link: "/retail-franchise-opportunities-/?maincat=Retail",
   },
   {
     emoji: "💇",
@@ -51,7 +51,7 @@ const industries = [
       "Coaching centers",
       "Skill development institutes",
     ],
-    link: "/education-franchise-india",
+    link: "/education-franchise-opportunities-/?maincat=Education",
   },
   {
     emoji: "🏥",
@@ -73,7 +73,7 @@ const industries = [
       "Auto repair shops",
       "Car wash and detailing services",
     ],
-    link: "/automotive-franchise-india",
+    link: "/automobile-franchise-opportunities/?maincat=Automobile",
   }
 ];
 

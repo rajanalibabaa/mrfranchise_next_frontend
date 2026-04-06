@@ -36,7 +36,7 @@ const ExploreInvestment = () => {
         pl: { xs: 2, md: 8 },
         pr: { xs: 2, md: 8 },
         py: 3,
-        backgroundColor: "#dedede",
+        backgroundColor: "#f7f7f7",
       }}
     >
       {/* Heading */}
@@ -70,7 +70,7 @@ const ExploreInvestment = () => {
               sx={{
                 p: 2,
                 borderRadius: 2,
-                backgroundColor: "#f7f7f7",
+                backgroundColor: "#dedede",
                 border: "1px solid #e0e0e0",
                 height: "90%",
                 

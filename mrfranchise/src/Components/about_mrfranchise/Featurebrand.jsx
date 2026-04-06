@@ -7,11 +7,13 @@ const Featurebrand = () => {
     <Box sx={{
       display: "flex",
       flexDirection: "row",
+      justifyContent:"space-evenly",
+      // gap:2,
       flexWrap: "wrap",
       pl: { xs: 2, md: 8 },
       pr: { xs: 2, md: 8 },
         py: 3, backgroundColor: "#f9f9f9",
-       
+   
         }}>
 <Box sx={{ width: "50%" }}>
       {/* Section 1 */}

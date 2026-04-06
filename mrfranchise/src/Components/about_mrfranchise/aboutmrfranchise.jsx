@@ -189,7 +189,7 @@ const AboutMrFranchise = () => {
                     <Box textAlign="center" mt={1}>
                       <Button
                         variant="contained"
-                        href="/how-to-start-franchise-business-india"
+                        href="/all-franchise-brands/"
                         sx={{
                           backgroundColor: "#ff9900",
                           color: "#000000ba",
