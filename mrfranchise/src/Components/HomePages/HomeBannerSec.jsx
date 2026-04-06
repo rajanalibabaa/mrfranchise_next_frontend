@@ -26,6 +26,7 @@ import AdSlot from "../ads/GoogleAd";
 import { ADS } from "@/config/ads.config.js";
 import { Fragment } from "react";
 import { usePathname } from "next/navigation";
+import FranchiseOverview from "../about_mrfranchise/FranchiseOverview";
 
 const FixedSizeList = dynamic(
   () => import("react-window").then((mod) => mod.FixedSizeList),
@@ -211,6 +212,11 @@ const useDynamicComponents = () => {
           import("@/Components/HomePage_VideoSection/FindFranchiseLocations"),
         { ssr: false },
       ),
+      FranchiseOverview: dynamic(
+        () => import("@/Components/about_mrfranchise/FranchiseOverview"),
+        { ssr: false }
+      ),
+
     }),
     [],
   );
@@ -466,11 +472,13 @@ const pageConfig = {
     { component: "HomeSection6", background: "#fff" },
     { component: "HomeSection8", background: "#fff" },
     { component: "FindFranchiseLocations", background: "#fff" },
+
     {
       component: "ToTrendingBrands",
       title: "Trending Brands",
       background: "#fff",
     },
+    { component: "FranchiseOverview", title: "Franchise Overview", background: "#fff" },
   ],
   animations: {
     banner: {
