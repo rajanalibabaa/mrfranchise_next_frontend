@@ -164,7 +164,7 @@ const AboutMrFranchise = () => {
                   <CheckCircleIcon sx={{ color: "#ff9900", fontSize: "1rem" }} />
                 </ListItemIcon>
           
-                <ListItemText
+                <ListItemText 
                   primary={item}
                   primaryTypographyProps={{
                     fontSize: "0.9rem",
