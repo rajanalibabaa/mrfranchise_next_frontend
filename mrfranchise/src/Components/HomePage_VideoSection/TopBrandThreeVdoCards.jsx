@@ -665,7 +665,7 @@ function TopBrandVdoCards() {
                         startIcon={<ChevronLeft />}
                         sx={{
                           textTransform: "none",
-                          color: "black",
+                          color: "white",
                           borderColor: "#43ea5e",
                           "&:hover": {
                             borderColor: theme.palette.mode === "dark" ? "#ff9800" : "#e65100",
@@ -699,7 +699,7 @@ function TopBrandVdoCards() {
                           disabled={isLoading}
                           sx={{
                             textTransform: "none",
-                            color: "black",
+                            color: "white",
                             borderColor: theme.palette.mode === "dark" ? "#ffb74d" : "#f57c00",
                             "&:hover": {
                               borderColor: "#43ea5e",
@@ -726,7 +726,7 @@ function TopBrandVdoCards() {
                           endIcon={<ChevronRight />}
                           sx={{
                             textTransform: "none",
-                            color: "black",
+                            color: "white",
                             borderColor: theme.palette.mode === "dark" ? "#ffb74d" : "#f57c00",
                             "&:hover": {
                               borderColor: "#43ea5e",
@@ -745,13 +745,14 @@ function TopBrandVdoCards() {
                   <VideoPlayer
                     id={mainBrand.uuid}
                     videoUrl={mainBrand.franchiseVideos}
+                    poster={mainBrand.logo} 
                     width="100%"
                     height="100%"
                     preload="none"
                     objectFit="contain"
                     onPlay={() => handleVideoPlay(0)}
                     onPause={() => handleVideoPause(0)}
-                    autoPlay={inView && initialLoadComplete && !userPausedRef.current}
+                    // autoPlay={inView && initialLoadComplete && !userPausedRef.current}
                     loop={true}
                     muted
                     ref={handleMainVideoRef} // ✅ Robust ref handler
