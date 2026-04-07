@@ -19,8 +19,9 @@ import { usePathname } from "next/navigation";
 import FranchiseOverview from "../about_mrfranchise/FranchiseOverview";
 
 import Image from "next/image";
-const Navbar = dynamic(() => import("@/Components/Navbar/NavBar"), { loading:()=> <Box height={60}/> });
-const FilterDropdowns = dynamic(() => import("@/Components/Navbar/FilterDropdownsData"), {loading:()=> <Box height={60}/> });
+
+const Navbar = dynamic(() => import("@/Components/Navbar/NavBar"), { loading: () => <Box height={60} /> });
+const FilterDropdowns = dynamic(() => import("@/Components/Navbar/FilterDropdownsData"), { loading: () => <Box height={60} /> });
 const Footer = dynamic(() => import("@/Components/Footers/Footer"), { ssr: true });
 const BrandComparison = dynamic(() => import("./brandCompariosn"), { ssr: false });
 const FixedSizeList = dynamic(
@@ -30,14 +31,17 @@ const FixedSizeList = dynamic(
 
 // --- ErrorBoundary ---
 class ErrorBoundary extends React.Component {
-  state = { hasError: false, error: null };
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
 
   static getDerivedStateFromError(error) {
     return { hasError: true, error };
   }
 
   componentDidCatch(error, info) {
-    console.error(error, info);
+    console.error("ErrorBoundary caught error:", error, info);
   }
 
   render() {
@@ -101,10 +105,10 @@ const ComponentLoader = memo(({ Component, ...props }) => (
           display="flex"
           justifyContent="center"
           alignItems="center"
-          
           minHeight={200}
         >
-<Box height={200} bgcolor="#eee" borderRadius={2} />        </Box>
+          <Box height={200} bgcolor="#eee" borderRadius={2} />
+        </Box>
       }
     >
       <Component {...props} />
@@ -117,8 +121,7 @@ const useDynamicComponents = () => {
   return React.useMemo(
     () => ({
       TopBrandThreevdocards: dynamic(
-        () =>
-          import("@/Components/HomePage_VideoSection/TopBrandThreeVdoCards"),
+        () => import("@/Components/HomePage_VideoSection/TopBrandThreeVdoCards"),
         { ssr: false },
       ),
       LikedBrands: dynamic(
@@ -157,14 +160,40 @@ const useDynamicComponents = () => {
         () => import("@/Components/HomePage_VideoSection/HomeSection6"),
         { ssr: false },
       ),
-
+      HomeSection7: dynamic(
+        () => import("@/Components/HomePage_VideoSection/HomeSection7"),
+        { ssr: false },
+      ),
+      HomeSection8: dynamic(
+        () => import("@/Components/HomePage_VideoSection/HomeSection8"),
+        { ssr: false },
+      ),
+      HomeSection9: dynamic(
+        () => import("@/Components/HomePage_VideoSection/HomeSection9"),
+        { ssr: false },
+      ),
+      HomeSection10: dynamic(
+        () => import("@/Components/HomePage_VideoSection/HomeSection10"),
+        { ssr: false },
+      ),
+      HomeSection11: dynamic(
+        () => import("@/Components/HomePage_VideoSection/HomeSection11"),
+        { ssr: false },
+      ),
+      HomeSection12: dynamic(
+        () => import("@/Components/HomePage_VideoSection/HomeSection12"),
+        { ssr: false },
+      ),
+      HomeSection13: dynamic(
+        () => import("@/Components/HomePage_VideoSection/HomeSection13"),
+        { ssr: false },
+      ),
       ToTrendingBrands: dynamic(
         () => import("@/Components/HomePage_VideoSection/ToTrendingBrands"),
         { ssr: false },
       ),
       FindFranchiseLocations: dynamic(
-        () =>
-          import("@/Components/HomePage_VideoSection/FindFranchiseLocations"),
+        () => import("@/Components/HomePage_VideoSection/FindFranchiseLocations"),
         { ssr: false },
       ),
       FranchiseOverview: dynamic(
@@ -198,9 +227,8 @@ const LazySection = memo(
         }}
       >
         <Box
-          // maxWidth="xl"
           sx={{
-            background: "transparent", // 🔑 FIX
+            background: "transparent",
             py: 0,
           }}
         >
@@ -219,19 +247,20 @@ const LazySection = memo(
   },
 );
 
+LazySection.displayName = "LazySection";
+
 // --- Banner texts configuration ---
 const bannerTexts = [
   {
     title: {
-      text: "India’s #1 Franchise Marketplace",
-      gradient:
-        "linear-gradient(0deg, rgba(255, 255, 255, 1) 10%, rgba(250, 250, 250, 1) 100%)",
+      text: "India's #1 Franchise Marketplace",
+      gradient: "linear-gradient(0deg, rgba(255, 255, 255, 1) 10%, rgba(250, 250, 250, 1) 100%)",
       fontSize: { mobile: "2rem", tablet: "3.5rem", desktop: "2rem" },
     },
     subtitle: {
       text: "Discover verified franchise opportunities, compare investment, and connect directly with brands.",
       highlight: {
-        text: " F&B franchise opportunities",
+        text: "F&B franchise opportunities",
         color: "#ff9800",
         fontWeight: "bold",
       },
@@ -246,7 +275,7 @@ const bannerTexts = [
     subtitle: {
       text: "Explore low investment franchise opportunities in food, retail, education, and more. Find the perfect fit for your business.",
       highlight: {
-        text: " proven models",
+        text: "proven models",
         color: "#ff9800",
         fontWeight: "bold",
       },
@@ -255,12 +284,11 @@ const bannerTexts = [
   {
     title: {
       text: "Connect with Top Franchise Brands Instantly",
-      gradient:
-        "linear-gradient(0deg, rgba(255, 255, 255, 1) 10%, rgba(250, 250, 250, 1) 100%)",
+      gradient: "linear-gradient(0deg, rgba(255, 255, 255, 1) 10%, rgba(250, 250, 250, 1) 100%)",
       fontSize: { mobile: "2rem", tablet: "3.5rem", desktop: "2rem" },
     },
     subtitle: {
-      text: "Get complete franchise details and investor support directly on WhatsApp. ",
+      text: "Get complete franchise details and investor support directly on WhatsApp.",
       highlight: {
         text: "food franchise journey",
         color: "#ff9800",
@@ -269,114 +297,6 @@ const bannerTexts = [
       },
     },
   },
-  // {
-  //   title: {
-  //     text: "Serve Success Hot \n Choose the Right F&B Franchise Today",
-  //     gradient: "linear-gradient(90deg, #ffffffff 10%, #ffffffff 100%)",
-  //     fontSize: { mobile: "2rem", tablet: "3.5rem", desktop: "2rem" },
-  //   },
-  //   subtitle: {
-  //     text: "Invest in hot-selling food concepts with high demand, fast scalability, and support from trusted food brands ",
-  //     highlight: {
-  //       text: "F&B Franchise",
-  //       color: "#ff9800",
-  //       fontWeight: "bold",
-  //     },
-  //   },
-  // },
-  // {
-  //   title: {
-  //     text: "From Local Taste to Global Plates \n Start Your Food Business Now",
-  //     gradient:
-  //       "linear-gradient(0deg, rgba(255, 255, 255, 1) 10%, rgba(250, 250, 250, 1) 100%)",
-  //     fontSize: { mobile: "2rem", tablet: "3.5rem", desktop: "2rem" },
-  //   },
-  //   subtitle: {
-  //     text: "Franchise options available in street food, bakeries, ice cream parlors, multicusine restaurants, and more.",
-  //     highlight: {
-  //       text: "Food Business",
-  //       color: "#ff9800",
-  //       fontWeight: "bold",
-  //     },
-  //   },
-  // },
-  // {
-  //   title: {
-  //     text: "Low Investment.\nHigh Appetite for Growth",
-  //     gradient: "linear-gradient(90deg, #ffffffff 10%, #ffffffff 100%)",
-  //     fontSize: { mobile: "2rem", tablet: "3.5rem", desktop: "2rem" },
-  //   },
-  //   subtitle: {
-  //     text: "Start from just ₹5 Lakhs with multiple profitable options in cafes, cloud kitchens, and food trucks.",
-  //     highlight: {
-  //       text: "Low Investment",
-  //       color: "#ff9800",
-  //       fontWeight: "bold",
-  //     },
-  //   },
-  // },
-  // {
-  //   title: {
-  //     text: "Franchise a Restaurant.\n Own a Cafe Lead a Cloud Kitchen",
-  //     gradient:
-  //       "linear-gradient(0deg, rgba(255, 255, 255, 1) 10%, rgba(250, 250, 250, 1) 100%)",
-  //     fontSize: { mobile: "2rem", tablet: "3.5rem", desktop: "2rem" },
-  //   },
-  //   subtitle: {
-  //     text: "Find franchise businesses across every food format to suit your budget, location, and business dream.",
-  //     highlight: {
-  //       text: "franchise businesses",
-  //       color: "#ff9800",
-  //       fontWeight: "bold",
-  //     },
-  //   },
-  // },
-  // {
-  //   title: {
-  //     text: "F&B Franchise Made Easy \n with www.MrFranchise.in",
-  //     gradient: "linear-gradient(90deg, #ffffffff 10%, #ffffffff 100%)",
-  //     fontSize: { mobile: "2rem", tablet: "3.5rem", desktop: "2rem" },
-  //   },
-  //   subtitle: {
-  //     text: "Step-by-step guidance, brand comparisons, and expert consultation to help you confidently invest.",
-  //     highlight: {
-  //       text: "consultation",
-  //       color: "#ff9800",
-  //       fontWeight: "bold",
-  //     },
-  //   },
-  // },
-  // {
-  //   title: {
-  //     text: "No Experience? No Problem!\n Proven Food Franchise Models Await You",
-  //     gradient:
-  //       "linear-gradient(0deg, rgba(255, 255, 255, 1) 10%, rgba(250, 250, 250, 1) 100%)",
-  //     fontSize: { mobile: "2rem", tablet: "3.5rem", desktop: "2rem" },
-  //   },
-  //   subtitle: {
-  //     text: "Get full training, support, marketing tools, and setup assistance with our zero-hassle franchise options.",
-  //     highlight: {
-  //       text: "zero-hassle",
-  //       color: "#ff9800",
-  //       fontWeight: "bold",
-  //     },
-  //   },
-  // },
-  // {
-  //   title: {
-  //     text: "Your Food Franchise Future\n Starts At food and beverage www.MrFranchise.in",
-  //     gradient: "linear-gradient(90deg, #ffffffff 10%, #ffffffff 100%)",
-  //     fontSize: { mobile: "2rem", tablet: "3.5rem", desktop: "2rem" },
-  //   },
-  //   subtitle: {
-  //     text: "The one-stop portal for serious F&B investors looking to explore, compare, and close franchise deals.",
-  //     highlight: {
-  //       text: "franchise deals",
-  //       color: "#ff9800",
-  //       fontWeight: "bold",
-  //     },
-  //   },
-  // },
 ];
 
 const pageConfig = {
@@ -385,8 +305,7 @@ const pageConfig = {
     overlayColor: "rgba(0, 0, 0, 0.3)",
     title: {
       text: "Welcome To Our MrFranchise Network",
-      gradient:
-        "linear-gradient(0deg, rgb(249, 108, 0) 10%, rgba(250, 250, 250, 1) 100%)",
+      gradient: "linear-gradient(0deg, rgb(249, 108, 0) 10%, rgba(250, 250, 250, 1) 100%)",
       fontSize: { mobile: "2rem", tablet: "3.5rem", desktop: "2.5rem" },
     },
     subtitle: {
@@ -402,7 +321,6 @@ const pageConfig = {
     { component: "TopBrandThreevdocards", background: "#fff" },
     { component: "HomeSection1", background: "#fff" },
     { component: "HomeSection2", background: "#fff" },
-
     { component: "LikedBrands", background: "#fff" },
     { component: "ShortlistBrands", background: "#fff" },
     { component: "ViewBrands", background: "#fff" },
@@ -412,6 +330,11 @@ const pageConfig = {
     { component: "HomeSection7", background: "#fff" },
     { component: "HomeSection6", background: "#fff" },
     { component: "HomeSection8", background: "#fff" },
+    { component: "HomeSection9", background: "#fff" },
+    { component: "HomeSection10", background: "#fff" },
+    { component: "HomeSection11", background: "#fff" },
+    { component: "HomeSection12", background: "#fff" },
+    { component: "HomeSection13", background: "#fff" },
     { component: "FindFranchiseLocations", background: "#fff" },
 
     {
@@ -449,7 +372,7 @@ export default memo(function HomeBannerSec() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const dispatch = useDispatch();
- 
+
   const dynamicComponents = useDynamicComponents();
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [bannerIndex, setBannerIndex] = useState(0);
@@ -460,23 +383,18 @@ export default memo(function HomeBannerSec() {
   const currentText = bannerTexts[bannerIndex];
 
   // Check login status on client side
-  // Login check
   useEffect(() => {
     setIsLoggedIn(!!localStorage.getItem("accessToken"));
   }, []);
 
   useEffect(() => {
     const handleNavigation = () => {
-      const nav =
-        typeof window !== "undefined" &&
+      const nav = typeof window !== "undefined" && 
         performance.getEntriesByType("navigation")[0]?.type === "reload";
       const shown = sessionStorage.getItem("popup-shown");
 
-      // dispatch(showLoading());
-
       const t = setTimeout(() => {
         setIsLoading(false);
-        // dispatch(hideLoading());
         if (!shown || nav) {
           setIsPopupOpen(true);
           sessionStorage.setItem("popup-shown", "true");
@@ -518,13 +436,6 @@ export default memo(function HomeBannerSec() {
 
   const handlePopupClose = useCallback(() => setIsPopupOpen(false), []);
 
-  // Remove blocking UI
-{isLoading && (
-  <Box position="fixed" top={10} right={10}>
-    <CircularProgress size={30} />
-  </Box>
-)}
-
   return (
     <>
       <Navbar />
@@ -537,11 +448,17 @@ export default memo(function HomeBannerSec() {
         />
       )}
 
+      {/* Loading indicator */}
+      {isLoading && (
+        <Box position="fixed" top={10} right={10} zIndex={9999}>
+          <CircularProgress size={30} />
+        </Box>
+      )}
+
       {/* --- Hero Banner --- */}
       <Box
         mt={0}
         sx={{
-          // background: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${pageConfig.heroBanner.backgroundImage})`,
           backgroundSize: "cover",
           backgroundPosition: "center",
           backgroundAttachment: isMobile ? "scroll" : "fixed",
@@ -556,20 +473,20 @@ export default memo(function HomeBannerSec() {
         }}
       >
         <Image
-        src={pageConfig.heroBanner.backgroundImage}
-        alt="Hero Banner"
-        fill
-        priority
-        style={{ objectFit: 'cover' }}
-      />
-  <Box
-        sx={{
-          position: 'absolute',
-          inset: 0,
-          background: 'linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5))',
-          zIndex: 1,
-        }}
-      />
+          src={pageConfig.heroBanner.backgroundImage}
+          alt="Hero Banner"
+          fill
+          priority
+          style={{ objectFit: 'cover' }}
+        />
+        <Box
+          sx={{
+            position: 'absolute',
+            inset: 0,
+            background: 'linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5))',
+            zIndex: 1,
+          }}
+        />
         <Container
           sx={{
             zIndex: 2,
@@ -579,6 +496,7 @@ export default memo(function HomeBannerSec() {
           }}
         >
           <Box
+            component={motion.div}
             key={bannerIndex}
             initial={{ opacity: 0, x: 80 }}
             animate={{ opacity: 1, x: 0 }}
@@ -587,10 +505,12 @@ export default memo(function HomeBannerSec() {
           >
             <Typography mb={3} component="span">
               <Box
+                component="span"
                 sx={{
                   background: currentText.title.gradient,
                   WebkitBackgroundClip: "text",
                   WebkitTextFillColor: "transparent",
+                  backgroundClip: "text",
                   textShadow: "none",
                   display: "inline-block",
                   fontSize: isMobile ? "1.5rem" : "2.2rem",
@@ -604,7 +524,7 @@ export default memo(function HomeBannerSec() {
             </Typography>
           </Box>
 
-          <Box variants={pageConfig.animations.item}>
+          <Box component={motion.div} variants={pageConfig.animations.item}>
             <Typography
               variant={isMobile ? "body1" : "subtitle1"}
               mt={isMobile ? 0 : 3}
@@ -621,7 +541,6 @@ export default memo(function HomeBannerSec() {
                 textShadow: "0 2px 4px rgba(0,0,0,0.5)",
                 position: "relative",
               }}
-              component={motion.div}
             >
               {
                 currentText.subtitle.text.split(
@@ -652,7 +571,6 @@ export default memo(function HomeBannerSec() {
         </Container>
       </Box>
 
-    
       {pageConfig.sections
         .filter(
           (s) =>
@@ -661,49 +579,22 @@ export default memo(function HomeBannerSec() {
               s.component,
             ),
         )
-        .map((section, i) => {
-          // const addIndex = Math.floor(i / 3);
-
-          // const adSlots = [
-          //   ADS.HOME.INLINE_1,
-          //   ADS.HOME.INLINE_2,
-          //   ADS.HOME.INLINE_3,
-          // ]; 
-          return (
-            <Fragment key={i}>
-              {/* SECTION */}
-              <LazySection
-                componentKey={section.component}
-                dynamicComponents={dynamicComponents}
-                background={{
-                  backgroundImage: "url(/bg25.jpeg)",
-                  backgroundAttachment: "scroll",
-                  backgroundSize: "400px",
-                  backgroundRepeat: "repeat",
-                }}
-                isMobile={isMobile}
-              />
-
-              {/* AD AFTER EVERY 3rd SECTION */}
-              {/* {(i + 1) % 3 === 0 && adSlots[addIndex] && (
-                <BackgroundWrapper>
-                  <Box sx={{ py: 3 }}>
-                    <AdSlot
-                      key={`${pathname}-${adSlots[addIndex].slot}`}
-                      {...adSlots[addIndex]}
-                    />
-                  </Box>
-                </BackgroundWrapper>
-              )} */}
-            </Fragment>
-          );
-        })}
-
-      {/* <BackgroundWrapper>
-        <Box sx={{ py: 3 }}>
-          <AdSlot key={pathname} {...ADS.HOME.FOOTER_RECTANGLE} />
-        </Box>
-      </BackgroundWrapper> */}
+        .map((section, i) => (
+          <Fragment key={i}>
+            {/* SECTION */}
+            <LazySection
+              componentKey={section.component}
+              dynamicComponents={dynamicComponents}
+              background={{
+                backgroundImage: "url(/bg25.jpeg)",
+                backgroundAttachment: "scroll",
+                backgroundSize: "400px",
+                backgroundRepeat: "repeat",
+              }}
+              isMobile={isMobile}
+            />
+          </Fragment>
+        ))}
 
       <CompareButton />
       <BrandComparison />

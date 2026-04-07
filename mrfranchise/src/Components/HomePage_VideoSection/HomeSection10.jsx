@@ -8,7 +8,6 @@ import React, {
   useLayoutEffect,
 } from "react";
 import {
-
   useMediaQuery,
   useTheme,
 } from "@mui/material";
@@ -24,7 +23,7 @@ import { useSelector, useDispatch } from "react-redux";
 import LoginPage from "@/Components/LoginPage/LoginPage.jsx";
 import { motion } from "framer-motion";
 import HomePageBrandCard from "./HomePageBrandCard.jsx";
-import { homeSection6   } from '@/Redux/Slices/TopCardFetchingSlice.jsx';
+import { homeSection10 } from '@/Redux/Slices/TopCardFetchingSlice.jsx';
 
 const CARD_DIMENSIONS = {
   mobile: { width: 280, height: 520 },
@@ -34,7 +33,7 @@ const CARD_DIMENSIONS = {
   largeDesktop: { width: 337, height: 500 },
 };
 
-const HomeSection6 = () => {
+const HomeSection10 = () => {
   const theme = useTheme();
   const dispatch = useDispatch();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -62,23 +61,19 @@ const HomeSection6 = () => {
     return CARD_DIMENSIONS.largeDesktop;
   }, [isMobile, isTablet, isSmallDesktop, isDesktop, isLargeDesktop]);
 
+  // Debugging: Add console.log to check Redux state
+  const homeSection10State = useSelector((state) => state.overAllPlatform.homeSection10);
 
-   // Debugging: Add console.log to check Redux state
-const homeSection6State  = useSelector((state) => state.overAllPlatform.homeSection6);
+  const {
+    brands = [],
+    isLoading,
+    error,
+    pagination
+  } = homeSection10State || {};
 
-const {
-  brands = [],
-  isLoading,
-  error,
-  pagination
-} = homeSection6State  || {};
-
-// console.log('home sec1',brands);
-
-  
   // Load initial data
   useEffect(() => {
-    dispatch(homeSection6({ page: 1 }));
+    dispatch(homeSection10({ page: 1 }));
   }, [dispatch]);
 
   const isFetchingRef = useRef(false);
@@ -96,30 +91,31 @@ const {
     if (
       scrollLeft + clientWidth >= scrollWidth - 100 && 
       pagination?.hasNextPage && 
-      !isLoading && !isFetchingRef.current
+      !isLoading && 
+      !isFetchingRef.current
     ) {
       isFetchingRef.current = true;
       const nextPage = currentPage + 1;
       setCurrentPage(nextPage);
-      dispatch(homeSection6({ page: nextPage }))
-      .finally(() =>{
-        isFetchingRef.current = false
-      })
+      dispatch(homeSection10({ page: nextPage }))
+        .finally(() => {
+          isFetchingRef.current = false;
+        });
     }
   }, [pagination, isLoading, currentPage, dispatch]);
 
   const debounce = (fn, delay) => {
-  let timer;
-  return (...args) => {
-    clearTimeout(timer);
-    timer = setTimeout(() => fn(...args), delay);
+    let timer;
+    return (...args) => {
+      clearTimeout(timer);
+      timer = setTimeout(() => fn(...args), delay);
+    };
   };
-};
 
-const debouncedHandleScroll = useMemo(
-  () => debounce(handleScroll, 100),
-  [handleScroll]
-);
+  const debouncedHandleScroll = useMemo(
+    () => debounce(handleScroll, 100),
+    [handleScroll]
+  );
 
   // Set up scroll event listener
   useEffect(() => {
@@ -129,12 +125,14 @@ const debouncedHandleScroll = useMemo(
       handleScroll(); // Initial check
     }
     return () => {
-      container?.removeEventListener("scroll", handleScroll);
+      if (container) {
+        container.removeEventListener("scroll", debouncedHandleScroll);
+      }
       if (scrollRequestRef.current) {
         cancelAnimationFrame(scrollRequestRef.current);
       }
     };
-  }, [handleScroll]);
+  }, [debouncedHandleScroll, handleScroll]);
 
   // Calculate visible cards based on container width
   useLayoutEffect(() => {
@@ -149,9 +147,9 @@ const debouncedHandleScroll = useMemo(
     };
 
     updateVisibleCards();
-const debouncedResize = debounce(updateVisibleCards, 200);
-window.addEventListener("resize", debouncedResize);
-    return () => window.removeEventListener("resize", updateVisibleCards);
+    const debouncedResize = debounce(updateVisibleCards, 200);
+    window.addEventListener("resize", debouncedResize);
+    return () => window.removeEventListener("resize", debouncedResize);
   }, [dimensions.width, isMobile]);
 
   // Smooth scroll functions
@@ -190,43 +188,38 @@ window.addEventListener("resize", debouncedResize);
   }, [handleScroll]);
 
   const handleNextClick = () => {
-  scrollContainerRef.current?.scrollBy({
-    left: getScrollDistance(),
-    behavior: "smooth",
-  });
-};
+    scrollContainerRef.current?.scrollBy({
+      left: getScrollDistance(),
+      behavior: "smooth",
+    });
+  };
 
-const handlePrevClick = () => {
-  scrollContainerRef.current?.scrollBy({
-    left: -getScrollDistance(),
-    behavior: "smooth",
-  });
-};
+  const handlePrevClick = () => {
+    scrollContainerRef.current?.scrollBy({
+      left: -getScrollDistance(),
+      behavior: "smooth",
+    });
+  };
 
   const brandCategoriesName = brands[0]?.brandCategories?.sub;
+  
   const handleClickOpenBrandCategories = () => {
-     if (!brandCategoriesName) return;
-     const slug = slugify(brandCategoriesName, {
-    lower: true,
-    strict: true,   // removes &, /, special chars
-    trim: true,
-  });
+    if (!brandCategoriesName) return;
+    const slug = slugify(brandCategoriesName, {
+      lower: true,
+      strict: true,   // removes &, /, special chars
+      trim: true,
+    });
 
-  const subcat = encodeURIComponent(brandCategoriesName); // encode spaces/special chars
-  const url = `${slug}-franchise-opportunities?maincat=${subcat}`;
+    const subcat = encodeURIComponent(brandCategoriesName); // encode spaces/special chars
+    const url = `${slug}-franchise-opportunities?maincat=${subcat}`;
 
-  // Open in new tab
-  const newWindow = window.open(url, "_blank"); 
+    // Open in new tab
+    const newWindow = window.open(url, "_blank"); 
 
-  // Optional: focus the new tab
-  if (newWindow) newWindow.focus();
-};
-
-  {isLoading && brands.length === 0 && (
-  <Box sx={{ position: "absolute", top: 10, right: 10 }}>
-    <CircularProgress size={20} />
-  </Box>
-)}
+    // Optional: focus the new tab
+    if (newWindow) newWindow.focus();
+  };
 
   if (error) {
     return (
@@ -257,9 +250,9 @@ const handlePrevClick = () => {
           mb: 1,
           px: isMobile ? 3 : 0,
           gap: 2,
-          backgroundColor:'white',
-            p: 1.5,
-            borderRadius: 2,
+          backgroundColor: 'white',
+          p: 1.5,
+          borderRadius: 2,
         }}
       >
         <Typography
@@ -267,7 +260,6 @@ const handlePrevClick = () => {
           fontWeight="bold"
           sx={{
             color: "#000000ff",
-            
             mb: 1,
             textAlign: "left",
             position: "relative",
@@ -282,36 +274,34 @@ const handlePrevClick = () => {
             },
           }}
         >
-          {/* Juice, Smoothie & Health Beverages */}
-          Top {brandCategoriesName} Industry Brands
+          Top {brandCategoriesName || "Brand"} Industry Brands
         </Typography>
 
-       <Button
-  variant="contained"
-  size="small"
-  aria-label="view more brands"
-  endIcon={<ArrowRight />}
-  sx={{
-    textTransform: "none",
-    fontSize: isMobile ? 14 : 16,
-    background: theme.palette.mode === "dark" 
-      ? "linear-gradient(90deg, #ff9800, #ffb74d)" 
-      : "linear-gradient(90deg, #f57c00, #ff9800)",
-    color: "#fff",
-    borderRadius: "8px",
-    px: 2,
-    "&:hover": {
-      background: theme.palette.mode === "dark" 
-        ? "linear-gradient(90deg, #ffb74d, #ff9800)" 
-        : "linear-gradient(90deg, #ff9800, #f57c00)",
-      boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
-    },
-  }}
-onClick={handleClickOpenBrandCategories}
->
-  View More
-</Button>
-
+        <Button
+          variant="contained"
+          size="small"
+          aria-label="view more brands"
+          endIcon={<ArrowRight />}
+          sx={{
+            textTransform: "none",
+            fontSize: isMobile ? 14 : 16,
+            background: theme.palette.mode === "dark" 
+              ? "linear-gradient(90deg, #ff9800, #ffb74d)" 
+              : "linear-gradient(90deg, #f57c00, #ff9800)",
+            color: "#fff",
+            borderRadius: "8px",
+            px: 2,
+            "&:hover": {
+              background: theme.palette.mode === "dark" 
+                ? "linear-gradient(90deg, #ffb74d, #ff9800)" 
+                : "linear-gradient(90deg, #ff9800, #f57c00)",
+              boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
+            },
+          }}
+          onClick={handleClickOpenBrandCategories}
+        >
+          View More
+        </Button>
       </Box>
 
       <Box sx={{ position: "relative" }}>
@@ -328,7 +318,7 @@ onClick={handleClickOpenBrandCategories}
             minWidth: 40,
             height: 40,
             borderRadius: "50%",
-            color:"black",
+            color: "black",
             backgroundColor: "#ff9800",
             boxShadow: 2,
             "&:hover": {
@@ -352,7 +342,7 @@ onClick={handleClickOpenBrandCategories}
             right: isMobile ? 4 : -10,
             top: "63.5%",
             transform: "translateY(-50%)",
-            color:"black",
+            color: "black",
             zIndex: 1,
             minWidth: 40,
             height: 40,
@@ -377,14 +367,14 @@ onClick={handleClickOpenBrandCategories}
             display: "flex",
             overflowX: "auto",
             gap: isMobile ? 2 : 1.8,
-            p:0.5,
+            p: 0.5,
             scrollBehavior: "smooth",
             scrollbarWidth: "none",
             "&::-webkit-scrollbar": { display: "none" },
           }}
         >
           {brands.map((brand) => (
-            <Box key={brand.uuid || brand.id}>
+            <Box key={brand.uuid || brand.id || brand._id}>
               <HomePageBrandCard
                 brand={brand}
                 likeProcessing={likeProcessing}
@@ -400,6 +390,11 @@ onClick={handleClickOpenBrandCategories}
               <CircularProgress size={24} />
             </Box>
           )}
+          {isLoading && brands.length === 0 && (
+            <Box sx={{ display: "flex", justifyContent: "center", p: 4, width: "100%" }}>
+              <CircularProgress size={40} />
+            </Box>
+          )}
         </Box>
       </Box>
 
@@ -410,4 +405,4 @@ onClick={handleClickOpenBrandCategories}
   );
 };
 
-export default React.memo(HomeSection6);
+export default React.memo(HomeSection10);
