@@ -6,10 +6,12 @@ import ExploreLocation from './explorelocation';
 import Featurebrand from './Featurebrand';
 import FreeFranchise from './freefranchise';
 import FranchiseJourney from './franchisejourney';
+import BusinessOpportunities from './businessopportunities';
 
 const FranchiseOverview = () => {
   return (
     <>
+      <BusinessOpportunities/>
       <AboutMrFranchise />
       <ExploreIndustry />
       <ExploreInvestment/>
@@ -17,6 +19,7 @@ const FranchiseOverview = () => {
       <Featurebrand/>
       <FreeFranchise/>
       <FranchiseJourney/>
+    
     
     </>
   );
