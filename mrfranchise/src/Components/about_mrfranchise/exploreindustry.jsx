@@ -105,7 +105,7 @@ const ExploreIndustry = () => {
           fontWeight: 300,
           color: "text.primary",
           mb: 2,
-          textAlign: "center",
+          textAlign: { xs: "justify", md: "left" },
         }}
       >
         At MrFranchise, we offer a wide range of industry-specific franchise
@@ -142,14 +142,14 @@ const ExploreIndustry = () => {
               {/* Title */}
               <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 0.5 }}>
                 <Typography variant="body1" sx={{ fontWeight: "bold" }}>
-                  {item.emoji} {item.title}
+                 {item.title}
                 </Typography>
               </Stack>
 
               {/* Description */}
               <Typography
                 variant="body2"
-                sx={{ color: "text.secondary", mb: 1 }}
+                sx={{ color: "text.secondary", mb: 1 , textAlign:{ xs: 'justify', md: 'left' }}}
               >
                 {item.desc}
               </Typography>
