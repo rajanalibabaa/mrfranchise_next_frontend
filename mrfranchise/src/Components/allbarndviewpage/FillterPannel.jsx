@@ -15,7 +15,6 @@ import AccordionDetails from "@mui/material/AccordionDetails";
 import ClearIcon from "@mui/icons-material/Clear";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
-
 import {
   fetchFilterOptions,
   resetChildCategories,
@@ -184,8 +183,6 @@ const FilterPanel = React.memo(
         .slice(0, 100);
     }, [subCategories, searchTerms.subCategory]);
 
-   
-
     const filteredModelTypes = useMemo(() => {
       const term = (searchTerms.modelType || "").toLowerCase().trim();
       return franchiseModels
@@ -264,10 +261,15 @@ const FilterPanel = React.memo(
         .slice(0, 100);
     }, [filters.state, districts, searchTerms.district]);
 
-   
-
     return (
-      <Box sx={{ pr: 2, height: "calc(100vh - 120px)", width: "100%", overflowY: "auto" }}>
+      <Box
+        sx={{
+          pr: 2,
+          height: "calc(100vh - 120px)",
+          width: "100%",
+          overflowY: "auto",
+        }}
+      >
         <Typography
           variant="body2"
           sx={{
@@ -396,14 +398,13 @@ const FilterPanel = React.memo(
                               dispatch(resetChildCategories());
                             }
                           }}
-                          
                         >
                           {filteredSubCategories.map((subCategory) => (
                             <Box
                               key={`subcat-container-${subCategory}`}
                               sx={{
-                          mt: 1,
-                        }}
+                                mt: 1,
+                              }}
                             >
                               <FormControlLabel
                                 key={`subcat-${subCategory}`}
@@ -420,7 +421,7 @@ const FilterPanel = React.memo(
                                 }
                                 label={
                                   <Typography fontSize="0.8125rem">
-                                    {subCategory} Franchise 
+                                    {subCategory} Franchise
                                   </Typography>
                                 }
                                 sx={{ mb: 0, mr: 0 }}
@@ -543,10 +544,10 @@ const FilterPanel = React.memo(
               </RadioGroup>
             </Box>
           </AccordionDetails>
-        </Accordion> 
+        </Accordion>
 
         {/* Investment Range Filter */}
-       <Accordion
+        <Accordion
           ref={investmentRef}
           expanded={expandedSections.investment}
           onChange={() => toggleSection("investment")}
@@ -605,7 +606,7 @@ const FilterPanel = React.memo(
         </Accordion>
 
         {/* Area Required Filter */}
-     <Accordion
+        <Accordion
           ref={areaRequiredRef}
           expanded={expandedSections.areaRequired}
           onChange={() => toggleSection("areaRequired")}
@@ -687,10 +688,10 @@ const FilterPanel = React.memo(
               )}
             </Box>
           </AccordionDetails>
-        </Accordion> 
+        </Accordion>
 
         {/* Location Filters */}
-         <Accordion
+        <Accordion
           ref={locationRef}
           expanded={expandedSections.location}
           onChange={() => toggleSection("location")}
@@ -718,10 +719,8 @@ const FilterPanel = React.memo(
 
           <AccordionDetails sx={{ p: 0 }}>
             <Box sx={{ px: 1 }}>
-              {loading ? (
-                <Box sx={{ p: 2 }}>
-                  <CircularProgress size={20} sx={{ color: "#ff9800" }} />
-                </Box>
+              {states.length === 0 && loading ? (
+                <CircularProgress />
               ) : (
                 <RadioGroup
                   value={filters.state || ""}
@@ -825,8 +824,7 @@ const FilterPanel = React.memo(
                                         onChange={(e) =>
                                           onFilterChange("city", e.target.value)
                                         }
-                                      >
-                                      </RadioGroup>
+                                      ></RadioGroup>
                                     </>
                                   )}
                                 </Box>
