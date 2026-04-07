@@ -419,7 +419,7 @@ export const homeSection13 = createAsyncThunk(
   async ({ page = 1 }, { rejectWithValue }) => {
     try {
       const response = await axios.get(
-        `${API_BASE_URL}/overAllPlatformOnlyMainCategory`,
+        `${API_BASE_URL}/overAllPlatformOnlyMainCategory?main=${encodeURIComponent("Others")}`,
         {
           params: { page, id: userId },
         }
