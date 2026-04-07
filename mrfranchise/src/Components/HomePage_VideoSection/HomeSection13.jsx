@@ -201,7 +201,7 @@ const HomeSection13 = () => {
     });
   };
 
-  const brandCategoriesName = brands[0]?.brandCategories?.sub;
+  const brandCategoriesName = brands[0]?.brandCategories?.main;
   
   const handleClickOpenBrandCategories = () => {
     if (!brandCategoriesName) return;
@@ -274,7 +274,7 @@ const HomeSection13 = () => {
             },
           }}
         >
-          Top {brandCategoriesName || "Brand"} Industry Brands
+          All {brandCategoriesName || "Brand"} Industry Brands
         </Typography>
 
         <Button
