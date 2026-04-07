@@ -212,7 +212,7 @@ const HomeSection7 = () => {
     });
 
     const subcat = encodeURIComponent(brandCategoriesName); // encode spaces/special chars
-    const url = `${slug}-franchise-opportunities?maincat=${subcat}`;
+   const url = `${slug}-franchise-opportunities?subcat=${subcat}&maincat=${encodeURIComponent(brands[0]?.brandCategories?.main || "")}`;
 
     // Open in new tab
     const newWindow = window.open(url, "_blank"); 
