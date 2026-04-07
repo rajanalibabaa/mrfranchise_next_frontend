@@ -18,8 +18,9 @@ const FranchiseOverview = () => {
       <ExploreInvestment />
       <ExploreLocation />
       <Featurebrand />
-      <FreeFranchise />
+      
       <FranchiseJourney />
+      <FreeFranchise />
     </>
   );
 };
