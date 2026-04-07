@@ -1,23 +1,25 @@
-import React from 'react';
-import AboutMrFranchise from './aboutmrfranchise';
-import ExploreIndustry from './exploreindustry';
-import ExploreInvestment from './exploreinvestment';
-import ExploreLocation from './explorelocation';
-import Featurebrand from './Featurebrand';
-import FreeFranchise from './freefranchise';
-import FranchiseJourney from './franchisejourney';
+"use client";
+
+import dynamic from "next/dynamic";
+
+const AboutMrFranchise = dynamic(() => import("./aboutmrfranchise"));
+const ExploreIndustry = dynamic(() => import("./exploreindustry"));
+const ExploreInvestment = dynamic(() => import("./exploreinvestment"));
+const ExploreLocation = dynamic(() => import("./explorelocation"));
+const Featurebrand = dynamic(() => import("./Featurebrand"));
+const FreeFranchise = dynamic(() => import("./freefranchise"));
+const FranchiseJourney = dynamic(() => import("./franchisejourney"));
 
 const FranchiseOverview = () => {
   return (
     <>
       <AboutMrFranchise />
       <ExploreIndustry />
-      <ExploreInvestment/>
-      <ExploreLocation/>
-      <Featurebrand/>
-      <FreeFranchise/>
-      <FranchiseJourney/>
-    
+      <ExploreInvestment />
+      <ExploreLocation />
+      <Featurebrand />
+      <FreeFranchise />
+      <FranchiseJourney />
     </>
   );
 };
