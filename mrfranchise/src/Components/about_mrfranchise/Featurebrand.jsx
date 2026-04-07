@@ -1,5 +1,5 @@
 "use client";
-import React, { useMemo } from "react";
+import React from "react";
 import { Box, Typography, Link, Divider } from "@mui/material";
 
 const Featurebrand = () => {
@@ -192,4 +192,4 @@ const Featurebrand = () => {
   );
 };
 
-export default useMemo( Featurebrand);
+export default  Featurebrand;

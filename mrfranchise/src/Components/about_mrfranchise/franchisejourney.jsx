@@ -73,4 +73,4 @@ const FranchiseJourney = () => {
   )
 }
 
-export default useMemo( FranchiseJourney);
+export default  FranchiseJourney;

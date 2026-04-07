@@ -1,5 +1,5 @@
 "use client";
-import React, { useMemo } from "react";
+import React from "react";
 import {
   Box,
   Typography,
@@ -101,4 +101,4 @@ const FreeFranchise = () => {
   );
 };
 
-export default useMemo( FreeFranchise);
+export default FreeFranchise;

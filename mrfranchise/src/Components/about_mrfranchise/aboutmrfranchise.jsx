@@ -1,5 +1,5 @@
 "use client";
-import React, { useMemo } from "react";
+import React from "react";
 import {
   Typography,
   List,
@@ -211,4 +211,4 @@ const AboutMrFranchise = () => {
   );
 };
 
-export default useMemo(AboutMrFranchise)
+export default AboutMrFranchise;
