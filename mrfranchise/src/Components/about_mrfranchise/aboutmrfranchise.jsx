@@ -40,7 +40,7 @@ const AboutMrFranchise = () => {
         <Typography
   variant="h6"
   fontWeight="bold"
-  sx={{ mt: 1}}
+  sx={{ mt: 1, textAlign:{ xs: 'center', md: 'left' }}}
 >
   {aboutData.Heading}
 </Typography>
@@ -50,7 +50,7 @@ const AboutMrFranchise = () => {
         <Typography
   variant="body1"
   gutterBottom
-            sx={{ fontWeight: 300,  color: 'text.primary', }}
+            sx={{ fontWeight: 300,  color: 'text.primary', textAlign:{ xs: 'center', md: 'left' } }}
 >
   {aboutData.mainHeading}
 </Typography>
@@ -64,6 +64,7 @@ const AboutMrFranchise = () => {
               sx={{ 
                 color: 'text.secondary', 
               mb: 1,
+              textAlign:{ xs: 'justify', md: 'left' },
            
               }}
             >
@@ -128,7 +129,7 @@ const AboutMrFranchise = () => {
                         sx={{ 
                           color: 'text.secondary', 
                         mb: 1,
-                     
+                      textAlign:{ xs: 'justify', md: 'left' }
                         }}>
                       The franchise industry in India is growing rapidly due to its 
                       structured business model, brand recognition, and lower risk 
@@ -141,7 +142,7 @@ const AboutMrFranchise = () => {
                  <List
             sx={{
               display: "flex",
-              flexDirection: "row",
+              flexDirection: { xs: "column", md: "row" },
             justifyContent: "space-around",
               p: 0,
             }}
@@ -179,7 +180,7 @@ const AboutMrFranchise = () => {
                         sx={{ 
                           color: 'text.secondary', 
                         mb: 1, mt: 1,
-                     
+                      textAlign:{ xs: 'justify', md: 'left' }
                         }}>            If you're planning to start your food franchise, retail franchise, 
                       or service-based franchise, this is the right time to invest in a 
                       scalable and profitable business model.

@@ -7,7 +7,7 @@ import {
 } from "@mui/material";
 const FranchiseJourney = () => {
   return (
-  <Box sx={{display:'flex',flexDirection:"row", justifyContent:"space-around", backgroundColor:"#f9f9f9", py:3, px:2}}>
+  <Box sx={{display:'flex',flexDirection:{"xs":"column", "md":"row"}, justifyContent:"space-around", backgroundColor:"#f9f9f9", py:3, px:2}}>
   <Box>
       {/* CTA Section */}
       <Typography variant="h6" fontWeight="bold" sx={{ mt: 3, mb: 1 }}>

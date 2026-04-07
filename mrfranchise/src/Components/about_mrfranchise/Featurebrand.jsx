@@ -6,16 +6,16 @@ const Featurebrand = () => {
     
     <Box sx={{
       display: "flex",
-      flexDirection: "row",
-      justifyContent:"space-evenly",
+      flexDirection: {xs:"column", md:"row"},
+      justifyContent:{xs:"center", md:"space-evenly"},
       // gap:2,
       flexWrap: "wrap",
       pl: { xs: 2, md: 8 },
       pr: { xs: 2, md: 8 },
         py: 3, backgroundColor: "#f9f9f9",
-   
+    
         }}>
-<Box sx={{ width: "50%" }}>
+<Box sx={{ width:{xs:"100%", md:"50%" }}}>
       {/* Section 1 */}
       <Typography variant="h6" fontWeight="bold" sx={{ mt: 1 }}>
         Featured Franchise Brands
@@ -55,7 +55,7 @@ const Featurebrand = () => {
       {/* Divider space */}
       {/* <Box sx={{ mt: 3 }} /> */}
 
-<Box sx={{ width: "50%" }}>
+<Box sx={{ width:{xs:"100%", md:"50%" }}}>
       {/* Section 2 */}
       <Typography variant="h6" fontWeight="bold" sx={{ mb: 1 }}>
         How to Start Your Franchise Business in India
@@ -106,7 +106,7 @@ const Featurebrand = () => {
       {/* Divider space */}
       {/* <Box sx={{ mt: 3 }} /> */}
       
-<Box sx={{ width: "50%" }}>
+<Box sx={{ width:{xs:"100%", md:"50%" }}}>
       {/* Section 3 */}
       <Typography variant="h6" fontWeight="bold" sx={{ mb: 1 }}>
         Why MrFranchise.in is the Best Platform for Franchise Opportunities
@@ -148,7 +148,7 @@ const Featurebrand = () => {
       {/* Divider space */}
       {/* <Box sx={{ mt: 3 }} /> */}
 
-<Box sx={{ width: "50%" }}>
+<Box sx={{ width:{xs:"100%", md:"50%" }}}>
       {/* Section 4 */}
       <Typography variant="h6" fontWeight="bold" sx={{ mb: 1 }}>
         Latest Franchise Insights & Business Guides
