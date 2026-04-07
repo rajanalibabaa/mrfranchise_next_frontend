@@ -4,11 +4,9 @@ import {
   Box,
   Typography,
   Link,
-  Accordion,
   AccordionSummary,
   AccordionDetails
 } from "@mui/material";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
 const FreeFranchise = () => {
   const faqs = [
