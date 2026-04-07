@@ -148,8 +148,6 @@ export const homeSection4 = createAsyncThunk(
     }
   }
 );
-
-
 export const homeSection5 = createAsyncThunk(
   "homeSection5/fetchAll",
   async ({ page = 1 }, { rejectWithValue }) => {
@@ -183,50 +181,13 @@ export const homeSection5 = createAsyncThunk(
     }
   }
 );
-
-// export const homeSection5 = createAsyncThunk(
-//   "homeSection5/fetchAll",
-//   async ({ page = 1 }, { rejectWithValue }) => {
-//     try {
-//       const response = await axios.get(
-//         `${API_BASE_URL}overAllPlatformOnlyMainCategory?main=Food %26 Beverages&sub=Food Trucks %26 Kiosks Franchises`,
-//         {
-//           params: { page, id: userId },
-//         }
-//       );
-
-//       if (!response.data.data || !response.data.data.brands) {
-//         console.error("Unexpected API response structure:", response.data);
-//         throw new Error("Invalid API response structure");
-//       }
-//       return {
-//         brands: response.data.data.brands,
-//         pagination: response.data.data.pagination || {
-//           currentPage: page,
-//           totalPages: 1,
-//           totalItems: 0,
-//           hasNextPage: false,
-//           hasPreviousPage: false,
-//         },
-//       };
-//     } catch (error) {
-//       console.error("API Error:", error.response?.data || error.message);
-//       return rejectWithValue(
-//         error.response?.data || { message: error.message }
-//       );
-//     }
-//   }
-// );
-
-
-
 // Top Cloud Kitchen
 export const homeSection6 = createAsyncThunk(
   "homeSection6/fetchAll",
   async ({ page = 1 }, { rejectWithValue }) => {
     try {
       const response = await axios.get(
-        `${API_BASE_URL}/overAllPlatformOnlyMainCategory?main=Others`,
+        `${API_BASE_URL}/overAllPlatformOnlyMainCategory?main=${encodeURIComponent("Automobile")}&sub=${encodeURIComponent("Electric Vehicles (EV)")}`,
         {
           params: { page, id: userId },
         }
@@ -260,7 +221,7 @@ export const homeSection7 = createAsyncThunk(
   async ({ page = 1 }, { rejectWithValue }) => {
     try {
       const response = await axios.get(
-        `${API_BASE_URL}/overAllPlatformOnlyMainCategory?main=Food %26 Beverages&sub=Quick Service Restaurants (QSR)`,
+        `${API_BASE_URL}/overAllPlatformOnlyMainCategory?main=${encodeURIComponent("Education")}&sub=${encodeURIComponent("Pre-School & Early Childhood Education")}`,
         {
           params: { page, id: userId },
         }
@@ -293,7 +254,172 @@ export const homeSection8 = createAsyncThunk(
   async ({ page = 1 }, { rejectWithValue }) => {
     try {
       const response = await axios.get(
-        `${API_BASE_URL}/overAllPlatformOnlyMainCategory?main=Food %26 Beverages&sub=Bars, Pubs %26 Lounges`,
+        `${API_BASE_URL}/overAllPlatformOnlyMainCategory?main=${encodeURIComponent("Food & Beverages")}&sub=${encodeURIComponent("Fine Dining & Casual Dining Restaurants")}`,
+        {
+          params: { page, id: userId },
+        }
+      );
+
+      if (!response.data.data || !response.data.data.brands) {
+        console.error("Unexpected API response structure:", response.data);
+        throw new Error("Invalid API response structure");
+      }
+      return {
+        brands: response.data.data.brands,
+        pagination: response.data.data.pagination || {
+          currentPage: page,
+          totalPages: 1,
+          totalItems: 0,
+          hasNextPage: false,
+          hasPreviousPage: false,
+        },
+      };
+    } catch (error) {
+      console.error("API Error:", error.response?.data || error.message);
+      return rejectWithValue(
+        error.response?.data || { message: error.message }
+      );
+    }
+  }
+);
+export const homeSection9 = createAsyncThunk(
+  "homeSection9/fetchAll",
+  async ({ page = 1 }, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(
+        `${API_BASE_URL}/overAllPlatformOnlyMainCategory?main=${encodeURIComponent("Food & Beverages")}&sub=${encodeURIComponent("Quick Service Restaurants (QSR)")}`,
+        {
+          params: { page, id: userId },
+        }
+      );
+
+      if (!response.data.data || !response.data.data.brands) {
+        console.error("Unexpected API response structure:", response.data);
+        throw new Error("Invalid API response structure");
+      }
+      return {
+        brands: response.data.data.brands,
+        pagination: response.data.data.pagination || {
+          currentPage: page,
+          totalPages: 1,
+          totalItems: 0,
+          hasNextPage: false,
+          hasPreviousPage: false,
+        },
+      };
+    } catch (error) {
+      console.error("API Error:", error.response?.data || error.message);
+      return rejectWithValue(
+        error.response?.data || { message: error.message }
+      );
+    }
+  }
+);
+export const homeSection10 = createAsyncThunk(
+  "homeSection10/fetchAll",
+  async ({ page = 1 }, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(
+        `${API_BASE_URL}/overAllPlatformOnlyMainCategory?main=${encodeURIComponent("Food & Beverages")}&sub=${encodeURIComponent("Tea, Coffee & Cafe Chains")}`,
+        {
+          params: { page, id: userId },
+        }
+      );
+
+      if (!response.data.data || !response.data.data.brands) {
+        console.error("Unexpected API response structure:", response.data);
+        throw new Error("Invalid API response structure");
+      }
+      return {
+        brands: response.data.data.brands,
+        pagination: response.data.data.pagination || {
+          currentPage: page,
+          totalPages: 1,
+          totalItems: 0,
+          hasNextPage: false,
+          hasPreviousPage: false,
+        },
+      };
+    } catch (error) {
+      console.error("API Error:", error.response?.data || error.message);
+      return rejectWithValue(
+        error.response?.data || { message: error.message }
+      );
+    }
+  }
+);
+export const homeSection11 = createAsyncThunk(
+  "homeSection11/fetchAll",
+  async ({ page = 1 }, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(
+        `${API_BASE_URL}/overAllPlatformOnlyMainCategory?main=${encodeURIComponent("Service")}&sub=${encodeURIComponent("Beauty, Lifestyle & Personal Care")}`,
+        {
+          params: { page, id: userId },
+        }
+      );
+
+      if (!response.data.data || !response.data.data.brands) {
+        console.error("Unexpected API response structure:", response.data);
+        throw new Error("Invalid API response structure");
+      }
+      return {
+        brands: response.data.data.brands,
+        pagination: response.data.data.pagination || {
+          currentPage: page,
+          totalPages: 1,
+          totalItems: 0,
+          hasNextPage: false,
+          hasPreviousPage: false,
+        },
+      };
+    } catch (error) {
+      console.error("API Error:", error.response?.data || error.message);
+      return rejectWithValue(
+        error.response?.data || { message: error.message }
+      );
+    }
+  }
+);
+export const homeSection12 = createAsyncThunk(
+  "homeSection12/fetchAll",
+  async ({ page = 1 }, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(
+        `${API_BASE_URL}/overAllPlatformOnlyMainCategory?main=${encodeURIComponent("Service")}&sub=${encodeURIComponent("Healthcare & Wellness Services")}`,
+        {
+          params: { page, id: userId },
+        }
+      );
+
+      if (!response.data.data || !response.data.data.brands) {
+        console.error("Unexpected API response structure:", response.data);
+        throw new Error("Invalid API response structure");
+      }
+      return {
+        brands: response.data.data.brands,
+        pagination: response.data.data.pagination || {
+          currentPage: page,
+          totalPages: 1,
+          totalItems: 0,
+          hasNextPage: false,
+          hasPreviousPage: false,
+        },
+      };
+    } catch (error) {
+      console.error("API Error:", error.response?.data || error.message);
+      return rejectWithValue(
+        error.response?.data || { message: error.message }
+      );
+    }
+  }
+);
+export const homeSection13 = createAsyncThunk(
+  "homeSection13/fetchAll",
+  async ({ page = 1 }, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(
+        `${API_BASE_URL}/overAllPlatformOnlyMainCategory`,
         {
           params: { page, id: userId },
         }
@@ -427,32 +553,71 @@ const initialState = {
     error: null,
     viewedBrandsCount: 0,
   },
-  // homeSection9: {
-  //   brands: [],
-  //   pagination: {
-  //     currentPage: 1,
-  //     totalPages: 1,
-  //     totalItems: 0,
-  //     hasNextPage: false,
-  //     hasPreviousPage: false,
-  //   },
-  //   isLoading: false,
-  //   error: null,
-  //   viewedBrandsCount: 0,
-  // },
-  // homeSection10: {
-  //   brands: [],
-  //   pagination: {
-  //     currentPage: 1,
-  //     totalPages: 1,
-  //     totalItems: 0,
-  //     hasNextPage: false,
-  //     hasPreviousPage: false,
-  //   },
-  //   isLoading: false,
-  //   error: null,
-  //   viewedBrandsCount: 0,
-  // },
+  homeSection9: {
+    brands: [],
+    pagination: {
+      currentPage: 1,
+      totalPages: 1,
+      totalItems: 0,
+      hasNextPage: false,
+      hasPreviousPage: false,
+    },
+    isLoading: false,
+    error: null,
+    viewedBrandsCount: 0,
+  },
+  homeSection10: {
+    brands: [],
+    pagination: {
+      currentPage: 1,
+      totalPages: 1,
+      totalItems: 0,
+      hasNextPage: false,
+      hasPreviousPage: false,
+    },
+    isLoading: false,
+    error: null,
+    viewedBrandsCount: 0,
+  },
+  homeSection11 : {
+    brands: [],
+    pagination: {
+      currentPage: 1,
+      totalPages: 1,
+      totalItems: 0,
+      hasNextPage: false,
+      hasPreviousPage: false,
+    },
+    isLoading: false,
+    error: null,
+    viewedBrandsCount: 0,
+  },
+  homeSection12: {
+    brands: [],
+    pagination: {
+      currentPage: 1,
+      totalPages: 1,
+      totalItems: 0,
+      hasNextPage: false,
+      hasPreviousPage: false,
+    },
+    isLoading: false,
+    error: null,
+    viewedBrandsCount: 0,
+  },
+  homeSection13: {
+    brands: [],
+    pagination: {
+      currentPage: 1,
+      totalPages: 1,
+      totalItems: 0,
+      hasNextPage: false,
+      hasPreviousPage: false,
+    },
+    isLoading: false,
+    error: null,
+    viewedBrandsCount: 0,
+  },
 };
 
 const OverAllPlatform = createSlice({
@@ -483,6 +648,21 @@ const OverAllPlatform = createSlice({
     resethomeSection8: (state) => {
       state.homeSection8 = initialState.homeSection8;
     },
+    resethomeSection9: (state) => {
+      state.homeSection9 = initialState.homeSection9;
+    },
+    resethomeSection10: (state) => {
+      state.homeSection10 = initialState.homeSection10;
+    },
+    resethomeSection11: (state) => {
+      state.homeSection11 = initialState.homeSection11;
+    },
+    resethomeSection12: (state) => {
+      state.homeSection12 = initialState.homeSection12;
+    },
+    resethomeSection13: (state) => {
+      state.homeSection13 = initialState.homeSection13;
+    },
 
    
     // ----------------------------------------------------
@@ -510,6 +690,24 @@ const OverAllPlatform = createSlice({
     homeSection8ViewedCount: (state) => {
       state.homeSection8.viewedBrandsCount += 1;
     },
+    homeSection8ViewedCount: (state) => {
+      state.homeSection8.viewedBrandsCount += 1;
+    },
+    homeSection9ViewedCount: (state) => {
+      state.homeSection9.viewedBrandsCount += 1;
+    },
+    homeSection10ViewedCount: (state) => {
+      state.homeSection10.viewedBrandsCount += 1;
+    },
+    homeSection11ViewedCount: (state) => {
+      state.homeSection11.viewedBrandsCount += 1;
+    },
+    homeSection12ViewedCount: (state) => {
+      state.homeSection12.viewedBrandsCount += 1;
+    },
+    homeSection13ViewedCount: (state) => {
+      state.homeSection13.viewedBrandsCount += 1;
+    },
    
     // ------------------------------------------------------------
     resetHomeSection1ViewedCount: (state) => {
@@ -536,7 +734,21 @@ const OverAllPlatform = createSlice({
     resetHomeSection8ViewedCount: (state) => {
       state.homeSection8.viewedBrandsCount = 0;
     },
-    
+    resetHomeSection9ViewedCount: (state) => {
+      state.homeSection9.viewedBrandsCount = 0;
+    },
+    resetHomeSection10ViewedCount: (state) => {
+      state.homeSection10.viewedBrandsCount = 0;
+    },
+    resetHomeSection11ViewedCount: (state) => {
+      state.homeSection11.viewedBrandsCount = 0;
+    },
+    resetHomeSection12ViewedCount: (state) => {
+      state.homeSection12.viewedBrandsCount = 0;
+    },
+    resetHomeSection13ViewedCount: (state) => {
+      state.homeSection13.viewedBrandsCount = 0;
+    },
 
     toggleHomeCardLike: (state, action) => {
       const brandId = action.payload;
@@ -820,6 +1032,87 @@ const OverAllPlatform = createSlice({
       .addCase(homeSection8.rejected, (state, action) => {
         state.homeSection8.isLoading = false;
         state.homeSection8.error =
+          action.payload?.message || action.error.message;
+      })
+      
+      .addCase(homeSection9.pending, (state) => {
+        state.homeSection9.isLoading = true;
+        state.homeSection9.error = null;
+      })
+      .addCase(homeSection9.fulfilled, (state, action) => {
+        state.homeSection9.isLoading = false;
+        state.homeSection9.brands = action.payload.brands;
+        state.homeSection9.pagination = action.payload.pagination;
+      })
+      .addCase(homeSection9.rejected, (state, action) => {
+        state.homeSection9.isLoading = false;
+        state.homeSection9.error =
+          action.payload?.message || action.error.message;
+      })
+
+      
+
+      .addCase(homeSection10.pending, (state) => {
+        state.homeSection10.isLoading = true;
+        state.homeSection10.error = null;
+      })
+      .addCase(homeSection10.fulfilled, (state, action) => {
+        state.homeSection10.isLoading = false;
+        state.homeSection10.brands = action.payload.brands;
+        state.homeSection10.pagination = action.payload.pagination;
+      })
+      .addCase(homeSection10.rejected, (state, action) => {
+        state.homeSection10.isLoading = false;
+        state.homeSection10.error =
+          action.payload?.message || action.error.message;
+      })
+
+      
+      .addCase(homeSection11.pending, (state) => {
+        state.homeSection11.isLoading = true;
+        state.homeSection11.error = null;
+      })
+      .addCase(homeSection11.fulfilled, (state, action) => {
+        state.homeSection11.isLoading = false;
+        state.homeSection11.brands = action.payload.brands;
+        state.homeSection11.pagination = action.payload.pagination;
+      })
+      .addCase(homeSection11.rejected, (state, action) => {
+        state.homeSection11.isLoading = false;
+        state.homeSection11.error =
+          action.payload?.message || action.error.message;
+      })
+
+      
+      
+      .addCase(homeSection12.pending, (state) => {
+        state.homeSection12.isLoading = true;
+        state.homeSection12.error = null;
+      })
+      .addCase(homeSection12.fulfilled, (state, action) => {
+        state.homeSection12.isLoading = false;
+        state.homeSection12.brands = action.payload.brands;
+        state.homeSection12.pagination = action.payload.pagination;
+      })
+      .addCase(homeSection12.rejected, (state, action) => {
+        state.homeSection12.isLoading = false;
+        state.homeSection12.error =
+          action.payload?.message || action.error.message;
+      })
+      
+      
+      .addCase(homeSection13.pending, (state) => {
+        state.homeSection13.isLoading = true;
+        state.homeSection13.error = null;
+      })
+      .addCase(homeSection13.fulfilled, (state, action) => {
+        state.homeSection13.isLoading = false;
+        state.homeSection13.brands = action.payload.brands;
+        state.homeSection13.pagination = action.payload.pagination;
+      })
+      .addCase(homeSection13.rejected, (state, action) => {
+        state.homeSection13.isLoading = false;
+        state.homeSection13.error =
           action.payload?.message || action.error.message;
       })
 
