@@ -15,7 +15,7 @@ const ExploreLocation = dynamic(() => import("./explorelocation"));
 const Featurebrand = dynamic(() => import("./Featurebrand"));
 const FranchiseJourney = dynamic(() => import("./franchisejourney"));
 const FreeFranchise = dynamic(() => import("./freefranchise"));
-
+const BusinessOpportunities = dynamic(() => import("./businessopportunities"));
 const FranchiseOverview = () => {
   const [loadRest, setLoadRest] = useState(false);
 
@@ -43,9 +43,10 @@ const FranchiseOverview = () => {
 
   return (
     <>
+          <BusinessOpportunities />     
+
       {/* 🚀 Above-the-fold (loads immediately) */}
       <AboutMrFranchise />
-
       {/* 💤 Deferred content (loads when browser is idle) */}
       {loadRest && (
         <>
