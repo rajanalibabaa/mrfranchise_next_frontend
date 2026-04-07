@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Box, Typography, Link, Grid } from "@mui/material";
 
 const locationData = [
@@ -95,4 +95,4 @@ const ExploreLocation = () => {
   );
 };
 
-export default ExploreLocation;
+export default  useMemo(ExploreLocation); ExploreLocation;

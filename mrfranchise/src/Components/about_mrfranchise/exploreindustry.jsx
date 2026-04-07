@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useMemo } from "react";
 import {
   Box,
   Typography,
@@ -198,4 +198,4 @@ const ExploreIndustry = () => {
   );
 };
 
-export default ExploreIndustry;
+export default  useMemo(ExploreIndustry)

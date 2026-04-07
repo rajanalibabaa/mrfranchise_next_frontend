@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useMemo } from "react";
 import { Box, Typography, Link, Grid, Stack } from "@mui/material";
 
 const investmentData = [
@@ -112,4 +112,4 @@ const ExploreInvestment = () => {
   );
 };
 
-export default ExploreInvestment;
+export default useMemo(ExploreInvestment);

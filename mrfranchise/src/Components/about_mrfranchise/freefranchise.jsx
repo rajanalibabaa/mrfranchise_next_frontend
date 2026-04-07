@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useMemo } from "react";
 import {
   Box,
   Typography,
@@ -71,7 +71,7 @@ const FreeFranchise = () => {
         {faqs.map((faq, index) => (
         <Box
   key={index}
-  expanded={true}
+  expanded="true"
   sx={{
     borderRadius: "8px",
     maxWidth: "800px",
@@ -101,4 +101,4 @@ const FreeFranchise = () => {
   );
 };
 
-export default FreeFranchise;
+export default useMemo( FreeFranchise);
