@@ -1,41 +1,9 @@
-# robots.txt for Mr Franchise India
-
-# Allow all crawlers
+# *
 User-agent: *
 Allow: /
 
-# Disallow private areas
-Disallow: /api/
-Disallow: /admin/
-Disallow: /_next/
-Disallow: /dashboard/
-Disallow: /profile/edit
-Disallow: /checkout/
-Disallow: /cart/
+# Host
+Host: https://mrfranchise.in
 
-# Allow images
-User-agent: Googlebot-Image
-Allow: /
-
-# Sitemap locations
+# Sitemaps
 Sitemap: https://mrfranchise.in/sitemap.xml
-Sitemap: https://mrfranchise.in/sitemap-brands.xml
-Sitemap: https://mrfranchise.in/sitemap-categories.xml
-
-# Crawl delay (optional)
-Crawl-delay: 0
-
-# Google
-User-agent: Googlebot
-Allow: /
-Crawl-delay: 0
-
-# Bing
-User-agent: Bingbot
-Allow: /
-Crawl-delay: 0
-
-# Yandex
-User-agent: Yandex
-Allow: /
-Crawl-delay: 0

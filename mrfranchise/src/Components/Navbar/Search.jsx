@@ -169,15 +169,15 @@ const Search = ({ handleClose }) => {
             handleOnSearch();
           }
         }}
-        InputProps={{
-          endAdornment: (
-            <InputAdornment position="end">
-              <IconButton onClick={() => handleOnSearch()} edge="end">
-                <SearchIcon />
-              </IconButton>
-            </InputAdornment>
-          ),
-        }}
+        // InputProps={{
+        //   endAdornment: (
+        //     <InputAdornment position="end">
+        //       <IconButton onClick={() => handleOnSearch()} edge="end">
+        //         <SearchIcon />
+        //       </IconButton>
+        //     </InputAdornment>
+        //   ),
+        // }}
       />
 
       {(loading || hasResults) && (

@@ -2,26 +2,15 @@
 import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
-import Button from "@mui/material/Button";
-import Divider from "@mui/material/Divider";
-import Radio from "@mui/material/Radio";
-import RadioGroup from "@mui/material/RadioGroup";
-import FormControlLabel from "@mui/material/FormControlLabel";
+
 import CircularProgress from "@mui/material/CircularProgress";
-import Accordion from "@mui/material/Accordion";
-import AccordionSummary from "@mui/material/AccordionSummary";
-import AccordionDetails from "@mui/material/AccordionDetails";
-import ClearIcon from "@mui/icons-material/Clear";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+
 
 import {
   fetchFilterOptions,
   resetChildCategories,
-  resetDistricts,
-  resetCities,
+  
 } from "@/Redux/Slices/filterDropdownData";
-import Search from "../Navbar/Search";
 import { fetchFilteredBrands, setFilter } from "@/Redux/Slices/FilterBrandSlice";
 
 // Define the correct order for investment ranges
@@ -31,9 +20,7 @@ const BrandTags = React.memo(
   ({
     filters,
     onFilterChange,
-    onClearFilters,
-    activeFilterCount,
-    resultStats = { showing: 0, total: 0 },
+   
   }) => {
     const dispatch = useDispatch();
     const {
@@ -161,7 +148,6 @@ useEffect(() => {
   if (!filters.maincat && !filters.subcat && !filters.childcat) return;
 
   const value = filters.childcat;
-  console.log('brandtag', value);
 
   dispatch(
     fetchFilteredBrands({

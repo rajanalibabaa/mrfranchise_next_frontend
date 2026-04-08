@@ -303,7 +303,6 @@ function BrandList({ maincat }) {
 
       lastFetchKeyRef.current = fetchKey;
 
-      console.log("Fetching brands with filters:", filtersToFetch);
       dispatch(fetchFilteredBrands(filtersToFetch));
 
       if (isFirstLoad) {
@@ -321,7 +320,6 @@ function BrandList({ maincat }) {
     isInitializedRef.current = true;
     isMountedRef.current = true;
 
-    console.log("Initializing BrandList...");
 
     // Get filters from multiple sources
     const urlMaincat = searchParams?.get("maincat");
@@ -359,7 +357,6 @@ function BrandList({ maincat }) {
       localStorage.removeItem("enableComparison");
     }
 
-    console.log("Initial filters:", initialFilters);
 
     // Apply filters to Redux
     Object.entries(initialFilters).forEach(([key, value]) => {
@@ -422,7 +419,6 @@ function BrandList({ maincat }) {
   // ============================================
   const handleFilterChange = useCallback(
     (name, value) => {
-      console.log("Filter changed:", name, value);
       
       dispatch(setFilter({ filterName: name, value }));
 
