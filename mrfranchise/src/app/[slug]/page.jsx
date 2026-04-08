@@ -119,16 +119,17 @@ export async function generateMetadata({ params }) {
   const slug = resolvedParams.slug;
 
   const categoryName = deslugifyCategory(slug);
+  
  const url = `https://mrfranchise.in/${slug}`;
   return {
-    title: `${categoryName} Franchise Opportunities in India 2026`,
-    description: `Explore ${categoryName} franchise opportunities with investment, ROI, and profit details.`,
+    title: `${categoryName || "Top"} - Franchise Opportunities in India 2026`,
+    description: `Explore ${categoryName || "Top"} franchise opportunities with investment, ROI, and profit details.`,
     alternates: {
       canonical: url, // ✅ VERY IMPORTANT
     },
      openGraph: {
-      title: `${categoryName} Franchise Opportunities`,
-      description: `Find best ${categoryName} franchises in India.`,
+      title: `${categoryName || "Top  "} Franchise Opportunities`,
+      description: `Find best ${categoryName || "Top  "} franchises in India.`,
       url: url,
       siteName: "Mr Franchise",
       type: "website",

@@ -4,25 +4,21 @@ import { Box, Typography, Link, Grid, Stack } from "@mui/material";
 
 const investmentData = [
   {
-    emoji: "💰",
     title: "Franchise Under ₹5 Lakhs",
     desc: "Ideal for first-time entrepreneurs looking for low investment franchise opportunities.",
     link: "/franchise-under-5-lakhs",
   },
   {
-    emoji: "💼",
     title: "Franchise Under ₹10 Lakhs",
     desc: "Perfect for small business investors aiming for moderate returns.",
     link: "/franchise-under-10-lakhs",
   },
   {
-    emoji: "🏢",
     title: "Franchise Under ₹20 Lakhs",
     desc: "Suitable for expanding entrepreneurs who want to build scalable businesses.",
     link: "/franchise-under-20-lakhs",
   },
   {
-    emoji: "🏬",
     title: "Premium Franchise Opportunities",
     desc: "High-investment, high-return business models with established brand recognition.",
     link: "/premium-franchise-opportunities",
@@ -56,7 +52,7 @@ const ExploreInvestment = () => {
           fontWeight: 300,
           color: "text.primary",
           mb: 2,
-          textAlign: "center",
+           textAlign:{ xs: 'justify', md: 'center' }
         }}
       >
         Choosing the right investment range is critical when selecting a franchise.
@@ -80,7 +76,7 @@ const ExploreInvestment = () => {
               {/* Title */}
               <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 0.5 }}>
                 <Typography variant="body1" sx={{ fontWeight: "bold" }}>
-                  {item.emoji} {item.title}
+                {item.title}
                 </Typography>
               </Stack>
 

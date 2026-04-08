@@ -42,172 +42,181 @@ const aboutData = {
 
 const AboutMrFranchise = () => {
   return (
-    <Box
-      sx={{
-        pl: { xs: 2, md: 8 },
-        pr: { xs: 2, md: 8 },
+   <Box  sx={{
+      pl: { xs: 2, md: 8 },
+      pr: { xs: 2, md: 8 },
         py: 3,
-        backgroundColor: "#f9f9f9",
-      }}
-    >
-      {/* Section Title */}
-      <Typography variant="h6" fontWeight="bold" sx={{ mt: 1 }}>
-        {aboutData.Heading}
-      </Typography>
-
-      {/* Main Sub-heading */}
-      <Typography
-        variant="body1"
-        gutterBottom
-        sx={{ fontWeight: 300, color: "text.primary" }}
-      >
-        {aboutData.mainHeading}
-      </Typography>
-
-      {/* Intro Paragraphs */}
-      {aboutData.introParagraphs.map((para, index) => (
+    backgroundColor:'#f9f9f9', 
+   }}>
+          {/* Section Title */}
         <Typography
-          key={index}
-          variant="body2"
-          sx={{
-            color: "text.secondary",
-            mb: 1,
-          }}
-        >
-          {para}
-        </Typography>
-      ))}
+  variant="h6"
+  fontWeight="bold"
+  sx={{ mt: 1, textAlign:{ xs: 'center', md: 'left' }}}
+>
+  {aboutData.Heading}
+</Typography>
 
-      {/* Opportunities Section */}
-      <Box>
-        <Typography variant="body" gutterBottom sx={{ fontWeight: "bold" }}>
-          {aboutData.ctaTitle}
-        </Typography>
 
-        <Box>
-          <Box
+          {/* Main Sub-heading */}
+        <Typography
+  variant="body1"
+  gutterBottom
+            sx={{ fontWeight: 300,  color: 'text.primary', textAlign:{ xs: 'center', md: 'left' } }}
+>
+  {aboutData.mainHeading}
+</Typography>
+     
+
+          {/* Intro Paragraphs */}
+          {aboutData.introParagraphs.map((para, index) => (
+            <Typography 
+              key={index} 
+              variant="body2" 
+              sx={{ 
+                color: 'text.secondary', 
+              mb: 1,
+              textAlign:{ xs: 'justify', md: 'left' },
+           
+              }}
+            >
+              {para}
+            </Typography>
+          ))}
+
+          {/* Opportunities Section */}
+          <Box >
+            <Typography variant="body" gutterBottom sx={{ fontWeight: 'bold' }}>
+              {aboutData.ctaTitle}
+            </Typography>
+
+            <Box >
+    <Box
+  sx={{
+    display: "flex",
+    flexWrap: "wrap",
+    alignItems: "center",
+    justifyContent:"center",
+    gap: 1,
+  }}
+>
+  {aboutData.opportunities.map((item, index) => (
+    <React.Fragment key={index}>
+      
+      <Link
+        href={item.url}
+        underline="hover"
+        sx={{
+          color: "#ff9900",
+          fontSize: "0.9rem",
+        }}
+      >
+         {item.text}
+      </Link>
+
+      {/* Add || only if NOT last item */}
+      {index !== aboutData.opportunities.length - 1 && (
+        <Typography sx={{ color: "#999", fontSize: "0.9rem" }}>
+          |
+        </Typography>
+      )}
+
+    </React.Fragment>
+  ))}
+</Box>
+            </Box>
+          </Box>
+
+            {/* Heading */}
+                         <Typography
+                     variant="h6"
+                     fontWeight="bold"
+                     sx={{ mt: 2, mb:1}}
+                   >
+                      Why Choose Franchise Business in India?
+                    </Typography>
+          
+                    {/* Intro */}
+                    <Typography   variant="body2" 
+                        sx={{ 
+                          color: 'text.secondary', 
+                        mb: 1,
+                      textAlign:{ xs: 'justify', md: 'left' }
+                        }}>
+                      The franchise industry in India is growing rapidly due to its 
+                      structured business model, brand recognition, and lower risk 
+                      compared to starting a business from scratch. By choosing the right franchise opportunity, you benefit from:
+                    </Typography>
+          
+                    
+          
+                    {/* List */}
+                 <List
             sx={{
               display: "flex",
-              flexWrap: "wrap",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 1,
-            }}
-          >
-            {aboutData.opportunities.map((item, index) => (
-              <React.Fragment key={index}>
-                <Link
-                  href={item.url}
-                  underline="hover"
-                  sx={{
-                    color: "#ff9900",
-                    fontSize: "0.9rem",
-                  }}
-                >
-                  {item.text}
-                </Link>
-
-                {/* Add || only if NOT last item */}
-                {index !== aboutData.opportunities.length - 1 && (
-                  <Typography sx={{ color: "#999", fontSize: "0.9rem" }}>
-                    |
-                  </Typography>
-                )}
-              </React.Fragment>
-            ))}
-          </Box>
-        </Box>
-      </Box>
-
-      {/* Heading */}
-      <Typography variant="h6" fontWeight="bold" sx={{ mt: 2, mb: 1 }}>
-        Why Choose Franchise Business in India?
-      </Typography>
-
-      {/* Intro */}
-      <Typography
-        variant="body2"
-        sx={{
-          color: "text.secondary",
-          mb: 1,
-        }}
-      >
-        The franchise industry in India is growing rapidly due to its structured
-        business model, brand recognition, and lower risk compared to starting a
-        business from scratch. By choosing the right franchise opportunity, you
-        benefit from:
-      </Typography>
-
-      {/* List */}
-      <List
-        sx={{
-          display: "flex",
-          flexDirection: "row",
-          justifyContent: "space-around",
-          p: 0,
-        }}
-      >
-        {[
-          "Proven business systems",
-          "Established brand value",
-          "Marketing and operational support",
-          "Faster break-even and ROI",
-        ].map((item, index) => (
-          <ListItem
-            key={index}
-            disableGutters
-            sx={{
-              width: "auto", // prevents full width
+              flexDirection: { xs: "column", md: "row" },
+            justifyContent: "space-around",
               p: 0,
             }}
           >
-            <ListItemIcon sx={{ minWidth: 28 }}>
-              <CheckCircleIcon sx={{ color: "#ff9900", fontSize: "1rem" }} />
-            </ListItemIcon>
-
-            <ListItemText
-              primary={item}
-              primaryTypographyProps={{
-                fontSize: "0.9rem",
-              }}
-            />
-          </ListItem>
-        ))}
-      </List>
-
-      {/* Closing Text */}
-      <Typography
-        variant="body2"
-        sx={{
-          color: "text.secondary",
-          mb: 1,
-          mt: 1,
-        }}
-      >
-        {" "}
-        If you're planning to start your food franchise, retail franchise, or
-        service-based franchise, this is the right time to invest in a scalable
-        and profitable business model.
-      </Typography>
-
-      {/* CTA Button */}
-      <Box textAlign="center" mt={1}>
-        <Button
-          variant="contained"
-          href="/all-franchise-brands/"
-          sx={{
-            backgroundColor: "#ff9900",
-            color: "#000000ba",
-            fontWeight: "bold",
-            "&:hover": {
-              backgroundColor: "#e68a00",
-            },
-          }}
-        >
-          Learn More
-        </Button>
-      </Box>
-    </Box>
+            {[
+              "Proven business systems",
+              "Established brand value",
+              "Marketing and operational support",
+              "Faster break-even and ROI",
+            ].map((item, index) => (
+              <ListItem
+                key={index}
+                disableGutters
+                sx={{
+                  width: "auto", // prevents full width
+                  p: 0,
+                }}
+              >
+                <ListItemIcon sx={{ minWidth: 28 }}>
+                  <CheckCircleIcon sx={{ color: "#ff9900", fontSize: "1rem" }} />
+                </ListItemIcon>
+          
+                <ListItemText 
+                  primary={item}
+                  primaryTypographyProps={{
+                    fontSize: "0.9rem",
+                  }}
+                />
+              </ListItem>
+            ))}
+          </List>
+          
+                    {/* Closing Text */}
+           <Typography   variant="body2" 
+                        sx={{ 
+                          color: 'text.secondary', 
+                        mb: 1, mt: 1,
+                      textAlign:{ xs: 'justify', md: 'left' }
+                        }}>            If you're planning to start your food franchise, retail franchise, 
+                      or service-based franchise, this is the right time to invest in a 
+                      scalable and profitable business model.
+                    </Typography>
+          
+                    {/* CTA Button */}
+                    <Box textAlign="center" mt={1}>
+                      <Button
+                        variant="contained"
+                        href="/all-franchise-brands/"
+                        sx={{
+                          backgroundColor: "#ff9900",
+                          color: "#000000ba",
+                          fontWeight: "bold",
+                          "&:hover": {
+                            backgroundColor: "#e68a00",
+                          },
+                        }}
+                      >
+                         Learn More
+                      </Button>
+                    </Box>
+          
+        </Box>
   );
 };
 

@@ -48,7 +48,7 @@ const ExploreLocation = () => {
           fontWeight: 300,
           color: "text.primary",
           mb: 2,
-          textAlign:"center"
+          textAlign:{xs:"justify", md:" center"}
         }}
       >
         Location plays a crucial role in franchise success. Explore franchise
