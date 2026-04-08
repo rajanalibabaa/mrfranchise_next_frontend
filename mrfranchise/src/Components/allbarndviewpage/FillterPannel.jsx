@@ -283,14 +283,7 @@ const FilterPanel = React.memo(
     }, [filters.district, cities, searchTerms.city]);
 
     return (
-      <Box
-        sx={{
-          pr: 2,
-          height: "calc(100vh - 120px)",
-          width: "100%",
-          overflowY: "auto",
-        }}
-      >
+      <Box sx={{ pr: 2, height: "calc(100vh - 120px)", width: "100%", overflowY: "auto" }}>
         <Typography
           variant="body2"
           sx={{
@@ -417,8 +410,6 @@ const FilterPanel = React.memo(
                               sx={{
                                 mt: 1,
                               }}
-                                mt: 1,
-                              }}
                             >
                               <FormControlLabel
                                 key={`subcat-${subCategory}`}
@@ -435,7 +426,7 @@ const FilterPanel = React.memo(
                                 }
                                 label={
                                   <Typography fontSize="0.8125rem">
-                                    {subCategory} Franchise
+                                    {subCategory} Franchise 
                                   </Typography>
                                 }
                                 sx={{ mb: 0, mr: 0 }}
@@ -565,10 +556,9 @@ const FilterPanel = React.memo(
               </RadioGroup>
             </Box>
           </AccordionDetails>
-        </Accordion>
+        </Accordion> 
 
         {/* Investment Range Filter */}
-        <Accordion
         <Accordion
           ref={investmentRef}
           expanded={expandedSections.investment}
@@ -628,7 +618,6 @@ const FilterPanel = React.memo(
         </Accordion>
 
         {/* Area Required Filter */}
-        <Accordion
         <Accordion
           ref={areaRequiredRef}
           expanded={expandedSections.areaRequired}
@@ -711,10 +700,9 @@ const FilterPanel = React.memo(
               )}
             </Box>
           </AccordionDetails>
-        </Accordion>
+        </Accordion> 
 
         {/* Location Filters */}
-        <Accordion
         <Accordion
           ref={locationRef}
           expanded={expandedSections.location}
@@ -743,8 +731,10 @@ const FilterPanel = React.memo(
 
           <AccordionDetails sx={{ p: 0 }}>
             <Box sx={{ px: 1 }}>
-              {states.length === 0 && loading ? (
-                <CircularProgress />
+              {loading ? (
+                <Box sx={{ p: 2 }}>
+                  <CircularProgress size={20} sx={{ color: "#ff9800" }} />
+                </Box>
               ) : (
                 <RadioGroup
                   value={filters.state || ""}
@@ -904,4 +894,4 @@ const FilterPanel = React.memo(
   },
 );
 
-export default FilterPanel; 
+export default FilterPanel;
