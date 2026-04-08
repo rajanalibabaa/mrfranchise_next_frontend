@@ -355,7 +355,7 @@ const downloadPDF = async () => {
 
     pdf.addImage(imgData, "PNG", x, y, imgWidth, imgHeight);
 
-    pdf.save("brand-comparison.pdf");
+    pdf.save("MRFRANCHISE-brand-comparison.pdf");
 
   } catch (error) {
     console.error(error);
