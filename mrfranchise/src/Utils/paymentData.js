@@ -1,6 +1,6 @@
 const plans = [
   {
-    category: "BASIC PLAN",
+    category: "FRANCHISE LAUNCH PLAN",
     plans: [
       {
         name: "SILVER",
@@ -48,7 +48,7 @@ const plans = [
   },
 
   {
-    category: "ADVANCE PLAN",
+    category: "EXPANTION ENGINE PLAN",
     plans: [
       {
         name: "SILVER",
@@ -96,7 +96,7 @@ const plans = [
   },
 
   {
-    category: "GROWTH PLAN",
+    category: "SCALE ACCELERATION PLAN",
     plans: [
       {
         name: "SILVER",
@@ -144,7 +144,7 @@ const plans = [
   },
 
   {
-    category: "EXCELLANCE PLAN",
+    category: "MARKET DOMINANCE PLAN",
     plans: [
       {
         name: "SILVER",
@@ -204,6 +204,7 @@ const plans = [
       }
     ]
   }
+  
 ];
 
 export default plans;
