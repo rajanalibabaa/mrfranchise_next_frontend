@@ -72,16 +72,6 @@ const SimilarBrands = ({ brandData }) => {
   }, [dispatch, currentChildCategory]);
   
 
-  // // Filter brands: same subCategory, not current brand
-  // const filteredBrands = useMemo(() => {
-  //   if (!brands || !currentChildCategory) return [];
-  //   return brands.filter(
-  //     (brand) =>
-  //       brand.brandCategories?.sub === currentChildCategory &&
-  //       brand.uuid !== currentBrandUUID 
-  //   );
-  // }, [brands, currentChildCategory, currentBrandUUID]);
-
 
   // console.log("Filtered Similar Brands:", filteredBrands);
   const dimensions = useMemo(() => {

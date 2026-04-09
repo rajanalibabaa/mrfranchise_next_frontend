@@ -1,30 +1,42 @@
-import React from 'react';
-import { 
-  Container, 
-  Typography, 
-  List, 
-  ListItem, 
-  ListItemText, 
-  Link, 
+"use client";
+import React from "react";
+import {
+  Typography,
+  List,
+  ListItem,
+  ListItemText,
+  Link,
   ListItemIcon,
   Button,
-  Box, 
-  Paper 
-} from '@mui/material';
+  Box,
+} from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 
 const aboutData = {
   Heading: "About MrFranchise.in",
-  mainHeading: "India’s Leading Platform for Franchise Opportunities & Business Expansion",
+  mainHeading:
+    "India’s Leading Platform for Franchise Opportunities & Business Expansion",
   introParagraphs: [
-    "Looking to invest in a profitable business model with proven success? Welcome to MrFranchise.in, India’s fast-growing platform to explore the best franchise opportunities in India across multiple industries, investment levels, and cities. Whether you are a first-time entrepreneur or an experienced investor, our platform helps you discover and connect with verified franchise brands, making it easier to start your franchise business with confidence. From low investment franchise opportunities to premium business models, MrFranchise bridges the gap between brands and investors through a powerful digital ecosystem."
+    "Looking to invest in a profitable business model with proven success? Welcome to MrFranchise.in, India’s fast-growing platform to explore the best franchise opportunities in India across multiple industries, investment levels, and cities. Whether you are a first-time entrepreneur or an experienced investor, our platform helps you discover and connect with verified franchise brands, making it easier to start your franchise business with confidence. From low investment franchise opportunities to premium business models, MrFranchise bridges the gap between brands and investors through a powerful digital ecosystem.",
   ],
   ctaTitle: "Explore top opportunities:",
   opportunities: [
-    { text: "Food Franchise Opportunities", url: "/food-and-beverages-franchise-opportunities-/?maincat=Food%20%26%20Beverages" },
-    { text: "Retail Franchise Opportunities", url: "/retail-franchise-opportunities-/?maincat=Retail" },
-    { text: "Salon Franchise Opportunities", url: "/beauty-and-salon-franchise-opportunities-/?maincat=Beauty%20%26%20Salon" },
-    { text: "Education Franchise Opportunities", url: "/education-franchise-opportunities-/?maincat=Education" },
+    {
+      text: "Food Franchise Opportunities",
+      url: "/food-and-beverages-franchise-opportunities-/?maincat=Food%20%26%20Beverages",
+    },
+    {
+      text: "Retail Franchise Opportunities",
+      url: "/retail-franchise-opportunities-/?maincat=Retail",
+    },
+    {
+      text: "Salon Franchise Opportunities",
+      url: "/beauty-and-salon-franchise-opportunities-/?maincat=Beauty%20%26%20Salon",
+    },
+    {
+      text: "Education Franchise Opportunities",
+      url: "/education-franchise-opportunities-/?maincat=Education",
+    },
   ],
 };
 

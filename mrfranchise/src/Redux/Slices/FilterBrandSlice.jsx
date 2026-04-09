@@ -23,7 +23,7 @@ export const fetchFilteredBrands = createAsyncThunk(
       // Optional filters (ONLY when present)
       if (filters.maincat) params.append("maincat", filters.maincat);
       if (filters.subcat) params.append("subcat", filters.subcat);
-      if (filters.childcat) params.append("childcat", filters.childcat);
+      if (filters.childcat) params.append("serchterm", filters.childcat);
       if (filters.searchTerm)
         params.append("serchterm", filters.searchTerm);
       if (filters.country) params.append("country", filters.country);
@@ -50,7 +50,7 @@ export const fetchFilteredBrands = createAsyncThunk(
             brandName: "",
             companyName: "",
             ...brand.brandDetails,
-          },
+          }, 
           brandfranchisedetails: {
             franchiseDetails: {
               fico: [],

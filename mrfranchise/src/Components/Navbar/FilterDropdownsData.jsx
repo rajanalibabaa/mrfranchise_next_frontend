@@ -241,6 +241,8 @@ const handleFindBrands = useCallback(() => {
       handleFilterChange("selectedMainCategory", e.target.value)
     }
     label="Industry"
+    aria-label="Select Industry"
+    
     MenuProps={{ PaperProps: { style: { maxHeight: 300 } } }}
     sx={{
       backgroundColor: "white",
@@ -271,6 +273,7 @@ const handleFindBrands = useCallback(() => {
             handleFilterChange("selectedInvestmentRange", e.target.value)
           }
           label="Investment Range"
+            aria-label="Select Investment Range"
           MenuProps={{ PaperProps: { style: { maxHeight: 300 } } }}
           sx={{
             backgroundColor: "white",
@@ -292,6 +295,7 @@ const handleFindBrands = useCallback(() => {
           value={filters.selectedState}
           onChange={(e) => handleFilterChange("selectedState", e.target.value)}
           label="Location"
+          aria-label="Select Location"
           MenuProps={{ PaperProps: { style: { maxHeight: 300 } } }}
           sx={{
             backgroundColor: "white",
@@ -310,6 +314,7 @@ const handleFindBrands = useCallback(() => {
       <Button
         variant="contained"
         onClick={handleFindBrands}
+        aria-label="Find Brands in mrfranchise"
         startIcon={<SearchIcon />}
        sx={{
           height: "56px",

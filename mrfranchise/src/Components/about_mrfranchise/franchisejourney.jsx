@@ -1,3 +1,4 @@
+"use client";
 import React from 'react'
 import {
   Box,
@@ -72,4 +73,4 @@ const FranchiseJourney = () => {
   )
 }
 
-export default FranchiseJourney
+export default  FranchiseJourney;

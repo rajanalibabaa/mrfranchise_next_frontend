@@ -15,28 +15,7 @@ import { keyframes } from '@mui/system';
 import LoginPage from "@/Components/LoginPage/LoginPage";
 import Image from 'next/image';
 
-// Animation definitions
-const fadeIn = keyframes`
-  from { opacity: 0; }
-  to { opacity: 1; }
-`;
 
-const slideUp = keyframes`
-  from {
-    transform: translate(-50%, -40%);
-    opacity: 0;
-  }
-  to {
-    transform: translate(-50%, -50%);
-    opacity: 1;
-  }
-`;
-
-const pulse = keyframes`
-  0% { transform: scale(1); }
-  50% { transform: scale(1.03); }
-  100% { transform: scale(1); }
-`;
 
 const PopupModal = ({ open, onClose }) => {
   const theme = useTheme();
@@ -62,7 +41,7 @@ const PopupModal = ({ open, onClose }) => {
         boxShadow: '0 15px 40px rgba(0,0,0,0.15)',
         p: 0,
         overflow: 'hidden',
-        animation: `${slideUp} 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards`,
+        // animation: `${slideUp} 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards`,
         '&:focus-visible': {
           outline: 'none',
         },
@@ -115,19 +94,16 @@ const PopupModal = ({ open, onClose }) => {
   const handleNavigation = useCallback((path) => {
     router.push(path);
     handleClose();
-  }, []);
+  }, [router, handleClose]);
 
-  const openLoginPopup = useCallback(() => {
-    setLoginOpen(true);
-    handleClose();
-  }, [handleClose]);
-
+ 
   // Preload image for better UX
   useEffect(() => {
+    if (!open) return; // Only preload when modal is about to open
     const img = new window.Image();
-    img.src = "/Delicious_Food.png";
+    img.src = "/MrFranchise_food_background.png";
     img.onload = () => setImageLoaded(true);
-  }, []);
+  }, [open]);
 
   return (
     <>
@@ -144,7 +120,7 @@ const PopupModal = ({ open, onClose }) => {
   aria-describedby="popup-description"
   sx={{
     backdropFilter: 'blur(3px)',
-    animation: `${fadeIn} 0.3s ease-out`,
+    // animation: `${fadeIn} 0.3s ease-out`,
   }}
 >
         <Box sx={styles.modal}>
@@ -197,7 +173,7 @@ const PopupModal = ({ open, onClose }) => {
      
           <Box sx={{ position: 'relative',overflow: 'hidden',width: '100%', height: isMobile ? '25vh' : '35vh' }}>
             <Image 
-              src='/Delicious_Food.png' 
+              src='/MrFranchise_food_background.png' 
               alt="Franchise opportunities" 
               fill={true}
               style={{
@@ -253,7 +229,7 @@ const PopupModal = ({ open, onClose }) => {
                   minWidth: isMobile ? '100%' : 200,
                   py: isMobile ? 1 : 1.5,
                   fontWeight: 600,
-                  animation: `${pulse} 2s infinite`,
+                  // animation: `${pulse} 2s infinite`,
                   boxShadow: '0 4px 15px rgba(122, 208, 58, 0.3)',
                   fontSize: isMobile ? '0.875rem' : '1rem',
                 }}

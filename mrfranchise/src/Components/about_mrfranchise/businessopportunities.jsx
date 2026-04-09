@@ -126,7 +126,7 @@ const BusinessOpportunities = () => {
       </Typography>
 
       {/* Grid */}
-      <Grid container xs={1} md={6}>
+      <Grid container spacing={4} justifyContent="center">
         {categories.map((cat, index) => {
           const isExpanded = expanded[index];
 

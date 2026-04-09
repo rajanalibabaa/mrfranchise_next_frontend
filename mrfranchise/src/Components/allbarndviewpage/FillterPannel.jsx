@@ -15,7 +15,6 @@ import AccordionDetails from "@mui/material/AccordionDetails";
 import ClearIcon from "@mui/icons-material/Clear";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
-
 import {
   fetchFilterOptions,
   resetChildCategories,
@@ -56,7 +55,9 @@ const FilterPanel = React.memo(
       areaRequired,
       states,
       districts,
+      cities,
       loading,
+      loadingChildCategories,
       loadingDistricts,
       loadingCities,
     } = useSelector((state) => state.filterDropdown);
@@ -85,7 +86,6 @@ const FilterPanel = React.memo(
       areaRequired: false,
       location: false,
       investment: false,
-      areaRequired: false,
     });
 
     // Fetch initial filter data
@@ -103,12 +103,15 @@ const FilterPanel = React.memo(
       }
     }, [dispatch, filters.maincat]);
 
-    // Fetch child categories when subcategory changes
+    // Fetch child categories (productTags) when subcategory changes
     useEffect(() => {
-      if (filters.subcat) {
-        dispatch(fetchFilterOptions({ sub: filters.subcat }));
+      if (filters.subcat && filters.maincat) {
+        dispatch(fetchFilterOptions({ 
+          sub: filters.subcat,
+          main: filters.maincat 
+        }));
       }
-    }, [dispatch, filters.subcat]);
+    }, [dispatch, filters.subcat, filters.maincat]);
 
     // Fetch districts when state changes
     useEffect(() => {
@@ -116,16 +119,19 @@ const FilterPanel = React.memo(
         dispatch(fetchFilterOptions({ state: filters.state }));
         dispatch(resetCities()); // Reset cities when state changes
       } else {
-        dispatch(resetDistricts()); // Reset districts and cities when state is cleared
+        dispatch(resetDistricts()); // Reset districts when state is cleared
       }
     }, [dispatch, filters.state]);
 
     // Fetch cities when district changes
     useEffect(() => {
-      if (filters.district) {
-        dispatch(fetchFilterOptions({ district: filters.district }));
+      if (filters.district && filters.state) {
+        dispatch(fetchFilterOptions({ 
+          district: filters.district,
+          state: filters.state 
+        }));
       }
-    }, [dispatch, filters.district]);
+    }, [dispatch, filters.district, filters.state]);
 
     // Read URL parameters on mount
     useEffect(() => {
@@ -183,8 +189,6 @@ const FilterPanel = React.memo(
         )
         .slice(0, 100);
     }, [subCategories, searchTerms.subCategory]);
-
-   
 
     const filteredModelTypes = useMemo(() => {
       const term = (searchTerms.modelType || "").toLowerCase().trim();
@@ -264,7 +268,19 @@ const FilterPanel = React.memo(
         .slice(0, 100);
     }, [filters.state, districts, searchTerms.district]);
 
-   
+    const filteredCities = useMemo(() => {
+      if (!filters.district) return [];
+      const term = (searchTerms.city || "").toLowerCase();
+      return cities
+        .filter((city) => {
+          if (!city) return false;
+          return city.toLowerCase().includes(term);
+        })
+        .sort((a, b) =>
+          (a || "").toLowerCase().localeCompare((b || "").toLowerCase()),
+        )
+        .slice(0, 100);
+    }, [filters.district, cities, searchTerms.city]);
 
     return (
       <Box sx={{ pr: 2, height: "calc(100vh - 120px)", width: "100%", overflowY: "auto" }}>
@@ -306,17 +322,6 @@ const FilterPanel = React.memo(
           </Button>
         </Box>
 
-        {/* <TextField
-          fullWidth
-          variant="outlined"
-          placeholder="Search brands..."
-          value={filters.serchterm || ""}
-          onChange={(e) => onFilterChange("serchterm", e.target.value)}
-          InputProps={{
-            startAdornment: <SearchIcon sx={{ mr: 1, color: "#ff9800" }} />,
-          }}
-          sx={{ mb: 3 }}
-        /> */}
         {/* Main Category Filter */}
         <Accordion
           ref={mainCategoryRef}
@@ -349,6 +354,8 @@ const FilterPanel = React.memo(
                 value={filters.maincat || ""}
                 onChange={(e) => {
                   onFilterChange("maincat", e.target.value);
+                  onFilterChange("subcat", ""); // Reset subcategory when main category changes
+                  onFilterChange("childcat", ""); // Reset child category
                   if (!e.target.value) {
                     dispatch(resetChildCategories());
                     dispatch(fetchFilterOptions());
@@ -384,7 +391,6 @@ const FilterPanel = React.memo(
                         ref={subCategoryRef}
                         sx={{
                           ml: 2,
-                          // mt: 1,
                           pl: 1,
                         }}
                       >
@@ -392,18 +398,18 @@ const FilterPanel = React.memo(
                           value={filters.subcat || ""}
                           onChange={(e) => {
                             onFilterChange("subcat", e.target.value);
+                            onFilterChange("childcat", ""); // Reset child category when subcategory changes
                             if (!e.target.value) {
                               dispatch(resetChildCategories());
                             }
                           }}
-                          
                         >
                           {filteredSubCategories.map((subCategory) => (
                             <Box
                               key={`subcat-container-${subCategory}`}
                               sx={{
-                          mt: 1,
-                        }}
+                                mt: 1,
+                              }}
                             >
                               <FormControlLabel
                                 key={`subcat-${subCategory}`}
@@ -426,13 +432,12 @@ const FilterPanel = React.memo(
                                 sx={{ mb: 0, mr: 0 }}
                               />
 
-                              {/* Child categories when this specific subcategory is selected */}
-                              {/* {filters.subcat === subCategory && (
+                              {/* Product Tags (Child categories) when this specific subcategory is selected */}
+                              {filters.subcat === subCategory && (
                                 <Box
                                   sx={{
                                     ml: 2,
                                     mt: 1,
-                                    // borderLeft: "2px solid #ff9800",
                                     pl: 1,
                                   }}
                                 >
@@ -443,14 +448,14 @@ const FilterPanel = React.memo(
                                         sx={{ color: "#ff9800" }}
                                       />
                                     </Box>
-                                  ) : (
+                                  ) : childCategories && childCategories.length > 0 ? (
                                     <RadioGroup
                                       value={filters.childcat || ""}
                                       onChange={(e) =>
                                         onFilterChange("childcat", e.target.value)
                                       }
                                     >
-                                      {sortedChildCategories.map((childCategory) => (
+                                      {childCategories.map((childCategory) => (
                                         <FormControlLabel
                                           key={`childcat-${childCategory}`}
                                           value={childCategory}
@@ -475,9 +480,17 @@ const FilterPanel = React.memo(
                                         />
                                       ))}
                                     </RadioGroup>
+                                  ) : (
+                                    <Typography
+                                      fontSize="0.75rem"
+                                      color="text.secondary"
+                                      sx={{ py: 1, pl: 1 }}
+                                    >
+                                      No tags available
+                                    </Typography>
                                   )}
                                 </Box>
-                              )} */}
+                              )}
                             </Box>
                           ))}
                         </RadioGroup>
@@ -546,7 +559,7 @@ const FilterPanel = React.memo(
         </Accordion> 
 
         {/* Investment Range Filter */}
-       <Accordion
+        <Accordion
           ref={investmentRef}
           expanded={expandedSections.investment}
           onChange={() => toggleSection("investment")}
@@ -605,7 +618,7 @@ const FilterPanel = React.memo(
         </Accordion>
 
         {/* Area Required Filter */}
-     <Accordion
+        <Accordion
           ref={areaRequiredRef}
           expanded={expandedSections.areaRequired}
           onChange={() => toggleSection("areaRequired")}
@@ -690,7 +703,7 @@ const FilterPanel = React.memo(
         </Accordion> 
 
         {/* Location Filters */}
-         <Accordion
+        <Accordion
           ref={locationRef}
           expanded={expandedSections.location}
           onChange={() => toggleSection("location")}
@@ -727,6 +740,8 @@ const FilterPanel = React.memo(
                   value={filters.state || ""}
                   onChange={(e) => {
                     onFilterChange("state", e.target.value);
+                    onFilterChange("district", ""); // Reset district
+                    onFilterChange("city", ""); // Reset city
                     if (!e.target.value) {
                       dispatch(resetDistricts());
                     }
@@ -774,6 +789,7 @@ const FilterPanel = React.memo(
                                 value={filters.district || ""}
                                 onChange={(e) => {
                                   onFilterChange("district", e.target.value);
+                                  onFilterChange("city", ""); // Reset city
                                   if (!e.target.value) {
                                     dispatch(resetCities());
                                   }
@@ -803,6 +819,7 @@ const FilterPanel = React.memo(
                                 ))}
                               </RadioGroup>
 
+                              {/* Show cities when district is selected */}
                               {filters.district && (
                                 <Box
                                   sx={{
@@ -818,16 +835,44 @@ const FilterPanel = React.memo(
                                         sx={{ color: "#ff9800" }}
                                       />
                                     </Box>
+                                  ) : filteredCities.length > 0 ? (
+                                    <RadioGroup
+                                      value={filters.city || ""}
+                                      onChange={(e) =>
+                                        onFilterChange("city", e.target.value)
+                                      }
+                                    >
+                                      {filteredCities.map((city) => (
+                                        <FormControlLabel
+                                          key={`city-${city}`}
+                                          value={city}
+                                          control={
+                                            <Radio
+                                              size="small"
+                                              sx={{
+                                                color: "#ff9800",
+                                                "&.Mui-checked": { color: "#4caf50" },
+                                                padding: "6px",
+                                              }}
+                                            />
+                                          }
+                                          label={
+                                            <Typography fontSize="0.8125rem">
+                                              {city}
+                                            </Typography>
+                                          }
+                                          sx={{ mb: 0.5, mr: 0 }}
+                                        />
+                                      ))}
+                                    </RadioGroup>
                                   ) : (
-                                    <>
-                                      <RadioGroup
-                                        value={filters.city || ""}
-                                        onChange={(e) =>
-                                          onFilterChange("city", e.target.value)
-                                        }
-                                      >
-                                      </RadioGroup>
-                                    </>
+                                    <Typography
+                                      fontSize="0.75rem"
+                                      color="text.secondary"
+                                      sx={{ py: 1, pl: 1 }}
+                                    >
+                                      No cities available
+                                    </Typography>
                                   )}
                                 </Box>
                               )}

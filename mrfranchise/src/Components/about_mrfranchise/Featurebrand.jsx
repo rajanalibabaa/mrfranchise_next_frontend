@@ -1,5 +1,6 @@
+"use client";
 import React from "react";
-import { Box, Typography, Link, Divider } from "@mui/material";
+import { Box, Typography, Link, } from "@mui/material";
 
 const Featurebrand = () => {
   return (
@@ -191,4 +192,4 @@ const Featurebrand = () => {
   );
 };
 
-export default Featurebrand;
+export default  Featurebrand;

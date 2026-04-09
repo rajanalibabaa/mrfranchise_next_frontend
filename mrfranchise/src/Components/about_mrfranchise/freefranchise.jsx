@@ -1,13 +1,12 @@
+"use client";
 import React from "react";
 import {
   Box,
   Typography,
   Link,
-  Accordion,
   AccordionSummary,
   AccordionDetails
 } from "@mui/material";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
 const FreeFranchise = () => {
   const faqs = [
@@ -72,7 +71,7 @@ const FreeFranchise = () => {
         {faqs.map((faq, index) => (
         <Box
   key={index}
-  expanded={true}
+  expanded="true"
   sx={{
     borderRadius: "8px",
     maxWidth: "800px",

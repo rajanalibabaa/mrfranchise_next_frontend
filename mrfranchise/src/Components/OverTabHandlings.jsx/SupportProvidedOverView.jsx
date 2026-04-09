@@ -22,6 +22,7 @@ const SupportProvided = ({ trainingSupport, aidFinancing, isInternationalExpansi
           borderRadius: "16px",
           background:'#ffffffff',
           height: "100%",
+          minWidth:{ xs:'100%',sm:'100%',md:1200},
           "&:hover": {
             transform: "translateY(-5px)",
             boxShadow: "0 8px 16px rgba(0,0,0,0.1)",

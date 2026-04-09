@@ -312,6 +312,7 @@ function Navbar() {
             >
               <Button
                 size="small"
+                aria-label={item.label}
                 onClick={() => handleNavigation(item)}
                 sx={{
                   fontSize: isMobile ? "0.75rem" : "0.875rem",
@@ -425,6 +426,7 @@ function Navbar() {
             </motion.div>
             <motion.div whileHover={{ y: -2 }}>
               <Button
+              aria-label="Add your franchise brands in mrfranchise"
                 onClick={() => {
                   const url = `/brand_listing_creation_form?source=${encodeURIComponent("mr franchise")}&ref=${encodeURIComponent("homepage")}`;
                   window.open(url, "_blank");
