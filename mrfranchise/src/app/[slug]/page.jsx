@@ -122,14 +122,14 @@ export async function generateMetadata({ params }) {
   
  const url = `https://mrfranchise.in/${slug}`;
   return {
-    title: `${categoryName || "Top"} - Franchise Opportunities in India 2026`,
-    description: `Explore ${categoryName || "Top"} franchise opportunities with investment, ROI, and profit details.`,
+    title: `Top Franchise Opportunities in India 2026`,
+    description: `Discover bestfranchise opportunities with investment, ROI, and profit details.`,
     alternates: {
       canonical: url, // ✅ VERY IMPORTANT
     },
      openGraph: {
-      title: `${categoryName || "Top  "} Franchise Opportunities`,
-      description: `Find best ${categoryName || "Top  "} franchises in India.`,
+      title: `TopFranchise Opportunities`,
+      description: `Find best franchises in India.`,
       url: url,
       siteName: "Mr Franchise",
       type: "website",

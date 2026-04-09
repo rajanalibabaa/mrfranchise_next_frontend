@@ -11,14 +11,13 @@ import Container from "@mui/material/Container";
 import CircularProgress from "@mui/material/CircularProgress";
 import { motion, useAnimation } from "framer-motion";
 import dynamic from "next/dynamic";
-import PopupModal from "@/Components/PopUpModal/PopUpModal";
 import { useDispatch } from "react-redux";
 import CompareButton from "./CompareButtonsCompenents";
 import { Fragment } from "react";
-import { usePathname } from "next/navigation";
-import FranchiseOverview from "../about_mrfranchise/FranchiseOverview";
+
 
 import Image from "next/image";
+
 
 const Navbar = dynamic(() => import("@/Components/Navbar/NavBar"), { loading: () => <Box height={60} /> });
 const FilterDropdowns = dynamic(() => import("@/Components/Navbar/FilterDropdownsData"), { loading: () => <Box height={60} /> });
@@ -28,6 +27,7 @@ const FixedSizeList = dynamic(
   () => import("react-window").then((mod) => mod.FixedSizeList),
   { ssr: false },
 );
+const PopupModal = dynamic(() => import("@/Components/PopUpModal/PopUpModal"), { ssr: false });
 
 // --- ErrorBoundary ---
 class ErrorBoundary extends React.Component {
@@ -196,10 +196,43 @@ const useDynamicComponents = () => {
         () => import("@/Components/HomePage_VideoSection/FindFranchiseLocations"),
         { ssr: false },
       ),
-      FranchiseOverview: dynamic(
-        () => import("@/Components/about_mrfranchise/FranchiseOverview"),
-        { ssr: false }
+      BusinessOpportunities: dynamic(
+        () => import("@/Components/about_mrfranchise/businessopportunities"),
+        { ssr: false },
       ),
+      AboutMrFranchise: dynamic(
+        () => import("@/Components/about_mrfranchise/aboutmrfranchise"),
+        { ssr: false },
+      ),
+      ExploreIndustry: dynamic(
+        () => import("@/Components/about_mrfranchise/exploreindustry"),
+        { ssr: false },
+      ),
+      ExploreInvestment: dynamic(
+        () => import("@/Components/about_mrfranchise/exploreinvestment"),
+        { ssr: false },
+      ),
+      ExploreLocation: dynamic(
+        () => import("@/Components/about_mrfranchise/explorelocation"),
+        { ssr: false },
+      ),
+      Featurebrand: dynamic(
+        () => import("@/Components/about_mrfranchise/Featurebrand"),
+        { ssr: false },
+      ),
+      FranchiseJourney: dynamic(
+        () => import("@/Components/about_mrfranchise/franchisejourney"),
+        { ssr: false },
+      ),
+      FreeFranchise: dynamic(
+        () => import("@/Components/about_mrfranchise/freefranchise"),
+        { ssr: false },
+      ),
+
+      // FranchiseOverview: dynamic(
+      //   () => import("@/Components/about_mrfranchise/FranchiseOverview"),
+      //   { ssr: false }
+      // ),
 
     }),
     [],
@@ -342,7 +375,16 @@ const pageConfig = {
       title: "Trending Brands",
       background: "#fff",
     },
-    { component: "FranchiseOverview", title: "Franchise Overview", background: "#fff" },
+    // { component: "FranchiseOverview", title: "Franchise Overview", background: "#fff" },
+    { component: "BusinessOpportunities", title: "Business Opportunities", background: "#fff" },
+      { component: "AboutMrFranchise", title: "About MrFranchise", background: "#fff" },
+      { component: "ExploreIndustry", title: "Explore Industry", background: "#fff" },
+      { component: "ExploreInvestment", title: "Explore Investment", background: "#fff" },
+      { component: "ExploreLocation", title: "Explore Location", background: "#fff" },
+      { component: "Featurebrand", title: "Feature Brand", background: "#fff" },
+        { component: "FranchiseJourney", title: "Franchise Journey", background: "#fff" },
+        { component: "FreeFranchise", title: "Free Franchise", background: "#fff" },
+
   ],
   animations: {
     banner: {
@@ -388,24 +430,30 @@ export default memo(function HomeBannerSec() {
   }, []);
 
   useEffect(() => {
-    const handleNavigation = () => {
-      const nav = typeof window !== "undefined" && 
-        performance.getEntriesByType("navigation")[0]?.type === "reload";
-      const shown = sessionStorage.getItem("popup-shown");
+  const shown = sessionStorage.getItem("popup-shown");
 
-      const t = setTimeout(() => {
-        setIsLoading(false);
-        if (!shown || nav) {
-          setIsPopupOpen(true);
-          sessionStorage.setItem("popup-shown", "true");
-        }
-      }, 1500);
+  // Step 1: wait for page load
+  const handleLoad = () => {
+    setIsLoading(false);
 
-      return () => clearTimeout(t);
-    };
+    // Step 2: delay popup loading (important)
+    setTimeout(() => {
+      if (!shown && !localStorage.getItem("accessToken")) {
+        setShowPopup(true); // load component
+        setIsPopupOpen(true);     // open modal
+        sessionStorage.setItem("popup-shown", "true");
+      }
+    }, 3000); // 🔥 3 sec delay after full load
+  };
 
-    handleNavigation();
-  }, [dispatch]);
+  if (document.readyState === "complete") {
+    handleLoad();
+  } else {
+    window.addEventListener("load", handleLoad);
+  }
+
+  return () => window.removeEventListener("load", handleLoad);
+}, []);
 
   useEffect(() => {
     if (isLoading) return;
@@ -430,9 +478,9 @@ export default memo(function HomeBannerSec() {
     return () => clearInterval(interval);
   }, [controls, isLoading]);
 
-  useEffect(() => {
-    setShowPopup(!localStorage.getItem("accessToken") && isPopupOpen);
-  }, [isPopupOpen]);
+  // useEffect(() => {
+  //   setShowPopup(!localStorage.getItem("accessToken") && isPopupOpen);
+  // }, [isPopupOpen]);
 
   const handlePopupClose = useCallback(() => setIsPopupOpen(false), []);
 
@@ -444,7 +492,6 @@ export default memo(function HomeBannerSec() {
         <PopupModal
           open={isPopupOpen}
           onClose={handlePopupClose}
-          disableInitialAnimation
         />
       )}
 
