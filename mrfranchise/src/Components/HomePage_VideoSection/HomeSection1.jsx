@@ -283,7 +283,7 @@ const handlePrevClick = () => {
           }}
         >
           {/* Juice, Smoothie & Health Beverages */}
-          Top {brandCategoriesName} Brands
+          Top {brandCategoriesName} Franchise Brands
         </Typography>
 
        <Button

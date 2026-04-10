@@ -274,7 +274,7 @@ const HomeSection13 = () => {
             },
           }}
         >
-          All {brandCategoriesName || "Brand"} Industry Brands
+          All {brandCategoriesName || "Brand"} Franchise Industry Brands
         </Typography>
 
         <Button

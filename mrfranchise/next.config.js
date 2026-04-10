@@ -6,11 +6,11 @@ const nextConfig = {
 
   images: {
     unoptimized: true,
+    qualities: [60, 75],
   },
   experimental: {
     workerThreads: false,
     cpus: 2,
-    turbo:false
   },
 };
 

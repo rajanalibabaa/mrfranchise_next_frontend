@@ -104,11 +104,13 @@ const AboutMrFranchise = () => {
     <React.Fragment key={index}>
       
       <Link
-        href={item.url}
+        href={window.open(item.url, "_blank")} // Open in new tab
         underline="hover"
+        
         sx={{
           color: "#ff9900",
           fontSize: "0.9rem",
+           cursor: "pointer",
         }}
       >
          {item.text}
@@ -202,10 +204,11 @@ const AboutMrFranchise = () => {
                     <Box textAlign="center" mt={1}>
                       <Button
                         variant="contained"
-                        href="/all-franchise-brands/"
+                        href={window.open("/all-franchise-brands", "_blank")} // Open in new tab
                         sx={{
                           backgroundColor: "#ff9900",
                           color: "#000000ba",
+                          cursor: "pointer",
                           fontWeight: "bold",
                           "&:hover": {
                             backgroundColor: "#e68a00",
