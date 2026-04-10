@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { Box, Typography, Link, } from "@mui/material";
+import { Box, Typography, Link, Divider, } from "@mui/material";
 
 const Featurebrand = () => {
   return (
@@ -9,11 +9,12 @@ const Featurebrand = () => {
       display: "flex",
       flexDirection: {xs:"column", md:"row"},
       justifyContent:{xs:"center", md:"space-evenly"},
-      // gap:2,
-      flexWrap: "wrap",
+      gap:2,
+      // flexWrap: "wrap",
       pl: { xs: 2, md: 8 },
       pr: { xs: 2, md: 8 },
-        py: 3, backgroundColor: "#f9f9f9",
+        py: 3,
+        //  backgroundColor: "#f9f9f9",
     
         }}>
 <Box sx={{ width:{xs:"100%", md:"50%" }}}>
@@ -44,13 +45,19 @@ const Featurebrand = () => {
       </Box>
 
       <Link
-        href="/franchise-brands"
+      variant="button"
+        href={window.open("/all-franchise-brands", "_blank")} // Open in new tab
         underline="hover"
-        sx={{ color: "#ff9900", fontSize: "0.9rem" }}
+        sx={{ color: "#ff9900", fontSize: "0.9rem",cursor: "pointer" }}
       >
         👉 View all brands
       </Link>
 </Box>
+  <Divider 
+    orientation="vertical" 
+    flexItem 
+    sx={{ mx: 1, height: 400 }} // Custom spacing and height
+  />
 
 
       {/* Divider space */}
@@ -90,7 +97,8 @@ const Featurebrand = () => {
       </Typography>
 
       <Link
-        href="/how-to-start-franchise-business-india"
+      variant="button"
+        href={window.open("/how-to-start-franchise", "_blank")} // Open in new tab
         underline="hover"
         sx={{ color: "#ff9900", fontSize: "0.9rem" }}
       >
@@ -99,9 +107,11 @@ const Featurebrand = () => {
       </Box>
 </Box>
 
-<Box>
-      
-</Box>
+ <Divider 
+    orientation="vertical" 
+    flexItem 
+    sx={{ mx: 1, height: 400 }} // Custom spacing and height
+  />
 
 
       {/* Divider space */}
@@ -146,6 +156,12 @@ const Featurebrand = () => {
       </Typography>
 </Box>
 
+ <Divider 
+
+    orientation="vertical" 
+    flexItem 
+    sx={{ mx: 1, height: 400 }} // Custom spacing and height
+  />
       {/* Divider space */}
       {/* <Box sx={{ mt: 3 }} /> */}
 
@@ -179,7 +195,8 @@ const Featurebrand = () => {
       </Box>
 
       <Link
-        href="/blog"
+      variant="button"
+        href={window.open("/blog", "_blank")} // Open in new tab
         underline="hover"
         sx={{ color: "#ff9900", fontSize: "0.9rem" }}
       >

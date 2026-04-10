@@ -274,7 +274,7 @@ const HomeSection7 = () => {
             },
           }}
         >
-          Top {brandCategoriesName || "Brand"} Industry Brands
+          Top {brandCategoriesName || "Brand"} Franchise Industry Brands
         </Typography>
 
         <Button

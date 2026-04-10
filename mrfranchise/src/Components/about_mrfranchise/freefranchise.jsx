@@ -48,7 +48,7 @@ const FreeFranchise = () => {
         pl: { xs: 2, md: 8 },
         pr: { xs: 2, md: 8 },
         py: 3,
-        backgroundColor: "#dedede"
+        backgroundColor: "#ffffff"
       }}
     >
       {/* Heading */}
@@ -76,10 +76,10 @@ const FreeFranchise = () => {
     borderRadius: "8px",
     maxWidth: "800px",
     width: "100%",
-    backgroundColor: "#fff",
+    backgroundColor: "#fff9e6",
 
     // margin: 0,
-    marginBottom: 3,
+    marginBottom: 1,
     "&:before": {
       display: "none" 
     }

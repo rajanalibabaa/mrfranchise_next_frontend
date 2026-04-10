@@ -9,6 +9,7 @@ import {
   Link,
   useMediaQuery,
   useTheme,
+  Divider,
 } from "@mui/material";
 
 
@@ -118,7 +119,7 @@ const BusinessOpportunities = () => {
       <Typography
         // variant={{ xs: "h2", md: "h3" }}
         // fontWeight="bold"
-        fontSize={{xs:'0.9 rem',md:"1rem"}}
+        fontSize={{xs:'0.9 rem',md:"1.3rem"}}
         fontWeight={"bold"}
         sx={{ mb: 2, color: "#333", textAlign: "center" }}
       >
@@ -126,7 +127,7 @@ const BusinessOpportunities = () => {
       </Typography>
 
       {/* Grid */}
-      <Grid container spacing={4} justifyContent="center">
+      <Grid container spacing={1.3} >
         {categories.map((cat, index) => {
           const isExpanded = expanded[index];
 
@@ -155,14 +156,15 @@ const BusinessOpportunities = () => {
                 return (
                   <Link
                     key={i}
-                    href={`/all-franchise-brands/?maincat=${encodeURIComponent(
+                    href={window.open(`/all-franchise-brands/?maincat=${encodeURIComponent(
                       cat.maincat
-                    )}&subcat=${encodeURIComponent(subcatParam)}`}
+                    )}&subcat=${encodeURIComponent(subcatParam)}`, "_blank")} // Open in new tab
                     underline="none"
                     sx={{
                       display: "block",
                       color: "#555",
-                      fontSize: { xs: "1.0rem", md: "0.7rem" },
+                      cursor: "pointer",
+                      fontSize: { xs: "1.0rem", md: "0.8rem" },
                       mb: 0.7,
                       "&:hover": {
                         color: "#000",
@@ -174,6 +176,7 @@ const BusinessOpportunities = () => {
                   </Link>
                 );
               })}
+   
 
               {/* View More / View Less (Only Mobile/Tablet) */}
               {isMobileOrTablet && cat.items.length > 3 && (

@@ -80,19 +80,41 @@ const industries = [
 
 const ExploreIndustry = () => {
   return (
-    <Box
-      component="section"
-      sx={{
-        pl: { xs: 2, md: 8 },
-        pr: { xs: 2, md: 8 },
-        py: 3,
-        backgroundColor: "#dedede",
-      }}
-    >
+   <Box
+  component="section"
+  sx={{
+    position: 'relative', // Required for ::before to stay within bounds
+    pl: { xs: 2, md: 8 },
+    pr: { xs: 2, md: 8 },
+    py: 3,
+    backgroundImage: 'url(/mrfranchise_franchise_discussion.jpg)',
+    backgroundSize: 'cover',
+    backgroundRepeat: 'no-repeat',
+    backgroundPosition: 'center',
+    backgroundAttachment: 'fixed',
+    color: '#fff', // Ensure text is visible over the dark overlay
+    '&::before': {
+      content: '""', // Must be an empty string in quotes
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      width: '100%',
+      height: '100%',
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      zIndex: 1, // Keeps overlay behind text but above image
+    },
+    // Ensures children (text/content) appear above the overlay
+    '& > *': {
+      position: 'relative',
+      zIndex: 2,
+    },
+  }}
+>
       {/* Heading */}
       <Typography
         variant="h6"
         fontWeight="bold"
+        color="white"
         sx={{ mt: 1, textAlign: "center" }}
       >
         Explore Franchise Opportunities by Industry
@@ -103,9 +125,9 @@ const ExploreIndustry = () => {
         variant="body1"
         sx={{
           fontWeight: 300,
-          color: "text.primary",
+          color: "white",
           mb: 2,
-          textAlign: { xs: "justify", md: "left" },
+          textAlign: { xs: "justify", md: "center" },
         }}
       >
         At MrFranchise, we offer a wide range of industry-specific franchise
@@ -140,8 +162,8 @@ const ExploreIndustry = () => {
               }}
             >
               {/* Title */}
-              <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 0.5 }}>
-                <Typography variant="body1" sx={{ fontWeight: "bold" }}>
+              <Stack direction="row"  spacing={1} alignItems="center" sx={{ mb: 0.5 }}>
+                <Typography variant="body1" color="black" sx={{ fontWeight: "bold" }}>
                  {item.title}
                 </Typography>
               </Stack>
@@ -180,11 +202,12 @@ const ExploreIndustry = () => {
 
               {/* Link */}
               <Link
-                href={item.link}
+                href={window.open(item.link, "_blank")} // Open in new tab
                 underline="hover"
                 sx={{
                   color: "#ff9900",
                   fontSize: "0.9rem",
+                  cursor: "pointer",
                   fontWeight: 500,
                 }}
               >

@@ -6,22 +6,22 @@ const investmentData = [
   {
     title: "Franchise Under ₹5 Lakhs",
     desc: "Ideal for first-time entrepreneurs looking for low investment franchise opportunities.",
-    link: "/franchise-under-5-lakhs",
+    link: "/all-franchise-brands/?investmentRange=Rs.%202%20Lakhs%20-%205%20Lakhs",
   },
   {
     title: "Franchise Under ₹10 Lakhs",
     desc: "Perfect for small business investors aiming for moderate returns.",
-    link: "/franchise-under-10-lakhs",
+    link: "/all-franchise-brands/?investmentRange=Rs.%205%20Lakhs%20-%2010%20Lakhs",
   },
   {
     title: "Franchise Under ₹20 Lakhs",
     desc: "Suitable for expanding entrepreneurs who want to build scalable businesses.",
-    link: "/franchise-under-20-lakhs",
+    link: "/all-franchise-brands/?investmentRange=Rs.%2010%20Lakhs%20-%2020%20Lakhs",
   },
   {
     title: "Premium Franchise Opportunities",
     desc: "High-investment, high-return business models with established brand recognition.",
-    link: "/premium-franchise-opportunities",
+    link: "/all-franchise-brands",
   },
 ];
 
@@ -67,7 +67,7 @@ const ExploreInvestment = () => {
               sx={{
                 p: 2,
                 borderRadius: 2,
-                backgroundColor: "#dedede",
+                // backgroundColor: "#ffffff",
                 border: "1px solid #e0e0e0",
                 height: "90%",
                 
@@ -90,10 +90,11 @@ const ExploreInvestment = () => {
 
               {/* Link */}
               <Link
-                href={item.link}
+                href={window.open(item.link, "_blank")} // Open in new tab
                 underline="hover"
                 sx={{
                   color: "#ff9900",
+                  cursor: "pointer",
                   fontSize: "0.9rem",
                   fontWeight: 500,
                 }}
