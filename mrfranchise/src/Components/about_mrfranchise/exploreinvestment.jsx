@@ -90,7 +90,9 @@ const ExploreInvestment = () => {
 
               {/* Link */}
               <Link
-                href={window.open(item.link, "_blank")} // Open in new tab
+                href={item.link}
+                target="_blank"
+                rel="noopener noreferrer"
                 underline="hover"
                 sx={{
                   color: "#ff9900",

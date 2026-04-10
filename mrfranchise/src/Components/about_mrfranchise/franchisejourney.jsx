@@ -22,7 +22,9 @@ const FranchiseJourney = () => {
       <Typography sx={{ mb: 2 }}>
         👉{" "}
         <Link
-          href={window.open("/all-franchise-brands", "_blank")} // Open in new tab
+          href="/all-franchise-brands" // Open in new tab
+          target="_blank"
+          rel="noopener noreferrer"
           underline="hover"
           sx={{ color: "#000000", fontSize: "0.9rem", cursor: "pointer" }}
         >
@@ -31,7 +33,9 @@ const FranchiseJourney = () => {
         <br />
         👉{" "}
         <Link
-          href={window.open("/contactus", "_blank")} // Open in new tab
+          href="https://consulting.mrfranchise.in" // Open in new tab
+          target="_blank"
+          rel="noopener noreferrer"
           underline="hover"
           sx={{ color: "#000000", fontSize: "0.9rem", cursor: "pointer" }}
         >
@@ -62,7 +66,9 @@ const FranchiseJourney = () => {
       </Box>
 
       <Link
-        href={window.open("https://consulting.mrfranchise.in", "_blank")} // Open in new tab
+        href="/contactus" // Open in new tab
+        target="_blank"
+        rel="noopener noreferrer"
         underline="hover"
         sx={{ color: "#000000", fontSize: "0.9rem" , cursor: "pointer" }}
       >

@@ -157,14 +157,14 @@ const SECTION_COMPONENTS = {
       () => import("@/Components/HomePage_VideoSection/HomeSection3"),
       { ssr: false, loading: () => <SectionSkeleton /> }
     ),
-    priority: 2,
+    priority: 3,
   },
   HomeSection4: {
     component: dynamic(
       () => import("@/Components/HomePage_VideoSection/HomeSection4"),
       { ssr: false, loading: () => <SectionSkeleton /> }
     ),
-    priority: 2,
+    priority: 3,
   },
   HomeSection5: {
     component: dynamic(
@@ -185,119 +185,119 @@ const SECTION_COMPONENTS = {
       () => import("@/Components/HomePage_VideoSection/HomeSection7"),
       { ssr: false, loading: () => <SectionSkeleton /> }
     ),
-    priority: 3,
+    priority: 4,
   },
   HomeSection8: {
     component: dynamic(
       () => import("@/Components/HomePage_VideoSection/HomeSection8"),
       { ssr: false, loading: () => <SectionSkeleton /> }
     ),
-    priority: 3,
+    priority: 4,
   },
   HomeSection9: {
     component: dynamic(
       () => import("@/Components/HomePage_VideoSection/HomeSection9"),
       { ssr: false, loading: () => <SectionSkeleton /> }
     ),
-    priority: 3,
+    priority: 5,
   },
   HomeSection10: {
     component: dynamic(
       () => import("@/Components/HomePage_VideoSection/HomeSection10"),
       { ssr: false, loading: () => <SectionSkeleton /> }
     ),
-    priority: 3,
+    priority: 5,
   },
   HomeSection11: {
     component: dynamic(
       () => import("@/Components/HomePage_VideoSection/HomeSection11"),
       { ssr: false, loading: () => <SectionSkeleton /> }
     ),
-    priority: 3,
+    priority: 6,
   },
   HomeSection12: {
     component: dynamic(
       () => import("@/Components/HomePage_VideoSection/HomeSection12"),
       { ssr: false, loading: () => <SectionSkeleton /> }
     ),
-    priority: 3,
+    priority: 6,
   },
   HomeSection13: {
     component: dynamic(
       () => import("@/Components/HomePage_VideoSection/HomeSection13"),
       { ssr: false, loading: () => <SectionSkeleton /> }
     ),
-    priority: 3,
+    priority: 7,
   },
   ToTrendingBrands: {
     component: dynamic(
       () => import("@/Components/HomePage_VideoSection/ToTrendingBrands"),
       { ssr: false, loading: () => <SectionSkeleton /> }
     ),
-    priority: 2,
+    priority: 7,
   },
   FindFranchiseLocations: {
     component: dynamic(
       () => import("@/Components/HomePage_VideoSection/FindFranchiseLocations"),
       { ssr: false, loading: () => <SectionSkeleton /> }
     ),
-    priority: 3,
+    priority: 8,
   },
   BusinessOpportunities: {
     component: dynamic(
       () => import("@/Components/about_mrfranchise/businessopportunities"),
       { ssr: false, loading: () => <SectionSkeleton /> }
     ),
-    priority: 3,
+    priority: 8,
   },
   AboutMrFranchise: {
     component: dynamic(
       () => import("@/Components/about_mrfranchise/aboutmrfranchise"),
       { ssr: false, loading: () => <SectionSkeleton /> }
     ),
-    priority: 3,
+    priority: 9,
   },
   ExploreIndustry: {
     component: dynamic(
       () => import("@/Components/about_mrfranchise/exploreindustry"),
       { ssr: false, loading: () => <SectionSkeleton /> }
     ),
-    priority: 4,
+    priority: 9,
   },
   ExploreInvestment: {
     component: dynamic(
       () => import("@/Components/about_mrfranchise/exploreinvestment"),
       { ssr: false, loading: () => <SectionSkeleton /> }
     ),
-    priority: 4,
+    priority: 10,
   },
   ExploreLocation: {
     component: dynamic(
       () => import("@/Components/about_mrfranchise/explorelocation"),
       { ssr: false, loading: () => <SectionSkeleton /> }
     ),
-    priority: 4,
+    priority: 10,
   },
   Featurebrand: {
     component: dynamic(
       () => import("@/Components/about_mrfranchise/Featurebrand"),
       { ssr: false, loading: () => <SectionSkeleton /> }
     ),
-    priority: 4,
+    priority: 10,
   },
   FranchiseJourney: {
     component: dynamic(
       () => import("@/Components/about_mrfranchise/franchisejourney"),
       { ssr: false, loading: () => <SectionSkeleton /> }
     ),
-    priority: 4,
+    priority: 10,
   },
   FreeFranchise: {
     component: dynamic(
       () => import("@/Components/about_mrfranchise/freefranchise"),
       { ssr: false, loading: () => <SectionSkeleton /> }
     ),
-    priority: 4,
+    priority: 10,
   },
 };
 
@@ -485,8 +485,9 @@ const SECTIONS = [
   "HomeSection3",
   "HomeSection4",
   "HomeSection5",
-  "HomeSection7",
   "HomeSection6",
+  "HomeSection7",
+  
   "HomeSection8",
   "HomeSection9",
   "HomeSection10",

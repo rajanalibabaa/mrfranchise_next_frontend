@@ -79,14 +79,16 @@ const ExploreLocation = () => {
 
               {/* Link */}
               <Link
-                href={window.open(item.link, "_blank")} // Open in new tab
+                href={item.link}
+                target="_blank"
+                rel="noopener noreferrer"
                 underline="hover"
                 variant="body2"
                 sx={{
                   color: "#ff9900",
                   fontSize: "0.9rem",
                   textDecoration: "none",
-                  
+
                   cursor: "pointer",
                 }}
               >

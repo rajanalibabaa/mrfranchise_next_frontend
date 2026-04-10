@@ -156,9 +156,11 @@ const BusinessOpportunities = () => {
                 return (
                   <Link
                     key={i}
-                    href={window.open(`/all-franchise-brands/?maincat=${encodeURIComponent(
-                      cat.maincat
-                    )}&subcat=${encodeURIComponent(subcatParam)}`, "_blank")} // Open in new tab
+                    href={`/all-franchise-brands/?maincat=${encodeURIComponent(
+    cat.maincat
+  )}&subcat=${encodeURIComponent(subcatParam)}`}
+  target="_blank"
+  rel="noopener noreferrer"
                     underline="none"
                     sx={{
                       display: "block",
