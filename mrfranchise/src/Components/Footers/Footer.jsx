@@ -307,12 +307,12 @@ const supportLinks = [
           onClick={() => router.push(item.path)}
           sx={{
             cursor: "pointer",
-            color: "#000000",
+            color: "#ffffff",
 
             fontSize: "0.85rem",
             transition: "all 0.3s ease",
             "&:hover": {
-              color: "#ffffff",
+              color: "#000000",
               transform: "translateX(5px)",
             },
           }}
@@ -344,11 +344,11 @@ const supportLinks = [
           onClick={() => router.push(item.path)}
           sx={{
             cursor: "pointer",
-            color: "#000000",
+            color: "#ffffff",
             fontSize: "0.85rem",
             transition: "all 0.3s ease",
             "&:hover": {
-              color: "#ffffff",
+              color: "#000000",
               transform: "translateX(5px)",
             },
           }}

@@ -8,7 +8,7 @@ import {
 } from "@mui/material";
 const FranchiseJourney = () => {
   return (
-  <Box sx={{display:'flex',flexDirection:{"xs":"column", "md":"row"}, justifyContent:"space-around", backgroundColor:"#f9f9f9", py:3, px:2}}>
+  <Box sx={{display:'flex',flexDirection:{"xs":"column", "md":"row"}, justifyContent:"space-around",backgroundImage:"url(/Mrfranchise_HomePage_consulting.jpg)", backgroundSize:"contain", backgroundRepeat:"no-repeat", backgroundPosition:"center", backgroundAttachment:"fixed", py:3, px:2}}>
   <Box>
       {/* CTA Section */}
       <Typography variant="h6" fontWeight="bold" sx={{ mt: 3, mb: 1 }}>
@@ -16,24 +16,24 @@ const FranchiseJourney = () => {
       </Typography>
 
       <Typography variant="body2" sx={{ color: "text.secondary", mb: 1 }}>
-        If you are ready to take the next step, explore the best franchise opportunities in India and connect with top brands through MrFranchise.
+        If you are ready to take the next step, explore the best franchise opportunities<br/> in India and connect with top brands through MrFranchise.
       </Typography>
 
       <Typography sx={{ mb: 2 }}>
         👉{" "}
         <Link
-          href="/franchise-opportunities-india"
+          href={window.open("/all-franchise-brands", "_blank")} // Open in new tab
           underline="hover"
-          sx={{ color: "#ff9900", fontSize: "0.9rem" }}
+          sx={{ color: "#000000", fontSize: "0.9rem", cursor: "pointer" }}
         >
           Browse all opportunities
         </Link>
         <br />
         👉{" "}
         <Link
-          href="/contact-us"
+          href={window.open("/contactus", "_blank")} // Open in new tab
           underline="hover"
-          sx={{ color: "#ff9900", fontSize: "0.9rem" }}
+          sx={{ color: "#000000", fontSize: "0.9rem", cursor: "pointer" }}
         >
           Talk to our expert
         </Link>
@@ -62,9 +62,9 @@ const FranchiseJourney = () => {
       </Box>
 
       <Link
-        href="/franchise-consulting"
+        href={window.open("https://consulting.mrfranchise.in", "_blank")} // Open in new tab
         underline="hover"
-        sx={{ color: "#ff9900", fontSize: "0.9rem" }}
+        sx={{ color: "#000000", fontSize: "0.9rem" , cursor: "pointer" }}
       >
         👉 Get started now
       </Link>

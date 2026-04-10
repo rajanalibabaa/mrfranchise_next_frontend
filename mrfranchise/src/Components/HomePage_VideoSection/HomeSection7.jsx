@@ -7,7 +7,7 @@ import React, {
   useMemo,
   useLayoutEffect,
 } from "react";
-import {
+import { 
   useMediaQuery,
   useTheme,
 } from "@mui/material";
@@ -274,7 +274,7 @@ const HomeSection7 = () => {
             },
           }}
         >
-          Top {brandCategoriesName || "Brand"} Industry Brands
+          Top {brandCategoriesName || "Brand"} Franchise Industry Brands
         </Typography>
 
         <Button

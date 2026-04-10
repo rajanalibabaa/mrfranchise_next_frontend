@@ -6,22 +6,22 @@ const locationData = [
   {
     title: "Franchise Opportunities in Chennai",
     desc: "Chennai is one of the fastest-growing markets for franchise businesses, offering excellent opportunities across food, retail, and service sectors.",
-    link: "/franchise-opportunities-chennai",
+    link: "/all-franchise-brands",
   },
   {
     title: "Franchise Opportunities in Bangalore",
     desc: "Known for its startup ecosystem and high spending capacity, Bangalore is ideal for premium franchise brands.",
-    link: "/franchise-opportunities-bangalore",
+    link: "/all-franchise-brands",
   },
   {
     title: "Franchise Opportunities in Hyderabad",
     desc: "A rapidly developing city with increasing demand for organized retail and food chains.",
-    link: "/franchise-opportunities-hyderabad",
+    link: "/all-franchise-brands",
   },
   {
     title: "Franchise Opportunities in Mumbai",
     desc: "India’s financial capital offers high footfall and premium market opportunities.",
-    link: "/franchise-opportunities-mumbai",
+    link: "/all-franchise-brands",
   },
 ];
 
@@ -33,7 +33,7 @@ const ExploreLocation = () => {
         pl: { xs: 2, md: 8 },
       pr: { xs: 2, md: 8 },
         py: 3,
-        backgroundColor: "#dedede",
+        backgroundColor: "#519A66",
       }}
     >
       {/* Heading */}
@@ -66,7 +66,7 @@ const ExploreLocation = () => {
                 variant="body1"
                 sx={{ fontWeight: "bold", mb: 0.5 }}
               >
-                📍 {item.title}
+                {item.title}
               </Typography>
 
               {/* Description */}
@@ -79,11 +79,15 @@ const ExploreLocation = () => {
 
               {/* Link */}
               <Link
-                href={item.link}
+                href={window.open(item.link, "_blank")} // Open in new tab
                 underline="hover"
+                variant="body2"
                 sx={{
                   color: "#ff9900",
                   fontSize: "0.9rem",
+                  textDecoration: "none",
+                  
+                  cursor: "pointer",
                 }}
               >
                  Explore {item.title}
