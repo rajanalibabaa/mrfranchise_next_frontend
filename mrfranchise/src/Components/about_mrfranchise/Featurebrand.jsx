@@ -46,7 +46,9 @@ const Featurebrand = () => {
 
       <Link
       variant="button"
-        href={window.open("/all-franchise-brands", "_blank")} // Open in new tab
+        href="/all-franchise-brands" // Open in new tab
+        target="_blank"
+        rel="noopener noreferrer"
         underline="hover"
         sx={{ color: "#ff9900", fontSize: "0.9rem",cursor: "pointer" }}
       >
@@ -98,7 +100,9 @@ const Featurebrand = () => {
 
       <Link
       variant="button"
-        href={window.open("/how-to-start-franchise", "_blank")} // Open in new tab
+        href="https://consulting.mrfranchise.in" // Open in new tab
+        target="_blank"
+        rel="noopener noreferrer"
         underline="hover"
         sx={{ color: "#ff9900", fontSize: "0.9rem" }}
       >
@@ -196,7 +200,9 @@ const Featurebrand = () => {
 
       <Link
       variant="button"
-        href={window.open("/blog", "_blank")} // Open in new tab
+        href="/blogs" // Open in new tab
+        target="_blank"
+        rel="noopener noreferrer"
         underline="hover"
         sx={{ color: "#ff9900", fontSize: "0.9rem" }}
       >
