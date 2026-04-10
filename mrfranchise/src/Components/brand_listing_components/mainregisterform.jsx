@@ -412,7 +412,7 @@ const [activeStep, setActiveStep] = useState(0);
     // dispatch(hideLoading())
   };
 
-  const handleSubmit = async (selectedMembership, selectedListing) => {
+  const handleSubmit = async ( ) => {
     const isValid = validateStep(activeStep);
 
     if (isValid) {
@@ -453,11 +453,11 @@ const [activeStep, setActiveStep] = useState(0);
             gstNumber: formData.brandDetails.gstNumber,
             pancardNumber: formData.brandDetails.pancardNumber,
             awardText: formData.brandDetails.awardText || [], // Include award texts
-            paymentPackage: selectedMembership?.tier.toLowerCase(),
-            listingPackages: {
-              periodMonths: selectedListing?.periodMonths,
-              amount: selectedListing?.amount,
-            },
+            // paymentPackage: selectedMembership?.tier.toLowerCase(),
+            // listingPackages: {
+            //   periodMonths: selectedListing?.periodMonths,
+            //   amount: selectedListing?.amount,
+            // },
           })
         );
 
@@ -1322,7 +1322,7 @@ const [activeStep, setActiveStep] = useState(0);
   return (
     <>
       {/* If MembershipPayment is true, render AdvertiseWithUs and pass handleSubmit directly */}
-      {MembershipPayment ? (
+      {/* {MembershipPayment ? (
         <MembershipPayments
           handleSubmit={handleSubmit}
           snackbar={snackbar}
@@ -1333,7 +1333,7 @@ const [activeStep, setActiveStep] = useState(0);
           formData={formData}
           onBack={() => setMembershipPayment(false)} // Button to go back to form
         />
-      ) : (
+      ) : ( */}
         // Otherwise, render the form as normal
         <Box
           sx={{
@@ -1543,99 +1543,90 @@ const [activeStep, setActiveStep] = useState(0);
                 Cancel
               </Button>
 
-              {activeStep === steps.length - 1 ? (
-                <Button
-                  variant="contained"
-                  sx={{
-                    background:
-                      "linear-gradient(to bottom right,rgb(82, 209, 105),rgb(132, 237, 47))",
-                    border: 0,
-                    mr: 2,
-                    borderRadius: "12px",
-                    color: "#FFFFFF",
-                    cursor: "pointer",
-                    display: "inline-block",
-                    fontFamily:
-                      '-apple-system, system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
-                    fontSize: "16px",
-                    fontWeight: 500,
-                    lineHeight: 0,
-                    outline: "transparent",
-                    px: "1rem", // padding-left and padding-right
-                    textAlign: "center",
-                    textDecoration: "none",
-                    transition: "box-shadow .2s ease-in-out",
-                    userSelect: "none",
-                    WebkitUserSelect: "none",
-                    touchAction: "manipulation",
-                    whiteSpace: "nowrap",
-                    "&:not([disabled]):focus": {
-                      boxShadow:
-                        "0 0 .25rem rgba(0, 0, 0, 0.5), -.125rem -.125rem 1rem rgb(82, 209, 105), .125rem .125rem 1rem rgba(192, 230, 123, 0.5)",
-                    },
-                    "&:not([disabled]):hover": {
-                      boxShadow:
-                        "0 0 .25rem rgba(0, 0, 0, 0.5), -.125rem -.125rem 1rem rgb(82, 209, 105), .125rem .125rem 1rem rgba(175, 203, 122, 0.5)",
-                    },
-                  }}
-                  onClick={handlepakagesDetails}
-                  // disabled={isSubmitting}
-                  // startIcon={
-                  //   isSubmitting ? (
-                  //     <CircularProgress size={20} color="inherit" />
-                  //   ) : submitSuccess ? (
-                  //     <CheckCircleIcon />
-                  //   ) : null
-                  // }
-                  //  {isSubmitting
-                  //   ? "Submitting..."
-                  //   : submitSuccess
-                  //   ? "Submitted!"
-                  //   : "Submit"}
-                >
-                  Go to package details
-                </Button>
-              ) : (
-                <Button
-                  variant="contained"
-                  sx={{
-                    background:
-                      "linear-gradient(to bottom right,rgb(246, 175, 33), #FF9A5A)",
-                    border: 0,
-                    mr: 2,
-                    borderRadius: "12px",
-                    color: "#FFFFFF",
-                    cursor: "pointer",
-                    display: "inline-block",
-                    fontFamily:
-                      '-apple-system, system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
-                    fontSize: "16px",
-                    fontWeight: 500,
-                    lineHeight: 0,
-                    outline: "transparent",
-                    px: "1rem", // padding-left and padding-right
-                    textAlign: "center",
-                    textDecoration: "none",
-                    transition: "box-shadow .2s ease-in-out",
-                    userSelect: "none",
-                    WebkitUserSelect: "none",
-                    touchAction: "manipulation",
-                    whiteSpace: "nowrap",
-                    "&:not([disabled]):focus": {
-                      boxShadow:
-                        "0 0 .25rem rgba(0, 0, 0, 0.5), -.125rem -.125rem 1rem rgb(246, 175, 33), .125rem .125rem 1rem rgba(255, 154, 90, 0.5)",
-                    },
-                    "&:not([disabled]):hover": {
-                      boxShadow:
-                        "0 0 .25rem rgba(0, 0, 0, 0.5), -.125rem -.125rem 1rem rgb(246, 175, 33), .125rem .125rem 1rem rgba(255, 154, 90, 0.5)",
-                    },
-                  }}
-                  onClick={handleNext}
-                  disabled={isSubmitting}
-                >
-                  Next
-                </Button>
-              )}
+          {activeStep === steps.length - 1 ? (
+  <Button
+    variant="contained"
+    sx={{
+      background: "linear-gradient(to bottom right,rgb(82, 209, 105),rgb(132, 237, 47))",
+      border: 0,
+      mr: 2,
+      borderRadius: "12px",
+      color: "#FFFFFF",
+      cursor: "pointer",
+      display: "inline-block",
+      fontFamily: '-apple-system, system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+      fontSize: "16px",
+      fontWeight: 500,
+      lineHeight: 0,
+      outline: "transparent",
+      px: "1rem",
+      textAlign: "center",
+      textDecoration: "none",
+      transition: "box-shadow .2s ease-in-out",
+      userSelect: "none",
+      WebkitUserSelect: "none",
+      touchAction: "manipulation",
+      whiteSpace: "nowrap",
+      "&:not([disabled]):focus": {
+        boxShadow: "0 0 .25rem rgba(0, 0, 0, 0.5), -.125rem -.125rem 1rem rgb(82, 209, 105), .125rem .125rem 1rem rgba(192, 230, 123, 0.5)",
+      },
+      "&:not([disabled]):hover": {
+        boxShadow: "0 0 .25rem rgba(0, 0, 0, 0.5), -.125rem -.125rem 1rem rgb(82, 209, 105), .125rem .125rem 1rem rgba(175, 203, 122, 0.5)",
+      },
+    }}
+    onClick={handleSubmit}
+    disabled={isSubmitting}
+    startIcon={
+      isSubmitting ? (
+        <CircularProgress size={20} color="inherit" />
+      ) : submitSuccess ? (
+        <CheckCircleIcon />
+      ) : null
+    }
+  >
+    {isSubmitting
+      ? "Submitting..."
+      : submitSuccess
+      ? "Submitted!"
+      : "Submit"}
+  </Button>
+) : (
+  <Button
+    variant="contained"
+    sx={{
+      background: "linear-gradient(to bottom right,rgb(246, 175, 33), #FF9A5A)",
+      border: 0,
+      mr: 2,
+      borderRadius: "12px",
+      color: "#FFFFFF",
+      cursor: "pointer",
+      display: "inline-block",
+      fontFamily: '-apple-system, system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+      fontSize: "16px",
+      fontWeight: 500,
+      lineHeight: 0,
+      outline: "transparent",
+      px: "1rem",
+      textAlign: "center",
+      textDecoration: "none",
+      transition: "box-shadow .2s ease-in-out",
+      userSelect: "none",
+      WebkitUserSelect: "none",
+      touchAction: "manipulation",
+      whiteSpace: "nowrap",
+      "&:not([disabled]):focus": {
+        boxShadow: "0 0 .25rem rgba(0, 0, 0, 0.5), -.125rem -.125rem 1rem rgb(246, 175, 33), .125rem .125rem 1rem rgba(255, 154, 90, 0.5)",
+      },
+      "&:not([disabled]):hover": {
+        boxShadow: "0 0 .25rem rgba(0, 0, 0, 0.5), -.125rem -.125rem 1rem rgb(246, 175, 33), .125rem .125rem 1rem rgba(255, 154, 90, 0.5)",
+      },
+    }}
+    onClick={handleNext}
+    disabled={isSubmitting}
+  >
+    Next
+  </Button>
+)}
             </Box>
           </Box>
 
@@ -1681,7 +1672,7 @@ const [activeStep, setActiveStep] = useState(0);
               {activeStep === steps.length - 1 && (
                 <Button
                   variant="contained"
-                  onClick={handlepakagesDetails}
+                onClick={handleSubmit}
                   disabled={isSubmitting}
                   startIcon={
                     isSubmitting ? (
@@ -1730,7 +1721,7 @@ const [activeStep, setActiveStep] = useState(0);
             </Alert>
           </Snackbar>
         </Box>
-      )}
+    
       {/* <Footer /> */}
     </>
   );
