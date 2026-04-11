@@ -30,7 +30,7 @@ const Navbar = dynamic(() => import("@/Components/Navbar/NavBar"), {
 
 const FilterDropdowns = dynamic(
   () => import("@/Components/Navbar/FilterDropdownsData"),
-  { ssr: true }
+  { ssr: false }
 );
 
 // ============================================
@@ -101,12 +101,12 @@ class ErrorBoundary extends React.Component {
 // SECTION COMPONENT MAP - Centralized lazy loading
 // ============================================
 const SECTION_COMPONENTS = {
-  TopBrandThreevdocards: {
+  TopBrandThreeVdoCards: {
     component: dynamic(
       () => import("@/Components/HomePage_VideoSection/TopBrandThreeVdoCards"),
       { ssr: true, loading: () => <SectionSkeleton height={400} /> }
     ),
-    priority: 1,
+    // priority: 1,
     height: 400,
   },
   HomeSection1: {
@@ -114,7 +114,7 @@ const SECTION_COMPONENTS = {
       () => import("@/Components/HomePage_VideoSection/HomeSection1"),
       { ssr: false, loading: () => <SectionSkeleton height={350} /> }
     ),
-    priority: 1,
+    // priority: 1,
     height: 350,
   },
   HomeSection2: {
@@ -130,7 +130,7 @@ const SECTION_COMPONENTS = {
       () => import("@/Components/HomePage_VideoSection/LikedBrands"),
       { ssr: false, loading: () => <SectionSkeleton height={300} /> }
     ),
-    priority: 2,
+    // priority: 2,
     height: 300,
     requiresAuth: true,
   },
@@ -139,7 +139,7 @@ const SECTION_COMPONENTS = {
       () => import("@/Components/HomePage_VideoSection/ShortlistBrands"),
       { ssr: false, loading: () => <SectionSkeleton height={300} /> }
     ),
-    priority: 2,
+    // priority: 2,
     height: 300,
     requiresAuth: true,
   },
@@ -148,7 +148,7 @@ const SECTION_COMPONENTS = {
       () => import("@/Components/HomePage_VideoSection/ViewBrands"),
       { ssr: false, loading: () => <SectionSkeleton height={300} /> }
     ),
-    priority: 2,
+    // priority: 2,
     height: 300,
     requiresAuth: true,
   },
@@ -157,147 +157,147 @@ const SECTION_COMPONENTS = {
       () => import("@/Components/HomePage_VideoSection/HomeSection3"),
       { ssr: false, loading: () => <SectionSkeleton /> }
     ),
-    priority: 3,
+    // priority: 3,
   },
   HomeSection4: {
     component: dynamic(
       () => import("@/Components/HomePage_VideoSection/HomeSection4"),
       { ssr: false, loading: () => <SectionSkeleton /> }
     ),
-    priority: 3,
+    // priority: 3,
   },
   HomeSection5: {
     component: dynamic(
       () => import("@/Components/HomePage_VideoSection/HomeSection5"),
       { ssr: false, loading: () => <SectionSkeleton /> }
     ),
-    priority: 3,
+    // priority: 3,
   },
   HomeSection6: {
     component: dynamic(
       () => import("@/Components/HomePage_VideoSection/HomeSection6"),
       { ssr: false, loading: () => <SectionSkeleton /> }
     ),
-    priority: 3,
+    // priority: 3,
   },
   HomeSection7: {
     component: dynamic(
       () => import("@/Components/HomePage_VideoSection/HomeSection7"),
       { ssr: false, loading: () => <SectionSkeleton /> }
     ),
-    priority: 4,
+    // priority: 4,
   },
   HomeSection8: {
     component: dynamic(
       () => import("@/Components/HomePage_VideoSection/HomeSection8"),
       { ssr: false, loading: () => <SectionSkeleton /> }
     ),
-    priority: 4,
+    // priority: 4,
   },
   HomeSection9: {
     component: dynamic(
       () => import("@/Components/HomePage_VideoSection/HomeSection9"),
       { ssr: false, loading: () => <SectionSkeleton /> }
     ),
-    priority: 5,
+    // priority: 5,
   },
   HomeSection10: {
     component: dynamic(
       () => import("@/Components/HomePage_VideoSection/HomeSection10"),
       { ssr: false, loading: () => <SectionSkeleton /> }
     ),
-    priority: 5,
+    // priority: 5,
   },
   HomeSection11: {
     component: dynamic(
       () => import("@/Components/HomePage_VideoSection/HomeSection11"),
       { ssr: false, loading: () => <SectionSkeleton /> }
     ),
-    priority: 6,
+    // priority: 6,
   },
   HomeSection12: {
     component: dynamic(
       () => import("@/Components/HomePage_VideoSection/HomeSection12"),
       { ssr: false, loading: () => <SectionSkeleton /> }
     ),
-    priority: 6,
+    // priority: 6,
   },
   HomeSection13: {
     component: dynamic(
       () => import("@/Components/HomePage_VideoSection/HomeSection13"),
       { ssr: false, loading: () => <SectionSkeleton /> }
     ),
-    priority: 7,
+    // priority: 7,
   },
   ToTrendingBrands: {
     component: dynamic(
       () => import("@/Components/HomePage_VideoSection/ToTrendingBrands"),
       { ssr: false, loading: () => <SectionSkeleton /> }
     ),
-    priority: 7,
+    // priority: 7,
   },
   FindFranchiseLocations: {
     component: dynamic(
       () => import("@/Components/HomePage_VideoSection/FindFranchiseLocations"),
       { ssr: false, loading: () => <SectionSkeleton /> }
     ),
-    priority: 8,
+    // priority: 8,
   },
   BusinessOpportunities: {
     component: dynamic(
       () => import("@/Components/about_mrfranchise/businessopportunities"),
       { ssr: false, loading: () => <SectionSkeleton /> }
     ),
-    priority: 8,
+    // priority: 8,
   },
   AboutMrFranchise: {
     component: dynamic(
       () => import("@/Components/about_mrfranchise/aboutmrfranchise"),
       { ssr: false, loading: () => <SectionSkeleton /> }
     ),
-    priority: 9,
+    // priority: 9,
   },
   ExploreIndustry: {
     component: dynamic(
       () => import("@/Components/about_mrfranchise/exploreindustry"),
       { ssr: false, loading: () => <SectionSkeleton /> }
     ),
-    priority: 9,
+    // priority: 9,
   },
   ExploreInvestment: {
     component: dynamic(
       () => import("@/Components/about_mrfranchise/exploreinvestment"),
       { ssr: false, loading: () => <SectionSkeleton /> }
     ),
-    priority: 10,
+    // priority: 10,
   },
   ExploreLocation: {
     component: dynamic(
       () => import("@/Components/about_mrfranchise/explorelocation"),
       { ssr: false, loading: () => <SectionSkeleton /> }
     ),
-    priority: 10,
+    // priority: 10,
   },
   Featurebrand: {
     component: dynamic(
       () => import("@/Components/about_mrfranchise/Featurebrand"),
       { ssr: false, loading: () => <SectionSkeleton /> }
     ),
-    priority: 10,
+    // priority: 10,
   },
   FranchiseJourney: {
     component: dynamic(
       () => import("@/Components/about_mrfranchise/franchisejourney"),
       { ssr: false, loading: () => <SectionSkeleton /> }
     ),
-    priority: 10,
+    // priority: 10,
   },
   FreeFranchise: {
     component: dynamic(
       () => import("@/Components/about_mrfranchise/freefranchise"),
       { ssr: false, loading: () => <SectionSkeleton /> }
     ),
-    priority: 10,
+    // priority: 10,
   },
 };
 
@@ -476,7 +476,7 @@ HeroBanner.displayName = "HeroBanner";
 // SECTIONS CONFIG
 // ============================================
 const SECTIONS = [
-  "TopBrandThreevdocards",
+  "TopBrandThreeVdoCards",
   "HomeSection1",
   "HomeSection2",
   "LikedBrands",
@@ -543,7 +543,7 @@ export default memo(function HomeBannerSec() {
         }
         sessionStorage.setItem("popup-shown", "true");
       }
-    }, 2000);
+    }, 3000);
 
     return () => clearTimeout(timer);
   }, [isHydrated]);

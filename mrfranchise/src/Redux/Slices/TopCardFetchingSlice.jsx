@@ -14,7 +14,7 @@ export const homeSection1 = createAsyncThunk(
       const response = await axios.get(
         `${API_BASE_URL}/overAllPlatformOnlyMainCategory?main=Food %26 Beverages`,
         {
-          params: { page, id: userId },
+          params: { page, id: userId,limit: 4 },
         }
       );
 
@@ -49,7 +49,7 @@ export const homeSection2 = createAsyncThunk(
       const response = await axios.get(
         `${API_BASE_URL}/overAllPlatformOnlyMainCategory?main=Retail`,
         {
-          params: { page, id: userId },
+          params: { page, id: userId ,limit: 4},
         }
       );
 
@@ -84,7 +84,7 @@ export const homeSection3 = createAsyncThunk(
       const response = await axios.get(
         `${API_BASE_URL}/overAllPlatformOnlyMainCategory?main=Education`,
         {
-          params: { page, id: userId },
+          params: { page, id: userId, limit: 4 },
         }
       );
 
@@ -119,7 +119,7 @@ export const homeSection4 = createAsyncThunk(
       const response = await axios.get(
         `${API_BASE_URL}/overAllPlatformOnlyMainCategory?main=Automobile`,
         {
-          params: { page, id: userId },
+          params: { page, id: userId, limit: 4 },
         }
       );
 
@@ -155,7 +155,7 @@ export const homeSection5 = createAsyncThunk(
       const response = await axios.get(
         `${API_BASE_URL}/overAllPlatformOnlyMainCategory?main=Service`,
         {
-          params: { page, id: userId },
+          params: { page, id: userId, limit: 4 },
         }
       );
 
@@ -189,7 +189,7 @@ export const homeSection6 = createAsyncThunk(
       const response = await axios.get(
         `${API_BASE_URL}/overAllPlatformOnlyMainCategory?main=${encodeURIComponent("Automobile")}&sub=${encodeURIComponent("Electric Vehicles (EV)")}`,
         {
-          params: { page, id: userId },
+          params: { page, id: userId, limit: 4 },
         }
       );
 
@@ -223,7 +223,7 @@ export const homeSection7 = createAsyncThunk(
       const response = await axios.get(
         `${API_BASE_URL}/overAllPlatformOnlyMainCategory?main=${encodeURIComponent("Education")}&sub=${encodeURIComponent("Pre-School & Early Childhood Education")}`,
         {
-          params: { page, id: userId },
+          params: { page, id: userId, limit: 4 },
         }
       );
 
@@ -256,7 +256,7 @@ export const homeSection8 = createAsyncThunk(
       const response = await axios.get(
         `${API_BASE_URL}/overAllPlatformOnlyMainCategory?main=${encodeURIComponent("Food & Beverages")}&sub=${encodeURIComponent("Fine Dining & Casual Dining Restaurants")}`,
         {
-          params: { page, id: userId },
+          params: { page, id: userId, limit: 4 },
         }
       );
 
@@ -289,7 +289,7 @@ export const homeSection9 = createAsyncThunk(
       const response = await axios.get(
         `${API_BASE_URL}/overAllPlatformOnlyMainCategory?main=${encodeURIComponent("Food & Beverages")}&sub=${encodeURIComponent("Quick Service Restaurants (QSR)")}`,
         {
-          params: { page, id: userId },
+          params: { page, id: userId, limit: 4 },
         }
       );
 
@@ -322,7 +322,7 @@ export const homeSection10 = createAsyncThunk(
       const response = await axios.get(
         `${API_BASE_URL}/overAllPlatformOnlyMainCategory?main=${encodeURIComponent("Food & Beverages")}&sub=${encodeURIComponent("Tea, Coffee & Cafe Chains")}`,
         {
-          params: { page, id: userId },
+          params: { page, id: userId, limit: 4 },
         }
       );
 
@@ -355,7 +355,7 @@ export const homeSection11 = createAsyncThunk(
       const response = await axios.get(
         `${API_BASE_URL}/overAllPlatformOnlyMainCategory?main=${encodeURIComponent("Service")}&sub=${encodeURIComponent("Beauty, Lifestyle & Personal Care")}`,
         {
-          params: { page, id: userId },
+          params: { page, id: userId, limit: 4 },
         }
       );
 
@@ -388,7 +388,7 @@ export const homeSection12 = createAsyncThunk(
       const response = await axios.get(
         `${API_BASE_URL}/overAllPlatformOnlyMainCategory?main=${encodeURIComponent("Service")}&sub=${encodeURIComponent("Healthcare & Wellness Services")}`,
         {
-          params: { page, id: userId },
+          params: { page, id: userId, limit: 4 },
         }
       );
 
@@ -421,7 +421,7 @@ export const homeSection13 = createAsyncThunk(
       const response = await axios.get(
         `${API_BASE_URL}/overAllPlatformOnlyMainCategory?main=${encodeURIComponent("Others")}`,
         {
-          params: { page, id: userId },
+          params: { page, id: userId, limit: 4 },
         }
       );
 

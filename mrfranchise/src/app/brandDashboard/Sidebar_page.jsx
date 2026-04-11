@@ -112,7 +112,7 @@ export default function BrandDashboardLayout() {
             </IconButton>
 
             <Link href="/">
-              <img src="/logo.png" alt="Logo" height={36} />
+              <img src="/mrfranchise_logo.avif" alt="Logo" height={36} />
             </Link>
 
           </Toolbar>

@@ -34,7 +34,8 @@ import { toggleBrandShortListfilter } from "@/Redux/Slices/FilterBrandSlice";
 import { postView } from "@/Utils/function/view.jsx";
 import { openBrandDialog } from "@/Redux/Slices/OpenBrandNewPageSlice.jsx";
 import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
+import dynamic from "next/dynamic";
+const jsPDF = dynamic(() => import("jspdf"), { ssr: false });
 
 const token = getToken();
 const userId = getUserId();
