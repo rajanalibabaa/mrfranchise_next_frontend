@@ -584,7 +584,7 @@ function TopBrandVdoCards() {
         </Typography>
         {!isMobile && (
           <Image
-            src="/Blue Modern Corporate Profile LinkedIn Article Cover Image (1).png"
+            src="/Blue Modern Corporate Profile LinkedIn Article Cover Image (1).jpg"
             alt="brand logo"
             loading="lazy"
             width={820}

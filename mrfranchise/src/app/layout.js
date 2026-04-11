@@ -21,6 +21,7 @@ export default function RootLayout({ children }) {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/mrfranchise_logo.avif" type="image/jpeg" />
         <link rel="preconnect" href="https://pub-172d0514c5be40ae8cb05f4bd8a1c0ee.r2.dev/" />
+        <link rel="preload" as="font" href="/fonts/inter.woff2" crossorigin />
       </head>
       <body>
         {/* Scripts */}
