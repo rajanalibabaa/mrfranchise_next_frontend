@@ -112,7 +112,7 @@ const SECTION_COMPONENTS = {
   HomeSection1: {
     component: dynamic(
       () => import("@/Components/HomePage_VideoSection/HomeSection1"),
-      { ssr: false, loading: () => <SectionSkeleton height={350} /> }
+      { ssr: true, loading: () => <SectionSkeleton height={350} /> }
     ),
     // priority: 1,
     height: 350,
@@ -120,7 +120,7 @@ const SECTION_COMPONENTS = {
   HomeSection2: {
     component: dynamic(
       () => import("@/Components/HomePage_VideoSection/HomeSection2"),
-      { ssr: false, loading: () => <SectionSkeleton height={350} /> }
+      { ssr: true, loading: () => <SectionSkeleton height={350} /> }
     ),
     priority: 2,
     height: 350,
@@ -331,8 +331,8 @@ const LazySection = memo(({ componentKey, isMobile }) => {
       ref={ref}
       sx={{
         contain: "layout style",
-        minHeight: hasLoaded ? "auto" : sectionConfig.height || 200,
-        width: "100%",
+ minHeight: sectionConfig.height || 300, width: "100%",
+      
       }}
     >
       {hasLoaded ? (
@@ -377,7 +377,7 @@ const HeroBanner = memo(({ isMobile, bannerIndex }) => {
     <Box
       sx={{
         position: "relative",
-        minHeight: isMobile ? "60vh" : "45vh",
+        minHeight:  "60vh",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -391,11 +391,14 @@ const HeroBanner = memo(({ isMobile, bannerIndex }) => {
         alt="Franchise Marketplace"
         fill
         priority
-        sizes="100vw"
+        sizes="(max-width: 768px) 100vw, 
+         (max-width: 1200px) 90vw, 
+         80vw"
         style={{
           objectFit: "cover",
           objectPosition: "center",
         }}
+        fetchPriority="high"
         placeholder="blur"
         blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAAAAUH/8QAIhAAAgEDAwUBAAAAAAAAAAAAAQIDAAQRBRIhBhMiMUFR/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAYEQEBAQEBAAAAAAAAAAAAAAABAgADEf/aAAwDAQACEQMRAD8AzWz0q6u7S3uIpLYJOiSoGkYMAwBGRt+1YnVCgFQ8J+clJ//Z"
       />

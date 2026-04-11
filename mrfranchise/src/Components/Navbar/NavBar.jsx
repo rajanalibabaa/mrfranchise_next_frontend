@@ -370,16 +370,17 @@ function Navbar() {
                 }}
               >
                 <Image
-                  src="/mrfranchise_logo.avif"
-                  alt="brand logo"
-                  loading="lazy"
-                  width={isMobile ? 120 : 150}
-                  height={isMobile ? 50 : 50}
-                  style={{
-                    objectFit: "cover",
-                    transition: "transform 0.3s ease",
-                  }}
-                />
+  src="/mrfranchise_logo.avif"
+  alt="brand logo"
+  width={isMobile ? 120 : 150}
+  height={isMobile ? 50 : 90}
+  priority
+  loading="eager"
+  style={{
+    objectFit: "contain",
+    transition: "transform 0.3s ease",
+  }}
+/>
               </Box>
             </motion.div>
           </Box>
@@ -390,7 +391,7 @@ function Navbar() {
           >
             {!isMobile && (
               <Image
-                src="/Blue Modern Corporate Profile LinkedIn Article Cover Image (1).png"
+                src="/Blue Modern Corporate Profile LinkedIn Article Cover Image (1).jpg"
                 alt="brand logo"
                 loading="lazy"
                 width={isMobile ? 120 : 900}
@@ -722,7 +723,7 @@ function Navbar() {
       >
         {isMobile && (
           <Image
-            src="/Blue Modern Corporate Profile LinkedIn Article Cover Image (1).png"
+            src="/Blue Modern Corporate Profile LinkedIn Article Cover Image (1).jpg"
             alt="brand logo"
             loading="lazy"
             width={isMobile ? 370 : 720}
