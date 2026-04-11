@@ -128,7 +128,7 @@ export const metadata = {
         type: "image/jpeg",
       },
       {
-        url: `${SITE_URL}/logo.png`,
+        url: `${SITE_URL}/mrfranchise_logo.avif`,
         width: 800,
         height: 600,
         alt: "Mr Franchise Logo",
@@ -281,7 +281,7 @@ const generateStructuredData = () => {
         "url": SITE_URL,
         "logo": {
           "@type": "ImageObject",
-          "url": `${SITE_URL}/logo.png`,
+          "url": `${SITE_URL}/mrfranchise_logo.avif`,
           "width": 250,
           "height": 60,
         },
@@ -438,7 +438,7 @@ export default function BrandListingLayout({ children }) {
           __html: JSON.stringify(structuredData),
         }}
       />
-        <link rel="icon" href="/logo.png" type="image/jpeg" />
+        <link rel="icon" href="/mrfranchise_logo.avif" type="image/jpeg" />
 
 
       {/* Preconnect for Performance */}

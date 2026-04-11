@@ -85,7 +85,7 @@ function RegisterHandleUser({boolean = true}) {
         <Box
           component="img"
           loading="lazy"
-          src='/Business_logo.png'
+          src='/Business_mrfranchise_logo.avif'
           alt="Business Logo"
           sx={{
             p: 50,

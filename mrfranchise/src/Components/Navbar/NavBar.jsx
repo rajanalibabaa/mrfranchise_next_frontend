@@ -34,7 +34,7 @@ import {
 import { logout } from "@/Redux/Slices/AuthSlice/authSlice.jsx";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
-// import logo from "@/assets/Images/logo.png";
+// import logo from "@/assets/Images/mrfranchise_logo.avif";
 import NavbarSearch from "./NavbarSearch.jsx";
 import Image from "next/image.js";
 import AdSlot from "../ads/GoogleAd.jsx";
@@ -370,7 +370,7 @@ function Navbar() {
                 }}
               >
                 <Image
-                  src="/logo.png"
+                  src="/mrfranchise_logo.avif"
                   alt="brand logo"
                   loading="lazy"
                   width={isMobile ? 120 : 150}

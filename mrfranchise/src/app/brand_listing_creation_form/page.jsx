@@ -30,7 +30,7 @@ export const metadata = {
     type: "website",
     images: [
       {
-        url: "https://mrfranchise.in/logo.png",
+        url: "https://mrfranchise.in/mrfranchise_logo.avif",
         width: 1200,
         height: 630,
         alt: "Brand Registration - Mr Franchise",
@@ -43,11 +43,11 @@ export const metadata = {
     title: "Brand Registration | Mr Franchise",
     description:
       "Register your franchise brand and reach thousands of investors across India.",
-    images: ["https://mrfranchise.in/logo.png"],
+    images: ["https://mrfranchise.in/mrfranchise_logo.avif"],
   },
 
   icons: {
-    icon: "/logo.png",
+    icon: "/mrfranchise_logo.avif",
     shortcut: "/favicon.ico",
     apple: "/apple-touch-icon.png",
   },

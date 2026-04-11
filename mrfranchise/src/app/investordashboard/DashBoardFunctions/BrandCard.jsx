@@ -12,7 +12,7 @@ import { useTheme, useMediaQuery } from "@mui/material";
 import  Favorite  from "@mui/icons-material/Favorite";
 import { motion } from "framer-motion";
 import { RiBookmark3Fill } from "react-icons/ri";
-// import img from "../../../assets/Images/logo.png";
+// import img from "../../../assets/Images/mrfranchise_logo.avif";
 import { openBrandDialog } from "@/Redux/Slices/OpenBrandNewPageSlice.jsx";
 import { useDispatch } from "react-redux";
 import { removeLikedBrand } from "@/Redux/Slices/likeSlice.jsx";

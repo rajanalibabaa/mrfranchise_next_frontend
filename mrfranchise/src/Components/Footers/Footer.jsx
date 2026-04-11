@@ -127,7 +127,7 @@ const supportLinks = [
            <Box sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
               <Box
                 component="img"
-                src="/logo.png"
+                src="/mrfranchise_logo.avif"
                 onClick={()=> navigate.push("/")}
                 loading="lazy"
                 alt="MR FRANCHISE Logo"

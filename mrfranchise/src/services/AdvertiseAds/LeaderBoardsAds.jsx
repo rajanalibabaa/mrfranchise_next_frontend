@@ -4,9 +4,9 @@
 // import "swiper/css";
 // import "swiper/css/pagination";
 
-// import img1 from "../../assets/Images/logo.png";
-// import img2 from "../../assets/Images/logo.png";
-// import img3 from "../../assets/Images/logo.png";
+// import img1 from "../../assets/Images/mrfranchise_logo.avif";
+// import img2 from "../../assets/Images/mrfranchise_logo.avif";
+// import img3 from "../../assets/Images/mrfranchise_logo.avif";
 
 // export default function LeaderboardAd() {
 //   const slides = [

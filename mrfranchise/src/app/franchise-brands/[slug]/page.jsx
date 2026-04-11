@@ -38,7 +38,7 @@ const fullPath = decodeURIComponent(slug);
 
   const logo = brand?.uploads?.logo || "/default.jpg";
 
-  const title = `${name} Franchise | Start your ${name} franchise in India | Mr Franchise`;
+  const title = `Start your ${name} franchise in India | Mr Franchise`;
 
   const description = `Start your ${name} franchise in India. Get complete details like investment cost, profit margin, ROI, franchise fee, requirements, and contact details. Apply now to own ${name} franchise opportunity and grow your business.`;
 
