@@ -52,7 +52,6 @@ import {
 import { Link as RouterLink } from "next/link";
 import { useDispatch } from "react-redux";
 // import { showLoading, hideLoading } from "@/Redux/Slices/loadingSlice";
-import RegisterationMediaHandling from "../Registration/RegisterationMediaHandling";
 import FlagIcon from "@mui/icons-material/Flag";
 import Navbar from "@/Components/Navbar/NavBar";
 import Footer from "@/Components/Footers/Footer";
@@ -1515,6 +1514,7 @@ const InvestorRegister = () => {
                 >
                   <IconButton
                     size="small"
+                    aria-label="info"
                     sx={{
                       color: "warning.main",
                       "&:hover": {

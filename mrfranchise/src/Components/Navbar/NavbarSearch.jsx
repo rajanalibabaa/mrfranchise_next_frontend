@@ -331,6 +331,7 @@ const NavbarSearch = ({ open, handleClose }) => {
         <Box>
           <IconButton
             onClick={handleClose}
+            aria-label="close"
             sx={{
               position: "absolute",
               top: { xs: -5, md: 8 },

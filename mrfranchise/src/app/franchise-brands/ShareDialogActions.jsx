@@ -176,11 +176,11 @@ const handleShare = (platform) => {
             Share Brand
           </Typography>
 
-          <IconButton size="small" onClick={handleClose}>
+          <IconButton size="small" aria-label="Share" onClick={handleClose}>
             <CloseIcon fontSize="small" />
           </IconButton>
         </Box>
-
+          
         <Divider />
 
         {/* Brand Preview */}

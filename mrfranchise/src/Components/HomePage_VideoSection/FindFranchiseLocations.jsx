@@ -255,7 +255,7 @@ const FindFranchiseLocations = () => {
           alignItems: 'center'
         }}>
           <Typography>{removeMsg}</Typography>
-          <IconButton size="small"  onClick={() => setRemoveMsg("")}>
+          <IconButton  size="small"  onClick={() => setRemoveMsg("")} aria-label="close">
             <Close sx={{ color: 'white' }} />
           </IconButton>
         </Box>

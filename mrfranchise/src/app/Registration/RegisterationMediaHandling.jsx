@@ -385,6 +385,7 @@ const toggleMute = (index) => {
                 <IconButton 
                   onClick={() => togglePlayPause(index)} 
                   size="large"
+                  aria-label=' video play pause toggle'
                   disabled={videoStates[index]?.hasError}
                   sx={{ 
                     position: 'absolute',
@@ -485,6 +486,7 @@ const toggleMute = (index) => {
                     <IconButton 
                       onClick={() => toggleMute(index)} 
                       size="small" 
+                      aria-label={videoStates[index]?.isMuted ? 'Unmute' : 'Mute'}
                       disabled={videoStates[index]?.hasError}
                       sx={{ 
                         color: 'white',
@@ -524,6 +526,7 @@ const toggleMute = (index) => {
                       <IconButton 
                         onClick={() => togglePipMode(index)} 
                         size="small" 
+                        aria-label="Picture-in-Picture"
                         disabled={videoStates[index]?.hasError}
                         sx={{ 
                           color: 'white',
@@ -545,6 +548,8 @@ const toggleMute = (index) => {
                     <IconButton 
                       onClick={() => toggleFullscreen(index)} 
                       size="small" 
+                      aria-label={videoStates[index]?.isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
+
                       disabled={videoStates[index]?.hasError}
                       sx={{ 
                         color: 'white',
@@ -617,6 +622,7 @@ const toggleMute = (index) => {
                       }))} 
                       size="small" 
                       sx={{ color: 'white' }}
+                      aria-label="Exit Picture-in-Picture"
                     >
                       <FullscreenExit fontSize="small" />
                     </IconButton>

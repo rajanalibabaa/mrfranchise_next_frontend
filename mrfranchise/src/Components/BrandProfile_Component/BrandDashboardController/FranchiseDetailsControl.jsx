@@ -1970,6 +1970,7 @@ const FranchiseDetailsControl = ({
             >
               <IconButton
                 size="small"
+                aria-label="USP information"
                 sx={{
                   color: "warning.main",
                   "&:hover": {
@@ -1977,6 +1978,7 @@ const FranchiseDetailsControl = ({
                     color: "white",
                   },
                   marginLeft: "5px",
+                  
                 }}
               >
                 <InfoOutlined fontSize="medium" />

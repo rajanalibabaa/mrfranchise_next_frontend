@@ -45,7 +45,7 @@ const ImageDialog = ({
         <Typography>
           Image {currentImageIndex + 1} of {allImages.length}
         </Typography>
-        <IconButton onClick={onClose} color="inherit">
+        <IconButton aria-label="close" onClick={onClose} color="inherit">
           <Close />
         </IconButton>
       </DialogTitle>
@@ -78,6 +78,7 @@ const ImageDialog = ({
               },
             }}
             onClick={handlePrevImage}
+            aria-label="Previous image"
           >
             <ArrowBack fontSize="large" />
           </IconButton>
@@ -105,6 +106,7 @@ const ImageDialog = ({
               },
             }}
             onClick={handleNextImage}
+            aria-label="Next image"
           >
             <ArrowForward fontSize="large" />
           </IconButton>

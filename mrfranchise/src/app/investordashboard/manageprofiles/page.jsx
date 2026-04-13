@@ -1806,6 +1806,7 @@ const ManageProfile = () => {
                     },
                   }}
                   disabled={isSubmitting}
+                  aria-label="Cancel Edit"
                 >
                   <CloseIcon />
                 </IconButton>
@@ -1879,6 +1880,7 @@ const ManageProfile = () => {
                               },
                             }}
                             disabled={isSubmitting}
+                            aria-label="Edit Avatar"
                           >
                             <TbPhotoEdit />
                           </IconButton>
@@ -1890,6 +1892,7 @@ const ManageProfile = () => {
                             <Box mx={1}>
                               <IconButton
                                 size="medium"
+                                aria-label="Delete Avatar"
                                 color="error"
                                 onClick={handleRemoveAvatar}
                                 sx={{
@@ -2021,6 +2024,7 @@ const ManageProfile = () => {
                       {editMode && (
                         <IconButton
                           size="small"
+                          aria-label="Delete Preference"
                           color="error"
                           onClick={() => removePreference(prefIndex)}
                           disabled={

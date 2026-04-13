@@ -224,7 +224,7 @@ const SimilarBrands = ({ brandData }) => {
             alignItems: 'center'
           }}>
             <Typography>{removeMsg}</Typography>
-            <IconButton size="small" onClick={() => setRemoveMsg("")}>
+            <IconButton aria-label="close" size="small" onClick={() => setRemoveMsg("")}>
               <Close sx={{ color: 'white' }} />
             </IconButton>
           </Box>

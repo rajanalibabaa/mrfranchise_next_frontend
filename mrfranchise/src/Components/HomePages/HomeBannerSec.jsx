@@ -18,7 +18,6 @@ import Skeleton from "@mui/material/Skeleton";
 import { useMediaQuery, useTheme } from "@mui/material";
 import dynamic from "next/dynamic";
 import Image from "next/image";
-import { useDispatch } from "react-redux";
 
 // ============================================
 // CRITICAL COMPONENTS - Load immediately
@@ -112,7 +111,7 @@ const SECTION_COMPONENTS = {
   HomeSection1: {
     component: dynamic(
       () => import("@/Components/HomePage_VideoSection/HomeSection1"),
-      { ssr: true, loading: () => <SectionSkeleton height={350} /> }
+      { ssr: false, loading: () => <SectionSkeleton height={350} /> }
     ),
     // priority: 1,
     height: 350,
@@ -120,7 +119,7 @@ const SECTION_COMPONENTS = {
   HomeSection2: {
     component: dynamic(
       () => import("@/Components/HomePage_VideoSection/HomeSection2"),
-      { ssr: true, loading: () => <SectionSkeleton height={350} /> }
+      { ssr: false, loading: () => <SectionSkeleton height={350} /> }
     ),
     priority: 2,
     height: 350,
@@ -308,11 +307,11 @@ const LazySection = memo(({ componentKey, isMobile }) => {
   const sectionConfig = SECTION_COMPONENTS[componentKey];
   const [hasLoaded, setHasLoaded] = useState(false);
 
-  const { ref, inView } = useInView({
-    triggerOnce: true,
-    rootMargin: sectionConfig?.priority === 1 ? "0px" : "200px",
-    threshold: 0,
-  });
+ const { ref, inView } = useInView({
+  triggerOnce: true,
+  rootMargin: "200px",
+  fallbackInView: true, // ✅ ADD THIS
+});
 
   useEffect(() => {
     if (inView && !hasLoaded) {
@@ -516,10 +515,10 @@ const AUTH_REQUIRED_SECTIONS = ["LikedBrands", "ShortlistBrands", "ViewBrands"];
 // ============================================
 export default memo(function HomeBannerSec() {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"), {
-    noSsr: true,
-  });
-
+const isMobile = useMediaQuery(theme.breakpoints.down("sm"), {
+  noSsr: true,
+  defaultMatches: false,
+});
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [bannerIndex, setBannerIndex] = useState(0);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -537,9 +536,16 @@ export default memo(function HomeBannerSec() {
 
     const timer = setTimeout(() => {
       const shown = sessionStorage.getItem("popup-shown");
-      const isReload =
-        performance.getEntriesByType?.("navigation")?.[0]?.type === "reload";
+let isReload = false;
 
+if (typeof window !== "undefined" && window.performance) {
+  try {
+    const nav = window.performance.getEntriesByType("navigation");
+    isReload = nav?.[0]?.type === "reload";
+  } catch (e) {
+    isReload = false;
+  }
+}
       if (!shown || isReload) {
         if (!localStorage.getItem("accessToken")) {
           setIsPopupOpen(true);
@@ -578,7 +584,7 @@ export default memo(function HomeBannerSec() {
 
       {/* Popup Modal */}
       {isPopupOpen && (
-        <Suspense fallback={null}>
+        <Suspense fallback={<div>Loading...</div>}>
           <PopupModal
             open={isPopupOpen}
             onClose={handlePopupClose}
@@ -608,7 +614,7 @@ export default memo(function HomeBannerSec() {
       </Box>
 
       {/* Compare Features */}
-      <Suspense fallback={null}>
+      <Suspense fallback={<div>Loading...</div>}>
         <CompareButton />
         <BrandComparison />
       </Suspense>

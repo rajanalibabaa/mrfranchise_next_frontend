@@ -4,17 +4,13 @@ import {
   Box,
   Typography,
   Card,
-  CardContent,
+
   IconButton,
-  Chip,
 } from "@mui/material";
 import {
   Place,
   Map,
-  LocationCity,
   ArrowBack,
-  FiberManualRecord,
-  LocationOff,
 } from "@mui/icons-material";
 import { useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
@@ -287,6 +283,7 @@ const ExpansionLocationGrid = ({ data }) => {
                 {isMobile && expandedState !== null && (
                   <IconButton
                     size="small"
+                    aria-label="next"
                     onClick={() => setExpandedState(null)}
                     sx={{ ml: "auto" }}
                   >

@@ -12,8 +12,7 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { Close } from "@mui/icons-material";
-// import { Link } from "react-router-dom";
-import Disclimer from '../OverTabHandlings.jsx/DisclimerPage.jsx'
+
 const ApplyDrawer = ({
   open,
   onClose,
@@ -86,7 +85,7 @@ const ApplyDrawer = ({
                 }
               </Typography>
             </Box>
-          <IconButton onClick={onClose}>
+          <IconButton aria-label="close" onClick={onClose}>
             <Close color="error" />
           </IconButton>
         </Box>
