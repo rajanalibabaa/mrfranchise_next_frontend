@@ -501,7 +501,7 @@ const allDocs = appliedRes.data?.data?.results?.flatMap(result => result.data) |
             }}
           >
             <Typography>{removeMsg}</Typography>
-            <IconButton size="small" onClick={() => setRemoveMsg("")}>
+            <IconButton  size="small" onClick={() => setRemoveMsg("")} aria-label="Close">
               <Close sx={{ color: 'white' }} />
             </IconButton>
           </Box>

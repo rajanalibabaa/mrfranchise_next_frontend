@@ -227,6 +227,7 @@ const CreateRequestForm = () => {
                   >
                     {index > 0 && (
                       <IconButton
+                          aria-label="Remove Contact"
                         color="error"
                         onClick={() => removeContact(index)}
                       >

@@ -472,7 +472,7 @@ const basicInfoFields = [
                   )}
                 </Button>
               )}
-              <IconButton onClick={onClose} sx={{ color: "black" }}>
+              <IconButton aria-label="close" onClick={onClose} sx={{ color: "black" }}>
                 <Close />
               </IconButton>
             </Box>
@@ -558,6 +558,7 @@ const basicInfoFields = [
                                   },
                                 }}
                                 size="small"
+                                aria-label="shortlist"
                               >
                                 <RiBookmark3Fill size={23} />
                               </IconButton>

@@ -94,7 +94,7 @@ export default function BrandDashboardLayout() {
       <SidebarLinks />
 
       {isMobileOrTablet && (
-        <IconButton onClick={handleDrawerToggle} sx={{ alignSelf: "center", mt: 2 }}>
+        <IconButton aria-label="close" onClick={handleDrawerToggle} sx={{ alignSelf: "center", mt: 2 }}>
           <CloseIcon />
         </IconButton>
       )}
@@ -107,7 +107,7 @@ export default function BrandDashboardLayout() {
       {isMobileOrTablet && (
         <AppBar position="fixed" color="default" elevation={1}>
           <Toolbar sx={{ justifyContent: "space-around" }}>
-            <IconButton edge="start" onClick={handleDrawerToggle}>
+            <IconButton aria-label="open drawer" edge="start" onClick={handleDrawerToggle}>
               <MenuIcon />
             </IconButton>
 

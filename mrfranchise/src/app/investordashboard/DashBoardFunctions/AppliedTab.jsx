@@ -101,6 +101,7 @@ const AppliedTab = ({
 
                       <TableCell align="center">
                         <IconButton
+                          aria-label="View Details"
                           color="warning"
                           onClick={() => handleViewDetails(item.brandId)}
                         >

@@ -445,6 +445,7 @@ const UploadsEdit = ({
           >
             <IconButton
               size="small"
+              aria-label="info"
               sx={{
                 color: "warning.main",
                 "&:hover": { backgroundColor: "info.main", color: "white" },
@@ -520,6 +521,7 @@ const UploadsEdit = ({
                               handleRemoveUploadedFile("brandLogo", 0)
                             }
                             color="error"
+                            aria-label="Delete"
                             size="small"
                           >
                             <Delete fontSize="small" />
@@ -601,6 +603,7 @@ const UploadsEdit = ({
                         />
                         {isEditing && (
                           <IconButton
+                            aria-label="Delete"
                             onClick={() =>
                               handleRemoveUploadedFile(
                                 "franchisePromotionVideo",
@@ -655,6 +658,7 @@ const UploadsEdit = ({
           >
             <IconButton
               size="small"
+              aria-label="info"
               sx={{
                 color: "warning.main",
                 "&:hover": { backgroundColor: "info.main", color: "white" },
@@ -736,6 +740,7 @@ const UploadsEdit = ({
                     />
                     {isEditing && (
                       <IconButton
+                        aria-label="Delete"
                         onClick={() => handleRemoveUploadedFile("pancard", 0)}
                         color="error"
                         size="small"
@@ -834,6 +839,7 @@ const UploadsEdit = ({
                     />
                     {isEditing && (
                       <IconButton
+                        aria-label="Delete"
                         onClick={() =>
                           handleRemoveUploadedFile("gstCertificate", 0)
                         }
@@ -883,6 +889,7 @@ const UploadsEdit = ({
             enterTouchDelay={0}
           >
             <IconButton
+              aria-label="info"
               size="small"
               sx={{
                 color: "warning.main",
@@ -969,6 +976,7 @@ const UploadsEdit = ({
                         />
                         {isEditing && (
                           <IconButton
+                            aria-label="Delete"
                             onClick={() =>
                               handleRemoveUploadedFile("exteriorOutlet", index)
                             }
@@ -1092,6 +1100,7 @@ const UploadsEdit = ({
                         />
                         {isEditing && (
                           <IconButton
+                            aria-label="Delete"
                             onClick={() =>
                               handleRemoveUploadedFile("interiorOutlet", index)
                             }
@@ -1153,6 +1162,7 @@ const UploadsEdit = ({
             enterTouchDelay={0}
           >
             <IconButton
+              aria-label="info"
               size="small"
               sx={{
                 color: "warning.main",
@@ -1298,10 +1308,10 @@ const UploadsEdit = ({
                       </TableCell>
                       {isEditing && (
                         <TableCell>
-                          <IconButton onClick={() => handleEditAward(index)}>
+                          <IconButton aria-label="edit" onClick={() => handleEditAward(index)}>
                             <Edit color="primary" />
                           </IconButton>
-                          <IconButton onClick={() => handleDeleteAward(index)}>
+                          <IconButton aria-label="delete" onClick={() => handleDeleteAward(index)}>
                             <Delete color="error" />
                           </IconButton>
                         </TableCell>
@@ -1327,6 +1337,7 @@ const UploadsEdit = ({
           >
             <IconButton
               size="small"
+              aria-label="info"
               sx={{
                 color: "warning.main",
                 "&:hover": { backgroundColor: "info.main", color: "white" },
@@ -1380,6 +1391,7 @@ const UploadsEdit = ({
                 href={createObjectURL(normalizedData.businessPlan[0])}
                 target="_blank"
                 rel="noopener noreferrer"
+                aria-label="view"
                 color="primary"
                 size="small"
                 title="View Business Plan"
@@ -1391,6 +1403,7 @@ const UploadsEdit = ({
                   onClick={() => handleRemoveUploadedFile("businessPlan", 0)}
                   size="small"
                   color="error"
+                  aria-label="delete"
                 >
                   <Delete fontSize="small" />
                 </IconButton>

@@ -250,12 +250,14 @@ const navigate = useRouter();
                 >
                   <IconButton
                     ref={el => likeButtonRefs.current[brand.uuid] = el}
+                    aria-label="like"
                     sx={{
                       color: brand?.isLiked ? "#ff5252" : "rgba(0,0,0,0.2)",
                       "&:hover": { color: "#ff5252" },
                     }}
                     onClick={() => handleLikeClick(brand)}
                     disabled={likeProcessing[brand.uuid]}
+                    
                   >
                     {likeProcessing[brand.uuid] ? (
                       <CircularProgress size={24} />
@@ -268,6 +270,7 @@ const navigate = useRouter();
  
                   <IconButton
                     ref={el => shortlistButtonRefs.current[brand.uuid] = el}
+                      aria-label="shortlist"
                     onClick={() => handleToggleShortList(brand)}
                     sx={{
                       color: brand?.isShortListed
@@ -285,6 +288,7 @@ const navigate = useRouter();
                 <Stack direction="row" spacing={0.5}>
                   <IconButton
                     ref={el => likeButtonRefs.current[brand.uuid] = el}
+                    aria-label="like"
                     sx={{
                       color: brand?.isLiked ? "#ff5252" : "rgba(0,0,0,0.2)",
                       "&:hover": { color: "#ff5252" },
@@ -303,6 +307,7 @@ const navigate = useRouter();
  
                   <IconButton
                     ref={el => shortlistButtonRefs.current[brand.uuid] = el}
+                      aria-label="shortlist"
                     onClick={() => handleToggleShortList(brand)}
                     sx={{
                       color: brand?.isShortListed

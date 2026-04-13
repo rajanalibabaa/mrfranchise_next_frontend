@@ -8,7 +8,7 @@ import {
 } from "@mui/material";
 const FranchiseJourney = () => {
   return (
-  <Box sx={{display:'flex',flexDirection:{"xs":"column", "md":"row"}, justifyContent:"space-around",backgroundImage:"url(/Mrfranchise_HomePage_consulting.jpg)", backgroundSize:"contain", backgroundRepeat:"no-repeat", backgroundPosition:"center", backgroundAttachment:"fixed", py:3, px:2}}>
+  <Box sx={{display:'flex',flexDirection:{"xs":"column", "md":"row"}, justifyContent:"space-around",backgroundImage:"url(/Mrfranchise_HomePage_consulting.jpg)", backgroundSize:"contain", backgroundRepeat:"no-repeat", backgroundPosition:"center", backgroundAttachment:"fixed", py:9, px:2}}>
   <Box>
       {/* CTA Section */}
       <Typography variant="h6" fontWeight="bold" sx={{ mt: 3, mb: 1 }}>

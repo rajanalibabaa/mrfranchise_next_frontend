@@ -350,6 +350,7 @@ function Navbar() {
             <motion.div whileHover={{ scale: 1.1 }}>
               <IconButton
                 edge="start"
+                aria-label="menu"
                 onClick={() => dispatch(toggleSidebar(true))}
                 sx={{ color: "#ff9800" }}
               >
@@ -418,7 +419,7 @@ function Navbar() {
             }}
           >
             <motion.div>
-              <IconButton onClick={() => setSearchOpen(true)}>
+              <IconButton aria-label="Search" onClick={() => setSearchOpen(true)}>
                 <Search size={25} />
                 <Typography sx={{ display: { xs: "none", sm: "flex" } }}>
                   Search
@@ -455,7 +456,7 @@ function Navbar() {
 
           <Box ref={avatarRef} sx={{ position: "relative" }}>
             <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-              <IconButton onClick={handleMenuOpen} sx={{ p: 0 }}>
+              <IconButton aria-label="account of current user" onClick={handleMenuOpen} sx={{ p: 0 }}>
                 <Avatar
                   sx={{
                     bgcolor: "rgba(255, 152, 0, 0.8)",

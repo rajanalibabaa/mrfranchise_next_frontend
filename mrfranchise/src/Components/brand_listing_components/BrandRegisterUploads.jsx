@@ -217,6 +217,7 @@ const Uploads = ({
           >
             <IconButton
               size="small"
+              aria-label="info"
               sx={{
                 color: "warning.main",
                 "&:hover": {
@@ -297,6 +298,7 @@ const Uploads = ({
                       onClick={() => handleRemoveFile("brandLogo", 0)}
                       color="error"
                       size="small"
+                      aria-label="Remove uploaded logo"
                     >
                       <Delete fontSize="small" />
                     </IconButton>
@@ -373,6 +375,7 @@ const Uploads = ({
                       }
                       color="error"
                       size="small"
+                      aria-label="Remove uploaded video"
                     >
                       <Delete fontSize="small" />
                     </IconButton>
@@ -400,6 +403,7 @@ const Uploads = ({
           >
             <IconButton
               size="small"
+              aria-label="info"
               sx={{
                 color: "warning.main",
                 "&:hover": {
@@ -498,6 +502,7 @@ const Uploads = ({
                   onClick={() => handleRemoveFile("pancard", 0)}
                   color="error"
                   size="small"
+                  aria-label="Remove uploaded PAN card"
                 >
                   <Delete fontSize="small" />
                 </IconButton>
@@ -592,6 +597,7 @@ const Uploads = ({
                 <IconButton
                   onClick={() => handleRemoveFile("gstCertificate", 0)}
                   color="error"
+                  aria-label="delete"
                   size="small"
                 >
                   <Delete fontSize="small" />
@@ -619,6 +625,7 @@ const Uploads = ({
           >
             <IconButton
               size="small"
+              aria-label="info"
               sx={{
                 color: "warning.main",
                 "&:hover": {
@@ -739,6 +746,7 @@ const Uploads = ({
                             }
                             color="error"
                             size="small"
+                            aria-label={`Remove exterior image ${index + 1}`}
                             sx={{
                               position: "absolute",
                               top: 4,
@@ -881,6 +889,7 @@ const Uploads = ({
                             }
                             color="error"
                             size="small"
+                            aria-label={`Remove interior image ${index + 1}`}
                             sx={{
                               position: "absolute",
                               top: 4,
@@ -940,6 +949,7 @@ const Uploads = ({
           >
             <IconButton
               size="small"
+              aria-label="info"
               sx={{
                 // p: 0.8,
                 color: "warning.main",
@@ -1070,7 +1080,7 @@ const Uploads = ({
                           : "No document"}
                       </TableCell>
                       <TableCell>
-                        <IconButton onClick={() => handleAwardRemove(index)}>
+                        <IconButton aria-label="delete" onClick={() => handleAwardRemove(index)}>
                           <Delete />
                         </IconButton>
                       </TableCell>
@@ -1100,6 +1110,7 @@ const Uploads = ({
           >
             <IconButton
               size="small"
+              aria-label="info"
               sx={{
                 color: "warning.main",
                 "&:hover": {
@@ -1162,6 +1173,7 @@ const Uploads = ({
                 {safeData.businessPlan[0].name}
               </Typography>
               <IconButton
+                aria-label="delete"
                 onClick={() => handleRemoveFile("businessPlan", 0)}
                 size="small"
                 color="error"

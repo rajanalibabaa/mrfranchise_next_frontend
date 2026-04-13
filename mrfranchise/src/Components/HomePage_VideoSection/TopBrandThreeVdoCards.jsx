@@ -835,6 +835,7 @@ function TopBrandVdoCards() {
                             {isMobile && (
                               <Tooltip title={mainBrand.isLiked ? "Remove from favorites" : "Add to favorites"}>
                                 <IconButton
+                                aria-label="like brand"
                                   onClick={(e) => handleLikeClick(mainBrand, e)}
                                   disabled={isLoading || likeProcessing[mainBrand.uuid]}
                                   sx={{ color: mainBrand.isLiked ? "red" : "gray" }}
@@ -896,7 +897,8 @@ function TopBrandVdoCards() {
                         {!isMobile && (
                           <>
                             <Tooltip title={mainBrand.isLiked ? "Remove from favorites" : "Add to favorites"}>
-                              <IconButton
+                              <IconButton 
+                                aria-label="like brand"
                                 onClick={(e) => handleLikeClick(mainBrand, e)}
                                 disabled={isLoading || likeProcessing[mainBrand.uuid]}
                               >
@@ -904,7 +906,8 @@ function TopBrandVdoCards() {
                               </IconButton>
                             </Tooltip>
                             <Tooltip title={mainBrand.isShortListed ? "Remove from shortlist" : "Add to shortlist"}>
-                              <IconButton
+                              <IconButton 
+                                aria-label="shortlist brand"
                                 onClick={(e) => handleToggleShortList(mainBrand, e)}
                                 sx={{ color: mainBrand.isShortListed ? "#7ef400ff" : "rgba(0, 0, 0, 0.23)" }}
                               >
@@ -1097,7 +1100,8 @@ function TopBrandVdoCards() {
                       <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
                         <Tooltip title={brand.isLiked ? "Remove from favorites" : "Add to favorites"}>
                           <IconButton
-                            size="small"
+                            size="small" 
+                            aria-label="like brand"
                             onClick={(e) => handleLikeClick(brand, e)}
                             disabled={isLoading || likeProcessing[brand.uuid]}
                             sx={{ color: brand.isLiked ? "red" : "gray" }}
@@ -1108,6 +1112,7 @@ function TopBrandVdoCards() {
                         <Tooltip title={brand.isShortListed ? "Remove from shortlist" : "Add to shortlist"}>
                           <IconButton
                             size="small"
+                            aria-label="shortlist brand"
                             onClick={(e) => handleToggleShortList(brand, e)}
                             sx={{ color: brand.isShortListed ? "#7ef400ff" : "rgba(0, 0, 0, 0.23)" }}
                           >

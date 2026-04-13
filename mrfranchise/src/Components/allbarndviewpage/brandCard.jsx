@@ -273,6 +273,7 @@
             >
               <span>
                 <IconButton
+                aria-label="Compare Brand"
                   sx={{
                     position: "absolute",
                     top: 8,
@@ -352,6 +353,7 @@
                   ref={likeButtonRef}
                   onClick={handleLike}
                   disabled={likeProcessing}
+
                   size="small"
                 >
                   {likeProcessing ? (
@@ -419,6 +421,7 @@
                   ref={shortlistButtonRef}
                   onClick={handleToggleShortList}
                   size="small"
+                  aria-label="shortlist"
                   disabled={shortlistProcessing}
                 >
                   {shortlistProcessing ? (

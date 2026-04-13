@@ -251,6 +251,7 @@ const supportLinks = [
                     component="a"
                     href={social.url}
                     target="_blank"
+                    aria-label={social.url}
                     rel="noopener noreferrer"
                     sx={{
                       backgroundColor: `${social.color}20`,
@@ -270,6 +271,7 @@ const supportLinks = [
 
           <IconButton
             onClick={scrollToTop}
+              aria-label="Back to top"
             sx={{
               backgroundColor: "#ff6d00",
               color: "white",

@@ -70,6 +70,7 @@ const LeadDetailDialog = ({ open, onClose, selectedItem }) => {
         </DialogTitle>
         <IconButton
           onClick={onClose}
+            aria-label="close"
           sx={{
             color: "#fff",
             p: isMobile ? 0.5 : 1,

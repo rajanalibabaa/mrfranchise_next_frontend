@@ -288,6 +288,7 @@ const HomePageBrandCard = React.memo(
                 {/* ❤️ Like */}
                 <AnimatedIconButton
                   ref={likeButtonRef}
+                  aria-label="like"
                   onClick={() => handleLikeClick(brand)}
                   disabled={likeProcessing[brandId]}
                   whileTap={{ scale: 0.8 }}
@@ -312,6 +313,7 @@ const HomePageBrandCard = React.memo(
                 {/* 🔖 Shortlist */}
                 <AnimatedIconButton
                   ref={shortlistButtonRef}
+                  aria-label="shortlist"
                   onClick={() => handleToggleShortList(brand)}
                   whileTap={{ scale: 0.8 }}
                   whileHover={{ scale: 1.2 }}
@@ -333,7 +335,7 @@ const HomePageBrandCard = React.memo(
                 </AnimatedIconButton>
 
                 {/* 🔗 Share */}
-                <AnimatedIconButton onClick={handleOpenShareClick}>
+                <AnimatedIconButton  onClick={handleOpenShareClick} aria-label="share">
                   <Tooltip title="Share">
                     <ShareOutlined fontSize="small" />
                   </Tooltip>

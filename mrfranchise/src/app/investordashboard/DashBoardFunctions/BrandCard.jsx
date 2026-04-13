@@ -124,7 +124,8 @@ const dispatch = useDispatch();
         {!isMobile && (
           <Stack direction="column" spacing={0.5} sx={{ position: "absolute", top: 4, right: 4, zIndex: 2 }}>
             {type === 'liked' && (
-              <IconButton
+              <IconButton 
+              aria-label="favorite"
                 sx={{
                   color: isLiked ? "#ff5252" : "rgba(0,0,0,0.2)",
                   "&:hover": { color: "#ff5252" },
@@ -136,6 +137,7 @@ const dispatch = useDispatch();
             )}
             {type === 'shortlisted' && (
               <IconButton 
+              aria-label="shortlist"
                 sx={{ 
                   color: isShortlisted ? "#689f38" : "rgba(0,0,0,0.2)",
                   "&:hover": { color: "#689f38" },
@@ -153,7 +155,8 @@ const dispatch = useDispatch();
         {isMobile && (
           <Stack direction="row" spacing={0.5}>
             {type === 'liked' && (
-              <IconButton
+              <IconButton 
+              aria-label="favorite"
                 sx={{
                   color: isLiked ? "#ff5252" : "rgba(0,0,0,0.2)",
                   "&:hover": { color: "#ff5252" },
@@ -165,6 +168,7 @@ const dispatch = useDispatch();
             )}
             {type === 'shortlisted' && (
               <IconButton 
+              aria-label="shortlist"
                 sx={{ 
                   color: "#689f38",
                   "&:hover": { color: "#689f38" },

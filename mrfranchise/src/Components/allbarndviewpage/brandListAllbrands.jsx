@@ -809,7 +809,7 @@ function BrandList({ maincat }) {
             <Typography variant="h6" fontWeight="bold">
               Filters {activeFilterCount > 0 && `(${activeFilterCount})`}
             </Typography>
-            <IconButton onClick={() => setMobileFiltersOpen(false)}>
+            <IconButton aria-label="close" onClick={() => setMobileFiltersOpen(false)}>
               <Close />
             </IconButton>
           </Box>
@@ -857,7 +857,7 @@ function BrandList({ maincat }) {
 
       {/* Modals */}
       {comparisonOpen && (
-        <Suspense fallback={null}>
+        <Suspense fallback={<div>Loading...</div>}>
           <BrandComparison
             open={comparisonOpen}
             onClose={handleCloseComparison}
@@ -870,7 +870,7 @@ function BrandList({ maincat }) {
       )}
 
       {showLogin && (
-        <Suspense fallback={null}>
+        <Suspense fallback={<div>Loading...</div>}>
           <LoginPage open={showLogin} onClose={() => setShowLogin(false)} />
         </Suspense>
       )}
