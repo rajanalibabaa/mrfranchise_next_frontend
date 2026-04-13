@@ -27,6 +27,15 @@ export default function RootLayout({ children }) {
     type="font/woff2"
     crossOrigin="anonymous"
   />
+  <link
+    rel="preload"
+    as="image"
+    href="/HomeBanner.avif"
+    type="image/avif"
+    crossOrigin="anonymous"
+
+   
+  />
 </head>
       <body>
         {/* Scripts */}

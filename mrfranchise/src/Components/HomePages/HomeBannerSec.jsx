@@ -7,7 +7,6 @@ import React, {
   useCallback,
   memo,
   useMemo,
-  lazy,
   startTransition,
 } from "react";
 import { useInView } from "react-intersection-observer";
@@ -29,7 +28,7 @@ const Navbar = dynamic(() => import("@/Components/Navbar/NavBar"), {
 
 const FilterDropdowns = dynamic(
   () => import("@/Components/Navbar/FilterDropdownsData"),
-  { ssr: false }
+  { ssr: true }
 );
 
 // ============================================
@@ -390,16 +389,16 @@ const HeroBanner = memo(({ isMobile, bannerIndex }) => {
         alt="Franchise Marketplace"
         fill
         priority
-        sizes="(max-width: 768px) 100vw, 
-         (max-width: 1200px) 90vw, 
-         80vw"
+        quality={75}
+        sizes="100vw"
+        // sizes="(max-width: 768px) 100vw, 
+        //  (max-width: 1200px) 90vw, 
+        //  80vw"
         style={{
           objectFit: "cover",
           objectPosition: "center",
         }}
         fetchPriority="high"
-        placeholder="blur"
-        blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAAAAUH/8QAIhAAAgEDAwUBAAAAAAAAAAAAAQIDAAQRBRIhBhMiMUFR/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAYEQEBAQEBAAAAAAAAAAAAAAABAgADEf/aAAwDAQACEQMRAD8AzWz0q6u7S3uIpLYJOiSoGkYMAwBGRt+1YnVCgFQ8J+clJ//Z"
       />
 
       {/* Overlay */}
@@ -604,6 +603,7 @@ if (typeof window !== "undefined" && window.performance) {
           bgcolor: "#F5F2F2",
         }}
       >
+        
         {visibleSections.map((sectionKey) => (
           <LazySection
             key={sectionKey}
