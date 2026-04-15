@@ -544,7 +544,7 @@ const [activeStep, setActiveStep] = useState(0);
           setActiveStep(0);
           setOpenPreview(false);
           setTimeout(() => {
-            router.push("/contactus");
+            router.push("/advertisewithus");
           }, 1500);
         } else {
           throw new Error("Submission failed. Please try again.");
@@ -1334,7 +1334,6 @@ const [activeStep, setActiveStep] = useState(0);
           onBack={() => setMembershipPayment(false)} // Button to go back to form
         />
       ) : ( */}
-        // Otherwise, render the form as normal
         <Box
           sx={{
             display: "flex",
