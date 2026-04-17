@@ -190,6 +190,7 @@ const PaymentBrandUpdate = ({
       setError(null);
       
       const url = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/brandlisting/getBrandById/${effectiveUuid}`;
+      console.log('Fetching brand data from URL:', url);
       const response = await fetch(url);
       
       if (!response.ok) {
