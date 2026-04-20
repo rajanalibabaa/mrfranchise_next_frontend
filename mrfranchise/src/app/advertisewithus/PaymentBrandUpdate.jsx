@@ -64,6 +64,7 @@ const PaymentBrandUpdate = ({
   const [error, setError] = useState(null);
   const [originalData, setOriginalData] = useState(null);
   const [isEditingMode, setIsEditingMode] = useState(false);
+  const [recommendedRanges, setRecommendedRanges] = useState([]);
   const [showOtpDialog, setShowOtpDialog] = useState(false);
   const [otp, setOtp] = useState("");
   const [otpToken, setOtpToken] = useState("");
@@ -91,6 +92,11 @@ const PaymentBrandUpdate = ({
     console.log('PaymentBrandUpdate - Using UUID:', uuid);
     setEffectiveUuid(uuid);
   }, [propUuid]);
+
+  useEffect(() => {
+  const storedRanges = JSON.parse(sessionStorage.getItem("investmentrange")) || [];
+  setRecommendedRanges(storedRanges);
+}, []);
 
   // Fetch data when effectiveUuid changes
   useEffect(() => {
@@ -190,8 +196,8 @@ const PaymentBrandUpdate = ({
       setError(null);
       
       const url = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/brandlisting/getBrandById/${effectiveUuid}`;
-      console.log('Fetching brand data from URL:', url);
       const response = await fetch(url);
+
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -199,7 +205,18 @@ const PaymentBrandUpdate = ({
       
       const result = await response.json();
       console.log('API Response:', result);
-      sessionStorage.setItem("investmentrange", JSON.stringify(result.data?.franchiseDetails?.fico[0]?.investmentRange || [])); 
+ const investmentRanges =
+  result.data?.franchiseDetails?.fico?.map(item => item.investmentRange) || [];
+
+sessionStorage.setItem(
+  "fico",
+  JSON.stringify(result.data?.franchiseDetails?.fico || [])
+);
+console.log('Investment Ranges:', investmentRanges);
+  
+
+sessionStorage.setItem("investmentrange", JSON.stringify(investmentRanges));
+      // sessionStorage.setItem("investmentrange", JSON.stringify(result.data?.franchiseDetails?.fico[0]?.investmentRange || [])); 
       sessionStorage.setItem("domesticlocations", JSON.stringify(result.data?.expansionlocationdata?.expansionLocations?.domestic?.locations || [])); 
       if (result.success && result.data) {
         const brandData = result.data;

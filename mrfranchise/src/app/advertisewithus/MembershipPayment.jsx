@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect , useMemo} from "react";
 import {
   Box,
   Container,
@@ -30,6 +30,14 @@ import {
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import AddIcon from "@mui/icons-material/Add";
+import IconButton from "@mui/material/IconButton";
+import CloseIcon from "@mui/icons-material/Close";
+import dynamic from 'next/dynamic';
+
+const PaymentBrandUpdate = dynamic(() => import('./PaymentBrandUpdate'), {
+  loading: () => <CircularProgress />,
+  ssr: false
+});
 
 const MembershipSelection = () => {
   // UI state
@@ -39,11 +47,22 @@ const MembershipSelection = () => {
   const [expanded, setExpanded] = useState(false);
   const [expandedRegion, setExpandedRegion] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [selectedRows, setSelectedRows] = useState(new Set());
+  const [showEditModal, setShowEditModal] = useState(false);
   const [lockedSelection, setLockedSelection] = useState({ ranges: [], states: [] });
+  const [sessionData, setSessionData] = useState({
+  investmentRange: [],
+  domesticLocations: [],
+  fico: [], 
+});
 
   // Edit confirmation dialog state
-  const [editConfirmOpen, setEditConfirmOpen] = useState(false);
-  const [pendingEditData, setPendingEditData] = useState(null);
+  // const [editConfirmOpen, setEditConfirmOpen] = useState(false);
+  // const [pendingEditData, setPendingEditData] = useState(null);
+
+  // NEW: Business Model Change Dialog
+  const [businessModelChangeOpen, setBusinessModelChangeOpen] = useState(false);
+  const [pendingCheckboxChange, setPendingCheckboxChange] = useState(null);
 
   // Added selections state
   const [addedSelections, setAddedSelections] = useState([]);
@@ -73,6 +92,20 @@ const MembershipSelection = () => {
     fetchPlans();
   }, []);
 
+  // Load session data on client side only
+// Load session data on client side only
+useEffect(() => {
+  if (typeof window !== 'undefined') {
+    try {
+const fico = JSON.parse(sessionStorage.getItem("fico") || "[]");     
+ const domesticLocations = JSON.parse(sessionStorage.getItem("domesticlocations") || "[]");
+setSessionData({ domesticLocations, fico });
+    } catch (err) {
+      console.error('Error loading session data:', err);
+    }
+  }
+}, []);
+
 const investmentRanges = plansApi.length
   ? plansApi[0].packages.flatMap(pkg =>
       pkg.investmentRange.map(range => ({
@@ -92,6 +125,46 @@ const investmentRanges = plansApi.length
       })),
     }))
   : [];
+
+
+  
+ const handleRowCheckboxChange = (rowKey, isRecommended, row) => {
+  const newSet = new Set(selectedRows);
+  const wouldBeSelected = !newSet.has(rowKey);
+
+  if (wouldBeSelected && row.type === "added") {
+    setPendingCheckboxChange({ rowKey, isRecommended });
+    setBusinessModelChangeOpen(true);
+  } else {
+    if (newSet.has(rowKey)) {
+      newSet.delete(rowKey);
+    } else {
+      newSet.add(rowKey);
+    }
+    setSelectedRows(newSet);
+  }
+};
+
+  // NEW: Confirm business model change
+ const handleConfirmBusinessModelChange = () => {
+  if (pendingCheckboxChange) {
+    const newSet = new Set(selectedRows);
+    newSet.add(pendingCheckboxChange.rowKey);
+    setSelectedRows(newSet);
+  }
+  setBusinessModelChangeOpen(false);
+  setPendingCheckboxChange(null);
+  
+  // Open the edit modal
+  setShowEditModal(true);
+};
+
+
+  // NEW: Cancel business model change
+  const handleCancelBusinessModelChange = () => {
+    setBusinessModelChangeOpen(false);
+    setPendingCheckboxChange(null);
+  };
 
   const indiaRegions = {
     "North India": [
@@ -175,61 +248,67 @@ const investmentRanges = plansApi.length
     return code;
   };
 
-
-
   // Function to handle when user clicks Edit on recommended row
-  const handleEditRecommended = (row) => {
-    setPendingEditData(row);
-    setEditConfirmOpen(true);
-  };
+  // const handleEditRecommended = (row) => {
+  //   setPendingEditData(row);
+  //   setEditConfirmOpen(true);
+  // };
 
   // Function to confirm editing the recommended selection
-  const handleConfirmEdit = () => {
-    if (!pendingEditData) return;
+  // const handleConfirmEdit = () => {
+  //   if (!pendingEditData) return;
 
-    let rangeVal = Array.isArray(pendingEditData.rangeValue) 
-      ? pendingEditData.rangeValue[0] 
-      : (pendingEditData.rangeValue || pendingEditData.rangeLabel);
+  //   let rangeVal = Array.isArray(pendingEditData.rangeValue) 
+  //     ? pendingEditData.rangeValue[0] 
+  //     : (pendingEditData.rangeValue || pendingEditData.rangeLabel);
     
-    const matched = investmentRanges.find(ir => ir.value === rangeVal || ir.label === rangeVal);
-    const finalRange = matched?.value || rangeVal;
-    setSelectedInvestmentRange(finalRange ? [finalRange] : []);
+  //   const matched = investmentRanges.find(ir => ir.value === rangeVal || ir.label === rangeVal);
+  //   const finalRange = matched?.value || rangeVal;
+  //   setSelectedInvestmentRange(finalRange ? [finalRange] : []);
 
-    const groupIdx = groupedInvestmentRanges.findIndex(g => g.items.some(i => i.value === finalRange));
-    if (groupIdx !== -1) setExpanded(groupIdx);
+  //   const groupIdx = groupedInvestmentRanges.findIndex(g => g.items.some(i => i.value === finalRange));
+  //   if (groupIdx !== -1) setExpanded(groupIdx);
 
-    const codes = [...new Set((pendingEditData.states || []).map(getStateCodeByName).filter(Boolean))];
-    setSelectedIndiaStates(codes);
+  //   const codes = [...new Set((pendingEditData.states || []).map(getStateCodeByName).filter(Boolean))];
+  //   setSelectedIndiaStates(codes);
 
-    const firstRegion = Object.entries(indiaRegions).find(([,list]) => 
-      list.some(s => codes.includes(s.code))
-    )?.[0];
-    if (firstRegion) setExpandedRegion(firstRegion);
+  //   const firstRegion = Object.entries(indiaRegions).find(([,list]) => 
+  //     list.some(s => codes.includes(s.code))
+  //   )?.[0];
+  //   if (firstRegion) setExpandedRegion(firstRegion);
 
-    setSelectedPlan(pendingEditData.category);
-    setIsEditing(true);
-    setLockedSelection({ ranges: finalRange ? [finalRange] : [], states: codes });
+  //   setSelectedPlan(pendingEditData.category);
+  //   setIsEditing(true);
+  //   setLockedSelection({ ranges: finalRange ? [finalRange] : [], states: codes });
     
-    setEditConfirmOpen(false);
-    setPendingEditData(null);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
+  //   setEditConfirmOpen(false);
+  //   setPendingEditData(null);
+  //   window.scrollTo({ top: 0, behavior: "smooth" });
+  // };
 
   // Function to cancel editing
-  const handleCancelEdit = () => {
-    setEditConfirmOpen(false);
-    setPendingEditData(null);
-  };
+  // const handleCancelEdit = () => {
+  //   setEditConfirmOpen(false);
+  //   setPendingEditData(null);
+  // };
+
+  // ✅ Edit now has exactly the same flow for all rows
+const handleEditRecommended = (row) => {
+  setPendingCheckboxChange({ rowKey: row.id, isRecommended: true });
+  setBusinessModelChangeOpen(true);
+};
 
 const getPackageForRange = (uiRangeValue, planName) => {
   const planObj = plansApi.find(p => p.planName === planName);
   if (!planObj) return null;
 
+  // ✅ Correct loose matching, will work 100% for all ranges
   return planObj.packages.find(pkg =>
-    pkg.investmentRange.includes(uiRangeValue)
+    pkg.investmentRange.some(range => 
+      range.toLowerCase().trim() === String(uiRangeValue).toLowerCase().trim()
+    )
   ) || null;
 };
-
   // Handle Add Selection
 const handleAddSelection = () => {
   if (!canAddSelection) return;
@@ -244,36 +323,37 @@ const handleAddSelection = () => {
     return;
   }
 
-  const newSelections = selectedInvestmentRange.map((rangeValue) => {
-    const rangeLabel =
-      investmentRanges.find((ir) => ir.value === rangeValue)?.label || rangeValue;
+const newSelections = selectedInvestmentRange.map((rangeValue) => {
+  const rangeLabel = investmentRanges.find((ir) => ir.value === rangeValue)?.label || rangeValue;
 
-    const pkg = getPackageForRange(rangeValue, selectedPlan);
-    const statesCount = selectedIndiaStates.length || 1;
-    const baseAmount = pkg?.amount ?? null;
-    const baseLeads = pkg?.totalLeads ?? null;
-    const totalLeads = baseLeads != null ? baseLeads * statesCount : "—";
-    const baseValidity = pkg?.validityDays ?? null;
+  const pkg = getPackageForRange(rangeValue, selectedPlan);
+  const statesCount = selectedIndiaStates.length || 1;
+  const baseAmount = pkg?.amount ?? null;
+  const baseLeads = pkg?.totalLeads ?? null;
+  const baseValidity = pkg?.validityDays ?? null;
 
-    return {
-      id: Date.now() + Math.random(),
-      rangeValue,
-      rangeLabel,
-      states: [...selectedIndiaStates],
-      statesSummary: getStatesSummary(selectedIndiaStates),
-      stateNames: getSelectedStateNames(selectedIndiaStates),
-      category: selectedPlan,
-      leadCount: totalLeads,
-      tenure: baseValidity != null ? `${baseValidity} days` : "—",
-      price:
-        baseAmount != null
-          ? `₹${(baseAmount * statesCount).toLocaleString("en-IN")}`
-          : "Price unavailable",
-      hasPricing: baseAmount != null && baseAmount >= 0,
-      baseAmount,
-      statesCount,
-    };
-  });
+  const totalLeads = baseLeads != null ? baseLeads * statesCount : "—";
+  const totalPrice = baseAmount != null ? baseAmount * statesCount : null;
+
+  return {
+    id: Date.now() + Math.random(),
+    rangeValue,
+    rangeLabel,
+    states: [...selectedIndiaStates],
+    statesSummary: getStatesSummary(selectedIndiaStates),
+    stateNames: getSelectedStateNames(selectedIndiaStates),
+    category: selectedPlan,
+    leadCount: totalLeads,
+    tenure: baseValidity != null ? `${baseValidity} days` : "—",
+    price:
+      totalPrice != null
+        ? `₹${totalPrice.toLocaleString("en-IN")}`
+        : "Price unavailable",
+    hasPricing: totalPrice != null && totalPrice >= 0,
+    baseAmount,
+    statesCount,
+  };
+});
 
   setAddedSelections((prev) => [...prev, ...newSelections]);
 
@@ -314,52 +394,119 @@ const handleAddSelection = () => {
     const found = allStates.find(s => normalize(s.name) === search);
     return found?.code || null;
   };
+  const safeArray = (value) => {
+  if (!value) return [];
+  if (Array.isArray(value)) return value;
+  return [value];
+};
 
   // Session data for recommended section
-  const investrangefromSession = JSON.parse(sessionStorage.getItem("investmentrange") || "[]");
-  const domesticLocationsFromSession = JSON.parse(sessionStorage.getItem("domesticlocations") || "[]");
+  // const domesticLocationsFromSession = sessionData.domesticLocations;
+  // const ficoModels = sessionData.fico || [];
+  // const investrangefromSession = sessionData.investmentRange;
 
-  const rawStates = domesticLocationsFromSession.map(loc => loc.state);
-  const sessionStateCodes = [...new Set(rawStates.map(getStateCodeByName).filter(Boolean))];
+  // console.log('✅ Debug loaded data:', { 
+  //   ficoModels, 
+  //   domesticLocationsFromSession, 
+  //   investmentRanges 
+  // });
 
-  const sessionStateNames = sessionStateCodes.map(getStateNameByCode).filter(Boolean).join(", ");
-  const sessionStatesCount = sessionStateCodes.length || 1;
+  // const rawStates = domesticLocationsFromSession.map(loc => loc.state);
+  // const sessionStateCodes = [...new Set(rawStates.map(getStateCodeByName).filter(Boolean))];
 
-  const sessionRangeRaw = Array.isArray(investrangefromSession) ? investrangefromSession[0] : investrangefromSession;
-  const rangeMatch = investmentRanges.find(ir => ir.value === sessionRangeRaw || ir.label === sessionRangeRaw);
-  const sessionRangeValue = rangeMatch?.value || sessionRangeRaw;
-  const sessionRangeLabel = rangeMatch?.label || sessionRangeRaw;
+  // const sessionStateNames = sessionStateCodes.map(getStateNameByCode).filter(Boolean).join(", ");
+  // const sessionStatesCount = sessionStateCodes.length || 1;
+  // const defaultPlanName = plansApi.length > 0 ? plansApi[0].planName : "LAUNCH PAD PROGRAM";
 
-  const defaultPlanName = plansApi.length > 0 ? plansApi[0].planName : "LAUNCH PAD PROGRAM";
-  const sessionPkg = getPackageForRange(sessionRangeValue, defaultPlanName);
+    // ✅ FINAL FIX: useMemo will always recalculate when data changes
+   const sessionRows = useMemo(() => {
 
-  const sessionBaseAmount = sessionPkg?.amount ?? null;
-  const sessionBaseLeads = sessionPkg?.totalLeads ?? null;
-  const sessionTotalLeads = sessionBaseLeads != null
-    ? sessionBaseLeads * sessionStatesCount
-    : "—";
-  const sessionBaseValidity = sessionPkg?.validityDays ?? null;
+    console.log('🔄 Recalculating session rows...');
+    console.log('🔄 Current fico models: ', sessionData.fico);
 
-  const sessionRows =
-    sessionRangeValue && sessionStateCodes.length > 0
-      ? [{
-          rangeValue: sessionRangeValue,
-          rangeLabel: sessionRangeLabel,
+    const rows = [];
+
+    const rawStates = sessionData.domesticLocations.map(loc => loc.state);
+    const sessionStateCodes = [...new Set(rawStates.map(getStateCodeByName).filter(Boolean))];
+    const sessionStateNames = sessionStateCodes.map(getStateNameByCode).filter(Boolean).join(", ");
+    const sessionStatesCount = sessionStateCodes.length || 1;
+    const defaultPlanName = plansApi.length > 0 ? plansApi[0].planName : "LAUNCH PAD PROGRAM";
+
+    if (sessionStateCodes.length > 0 && safeArray(sessionData.fico).length > 0) {
+
+      console.log('✅ Using FICO models, count: ', sessionData.fico.length);
+
+      safeArray(sessionData.fico).forEach((ficoModel, index) => {
+
+        const pkg = getPackageForRange(ficoModel.investmentRange, defaultPlanName);
+
+        const baseAmount = pkg?.amount ?? null;
+        const baseLeads = pkg?.totalLeads ?? null;
+        const baseValidity = pkg?.validityDays ?? null;
+
+        // ✅ EXACTLY AS YOU REQUESTED
+        // Lead Count = totalLeads from backend * number of states
+        const totalLeads = baseLeads != null ? baseLeads * sessionStatesCount : "—";
+        // Price = amount from backend * number of states
+        const totalPrice = baseAmount != null ? baseAmount * sessionStatesCount : null;
+
+        rows.push({
+          id: `fico-${index}`,
+          ficoIndex: index,
+          ficoModel: ficoModel,
+          rangeValue: ficoModel.investmentRange,
+          rangeLabel: ficoModel.investmentRange,
           states: sessionStateCodes,
-          statesSummary: `${sessionStatesCount} State${sessionStatesCount !== 1 ? "s" : ""}`,
+          statesSummary: `${sessionStatesCount} States`,
           stateNames: sessionStateNames,
           category: defaultPlanName,
-          leadCount: sessionTotalLeads,
-          tenure: sessionBaseValidity ? `${sessionBaseValidity} days` : "—",
-          price: sessionBaseAmount != null
-            ? `₹${(sessionBaseAmount * sessionStatesCount).toLocaleString("en-IN")}`
-            : "Contact us",
-          hasPricing: sessionBaseAmount != null,
-          type: "recommended",
-        }]
-      : [];
 
-  const hasSessionData = sessionRows.length > 0;
+          leadCount: totalLeads,
+          tenure: baseValidity != null ? `${baseValidity} days` : "—",
+          price:
+            totalPrice != null
+              ? `₹${totalPrice.toLocaleString("en-IN")}`
+              : "Price unavailable",
+          hasPricing: totalPrice != null,
+
+          type: "recommended",
+        });
+      });
+
+    } else if (sessionStateCodes.length > 0 && sessionData.investmentRange) {
+      console.log('⚠️ Falling back to legacy investment range');
+      safeArray(sessionData.investmentRange).forEach((range, index) => {
+
+        const pkg = getPackageForRange(range, defaultPlanName);
+        const baseAmount = pkg?.amount ?? null;
+        const baseLeads = pkg?.totalLeads ?? null;
+        const baseValidity = pkg?.validityDays ?? null;
+
+        const totalLeads = baseLeads != null ? baseLeads * sessionStatesCount : "—";
+        const totalPrice = baseAmount != null ? baseAmount * sessionStatesCount : null;
+
+        rows.push({
+          id: `legacy-${index}`,
+          rangeValue: range,
+          rangeLabel: range,
+          states: sessionStateCodes,
+          statesSummary: `${sessionStatesCount} States`,
+          stateNames: sessionStateNames,
+          category: defaultPlanName,
+          leadCount: totalLeads,
+          tenure: baseValidity != null ? `${baseValidity} days` : "—",
+          price: totalPrice != null ? `₹${totalPrice.toLocaleString("en-IN")}` : "Contact us",
+          hasPricing: totalPrice != null,
+          type: "recommended",
+        });
+      });
+    }
+
+    console.log('✅ Generated total rows: ', rows.length);
+    return rows;
+
+  }, [sessionData, plansApi]);
+    const hasSessionData = sessionRows.length > 0;
   const hasAddedSelections = addedSelections.length > 0;
 
   // Combined rows for display
@@ -476,23 +623,24 @@ const handleAddSelection = () => {
                             key={range.value}
                             sx={labelStyle}
                             control={
-                              <Checkbox
+                             <Checkbox
   size="small"
   checked={selectedInvestmentRange.includes(range.value)}
   disabled={
     (isEditing && !selectedInvestmentRange.includes(range.value)) ||
-    [...addedSelections, ...sessionRows].some(s => s.rangeValue === range.value)
+    [...addedSelections, ...sessionRows].some(s => s.rangeValue === range.value) ||
+    // ✅ NEW: If any range is selected, disable all others
+    (selectedInvestmentRange.length > 0 && !selectedInvestmentRange.includes(range.value))
   }
   onChange={(e) => {
     const { value } = range;
-    setSelectedInvestmentRange(
-      e.target.checked
-        ? [...selectedInvestmentRange, value]
-        : selectedInvestmentRange.filter((v) => v !== value)
-    );
+    if (e.target.checked) {
+      setSelectedInvestmentRange([value]);
+    } else {
+      setSelectedInvestmentRange([]);
+    }
   }}
-/>
-                            }
+/>}
                             label={<Typography variant="body2">{range.label}</Typography>}
                           />
                         ))}
@@ -642,127 +790,225 @@ const handleAddSelection = () => {
                   📌 Recommended Based on Your Previous Selection
                 </Typography>
               </Box>
-              <TableContainer>
-                <Table>
-                  <TableHead>
-                    <TableRow sx={{ bgcolor: "#eeeeee" }}>
-                      <TableCell sx={tableHeaderCellStyle}>Investment Range</TableCell>
-                      <TableCell sx={tableHeaderCellStyle}>No. Of States</TableCell>
-                      <TableCell sx={tableHeaderCellStyle}>States</TableCell>
-                      <TableCell sx={tableHeaderCellStyle}>Plan</TableCell>
-                      <TableCell align="right" sx={tableHeaderCellStyle}>Lead Count</TableCell>
-                      <TableCell align="right" sx={tableHeaderCellStyle}>Tenure</TableCell>
-                      <TableCell align="right" sx={tableHeaderCellStyle}>Price</TableCell>
-                      <TableCell align="center" sx={tableHeaderCellStyle}>Action</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {combinedRows.map((row, index) => {
-                      const isRecommended = row.type === "recommended";
-                      return (
-                        <TableRow
-                          key={index}
-                          sx={{
-                            bgcolor: isRecommended
-                              ? "#FFF8E1"
-                              : index % 2 === 0
-                              ? "#fafafa"
-                              : "#fff",
-                            "&:hover": {
-                              bgcolor: isRecommended ? "#FFE0B2" : "#FFF3E0",
-                            },
-                          }}
-                        >
-                          <TableCell>
-                            <Typography fontWeight={600}>{row.rangeLabel}</Typography>
-                          </TableCell>
-                          <TableCell>
-                            <Typography fontWeight={600}>{row.statesSummary}</Typography>
-                          </TableCell>
-                          <TableCell>
-                            <Typography variant="caption">{row.stateNames}</Typography>
-                          </TableCell>
-                          <TableCell>
-                            <Typography fontWeight={200}>
-                              {isRecommended ? ` ${row.category}` : row.category}
-                            </Typography>
-                          </TableCell>
-                          <TableCell align="right">
-                            <Typography fontWeight={600}>{row.leadCount}</Typography>
-                          </TableCell>
-                          <TableCell align="right">
-                            <Typography fontWeight={600}>{row.tenure}</Typography>
-                          </TableCell>
-                          <TableCell align="right">
-                            <Typography
-                              fontWeight={700}
-                              color={row.hasPricing ? "primary.main" : "error.main"}
-                            >
-                              {row.price}
-                            </Typography>
-                          </TableCell>
-                          <TableCell align="center">
-                            {isRecommended ? (
-                              <Button
-                                size="small"
-                                variant="contained"
-                                sx={{
-                                  bgcolor: "#1976d2",
-                                  textTransform: "none",
-                                  fontSize: 12,
-                                }}
-                                onClick={() => handleEditRecommended(row)}
-                              >
-                                Edit
-                              </Button>
-                            ) : (
-                              <Button
-                                size="small"
-                                color="error"
-                                variant="outlined"
-                                onClick={() => handleRemoveSelection(row.id)}
-                                sx={{ minWidth: "auto", px: 1 }}
-                              >
-                                ✕
-                              </Button>
-                            )}
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
-              </TableContainer>
+             <TableContainer>
+  <Table>
+    <TableHead>
+      <TableRow sx={{ bgcolor: "#eeeeee" }}>
+        <TableCell sx={tableHeaderCellStyle} align="center">Select</TableCell>
+        <TableCell sx={tableHeaderCellStyle}>Investment Range</TableCell>
+        <TableCell sx={tableHeaderCellStyle}>No. Of States</TableCell>
+        <TableCell sx={tableHeaderCellStyle}>States</TableCell>
+        <TableCell sx={tableHeaderCellStyle}>Plan</TableCell>
+        <TableCell align="right" sx={tableHeaderCellStyle}>Lead Count</TableCell>
+        <TableCell align="right" sx={tableHeaderCellStyle}>Tenure</TableCell>
+        <TableCell align="right" sx={tableHeaderCellStyle}>Price</TableCell>
+        <TableCell align="center" sx={tableHeaderCellStyle}>Action</TableCell>
+      </TableRow>
+    </TableHead>
+ <TableBody>
+  {combinedRows.map((row, index) => {
+
+    console.log('✅ Rendering row: ', row.id, row.rangeLabel);
+
+    const isRecommended = row.type === "recommended";
+    const isSelected = selectedRows.has(row.id);
+    
+    return (
+      <TableRow
+        key={row.id}
+        sx={{
+          bgcolor: isRecommended
+            ? isSelected 
+              ? "#FFE0B2" 
+              : "#FFF8E1"
+            : isSelected
+            ? "#E3F2FD"
+            : index % 2 === 0
+            ? "#fafafa"
+            : "#fff",
+          "&:hover": {
+            bgcolor: isRecommended ? "#FFE0B2" : "#FFF3E0",
+          },
+        }}
+      >
+        <TableCell align="center">
+          <Checkbox
+            checked={isSelected}
+            onChange={() => handleRowCheckboxChange(row.id, isRecommended, row)}
+            sx={{
+              color: "#FFA726",
+              '&.Mui-checked': {
+                color: "#FF9800",
+              },
+            }}
+          />
+        </TableCell>
+        <TableCell>
+          <Typography fontWeight={600}>{row.rangeLabel}</Typography>
+        </TableCell>
+        <TableCell>
+          <Typography fontWeight={600}>{row.statesSummary}</Typography>
+        </TableCell>
+        <TableCell>
+          <Typography variant="caption">{row.stateNames}</Typography>
+        </TableCell>
+        <TableCell>
+          <Typography>{row.category}</Typography>
+        </TableCell>
+        <TableCell align="right">
+          <Typography fontWeight={600}>{row.leadCount}</Typography>
+        </TableCell>
+        <TableCell align="right">
+          <Typography fontWeight={600}>{row.tenure}</Typography>
+        </TableCell>
+        <TableCell align="right">
+          <Typography
+            fontWeight={700}
+            color={row.hasPricing ? "primary.main" : "error.main"}
+          >
+            {row.price}
+          </Typography>
+        </TableCell>
+        <TableCell align="center">
+          {isRecommended ? (
+            <Button
+              size="small"
+              variant="contained"
+              sx={{
+                bgcolor: "#1976d2",
+                textTransform: "none",
+                fontSize: 12,
+              }}
+              onClick={() => handleEditRecommended(row)}
+            >
+              Edit
+            </Button>
+          ) : (
+            <Button
+              size="small"
+              color="error"
+              variant="outlined"
+              onClick={() => handleRemoveSelection(row.id)}
+              sx={{ minWidth: "auto", px: 1 }}
+            >
+              ✕
+            </Button>
+          )}
+        </TableCell>
+      </TableRow>
+    );
+  })}
+</TableBody>
+  </Table>
+</TableContainer>
             </Paper>
           </Box>
         )}
       </Container>
 
-      {/* Edit Confirmation Dialog */}
-      <Dialog
+      {/* <Dialog
         open={editConfirmOpen}
         onClose={handleCancelEdit}
-        aria-labelledby="edit-confirmation-dialog-title"
-        aria-describedby="edit-confirmation-dialog-description"
       >
-        <DialogTitle id="edit-confirmation-dialog-title">
-          Edit Recommended Selection
-        </DialogTitle>
+        <DialogTitle>Edit Recommended Selection</DialogTitle>
         <DialogContent>
-          <DialogContentText id="edit-confirmation-dialog-description">
-            Are you sure you want to edit this recommended selection? 
-           
+          <DialogContentText>
+            Are you sure you want to edit this recommended selection?
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCancelEdit} color="primary">
-            Cancel
-          </Button>
-          <Button onClick={handleConfirmEdit} color="primary" autoFocus variant="contained">
+          <Button onClick={handleCancelEdit}>Cancel</Button>
+          <Button onClick={handleConfirmEdit} variant="contained">
             Yes, Edit Selection
           </Button>
         </DialogActions>
+      </Dialog> */}
+
+      {/* Business Model Change Dialog */}
+      <Dialog
+        open={businessModelChangeOpen}
+        onClose={handleCancelBusinessModelChange}
+      >
+        <DialogTitle>Change Business Model?</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Do you want to edit the business model by selecting this new plan?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCancelBusinessModelChange}>Cancel</Button>
+          <Button 
+            onClick={handleConfirmBusinessModelChange} 
+            variant="contained"
+            sx={{ bgcolor: "#FFA726", "&:hover": { bgcolor: "#FF9800" } }}
+          >
+            Yes, Edit Business Model
+          </Button>
+        </DialogActions>
       </Dialog>
+
+   {/* FICO Edit Dialog - FIXED VERSION */}
+<Dialog
+  fullScreen
+  open={showEditModal}
+  onClose={() => setShowEditModal(false)}
+>
+  <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
+    {/* Header */}
+    <Box
+      sx={{
+        bgcolor: '#ff9800',
+        color: 'white',
+        p: 2,
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+      }}
+    >
+      <Typography variant="h6">
+        Edit Franchise Investment & Cost Overview (FICO) Models
+      </Typography>
+      <IconButton
+        edge="end"
+        color="inherit"
+        onClick={() => setShowEditModal(false)}
+        aria-label="close"
+      >
+        <CloseIcon />
+      </IconButton>
+    </Box>
+
+    {/* Content */}
+    <Box sx={{ flex: 1, overflow: 'auto', p: 3, bgcolor: '#f5f5f5' }}>
+      {showEditModal && (
+        <PaymentBrandUpdate 
+          // isEditing={true}
+          onDataLoaded={(data) => {
+            console.log('Brand data loaded in modal:', data);
+          }}
+        />
+      )}
+    </Box>
+
+    {/* Footer */}
+    <Box
+      sx={{
+        bgcolor: 'white',
+        p: 2,
+        display: 'flex',
+        justifyContent: 'flex-end',
+        borderTop: '1px solid #ddd',
+      }}
+    >
+      <Button
+        variant="outlined"
+        onClick={() => setShowEditModal(false)}
+      >
+        Close
+      </Button>
+    </Box>
+  </Box>
+</Dialog>
     </Box>
   );
 };
