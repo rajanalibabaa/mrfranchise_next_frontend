@@ -91,11 +91,19 @@ const INDIA_REGIONS = {
 // ─── Flat state lookup maps ───────────────────────────────────────────────────
 const ALL_STATES_FLAT = Object.values(INDIA_REGIONS).flat();
 const CODE_TO_NAME = Object.fromEntries(ALL_STATES_FLAT.map((s) => [s.code, s.name]));
+const NAME_TO_CODE = Object.fromEntries(ALL_STATES_FLAT.map((s) => [s.name.toLowerCase().trim(), s.code]));
+
 const NAME_ALIASES = {
   "andaman & nicobar islands": "AN",
   "andaman and nicobar islands": "AN",
   "daman & diu": "DN",
   "daman and diu": "DN",
+  "dadra & nagar haveli and daman & diu": "DN",
+  "dadra and nagar haveli and daman and diu": "DN",
+  "jammu & kashmir": "JK",
+  "j&k": "JK",
+  "uttaranchal": "UK",
+  "orissa": "OD",
 };
 
 const normalize = (str) =>
@@ -105,9 +113,15 @@ const getStateNameByCode = (code) => CODE_TO_NAME[code] || code;
 
 const getStateCodeByName = (nameOrCode) => {
   if (!nameOrCode) return null;
+  // Direct code match
   if (CODE_TO_NAME[nameOrCode]) return nameOrCode;
   const n = normalize(nameOrCode);
+  // Alias match
   if (NAME_ALIASES[n]) return NAME_ALIASES[n];
+  // Direct name match
+  const directMatch = NAME_TO_CODE[n];
+  if (directMatch) return directMatch;
+  // Fuzzy match
   const found = ALL_STATES_FLAT.find((s) => normalize(s.name) === n);
   return found?.code || null;
 };
@@ -118,6 +132,29 @@ const formatPrice = (amount) =>
   amount != null ? `₹${Number(amount).toLocaleString("en-IN")}` : "—";
 
 const normalizeRange = (r) => String(r).toLowerCase().trim();
+
+const getBrandFicoItems = (data) => {
+  if (!data) return [];
+  return safeArray(
+    data?.franchiseDetails?.fico ||
+    data?.brandfranchisedetails?.franchiseDetails?.fico ||
+    data?.brandfranchisedetails?.fico ||
+    data?.franchiseDetails?.brandfranchisedetails?.fico ||
+    []
+  );
+};
+
+const getBrandExpansionData = (data) => {
+  if (!data) return null;
+
+  if (data.expansionLocations) return data.expansionLocations;
+  if (data.expansionlocationdata?.expansionLocations) return data.expansionlocationdata.expansionLocations;
+  if (data.brandexpansionlocationdatas?.expansionLocations) return data.brandexpansionlocationdatas.expansionLocations;
+  if (data.expansionlocationdata) return data.expansionlocationdata;
+  if (data.brandexpansionlocationdatas) return data.brandexpansionlocationdatas;
+
+  return null;
+};
 
 // ─── Table Header Cells ───────────────────────────────────────────────────────
 const TABLE_HEADERS = [
@@ -161,7 +198,7 @@ const TH_CELL_STYLE = {
 const PlanTableRow = memo(function PlanTableRow({
   row, index, isSelected, isRecommendedTable,
   onCheckboxChange, onEdit, onRemove,
-  ficoRanges, // Set of fico investment range strings (normalized)
+  ficoRanges,
 }) {
   const headerColor = isRecommendedTable ? "#E65100" : "#1565C0";
   const selectedBg  = isRecommendedTable ? "#FFE0B2" : "#BBDEFB";
@@ -169,7 +206,6 @@ const PlanTableRow = memo(function PlanTableRow({
   const defaultBg2  = isRecommendedTable ? "#FFFDE7" : "#EFF6FF";
   const hoverBg     = isRecommendedTable ? "#FFE0B2" : "#BBDEFB";
 
-  // ── Check if this row's investment range is inside FICO model ──
   const isInFico = ficoRanges.has(normalizeRange(row.rangeValue));
 
   return (
@@ -265,7 +301,7 @@ const PlanTableRow = memo(function PlanTableRow({
         </Typography>
       </TableCell>
 
-      {/* ── FICO Status Column ── */}
+      {/* FICO Status Column */}
       <TableCell align="center">
         {isInFico ? (
           <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 0.3 }}>
@@ -331,9 +367,11 @@ const MembershipSelection = () => {
   const [plansApi, setPlansApi]                               = useState([]);
   const [loading, setLoading]                                 = useState(true);
   const [error, setError]                                     = useState("");
-  const [sessionData, setSessionData]                         = useState({
-    investmentRange: [], domesticLocations: [], fico: [],
-  });
+
+  // ── Brand API data (replaces sessionStorage) ──────────────────────────────
+  const [brandData, setBrandData] = useState(null);
+  const [brandLoading, setBrandLoading] = useState(true);
+  const [brandError, setBrandError] = useState("");
 
   // Dialog states
   const [confirmDialogOpen, setConfirmDialogOpen]   = useState(false);
@@ -341,7 +379,7 @@ const MembershipSelection = () => {
   const [brandDialogOpen, setBrandDialogOpen]         = useState(false);
   const [brandDialogContext, setBrandDialogContext]   = useState(null);
 
-  // ── Payment validation dialog ──
+  // Payment validation dialog
   const [paymentBlockDialogOpen, setPaymentBlockDialogOpen] = useState(false);
   const [blockedRows, setBlockedRows]                        = useState([]);
 
@@ -349,12 +387,12 @@ const MembershipSelection = () => {
   useEffect(() => {
     const fetchPlans = async () => {
       try {
-        const res  = await fetch("http://localhost:5000/api/v1/admin/plans/getAllPlans");
+        const res  = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/plans/getAllPlans`);
         const json = await res.json();
         if (json.success) setPlansApi(json.data);
         else setError("Failed to fetch plans");
       } catch {
-        setError("Error connecting to API");
+        setError("Error connecting to plans API");
       } finally {
         setLoading(false);
       }
@@ -362,33 +400,84 @@ const MembershipSelection = () => {
     fetchPlans();
   }, []);
 
-  // ── Session data ─────────────────────────────────────────────────────────
+  // ── Fetch Brand Data by UUID ─────────────────────────────────────────────
   useEffect(() => {
     if (typeof window === "undefined") return;
-    try {
-      const fico              = JSON.parse(sessionStorage.getItem("fico") || "[]");
-      const domesticLocations = JSON.parse(sessionStorage.getItem("domesticlocations") || "[]");
-      // setSessionData({ domesticLocations, fico });
-      setSessionData({ domesticLocations, fico, investmentRange: [] });
-    } catch (err) {
-      console.error("Error loading session data:", err);
-    }
+
+    const fetchBrandData = async () => {
+      try {
+        setBrandLoading(true);
+        setBrandError("");
+
+        // Get uuid from sessionStorage or localStorage
+        const uuid =
+          
+          localStorage.getItem("brandUUID") ||
+          localStorage.getItem("brandId") || sessionStorage.getItem("uuid") ||
+          sessionStorage.getItem("brandId") ;
+
+        if (!uuid) {
+          setBrandError("Brand UUID not found in session.");
+          setBrandLoading(false);
+          return;
+        }
+
+        const url = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/brandlisting/getBrandById/${uuid}`;
+        const res = await fetch(url);
+        const json = await res.json();
+
+        if (json.success && json.data) {
+          setBrandData(json.data);
+        } else {
+          setBrandError("Failed to fetch brand data.");
+        }
+      } catch (err) {
+        console.error("Error fetching brand data:", err);
+        setBrandError("Error connecting to brand API.");
+      } finally {
+        setBrandLoading(false);
+      }
+    };
+
+    fetchBrandData();
   }, []);
 
-  // ── FICO investment ranges (normalized Set for O(1) lookup) ─────────────
-  const ficoRanges = useMemo(() => {
-    const ficoArr = safeArray(sessionData.fico);
-    return new Set(
-      ficoArr
-        .map((f) => normalizeRange(f.investmentRange))
-        .filter(Boolean)
-    );
-  }, [sessionData.fico]);
+  // ── Derived: FICO ranges from brand API ─────────────────────────────────
+const ficoRanges = useMemo(() => {
+  const ficoArr = getBrandFicoItems(brandData);
+  return new Set(
+    ficoArr
+      .map((f) => normalizeRange(f.investmentRange))
+      .filter(Boolean)
+  );
+}, [brandData]);
+
+// ── Derived: domestic state codes from brand API ─────────────────────────
+// brand expansion data may come in different payload shapes
+const domesticStateCodes = useMemo(() => {
+  const expansionData = getBrandExpansionData(brandData);
+  if (!expansionData?.domestic) return [];
+
+  const locations = safeArray(expansionData.domestic.locations || expansionData.domestic || []);
+    // Extract state names/codes from locations
+    const rawStates = locations.map((loc) => {
+      // Handle both string and object formats
+      if (typeof loc === "string") return loc;
+      return loc.state || loc.stateName || loc.stateCode || "";
+    }).filter(Boolean);
+
+    // Convert to codes and deduplicate
+    const codes = [...new Set(
+      rawStates.map(getStateCodeByName).filter(Boolean)
+    )];
+
+    return codes;
+  }, [brandData]);
 
   // ── Derived: grouped investment ranges ──────────────────────────────────
   const { investmentRanges, groupedInvestmentRanges } = useMemo(() => {
     if (!plansApi.length) return { investmentRanges: [], groupedInvestmentRanges: [] };
-    const ranges  = plansApi[0].packages.flatMap((pkg) =>
+    const ranges = plansApi[0].packages.flatMap((pkg) =>
       pkg.investmentRange.map((r) => ({ label: r, value: r, group: pkg.investmentRangeLabel }))
     );
     const grouped = plansApi[0].packages.map((pkg) => ({
@@ -411,16 +500,32 @@ const MembershipSelection = () => {
     );
   }, [plansApi]);
 
-  // ── Session rows ─────────────────────────────────────────────────────────
+  // ── Session rows (now built from brand API data) ─────────────────────────
   const sessionRows = useMemo(() => {
-    const rows              = [];
-    const rawStates         = sessionData.domesticLocations.map((loc) => loc.state);
-    const sessionStateCodes = [...new Set(rawStates.map(getStateCodeByName).filter(Boolean))];
-    const sessionStateNames = sessionStateCodes.map(getStateNameByCode).filter(Boolean).join(", ");
-    const sessionStatesCount = sessionStateCodes.length || 1;
-    const defaultPlanName   = plansApi.length > 0 ? plansApi[0].planName : "LAUNCH PAD PROGRAM";
+    // Wait for both APIs to load
+    if (!brandData || !plansApi.length) return [];
 
-    const pushRow = (rangeValue, index, prefix) => {
+    const rows = [];
+    const defaultPlanName = plansApi.length > 0 ? plansApi[0].planName : "LAUNCH PAD PROGRAM";
+
+    // Use domesticStateCodes derived from brand API
+    const sessionStateCodes = domesticStateCodes;
+    if (sessionStateCodes.length === 0) return [];
+
+    const sessionStateNames = sessionStateCodes
+      .map(getStateNameByCode)
+      .filter(Boolean)
+      .join(", ");
+    const sessionStatesCount = sessionStateCodes.length;
+
+    // Use fico array from brand API for investment ranges
+    const ficoArr = getBrandFicoItems(brandData);
+    if (ficoArr.length === 0) return [];
+
+    ficoArr.forEach((ficoItem, index) => {
+      const rangeValue = ficoItem.investmentRange;
+      if (!rangeValue) return;
+
       const pkg          = getPackageForRange(rangeValue, defaultPlanName);
       const baseAmount   = pkg?.amount ?? null;
       const baseLeads    = pkg?.totalLeads ?? null;
@@ -429,28 +534,36 @@ const MembershipSelection = () => {
       const totalPrice   = baseAmount != null ? baseAmount * sessionStatesCount : null;
 
       rows.push({
-        id: `${prefix}-${index}`,
-        rangeValue, rangeLabel: rangeValue,
+        id: `fico-${index}-${rangeValue}`,
+        rangeValue,
+        rangeLabel: rangeValue,
         states: sessionStateCodes,
-        statesSummary: `${sessionStatesCount} States`,
+        statesSummary: `${sessionStatesCount} State${sessionStatesCount !== 1 ? "s" : ""}`,
         stateNames: sessionStateNames,
         category: defaultPlanName,
         leadCount: totalLeads,
         tenure: baseValidity != null ? `${baseValidity} days` : "—",
         price: totalPrice != null ? formatPrice(totalPrice) : "Price unavailable",
         hasPricing: totalPrice != null,
-        baseAmount, statesCount: sessionStatesCount,
+        baseAmount,
+        statesCount: sessionStatesCount,
         type: "recommended",
+        // Extra FICO details for reference
+        ficoDetails: {
+          franchiseFee: ficoItem.franchiseFee,
+          franchiseModel: ficoItem.franchiseModel,
+          franchiseType: ficoItem.franchiseType,
+          royaltyFee: ficoItem.royaltyFee,
+          agreementPeriod: ficoItem.agreementPeriod,
+          areaRequired: ficoItem.areaRequired,
+          breakEven: ficoItem.breakEven,
+          roi: ficoItem.roi,
+        },
       });
-    };
+    });
 
-    if (sessionStateCodes.length > 0 && safeArray(sessionData.fico).length > 0) {
-      safeArray(sessionData.fico).forEach((f, i) => pushRow(f.investmentRange, i, "fico"));
-    } else if (sessionStateCodes.length > 0 && sessionData.investmentRange) {
-      safeArray(sessionData.investmentRange).forEach((r, i) => pushRow(r, i, "legacy"));
-    }
     return rows;
-  }, [sessionData, plansApi, getPackageForRange]);
+  }, [brandData, plansApi, domesticStateCodes, getPackageForRange]);
 
   // ── Derived flags ────────────────────────────────────────────────────────
   const isCategoryEnabled  = selectedInvestmentRange.length > 0 && selectedIndiaStates.length > 0;
@@ -487,18 +600,17 @@ const MembershipSelection = () => {
       if (typeof r.leadCount === "number") totalLeads += r.leadCount;
     });
 
-    // ── Separate FICO-valid vs blocked rows ──
-    const ficoValid  = selected.filter((r) => ficoRanges.has(normalizeRange(r.rangeValue)));
-    const nonFico    = selected.filter((r) => !ficoRanges.has(normalizeRange(r.rangeValue)));
-    const canProceed = ficoValid.length > 0 && nonFico.length === 0;
+    const ficoValid     = selected.filter((r) => ficoRanges.has(normalizeRange(r.rangeValue)));
+    const nonFico       = selected.filter((r) => !ficoRanges.has(normalizeRange(r.rangeValue)));
+    const canProceed    = ficoValid.length > 0 && nonFico.length === 0;
     const hasAnyNonFico = nonFico.length > 0;
 
     return {
       selected, totalAmount, totalLeads, hasPriceGap,
       count: selected.length,
       ficoValid, nonFico,
-      canProceed,       // all selected are in FICO
-      hasAnyNonFico,    // at least one selected is NOT in FICO
+      canProceed,
+      hasAnyNonFico,
     };
   }, [selectedRows, sessionRows, addedSelections, ficoRanges]);
 
@@ -606,18 +718,13 @@ const MembershipSelection = () => {
   // ── Proceed to Payment handler ────────────────────────────────────────────
   const handleProceedToPayment = useCallback(() => {
     const { selected, nonFico, canProceed } = selectedPlansSummary;
-
     if (selected.length === 0) return;
 
-    // If ALL selected rows are in FICO → allow payment
     if (canProceed) {
-      // ✅ Navigate to payment
       alert("✅ Proceeding to payment! All selected plans are FICO-validated.");
-      // router.push("/payment") — replace with your actual navigation
       return;
     }
 
-    // ❌ Some / all selected rows are NOT in FICO → block & show dialog
     setBlockedRows(nonFico);
     setPaymentBlockDialogOpen(true);
   }, [selectedPlansSummary]);
@@ -629,10 +736,10 @@ const MembershipSelection = () => {
 
   // ── Table renderer ────────────────────────────────────────────────────────
   const renderTable = useCallback((rows, tableType) => {
-    const isRec       = tableType === "recommended";
-    const headerColor = isRec ? "#E65100" : "#1565C0";
+    const isRec        = tableType === "recommended";
+    const headerColor  = isRec ? "#E65100" : "#1565C0";
     const headerBorder = isRec ? "#FFA726" : "#42A5F5";
-    const headerBg    = isRec ? "#FFF3E0" : "#E3F2FD";
+    const headerBg     = isRec ? "#FFF3E0" : "#E3F2FD";
 
     return (
       <TableContainer sx={{ overflowX: "auto" }}>
@@ -671,17 +778,22 @@ const MembershipSelection = () => {
   }, [selectedRows, ficoRanges, handleRowCheckboxChange, handleEditRecommended, handleRemoveSelection]);
 
   // ── Loading / Error ───────────────────────────────────────────────────────
-  if (loading) {
+  if (loading || brandLoading) {
     return (
-      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "60vh" }}>
+      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "60vh", flexDirection: "column", gap: 2 }}>
         <CircularProgress />
+        <Typography color="text.secondary" fontSize={14}>
+          {loading ? "Loading plans..." : "Loading brand profile..."}
+        </Typography>
       </Box>
     );
   }
-  if (error) {
+
+  if (error || brandError) {
     return (
       <Container maxWidth="xl" sx={{ mt: 6 }}>
-        <Alert severity="error">{error}</Alert>
+        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+        {brandError && <Alert severity="warning">{brandError}</Alert>}
       </Container>
     );
   }
@@ -689,6 +801,38 @@ const MembershipSelection = () => {
   // ══════════════════════════════════════════════════════════════════════════
   return (
     <>
+      {/* ── Brand Data Debug Info (remove in production) ── */}
+      {brandData && (
+        <Box sx={{ display: "none" }}>
+          {/* Debug: ficoRanges={[...ficoRanges].join(', ')} */}
+          {/* Debug: domesticStateCodes={domesticStateCodes.join(', ')} */}
+        </Box>
+      )}
+
+      {/* ── No Data Warning ── */}
+      {!hasSessionData && !brandLoading && (
+        <Box sx={{ display: "flex", justifyContent: "center", px: 2, mt: 4 }}>
+          <Alert
+            severity="info"
+            sx={{ maxWidth: "1200px", width: "100%", borderRadius: 2 }}
+          >
+            <Typography fontWeight={700} fontSize={14}>
+              No recommended plans found
+            </Typography>
+            <Typography fontSize={12} mt={0.5}>
+              {!brandData
+                ? "Brand data could not be loaded."
+                : domesticStateCodes.length === 0
+                ? "No domestic expansion locations found in your brand profile."
+                : ficoRanges.size === 0
+                ? "No FICO investment ranges found in your brand profile."
+                : "Could not match your FICO ranges with available plans."}
+              {" "}Please use the selection below to manually add plans.
+            </Typography>
+          </Alert>
+        </Box>
+      )}
+
       {/* ── Recommended Table ── */}
       {hasSessionData && (
         <Box sx={{ mt: 6, display: "flex", justifyContent: "center", px: 2 }}>
@@ -713,7 +857,8 @@ const MembershipSelection = () => {
                     Recommended Plans
                   </Typography>
                   <Typography sx={{ color: "rgba(255,255,255,0.85)", fontSize: 12 }}>
-                    Based on your previous business profile
+                    Based on your FICO model · {domesticStateCodes.length} state
+                    {domesticStateCodes.length !== 1 ? "s" : ""} selected
                   </Typography>
                 </Box>
               </Box>
@@ -818,7 +963,6 @@ const MembershipSelection = () => {
                         </AccordionSummary>
                         <AccordionDetails sx={{ pl: 1 }}>
                           {group.items.map((range) => {
-                            // ── Show FICO badge if range is in FICO model ──
                             const isRangeFico = ficoRanges.has(normalizeRange(range.value));
                             return (
                               <Box
@@ -1107,7 +1251,6 @@ const MembershipSelection = () => {
                         fontWeight: 700, border: "1px solid rgba(255,255,255,0.4)",
                       }}
                     />
-                    {/* FICO status badge in header */}
                     {selectedPlansSummary.canProceed ? (
                       <Chip
                         icon={<CheckCircleIcon sx={{ color: "#fff !important", fontSize: 15 }} />}
@@ -1124,7 +1267,7 @@ const MembershipSelection = () => {
                   </Box>
                 </Box>
 
-                {/* ── Non-FICO warning banner ── */}
+                {/* Non-FICO warning banner */}
                 {selectedPlansSummary.hasAnyNonFico && (
                   <Box
                     sx={{
@@ -1154,8 +1297,7 @@ const MembershipSelection = () => {
                       size="small"
                       sx={{
                         bgcolor: "#E65100", color: "#fff",
-                        fontWeight: 700, cursor: "default",
-                        fontSize: 10,
+                        fontWeight: 700, cursor: "default", fontSize: 10,
                       }}
                     />
                   </Box>
@@ -1210,7 +1352,7 @@ const MembershipSelection = () => {
                     </Typography>
                   </Box>
 
-                  {/* Per-plan breakdown with FICO indicator */}
+                  {/* Per-plan breakdown */}
                   <Box sx={{ flex: 3, minWidth: 220, display: "flex", flexWrap: "wrap", gap: 1 }}>
                     {selectedPlansSummary.selected.map((r) => {
                       const rowInFico = ficoRanges.has(normalizeRange(r.rangeValue));
@@ -1231,7 +1373,6 @@ const MembershipSelection = () => {
                             minWidth: 140, position: "relative",
                           }}
                         >
-                          {/* FICO / Non-FICO badge on each plan card */}
                           <Box sx={{ position: "absolute", top: 4, right: 4 }}>
                             {rowInFico ? (
                               <CheckCircleIcon sx={{ fontSize: 13, color: "#2E7D32" }} />
@@ -1239,7 +1380,6 @@ const MembershipSelection = () => {
                               <LockIcon sx={{ fontSize: 13, color: "#E65100" }} />
                             )}
                           </Box>
-
                           <Typography
                             fontSize={11} fontWeight={700}
                             color={
@@ -1271,7 +1411,7 @@ const MembershipSelection = () => {
                     })}
                   </Box>
 
-                  {/* ── Proceed to Payment Button ── */}
+                  {/* Proceed to Payment Button */}
                   <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 0.8 }}>
                     <Button
                       variant="contained"
@@ -1297,8 +1437,6 @@ const MembershipSelection = () => {
                         ? "Proceed to Payment →"
                         : "Payment Locked 🔒"}
                     </Button>
-
-                    {/* Helper text under button */}
                     {!selectedPlansSummary.canProceed && (
                       <Typography
                         fontSize={10} color="#E65100" fontWeight={600}
@@ -1321,9 +1459,7 @@ const MembershipSelection = () => {
         </Container>
       </Box>
 
-      {/* ══════════════════════════════════════════════════════
-          PAYMENT BLOCKED DIALOG
-         ══════════════════════════════════════════════════════ */}
+      {/* ── Payment Blocked Dialog ── */}
       <Dialog
         open={paymentBlockDialogOpen}
         onClose={handleClosePaymentBlockDialog}
@@ -1348,8 +1484,6 @@ const MembershipSelection = () => {
               FICO model. Please deselect the following plans to proceed:
             </DialogContentText>
           </Box>
-
-          {/* List of blocked plans */}
           <Box
             sx={{
               mt: 1, p: 1.5, bgcolor: "#FFF3E0",
@@ -1390,8 +1524,6 @@ const MembershipSelection = () => {
               </Box>
             ))}
           </Box>
-
-          {/* What is FICO explanation */}
           <Box sx={{ mt: 2, p: 1.5, bgcolor: "#E3F2FD", borderRadius: 2, border: "1px solid #90CAF9" }}>
             <Typography fontSize={12} color="#1565C0" fontWeight={600}>
               ℹ️ What is FICO model?
@@ -1431,7 +1563,7 @@ const MembershipSelection = () => {
         </DialogActions>
       </Dialog>
 
-      {/* ── Confirm Dialog (for custom plan selection) ── */}
+      {/* ── Confirm Dialog ── */}
       <Dialog
         open={confirmDialogOpen}
         onClose={handleCancelConfirm}
@@ -1520,7 +1652,7 @@ const MembershipSelection = () => {
                 }}
               />
             )}
-            <Button
+            {/* <Button
               variant="outlined"
               onClick={handleCloseBrandDialog}
               sx={{
@@ -1530,11 +1662,10 @@ const MembershipSelection = () => {
               }}
             >
               Close
-            </Button>
+            </Button> */}
           </Toolbar>
         </AppBar>
 
-        {/* Context info bar */}
         {brandDialogContext?.row && (
           <Box
             sx={{
@@ -1564,7 +1695,6 @@ const MembershipSelection = () => {
           </Box>
         )}
 
-        {/* Iframe */}
         <Box sx={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column", height: "calc(100vh - 120px)" }}>
           <iframe
             src={BRAND_DASHBOARD_PATH}
@@ -1573,40 +1703,7 @@ const MembershipSelection = () => {
           />
         </Box>
 
-        {/* Footer */}
-        <Box
-          sx={{
-            bgcolor: "#fff", p: 2, px: 3,
-            display: "flex", justifyContent: "space-between", alignItems: "center",
-            borderTop: "1px solid #e0e0e0", boxShadow: "0 -4px 12px rgba(0,0,0,0.06)",
-          }}
-        >
-          <Typography variant="caption" color="text.secondary">
-            💡 Make your changes in the dashboard above, then close to return.
-          </Typography>
-          <Box sx={{ display: "flex", gap: 1.5 }}>
-            <Button
-              variant="outlined"
-              onClick={handleCloseBrandDialog}
-              sx={{ textTransform: "none", borderRadius: 2 }}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="contained"
-              onClick={handleCloseBrandDialog}
-              sx={{
-                textTransform: "none", borderRadius: 2,
-                bgcolor: brandDialogContext?.type === "edit" ? "#1976D2" : "#FF9800",
-                "&:hover": {
-                  bgcolor: brandDialogContext?.type === "edit" ? "#1565C0" : "#F57C00",
-                },
-              }}
-            >
-              Done & Close
-            </Button>
-          </Box>
-        </Box>
+        
       </Dialog>
     </>
   );
