@@ -16,9 +16,9 @@ const AdvertisingPage = ({ handleSubmit, onBack }) => {
           <MembershipSelection handleSubmit={handleSubmit} onBack={onBack} />
       {/* <Container > */}
         <Box>
-    <PaymentBrandUpdate 
+    {/* <PaymentBrandUpdate 
          isEditing={true}  
-        />
+        /> */}
 
          
         </Box>
