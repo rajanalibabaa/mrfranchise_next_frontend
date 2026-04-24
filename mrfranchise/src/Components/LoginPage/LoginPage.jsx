@@ -181,6 +181,7 @@ function LoginPage({ open, onClose }) {
       );
 
       if (response.status === 200) {
+         
         const logoutTime = Date.now() + 24 * 60 * 60 * 1000;
         localStorage.setItem("logoutTimestamp", logoutTime.toString());
 

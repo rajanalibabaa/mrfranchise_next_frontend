@@ -320,6 +320,54 @@ const PlanTableRow = memo(function PlanTableRow({
 
 // ═════════════════════════════════════════════════════════════════════════════
 const MembershipSelection = () => {
+   useEffect(() => {
+    console.group("🔍 SESSION STORAGE DEBUG");
+
+    // 1. List ALL keys in sessionStorage
+    console.log("All sessionStorage keys:");
+    for (let i = 0; i < sessionStorage.length; i++) {
+      const key = sessionStorage.key(i);
+      console.log(`  "${key}" =`, sessionStorage.getItem(key));
+    }
+
+    // 2. Check the exact keys the code reads
+    const ficoRaw = sessionStorage.getItem("fico");
+    const domRaw  = sessionStorage.getItem("domesticlocations");
+
+    console.log("---");
+    console.log('sessionStorage.getItem("fico"):', ficoRaw);
+    console.log('sessionStorage.getItem("domesticlocations"):', domRaw);
+
+    // 3. Try parsing
+    try {
+      const ficoParsed = JSON.parse(ficoRaw || "[]");
+      console.log("fico parsed:", ficoParsed);
+      console.log("fico is array:", Array.isArray(ficoParsed));
+      console.log("fico length:", ficoParsed.length);
+      if (ficoParsed.length > 0) {
+        console.log("fico[0]:", ficoParsed[0]);
+        console.log("fico[0].investmentRange:", ficoParsed[0]?.investmentRange);
+      }
+    } catch (e) {
+      console.error("❌ Failed to parse fico:", e);
+    }
+
+    try {
+      const domParsed = JSON.parse(domRaw || "[]");
+      console.log("domesticlocations parsed:", domParsed);
+      console.log("domesticlocations is array:", Array.isArray(domParsed));
+      console.log("domesticlocations length:", domParsed.length);
+      if (domParsed.length > 0) {
+        console.log("domesticlocations[0]:", domParsed[0]);
+        console.log("domesticlocations[0].state:", domParsed[0]?.state);
+      }
+    } catch (e) {
+      console.error("❌ Failed to parse domesticlocations:", e);
+    }
+
+    console.groupEnd();
+  }, []);
+  
   const [selectedInvestmentRange, setSelectedInvestmentRange] = useState([]);
   const [selectedIndiaStates, setSelectedIndiaStates]         = useState([]);
   const [selectedPlan, setSelectedPlan]                       = useState("");
@@ -1137,7 +1185,7 @@ const MembershipSelection = () => {
                     <WarningAmberIcon sx={{ color: "#E65100", fontSize: 20 }} />
                     <Box sx={{ flex: 1 }}>
                       <Typography fontWeight={700} fontSize={13} color="#E65100">
-                        Payment Not Allowed for Non-FICO Plans
+                        Payment Not Allowed for No-FICO Plans
                       </Typography>
                       <Typography fontSize={11} color="#BF360C">
                         The following selected plan{selectedPlansSummary.nonFico.length > 1 ? "s" : ""}{" "}
@@ -1446,18 +1494,14 @@ const MembershipSelection = () => {
           <EditIcon fontSize="small" /> Update Business Model?
         </DialogTitle>
         <DialogContent sx={{ pt: 3 }}>
-          <DialogContentText>
-            Selecting this plan will open the{" "}
-            <strong>Brand Listing Controller</strong> so you can update your
+          <DialogContentText sx={{pt:3}}>
+            Before Selecting this plan You have to edit your {" "}
+            <strong>Brand Listing Controller</strong> so that you can update your
             business model details before proceeding.
           </DialogContentText>
-          <Box sx={{ mt: 2, p: 1.5, bgcolor: "#E3F2FD", borderRadius: 2, border: "1px solid #90CAF9" }}>
-            <Typography variant="caption" color="#1565C0" fontWeight={600}>
-              📍 Path: {BRAND_DASHBOARD_PATH}
-            </Typography>
-          </Box>
+         
         </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2, gap: 1 }}>
+        <DialogActions sx={{ px: 3, pb: 1, gap: 1 }}>
           <Button
             onClick={handleCancelConfirm}
             variant="outlined"
