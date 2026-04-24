@@ -1,4 +1,4 @@
-import ClientPage from "./ClientPage";
+import ClientPage from "../ClientPage";
 
 export const dynamic = "force-static";
 export const revalidate = 86400;
@@ -40,20 +40,20 @@ function slugifySubCategory(sub) {
       .replace(/\s+/g, "-")
       .replace(/[^a-z0-9-]/g, "")
       .replace(/-+/g, "-")
-      .trim() + "-franchise"
+      .trim() + "-franchise-opportunities"
   );
 }
 
 function deslugifySubCategory(slug) {
   return slug
-    ?.replace(/-franchise$/, "")
+    ?.replace(/-franchise-opportunities$/, "")
     .replace(/-/g, " ")
     .replace(/\band\b/g, "&")
     .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 /* ===============================
-   🔧 FETCH ALL BRANDS (PAGINATION)
+   🔧 FETCH ALL BRANDS
    =============================== */
 async function getAllBrands() {
   let page = 1;
@@ -70,32 +70,30 @@ async function getAllBrands() {
 
     allBrands.push(...brands);
 
-    console.log(`✅ Page ${page}: ${brands.length}`);
+    // console.log(`✅ [SUB] Page ${page}: ${brands.length}`);
 
     if (!pagination?.hasNext) break;
     page++;
   }
 
-  console.log("🔥 TOTAL BRANDS:", allBrands.length);
+//   console.log("🔥 [SUB] TOTAL BRANDS:", allBrands.length);
   return allBrands;
 }
 
 /* ===============================
-   🔧 FETCH BRANDS BY MAIN + SUB
+   🔧 FETCH BY MAIN + SUB
    =============================== */
-async function getCategoryBrands(category, subcategory) {
+async function getSubCategoryBrands(mainCategory, subCategory) {
   let page = 1;
   let all = [];
 
   while (true) {
-    // ─── if subcategory exists → filter by both ───
-    const url = subcategory
-      ? `${API}?maincat=${encodeURIComponent(
-          category
-        )}&subcat=${encodeURIComponent(subcategory)}&page=${page}`
-      : `${API}?maincat=${encodeURIComponent(category)}&page=${page}`;
-
-    const res = await fetch(url, { next: { revalidate: 86400 } });
+    const res = await fetch(
+      `${API}?maincat=${encodeURIComponent(
+        mainCategory
+      )}&subcat=${encodeURIComponent(subCategory)}&page=${page}`,
+      { next: { revalidate: 86400 } }
+    );
 
     const json = await res.json();
     const brands = json?.data?.brands || [];
@@ -107,33 +105,18 @@ async function getCategoryBrands(category, subcategory) {
     page++;
   }
 
-  console.log(`🔥 TOTAL ${category} / ${subcategory ?? "ALL"}:`, all.length);
+//   console.log(`🔥 SUB TOTAL ${mainCategory} / ${subCategory}:`, all.length);
   return all;
 }
 
 /* ===============================
    🔥 GENERATE STATIC PARAMS
-   MAIN + SUB BOTH IN THIS FILE
+   SUB CATEGORIES ONLY
    =============================== */
 export async function generateStaticParams() {
   const brands = await getAllBrands();
 
-  // ─── STEP 1: MAIN CATEGORY PARAMS ───
-  const mainSet = new Set();
-
-  brands.forEach((b) => {
-    const main = b?.brandCategories?.main;
-    if (main) mainSet.add(main);
-  });
-
-  const mainParams = Array.from(mainSet).map((cat) => ({
-    slug: slugifyCategory(cat),
-  }));
-
-  console.log("🔥 MAIN PARAMS COUNT:", mainParams.length);
-
-  // ─── STEP 2: SUB CATEGORY PARAMS ───
-  // Use "main||sub" key to avoid duplicates
+  // ✅ Use Set to avoid duplicate main+sub combos
   const subSet = new Set();
 
   brands.forEach((b) => {
@@ -142,30 +125,34 @@ export async function generateStaticParams() {
 
     if (!main) return;
 
-    // sub can be array or single string — handle both
-    const subList = Array.isArray(subs) ? subs : subs ? [subs] : [];
+    // ✅ Handle sub as array or single string
+    const subList = Array.isArray(subs)
+      ? subs
+      : subs
+      ? [subs]
+      : [];
 
     subList.forEach((sub) => {
       if (sub) subSet.add(`${main}||${sub}`);
     });
   });
 
-  const subParams = Array.from(subSet).map((key) => {
+  const params = Array.from(subSet).map((key) => {
     const [main, sub] = key.split("||");
     return {
-      slug: slugifyCategory(main),       // same main slug
-      subslug: slugifySubCategory(sub),  // extra sub slug
+      slug: slugifyCategory(main),
+      subslug: slugifySubCategory(sub),
     };
   });
 
-  console.log("🔥 SUB PARAMS COUNT:", subParams.length);
+//   console.log("🔥 TOTAL SUB STATIC PARAMS:", params.length);
 
-  // ─── STEP 3: MERGE BOTH ───
-  const allParams = [...mainParams, ...subParams];
+  // ✅ Output will look like:
+  // { slug: "food-and-beverages-franchise-opportunities", subslug: "pizza-franchise" }
+  // { slug: "food-and-beverages-franchise-opportunities", subslug: "burger-franchise" }
+  // { slug: "retail-franchise-opportunities", subslug: "clothing-franchise" }
 
-  console.log("🔥 TOTAL STATIC PARAMS:", allParams.length);
-
-  return allParams;
+  return params;
 }
 
 /* ===============================
@@ -176,30 +163,20 @@ export async function generateMetadata({ params }) {
   const { slug, subslug } = resolvedParams;
 
   const mainName = deslugifyCategory(slug);
-  const subName = subslug ? deslugifySubCategory(subslug) : null;
+  const subName = deslugifySubCategory(subslug);
 
-  const url = subslug
-    ? `https://mrfranchise.in/${slug}/${subslug}`
-    : `https://mrfranchise.in/${slug}`;
-
-  const title = subName
-    ? `${subName} Franchise Opportunities in India 2026 | ${mainName}`
-    : `${mainName} Franchise Opportunities in India 2026`;
-
-  const description = subName
-    ? `Explore top ${subName} franchise opportunities under ${mainName} with investment, ROI, and profit details.`
-    : `Discover best ${mainName} franchise opportunities with investment, ROI, and profit details.`;
+  const url = `https://mrfranchise.in/${slug}/${subslug}`;
 
   return {
-    title,
-    description,
+    title: `${subName} Franchise Opportunities in India 2026 | ${mainName}`,
+    description: `Explore top ${subName} franchise opportunities under ${mainName} with investment, ROI, and profit details.`,
     alternates: {
       canonical: url,
     },
     openGraph: {
-      title,
-      description,
-      url,
+      title: `${subName} Franchise Opportunities | ${mainName}`,
+      description: `Find best ${subName} franchises in India under ${mainName}.`,
+      url: url,
       siteName: "Mr Franchise",
       type: "website",
     },
@@ -211,25 +188,23 @@ export async function generateMetadata({ params }) {
 }
 
 /* ===============================
-   🔥 MAIN PAGE
+   🔥 SUB CATEGORY PAGE
    =============================== */
-export default async function Page({ params }) {
+export default async function SubPage({ params }) {
   const resolvedParams = await params;
   const { slug, subslug } = resolvedParams;
 
-  // 🔥 Convert slug → real names
   const mainName = deslugifyCategory(slug);
-  const subName = subslug ? deslugifySubCategory(subslug) : null;
+  const subName = deslugifySubCategory(subslug);
 
-  console.log("🔥 MAIN:", mainName, "| SUB:", subName ?? "NONE");
+//   console.log("🔥 MAIN:", mainName, "| SUB:", subName);
 
-  // 🔥 Fetch brands — pass sub only if exists
-  const brands = await getCategoryBrands(mainName, subName);
+  const brands = await getSubCategoryBrands(mainName, subName);
 
   return (
     <ClientPage
       slug={slug}
-      subslug={subslug ?? null}
+      subslug={subslug}
       brands={brands}
       maincat={mainName}
       subcat={subName}
