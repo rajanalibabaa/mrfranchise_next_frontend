@@ -29,6 +29,7 @@ export const fetchFilterOptions = createAsyncThunk(
   }
 );
 
+
 const initialState = {
   // Main filter options  
   mainCategories: [],
