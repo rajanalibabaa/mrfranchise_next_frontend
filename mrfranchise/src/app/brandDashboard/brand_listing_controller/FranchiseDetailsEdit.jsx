@@ -1029,7 +1029,7 @@ const FranchiseDetailsEdit = ({
             <Typography variant="h6" sx={{ color: "#ff9800" }}>
               All Product Tags - Browse All Categories
             </Typography>
-            <IconButton onClick={() => setDrawerOpen(false)}>
+            <IconButton aria-label="close" onClick={() => setDrawerOpen(false)}>
               <CloseIcon />
             </IconButton>
           </Toolbar>
@@ -1145,7 +1145,7 @@ const FranchiseDetailsEdit = ({
             <Typography variant="h6" sx={{ color: "#ff9800" }}>
               All Service Tags
             </Typography>
-            <IconButton onClick={() => setServiceTagDrawerOpen(false)}>
+            <IconButton aria-label="close" onClick={() => setServiceTagDrawerOpen(false)}>
               <CloseIcon />
             </IconButton>
           </Toolbar>
@@ -2387,6 +2387,7 @@ const FranchiseDetailsEdit = ({
             >
               <IconButton
                 size="small"
+                aria-label="info"
                 sx={{
                   color: "warning.main",
                   "&:hover": {

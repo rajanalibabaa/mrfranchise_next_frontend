@@ -10,7 +10,7 @@ export const fetchBrands = createAsyncThunk(
     try {
       const { data } = await axios.get(
         `${API_BASE_URL}/overAllPlatformOnlyMainCategory`,
-        { params: { page, id: userId } }
+        { params: { page, id: userId, limit: 10} }
       );
       // API returns { data: { brands: [...], pagination: { … } } }
       return { brands: data.data.brands, pagination: data.data.pagination, page };

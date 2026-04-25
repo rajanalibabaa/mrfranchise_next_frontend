@@ -6,6 +6,14 @@ import dynamic from "next/dynamic";
 import Navbar from "@/Components/Navbar/NavBar";
 import Footer from "@/Components/Footers/Footer";
 import Loading from "./loading";
+import AboutMrFranchise from "@/Components/about_mrfranchise/aboutmrfranchise";
+import ExploreIndustry from "@/Components/about_mrfranchise/exploreindustry";
+import ExploreInvestment from "@/Components/about_mrfranchise/exploreinvestment";
+import BusinessOpportunities from "@/Components/about_mrfranchise/businessopportunities";
+import ExploreLocation from "@/Components/about_mrfranchise/explorelocation";
+import Featurebrand from "@/Components/about_mrfranchise/Featurebrand";
+import FreeFranchise from "@/Components/about_mrfranchise/freefranchise";
+import FranchiseJourney from "@/Components/about_mrfranchise/franchisejourney";
 
 // Dynamic import for better code splitting
 const BrandListNew = dynamic(
@@ -79,7 +87,15 @@ export default async function BrandCategoryViewPage() {
             <BrandListNew />
         </Suspense>
       </Box>
+      <BusinessOpportunities/>
+<AboutMrFranchise/>
+<ExploreIndustry/>
+<ExploreInvestment/>
+<ExploreLocation/>
+<Featurebrand/>
+<FreeFranchise/>
 
+<FranchiseJourney/>
       {/* Footer */}
       <Footer />
     </>

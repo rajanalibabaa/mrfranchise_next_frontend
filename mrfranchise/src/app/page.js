@@ -140,14 +140,14 @@ export const metadata = {
       "Explore 10,000+ verified franchise and business opportunities in India. Compare investment costs, ROI, and connect with franchise owners. Buy, sell, and grow your business with India's most trusted franchise marketplace.",
     images: [
       {
-        url: `${SITE_URL}/logo.png`,
+        url: `${SITE_URL}/mrfranchise_logo.avif`,
         width: 1200,
         height: 630,
         alt: `${SITE_NAME} – Franchise Marketplace`,
         type: "image/jpeg",
       },
       {
-        url: `${SITE_URL}/logo.png`,
+        url: `${SITE_URL}/mrfranchise_logo.avif`,
         width: 800,
         height: 800,
         alt: `${SITE_NAME} Logo`,
@@ -263,8 +263,8 @@ const generateStructuredData = () => {
         "logo": {
           "@type": "ImageObject",
           "@id": `${SITE_URL}#logo`,
-          "url": `${SITE_URL}/logo.png`,
-          "contentUrl": `${SITE_URL}/logo.png`,
+          "url": `${SITE_URL}/mrfranchise_logo.avif`,
+          "contentUrl": `${SITE_URL}/mrfranchise_logo.avif`,
           "width": 250,
           "height": 60,
           "caption": SITE_NAME,
@@ -489,7 +489,7 @@ export default function Home() {
           __html: JSON.stringify(structuredData),
         }}
       />
-  <link rel="icon" href="/logo.png" type="image/jpeg" />
+  <link rel="icon" href="/mrfranchise_logo.avif" type="image/jpeg" />
 
       {/* Preconnect for Performance */}
       

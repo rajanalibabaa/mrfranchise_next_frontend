@@ -34,7 +34,7 @@ import {
 import { logout } from "@/Redux/Slices/AuthSlice/authSlice.jsx";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
-// import logo from "@/assets/Images/logo.png";
+// import logo from "@/assets/Images/mrfranchise_logo.avif";
 import NavbarSearch from "./NavbarSearch.jsx";
 import Image from "next/image.js";
 import AdSlot from "../ads/GoogleAd.jsx";
@@ -351,6 +351,7 @@ function Navbar() {
             <motion.div whileHover={{ scale: 1.1 }}>
               <IconButton
                 edge="start"
+                aria-label="menu"
                 onClick={() => dispatch(toggleSidebar(true))}
                 sx={{ color: "#ff9800" }}
               >
@@ -371,16 +372,17 @@ function Navbar() {
                 }}
               >
                 <Image
-                  src="/logo.png"
-                  alt="brand logo"
-                  loading="lazy"
-                  width={isMobile ? 120 : 150}
-                  height={isMobile ? 50 : 50}
-                  style={{
-                    objectFit: "cover",
-                    transition: "transform 0.3s ease",
-                  }}
-                />
+  src="/mrfranchise_logo.avif"
+  alt="brand logo"
+  width={isMobile ? 120 : 150}
+  height={isMobile ? 50 : 90}
+  priority
+  loading="eager"
+  style={{
+    objectFit: "contain",
+    transition: "transform 0.3s ease",
+  }}
+/>
               </Box>
             </motion.div>
           </Box>
@@ -391,7 +393,7 @@ function Navbar() {
           >
             {!isMobile && (
               <Image
-                src="/Blue Modern Corporate Profile LinkedIn Article Cover Image (1).png"
+                src="/Blue Modern Corporate Profile LinkedIn Article Cover Image (1).jpg"
                 alt="brand logo"
                 loading="lazy"
                 width={isMobile ? 120 : 900}
@@ -418,7 +420,7 @@ function Navbar() {
             }}
           >
             <motion.div>
-              <IconButton onClick={() => setSearchOpen(true)}>
+              <IconButton aria-label="Search" onClick={() => setSearchOpen(true)}>
                 <Search size={25} />
                 <Typography sx={{ display: { xs: "none", sm: "flex" } }}>
                   Search
@@ -455,7 +457,7 @@ function Navbar() {
 
           <Box ref={avatarRef} sx={{ position: "relative" }}>
             <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-              <IconButton onClick={handleMenuOpen} sx={{ p: 0 }}>
+              <IconButton aria-label="account of current user" onClick={handleMenuOpen} sx={{ p: 0 }}>
                 <Avatar
                   sx={{
                     bgcolor: "rgba(255, 152, 0, 0.8)",
@@ -723,7 +725,7 @@ function Navbar() {
       >
         {isMobile && (
           <Image
-            src="/Blue Modern Corporate Profile LinkedIn Article Cover Image (1).png"
+            src="/Blue Modern Corporate Profile LinkedIn Article Cover Image (1).jpg"
             alt="brand logo"
             loading="lazy"
             width={isMobile ? 370 : 720}

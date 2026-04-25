@@ -16,6 +16,7 @@ const BackToTopButton = ({ show, isMobile }) => {
           }}
         >
           <IconButton
+            aria-label="Back to top"
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
             sx={{
               backgroundColor: "#ff9800",

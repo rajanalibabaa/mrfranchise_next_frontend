@@ -215,6 +215,7 @@ const ExpansionLocationGridInternational = ({ data }) => {
                 {isMobile && expandedCountry !== null && (
                   <IconButton
                     size="small"
+                    aria-label="next"
                     onClick={() => setExpandedCountry(null)}
                     sx={{ ml: "auto" }}
                   >
@@ -354,6 +355,7 @@ const ExpansionLocationGridInternational = ({ data }) => {
                 {isMobile && expandedDistrict !== null && (
                   <IconButton
                     size="small"
+                    aria-label="next"
                     onClick={() => setExpandedDistrict(null)}
                     sx={{ ml: "auto" }}
                   >

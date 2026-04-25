@@ -7,7 +7,6 @@ import React, {
   useCallback,
   memo,
   useMemo,
-  lazy,
   startTransition,
 } from "react";
 import { useInView } from "react-intersection-observer";
@@ -18,7 +17,6 @@ import Skeleton from "@mui/material/Skeleton";
 import { useMediaQuery, useTheme } from "@mui/material";
 import dynamic from "next/dynamic";
 import Image from "next/image";
-import { useDispatch } from "react-redux";
 
 // ============================================
 // CRITICAL COMPONENTS - Load immediately
@@ -101,12 +99,12 @@ class ErrorBoundary extends React.Component {
 // SECTION COMPONENT MAP - Centralized lazy loading
 // ============================================
 const SECTION_COMPONENTS = {
-  TopBrandThreevdocards: {
+  TopBrandThreeVdoCards: {
     component: dynamic(
       () => import("@/Components/HomePage_VideoSection/TopBrandThreeVdoCards"),
       { ssr: true, loading: () => <SectionSkeleton height={400} /> }
     ),
-    priority: 1,
+    // priority: 1,
     height: 400,
   },
   HomeSection1: {
@@ -114,7 +112,7 @@ const SECTION_COMPONENTS = {
       () => import("@/Components/HomePage_VideoSection/HomeSection1"),
       { ssr: false, loading: () => <SectionSkeleton height={350} /> }
     ),
-    priority: 1,
+    // priority: 1,
     height: 350,
   },
   HomeSection2: {
@@ -130,7 +128,7 @@ const SECTION_COMPONENTS = {
       () => import("@/Components/HomePage_VideoSection/LikedBrands"),
       { ssr: false, loading: () => <SectionSkeleton height={300} /> }
     ),
-    priority: 2,
+    // priority: 2,
     height: 300,
     requiresAuth: true,
   },
@@ -139,7 +137,7 @@ const SECTION_COMPONENTS = {
       () => import("@/Components/HomePage_VideoSection/ShortlistBrands"),
       { ssr: false, loading: () => <SectionSkeleton height={300} /> }
     ),
-    priority: 2,
+    // priority: 2,
     height: 300,
     requiresAuth: true,
   },
@@ -148,7 +146,7 @@ const SECTION_COMPONENTS = {
       () => import("@/Components/HomePage_VideoSection/ViewBrands"),
       { ssr: false, loading: () => <SectionSkeleton height={300} /> }
     ),
-    priority: 2,
+    // priority: 2,
     height: 300,
     requiresAuth: true,
   },
@@ -157,147 +155,147 @@ const SECTION_COMPONENTS = {
       () => import("@/Components/HomePage_VideoSection/HomeSection3"),
       { ssr: false, loading: () => <SectionSkeleton /> }
     ),
-    priority: 2,
+    // priority: 3,
   },
   HomeSection4: {
     component: dynamic(
       () => import("@/Components/HomePage_VideoSection/HomeSection4"),
       { ssr: false, loading: () => <SectionSkeleton /> }
     ),
-    priority: 2,
+    // priority: 3,
   },
   HomeSection5: {
     component: dynamic(
       () => import("@/Components/HomePage_VideoSection/HomeSection5"),
       { ssr: false, loading: () => <SectionSkeleton /> }
     ),
-    priority: 3,
+    // priority: 3,
   },
   HomeSection6: {
     component: dynamic(
       () => import("@/Components/HomePage_VideoSection/HomeSection6"),
       { ssr: false, loading: () => <SectionSkeleton /> }
     ),
-    priority: 3,
+    // priority: 3,
   },
   HomeSection7: {
     component: dynamic(
       () => import("@/Components/HomePage_VideoSection/HomeSection7"),
       { ssr: false, loading: () => <SectionSkeleton /> }
     ),
-    priority: 3,
+    // priority: 4,
   },
   HomeSection8: {
     component: dynamic(
       () => import("@/Components/HomePage_VideoSection/HomeSection8"),
       { ssr: false, loading: () => <SectionSkeleton /> }
     ),
-    priority: 3,
+    // priority: 4,
   },
   HomeSection9: {
     component: dynamic(
       () => import("@/Components/HomePage_VideoSection/HomeSection9"),
       { ssr: false, loading: () => <SectionSkeleton /> }
     ),
-    priority: 3,
+    // priority: 5,
   },
   HomeSection10: {
     component: dynamic(
       () => import("@/Components/HomePage_VideoSection/HomeSection10"),
       { ssr: false, loading: () => <SectionSkeleton /> }
     ),
-    priority: 3,
+    // priority: 5,
   },
   HomeSection11: {
     component: dynamic(
       () => import("@/Components/HomePage_VideoSection/HomeSection11"),
       { ssr: false, loading: () => <SectionSkeleton /> }
     ),
-    priority: 3,
+    // priority: 6,
   },
   HomeSection12: {
     component: dynamic(
       () => import("@/Components/HomePage_VideoSection/HomeSection12"),
       { ssr: false, loading: () => <SectionSkeleton /> }
     ),
-    priority: 3,
+    // priority: 6,
   },
   HomeSection13: {
     component: dynamic(
       () => import("@/Components/HomePage_VideoSection/HomeSection13"),
       { ssr: false, loading: () => <SectionSkeleton /> }
     ),
-    priority: 3,
+    // priority: 7,
   },
   ToTrendingBrands: {
     component: dynamic(
       () => import("@/Components/HomePage_VideoSection/ToTrendingBrands"),
       { ssr: false, loading: () => <SectionSkeleton /> }
     ),
-    priority: 2,
+    // priority: 7,
   },
   FindFranchiseLocations: {
     component: dynamic(
       () => import("@/Components/HomePage_VideoSection/FindFranchiseLocations"),
       { ssr: false, loading: () => <SectionSkeleton /> }
     ),
-    priority: 3,
+    // priority: 8,
   },
   BusinessOpportunities: {
     component: dynamic(
       () => import("@/Components/about_mrfranchise/businessopportunities"),
       { ssr: false, loading: () => <SectionSkeleton /> }
     ),
-    priority: 3,
+    // priority: 8,
   },
   AboutMrFranchise: {
     component: dynamic(
       () => import("@/Components/about_mrfranchise/aboutmrfranchise"),
       { ssr: false, loading: () => <SectionSkeleton /> }
     ),
-    priority: 3,
+    // priority: 9,
   },
   ExploreIndustry: {
     component: dynamic(
       () => import("@/Components/about_mrfranchise/exploreindustry"),
       { ssr: false, loading: () => <SectionSkeleton /> }
     ),
-    priority: 4,
+    // priority: 9,
   },
   ExploreInvestment: {
     component: dynamic(
       () => import("@/Components/about_mrfranchise/exploreinvestment"),
       { ssr: false, loading: () => <SectionSkeleton /> }
     ),
-    priority: 4,
+    // priority: 10,
   },
   ExploreLocation: {
     component: dynamic(
       () => import("@/Components/about_mrfranchise/explorelocation"),
       { ssr: false, loading: () => <SectionSkeleton /> }
     ),
-    priority: 4,
+    // priority: 10,
   },
   Featurebrand: {
     component: dynamic(
       () => import("@/Components/about_mrfranchise/Featurebrand"),
       { ssr: false, loading: () => <SectionSkeleton /> }
     ),
-    priority: 4,
+    // priority: 10,
   },
   FranchiseJourney: {
     component: dynamic(
       () => import("@/Components/about_mrfranchise/franchisejourney"),
       { ssr: false, loading: () => <SectionSkeleton /> }
     ),
-    priority: 4,
+    // priority: 10,
   },
   FreeFranchise: {
     component: dynamic(
       () => import("@/Components/about_mrfranchise/freefranchise"),
       { ssr: false, loading: () => <SectionSkeleton /> }
     ),
-    priority: 4,
+    // priority: 10,
   },
 };
 
@@ -308,11 +306,11 @@ const LazySection = memo(({ componentKey, isMobile }) => {
   const sectionConfig = SECTION_COMPONENTS[componentKey];
   const [hasLoaded, setHasLoaded] = useState(false);
 
-  const { ref, inView } = useInView({
-    triggerOnce: true,
-    rootMargin: sectionConfig?.priority === 1 ? "0px" : "200px",
-    threshold: 0,
-  });
+ const { ref, inView } = useInView({
+  triggerOnce: true,
+  rootMargin: "200px",
+  fallbackInView: true, // ✅ ADD THIS
+});
 
   useEffect(() => {
     if (inView && !hasLoaded) {
@@ -331,8 +329,8 @@ const LazySection = memo(({ componentKey, isMobile }) => {
       ref={ref}
       sx={{
         contain: "layout style",
-        minHeight: hasLoaded ? "auto" : sectionConfig.height || 200,
-        width: "100%",
+ minHeight: sectionConfig.height || 300, width: "100%",
+      
       }}
     >
       {hasLoaded ? (
@@ -377,7 +375,7 @@ const HeroBanner = memo(({ isMobile, bannerIndex }) => {
     <Box
       sx={{
         position: "relative",
-        minHeight: isMobile ? "60vh" : "45vh",
+        minHeight:  "60vh",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -391,13 +389,16 @@ const HeroBanner = memo(({ isMobile, bannerIndex }) => {
         alt="Franchise Marketplace"
         fill
         priority
+        quality={75}
         sizes="100vw"
+        // sizes="(max-width: 768px) 100vw, 
+        //  (max-width: 1200px) 90vw, 
+        //  80vw"
         style={{
           objectFit: "cover",
           objectPosition: "center",
         }}
-        placeholder="blur"
-        blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAAAAUH/8QAIhAAAgEDAwUBAAAAAAAAAAAAAQIDAAQRBRIhBhMiMUFR/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAYEQEBAQEBAAAAAAAAAAAAAAABAgADEf/aAAwDAQACEQMRAD8AzWz0q6u7S3uIpLYJOiSoGkYMAwBGRt+1YnVCgFQ8J+clJ//Z"
+        fetchPriority="high"
       />
 
       {/* Overlay */}
@@ -476,7 +477,7 @@ HeroBanner.displayName = "HeroBanner";
 // SECTIONS CONFIG
 // ============================================
 const SECTIONS = [
-  "TopBrandThreevdocards",
+  "TopBrandThreeVdoCards",
   "HomeSection1",
   "HomeSection2",
   "LikedBrands",
@@ -485,8 +486,9 @@ const SECTIONS = [
   "HomeSection3",
   "HomeSection4",
   "HomeSection5",
-  "HomeSection7",
   "HomeSection6",
+  "HomeSection7",
+  
   "HomeSection8",
   "HomeSection9",
   "HomeSection10",
@@ -512,10 +514,10 @@ const AUTH_REQUIRED_SECTIONS = ["LikedBrands", "ShortlistBrands", "ViewBrands"];
 // ============================================
 export default memo(function HomeBannerSec() {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"), {
-    noSsr: true,
-  });
-
+const isMobile = useMediaQuery(theme.breakpoints.down("sm"), {
+  noSsr: true,
+  defaultMatches: false,
+});
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [bannerIndex, setBannerIndex] = useState(0);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -533,16 +535,23 @@ export default memo(function HomeBannerSec() {
 
     const timer = setTimeout(() => {
       const shown = sessionStorage.getItem("popup-shown");
-      const isReload =
-        performance.getEntriesByType?.("navigation")?.[0]?.type === "reload";
+let isReload = false;
 
+if (typeof window !== "undefined" && window.performance) {
+  try {
+    const nav = window.performance.getEntriesByType("navigation");
+    isReload = nav?.[0]?.type === "reload";
+  } catch (e) {
+    isReload = false;
+  }
+}
       if (!shown || isReload) {
         if (!localStorage.getItem("accessToken")) {
           setIsPopupOpen(true);
         }
         sessionStorage.setItem("popup-shown", "true");
       }
-    }, 2000);
+    }, 3000);
 
     return () => clearTimeout(timer);
   }, [isHydrated]);
@@ -574,7 +583,7 @@ export default memo(function HomeBannerSec() {
 
       {/* Popup Modal */}
       {isPopupOpen && (
-        <Suspense fallback={null}>
+        <Suspense fallback={<div>Loading...</div>}>
           <PopupModal
             open={isPopupOpen}
             onClose={handlePopupClose}
@@ -594,6 +603,7 @@ export default memo(function HomeBannerSec() {
           bgcolor: "#F5F2F2",
         }}
       >
+        
         {visibleSections.map((sectionKey) => (
           <LazySection
             key={sectionKey}
@@ -604,7 +614,7 @@ export default memo(function HomeBannerSec() {
       </Box>
 
       {/* Compare Features */}
-      <Suspense fallback={null}>
+      <Suspense fallback={<div>Loading...</div>}>
         <CompareButton />
         <BrandComparison />
       </Suspense>

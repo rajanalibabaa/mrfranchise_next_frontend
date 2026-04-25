@@ -316,6 +316,7 @@ const [shareAnchorEl, setShareAnchorEl] = useState(null);
                 </Button>
                 <IconButton
                   ref={likeButtonRef}
+                  aria-label="Like"
                   sx={{ marginLeft: "80px" }}
                   onClick={handleLikeClickWithConfetti}
                   disabled={isProcessingLike}
@@ -337,6 +338,7 @@ const [shareAnchorEl, setShareAnchorEl] = useState(null);
                     color: shortListed ? "#7ef400ff" : "rgba(0, 0, 0, 0.35)",
                     // backgroundColor: "#eedbbcff",p:1
                   }}
+                  aria-label="Shortlist"
                 >
                   <RiBookmark3Fill />
                 </IconButton>
@@ -346,6 +348,7 @@ const [shareAnchorEl, setShareAnchorEl] = useState(null);
         brand={brand[0]}
       />
                <IconButton
+        aria-label="Share"
         onClick={(e) => setShareAnchorEl(e.currentTarget)} // Open the dialog
         size={isMobile ? "small" : "medium"}
       >

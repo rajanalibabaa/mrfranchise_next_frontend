@@ -127,7 +127,7 @@ const supportLinks = [
            <Box sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
               <Box
                 component="img"
-                src="/logo.png"
+                src="/mrfranchise_logo.avif"
                 onClick={()=> navigate.push("/")}
                 loading="lazy"
                 alt="MR FRANCHISE Logo"
@@ -251,6 +251,7 @@ const supportLinks = [
                     component="a"
                     href={social.url}
                     target="_blank"
+                    aria-label={social.url}
                     rel="noopener noreferrer"
                     sx={{
                       backgroundColor: `${social.color}20`,
@@ -270,6 +271,7 @@ const supportLinks = [
 
           <IconButton
             onClick={scrollToTop}
+              aria-label="Back to top"
             sx={{
               backgroundColor: "#ff6d00",
               color: "white",

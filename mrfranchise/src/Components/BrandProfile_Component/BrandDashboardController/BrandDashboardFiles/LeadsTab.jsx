@@ -213,6 +213,7 @@ const LeadsTab = ({ Leads, onViewDetails }) => {
               },
             }}
             size={isMobile ? "small" : "medium"}
+            aria-label="Filter leads"
           >
             <FilterList />
           </IconButton>

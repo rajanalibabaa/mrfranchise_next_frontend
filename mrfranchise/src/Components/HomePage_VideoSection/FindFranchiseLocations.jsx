@@ -114,7 +114,8 @@ const FindFranchiseLocations = () => {
     if (filters.state || selectedState) {
       const currentFilters = {
         ...filters,
-        state: selectedState || filters.state
+        state: selectedState || filters.state,
+        limit: 4
       };
       dispatch(fetchFilteredBrands(currentFilters));
     }
@@ -254,7 +255,7 @@ const FindFranchiseLocations = () => {
           alignItems: 'center'
         }}>
           <Typography>{removeMsg}</Typography>
-          <IconButton size="small" onClick={() => setRemoveMsg("")}>
+          <IconButton  size="small"  onClick={() => setRemoveMsg("")} aria-label="close">
             <Close sx={{ color: 'white' }} />
           </IconButton>
         </Box>

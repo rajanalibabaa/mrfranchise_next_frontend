@@ -245,7 +245,7 @@ function LoginPage({ open, onClose }) {
           }}
         >
           <Typography variant="h5" component={'span'}>Login</Typography>
-          <IconButton onClick={onClose}>
+          <IconButton  aria-label="Close" onClick={onClose}>
             <CloseIcon sx={{ color: "red", fontSize: 30 }} />
           </IconButton>
         </DialogTitle>

@@ -662,7 +662,7 @@ const SideViewContent = ({ hoverCategory, onHoverLeave, onBrandClick }) => {
             }}
             onClick={() => setMobileTabValue(0)}
           >
-            <IconButton size="small" sx={{ mr: 1 }}>
+            <IconButton  size="small" sx={{ mr: 1 }} aria-label="close">
               <CloseIcon fontSize="small" />
             </IconButton>
             <Typography variant="body2" color="text.secondary">

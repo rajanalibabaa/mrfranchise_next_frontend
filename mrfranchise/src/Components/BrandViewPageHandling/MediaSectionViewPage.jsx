@@ -367,6 +367,7 @@ useEffect(() => {
                   >
                     {!isPlaying && (
                       <IconButton
+                      aria-label="playicon"
                         sx={{
                           pointerEvents: "all",
                           backgroundColor: "rgba(0,0,0,0.35)",

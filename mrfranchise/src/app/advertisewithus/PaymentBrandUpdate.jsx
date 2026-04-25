@@ -40,7 +40,8 @@ import { getToken } from "@/Utils/autherId";
 const PaymentBrandUpdate = ({ 
   uuid: propUuid,
   isEditing = false,
-  onDataLoaded = () => {}
+  onDataLoaded = () => {},
+  investmentRangeData = null
 }) => {
   const [effectiveUuid, setEffectiveUuid] = useState(null);
   const [data, setData] = useState({
@@ -107,6 +108,49 @@ const PaymentBrandUpdate = ({
       setError('No UUID found. Please login again.');
     }
   }, [effectiveUuid]);
+
+// Pre-fill investment range when opened from PackageSelection
+useEffect(() => {
+  if (investmentRangeData?.range) {
+    // Don't automatically enter editing mode - user must verify OTP first
+    setExpanded("panel1");
+
+    setCurrentFicoModel({
+      investmentRange: investmentRangeData.range,
+      areaRequired: "",
+      franchiseModel: "",
+      franchiseType: "",
+      franchiseFee: "",
+      franchiseFeeUnit: "select",
+      royaltyFee: "",
+      royaltyFeeUnit: "select",
+      interiorCost: "",
+      interiorCostUnit: "select",
+      stockInvestment: "",
+      stockInvestmentUnit: "select",
+      otherCost: "",
+      otherCostUnit: "select",
+      roi: "",
+      payBackPeriod: "",
+      breakEven: "",
+      requireWorkingCapital: "",
+      requireWorkingCapitalUnit: "select",
+      marginOnSales: "",
+      agreementPeriod: "",
+    });
+
+    setNoFees({
+      franchiseFee: false,
+      interiorCost: false,
+      stockInvestment: false,
+      otherCost: false,
+      requireWorkingCapital: false,
+      royaltyFee: false,
+      roi: false,
+    });
+    setEditIndex(null);
+  }
+}, [investmentRangeData]);
 
   // Fee unit options
   const royaltyFeeUnits = [
@@ -1439,7 +1483,7 @@ sessionStorage.setItem("investmentrange", JSON.stringify(investmentRanges));
         </Box>
       </Box>
       {/* Expansion Locations Accordion */}
-      <Accordion
+      {/* <Accordion
         expanded={expanded === "panel2"}
         onChange={handleAccordionChange("panel2")}
         sx={{ mt: 2 }}
@@ -1456,11 +1500,11 @@ sessionStorage.setItem("investmentrange", JSON.stringify(investmentRanges));
             </Typography>
 
             {/* Domestic Locations */}
-            <Typography variant="h6" sx={{ mt: 2, mb: 1, fontWeight: 'bold', color: '#333' }}>
+            {/* <Typography variant="h6" sx={{ mt: 2, mb: 1, fontWeight: 'bold', color: '#333' }}>
               🇮🇳 Domestic Expansion Locations
             </Typography>
-            
-            {expansionData.domesticLocations && expansionData.domesticLocations.length > 0 ? (
+             */}
+            {/* {expansionData.domesticLocations && expansionData.domesticLocations.length > 0 ? (
               <TableContainer sx={{ maxHeight: 400, border: '1px solid #e0e0e0', borderRadius: 1 }}>
                 <Table stickyHeader size="small">
                   <TableHead>
@@ -1506,10 +1550,10 @@ sessionStorage.setItem("investmentrange", JSON.stringify(investmentRanges));
               <Alert severity="info" sx={{ mt: 1 }}>
                 No domestic expansion locations specified.
               </Alert>
-            )}
+            )} */}
 
             {/* International Locations */}
-            <Typography variant="h6" sx={{ mt: 3, mb: 1, fontWeight: 'bold', color: '#333' }}>
+            {/* <Typography variant="h6" sx={{ mt: 3, mb: 1, fontWeight: 'bold', color: '#333' }}>
               🌍 International Expansion Locations
             </Typography>
             
@@ -1566,7 +1610,7 @@ sessionStorage.setItem("investmentrange", JSON.stringify(investmentRanges));
             )}
           </Box>
         </AccordionDetails>
-      </Accordion>
+      </Accordion> */}
       <Snackbar
         open={saveStatus.success || !!saveStatus.error}
         autoHideDuration={6000}

@@ -127,7 +127,7 @@ const BusinessOpportunities = () => {
       </Typography>
 
       {/* Grid */}
-      <Grid container spacing={1.3} >
+      <Grid  spacing={1.3} >
         {categories.map((cat, index) => {
           const isExpanded = expanded[index];
 
@@ -149,33 +149,41 @@ const BusinessOpportunities = () => {
                 {cat.title}
               </Typography>
 
-              {/* Items */}
-              {visibleItems.map((item, i) => {
-                const subcatParam = item.replace(/ Franchise$/, "");
+             <Box
+  sx={{
+    display: "flex",
+    flexWrap: "wrap", // allows items to move to next row
+    gap: 1, // spacing between items
+  }}
+>
+  {visibleItems.map((item, i) => {
+    const subcatParam = item.replace(/ Franchise$/, "");
 
-                return (
-                  <Link
-                    key={i}
-                    href={window.open(`/all-franchise-brands/?maincat=${encodeURIComponent(
-                      cat.maincat
-                    )}&subcat=${encodeURIComponent(subcatParam)}`, "_blank")} // Open in new tab
-                    underline="none"
-                    sx={{
-                      display: "block",
-                      color: "#555",
-                      cursor: "pointer",
-                      fontSize: { xs: "1.0rem", md: "0.8rem" },
-                      mb: 0.7,
-                      "&:hover": {
-                        color: "#000",
-                        textDecoration: "underline",
-                      },
-                    }}
-                  >
-                    {item}
-                  </Link>
-                );
-              })}
+    return (
+      <Link
+        key={i}
+        href={`/all-franchise-brands/?maincat=${encodeURIComponent(
+          cat.maincat
+        )}&subcat=${encodeURIComponent(subcatParam)}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        underline="none"
+        sx={{
+          color: "#555",
+          cursor: "pointer",
+          variant: "body2", 
+          fontSize: { xs: "1.0rem", md: "0.95rem" },
+          "&:hover": {
+            color: "#000",
+            textDecoration: "underline",
+          },
+        }}
+      >
+        {item} |
+      </Link>
+    );
+  })}
+</Box>
    
 
               {/* View More / View Less (Only Mobile/Tablet) */}

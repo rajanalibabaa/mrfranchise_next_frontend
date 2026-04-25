@@ -77,6 +77,7 @@ const FilterDialog = ({
           Filter Leads
         </DialogTitle>
         <IconButton
+          aria-label="close"
           onClick={onClose}
           sx={{
             color: colors.textSecondary,

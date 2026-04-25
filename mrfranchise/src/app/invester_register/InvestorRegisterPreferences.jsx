@@ -304,6 +304,7 @@ const InvestorRegisterPreferences = ({
         >
           <IconButton
             size="small"
+            aria-label="info"
             sx={{
               color: "warning.main",
               "&:hover": {

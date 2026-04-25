@@ -7,9 +7,9 @@
 // import "swiper/css/navigation";
 
 // // Import banner assets
-// import img1 from "../../assets/Images/logo.png";      
-// import img2 from "../../assets/Images/logo.png"; // assuming it's image
-// import img3 from "../../assets/Images/logo.png";
+// import img1 from "../../assets/Images/mrfranchise_logo.avif";      
+// import img2 from "../../assets/Images/mrfranchise_logo.avif"; // assuming it's image
+// import img3 from "../../assets/Images/mrfranchise_logo.avif";
 
 // export default function BillboardAd() {
 //   const slides = [

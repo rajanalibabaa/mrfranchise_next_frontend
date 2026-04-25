@@ -16,7 +16,7 @@ import Close from "@mui/icons-material/Close";
 import axios from "axios";
 import { useSelector, useDispatch } from "react-redux";
 import { useRouter } from "next/navigation";
-// import img from "../../assets/Images/logo.png";
+// import img from "../../assets/Images/mrfranchise_logo.avif";
 import { api } from "@/Api/api";
 import { fetchShortListedById } from "@/Redux/Slices/shortlistslice";
 import { fetchLikedBrandsById } from "@/Redux/Slices/likeSlice";
@@ -399,7 +399,7 @@ const allDocs = appliedRes.data?.data?.results?.flatMap(result => result.data) |
   {userData ? (
     <>
       <Avatar
-        src={userData?.profileImage || "url(/logo.png)"}
+        src={userData?.profileImage || "url(/mrfranchise_logo.avif)"}
         loading="lazy"
         alt={userData?.firstName || "Investor"}
         sx={{
@@ -501,7 +501,7 @@ const allDocs = appliedRes.data?.data?.results?.flatMap(result => result.data) |
             }}
           >
             <Typography>{removeMsg}</Typography>
-            <IconButton size="small" onClick={() => setRemoveMsg("")}>
+            <IconButton  size="small" onClick={() => setRemoveMsg("")} aria-label="Close">
               <Close sx={{ color: 'white' }} />
             </IconButton>
           </Box>

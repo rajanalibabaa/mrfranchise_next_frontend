@@ -34,7 +34,8 @@ import { toggleBrandShortListfilter } from "@/Redux/Slices/FilterBrandSlice";
 import { postView } from "@/Utils/function/view.jsx";
 import { openBrandDialog } from "@/Redux/Slices/OpenBrandNewPageSlice.jsx";
 import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
+import dynamic from "next/dynamic";
+const jsPDF = dynamic(() => import("jspdf"), { ssr: false });
 
 const token = getToken();
 const userId = getUserId();
@@ -471,7 +472,7 @@ const basicInfoFields = [
                   )}
                 </Button>
               )}
-              <IconButton onClick={onClose} sx={{ color: "black" }}>
+              <IconButton aria-label="close" onClick={onClose} sx={{ color: "black" }}>
                 <Close />
               </IconButton>
             </Box>
@@ -557,6 +558,7 @@ const basicInfoFields = [
                                   },
                                 }}
                                 size="small"
+                                aria-label="shortlist"
                               >
                                 <RiBookmark3Fill size={23} />
                               </IconButton>
