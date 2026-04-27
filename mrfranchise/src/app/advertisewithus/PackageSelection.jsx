@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
   Box,
@@ -120,11 +120,11 @@ const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
   // Location states
   const [locationLoading, setLocationLoading] = useState(false);
   const [userLocation, setUserLocation] = useState(null);
-  const [detectedState, setDetectedState] = useState(null); // IP detected state
+  const [detectedState, setDetectedState] = useState(null);
 
   // State selection
   const [openStateModal, setOpenStateModal] = useState(false);
-  const [allStates, setAllStates] = useState(INDIA_STATES); // Default to all states
+  const [allStates, setAllStates] = useState(INDIA_STATES);
   const [selectedStates, setSelectedStates] = useState(new Set());
   const [statesByInvestmentRange, setStatesByInvestmentRange] = useState({});
   const [currentEditingRange, setCurrentEditingRange] = useState(null);
@@ -142,7 +142,6 @@ const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
       setLocalBrandUUID(localStorage.getItem("brandUUID"));
       setLocalAccessToken(localStorage.getItem("accessToken"));
 
-      // Load saved state selections
       const savedStates = localStorage.getItem("investmentRangeStates");
       if (savedStates) {
         setStatesByInvestmentRange(JSON.parse(savedStates));
@@ -153,18 +152,19 @@ const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
   const finalBrandUUID = reduxBrandUUID || localBrandUUID;
   const finalToken = reduxToken || localAccessToken;
 
-  const openSnack = (message, severity = "info") =>
+  const openSnack = useCallback((message, severity = "info") => {
     setSnack({ open: true, message, severity });
+  }, []);
 
-  const closeSnack = () => setSnack((s) => ({ ...s, open: false }));
+  const closeSnack = useCallback(() => {
+    setSnack((s) => ({ ...s, open: false }));
+  }, []);
 
   // Auto-detect location via IP (BEFORE LOGIN ONLY)
   useEffect(() => {
     const detectLocation = async () => {
-      // Only detect if NOT logged in
       if (finalToken) return;
 
-      // Check if location was already detected
       const savedLocation = localStorage.getItem("userLocation");
       if (savedLocation) {
         try {
@@ -184,7 +184,6 @@ const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
         }
       }
 
-      // Auto-detect location via IP
       setLocationLoading(true);
       try {
         const ipLocation = await getUserLocationFromIP();
@@ -225,33 +224,82 @@ const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
     fetchBrandDetails(finalBrandUUID, finalToken);
   }, [finalBrandUUID, finalToken]);
 
-  const getRangeKey = (investmentRangeLabel, range) =>
-    `${investmentRangeLabel}__${range}`;
+  const getRangeKey = useCallback((investmentRangeLabel, range) =>
+    `${investmentRangeLabel}__${range}`, []);
 
-  const isGroupPartiallyAdded = (investmentRangeLabel, uniquePackages) => {
+  const isGroupPartiallyAdded = useCallback((investmentRangeLabel, uniquePackages) => {
     return uniquePackages.some((item) => {
       if (item.investmentRangeLabel !== investmentRangeLabel) return false;
       return paymentSummary.some((g) => g.items.some((it) => it.id === item.id));
     });
-  };
+  }, [paymentSummary]);
+
+  // ✅ Update payment summary when states change
+  const updatePaymentSummaryPrices = useCallback(() => {
+    setPaymentSummary((prev) => {
+      return prev.map((group) => {
+        // Recalculate states for each item in the group
+        const updatedItems = group.items.map((item) => {
+          const key = getRangeKey(item.investmentRangeLabel, item.range);
+          let states = statesByInvestmentRange[key];
+          
+          if (!states || states.length === 0) {
+            if (!finalToken && detectedState) {
+              states = [detectedState];
+            } else if (finalToken) {
+              states = allStates;
+            } else {
+              states = [];
+            }
+          }
+          
+          return {
+            ...item,
+            states: states,
+            stateCount: states.length,
+          };
+        });
+
+        // Calculate unique states across all items
+        const allStatesSet = new Set();
+        updatedItems.forEach((item) => {
+          item.states.forEach((state) => allStatesSet.add(state));
+        });
+        const uniqueStates = Array.from(allStatesSet);
+        const totalUniqueStates = uniqueStates.length;
+        const newAmount = totalUniqueStates * group.pricePerState;
+
+        return {
+          ...group,
+          items: updatedItems,
+          uniqueStates: uniqueStates,
+          totalStates: totalUniqueStates,
+          amount: newAmount,
+        };
+      });
+    });
+  }, [statesByInvestmentRange, finalToken, detectedState, allStates, getRangeKey]);
+
+  // ✅ Trigger update when states change
+  useEffect(() => {
+    if (paymentSummary.length > 0) {
+      updatePaymentSummaryPrices();
+    }
+  }, [statesByInvestmentRange]);
 
   // Modal Handlers
-  const handleOpenStateModal = (investmentRangeLabel, range) => {
+  const handleOpenStateModal = useCallback((investmentRangeLabel, range) => {
     const key = getRangeKey(investmentRangeLabel, range);
     setCurrentEditingRange(key);
 
     const savedStates = statesByInvestmentRange[key];
 
     if (savedStates && savedStates.length > 0) {
-      // Use previously saved states
       setSelectedStates(new Set(savedStates));
     } else {
-      // Set default based on login status
       if (!finalToken && detectedState) {
-        // Before login: pre-select IP detected state
         setSelectedStates(new Set([detectedState]));
       } else if (finalToken && allStates.length > 0) {
-        // After login: pre-select all expansion states
         setSelectedStates(new Set(allStates));
       } else {
         setSelectedStates(new Set());
@@ -259,20 +307,22 @@ const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
     }
 
     setOpenStateModal(true);
-  };
+  }, [getRangeKey, statesByInvestmentRange, finalToken, detectedState, allStates]);
 
-  const handleCloseStateModal = () => setOpenStateModal(false);
+  const handleCloseStateModal = useCallback(() => {
+    setOpenStateModal(false);
+  }, []);
 
-  const handleStateCheckboxChange = (state) => {
+  const handleStateCheckboxChange = useCallback((state) => {
     setSelectedStates((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(state)) newSet.delete(state);
       else newSet.add(state);
       return newSet;
     });
-  };
+  }, []);
 
-  const handleSaveStates = () => {
+  const handleSaveStates = useCallback(() => {
     const selectedArray = Array.from(selectedStates);
 
     const updated = {
@@ -284,15 +334,16 @@ const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
     localStorage.setItem("investmentRangeStates", JSON.stringify(updated));
     openSnack(`Saved ${selectedArray.length} state${selectedArray.length > 1 ? 's' : ''}`, "success");
     handleCloseStateModal();
-  };
+  }, [selectedStates, statesByInvestmentRange, currentEditingRange, openSnack, handleCloseStateModal]);
 
-  const getUniqueStatesAcrossRanges = (items) => {
+  // Get unique states across ranges
+  const getUniqueStatesAcrossRanges = useCallback((items) => {
     const allStatesSet = new Set();
     items.forEach((item) => {
       item.states.forEach((state) => allStatesSet.add(state));
     });
     return Array.from(allStatesSet);
-  };
+  }, []);
 
   // Fetch brand details
   const fetchBrandDetails = async (uuid, accessToken) => {
@@ -331,7 +382,6 @@ const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
         .filter(Boolean);
       setFicoInvestmentRanges(ficoRanges);
 
-      // Extract expansion location states (AFTER LOGIN)
       const expansionLocations =
         brandData?.expansionlocationdata?.expansionLocations?.domestic
           ?.locations || [];
@@ -366,7 +416,6 @@ const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
         ).values(),
       ];
 
-      // After login: ONLY use brand's expansion states
       if (uniqueStatesList.length > 0) {
         setAllStates(uniqueStatesList);
       } else {
@@ -419,7 +468,8 @@ const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
     }
   };
 
-  const getUniquePackages = () => {
+  // ✅ Memoized unique packages
+  const uniquePackages = useMemo(() => {
     const uniqueMap = new Map();
     plans.forEach((plan) => {
       plan.packages?.forEach((pkg, pIndex) => {
@@ -439,26 +489,26 @@ const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
       });
     });
     return Array.from(uniqueMap.values());
-  };
+  }, [plans]);
 
-  const handleCheckboxChange = (id) => {
+  const handleCheckboxChange = useCallback((id) => {
     setSelected((prev) => ({ ...prev, [id]: !prev[id] }));
-  };
+  }, []);
 
-  const handlePlanChange = (investmentRangeLabel, planId) => {
+  const handlePlanChange = useCallback((investmentRangeLabel, planId) => {
     setSelectedPlans((prev) => ({
       ...prev,
       [investmentRangeLabel]: planId,
     }));
-  };
+  }, []);
 
-  const getSelectedPlanData = (investmentRangeLabel, defaultPlan) => {
+  const getSelectedPlanData = useCallback((investmentRangeLabel, defaultPlan) => {
     const selectedPlanId = selectedPlans[investmentRangeLabel];
     if (!selectedPlanId) return defaultPlan;
     return plans.find((plan) => plan._id === selectedPlanId) || defaultPlan;
-  };
+  }, [selectedPlans, plans]);
 
-  const normalizeRange = (value) => {
+  const normalizeRange = useCallback((value) => {
     return String(value || "")
       .toLowerCase()
       .replace(/₹/g, "rs")
@@ -469,16 +519,35 @@ const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
       .replace(/\bto\b/g, "-")
       .replace(/[^a-z0-9]/g, "")
       .trim();
-  };
+  }, []);
 
-  const isFicoInvestmentRange = (range) => {
+  const isFicoInvestmentRange = useCallback((range) => {
     const currentRange = normalizeRange(range);
     return ficoInvestmentRanges.some(
       (ficoRange) => normalizeRange(ficoRange) === currentRange
     );
-  };
+  }, [ficoInvestmentRanges, normalizeRange]);
 
-  const handleAddToPayment = (investmentRangeLabel, uniquePackages) => {
+  // ✅ Calculate total amount for a specific investment range row
+  const calculateRangeTotal = useCallback((investmentRangeLabel, range, pricePerState) => {
+    const key = getRangeKey(investmentRangeLabel, range);
+    let states = statesByInvestmentRange[key];
+    
+    if (!states || states.length === 0) {
+      if (!finalToken && detectedState) {
+        states = [detectedState];
+      } else if (finalToken) {
+        states = allStates;
+      } else {
+        states = [];
+      }
+    }
+    
+    return states.length * pricePerState;
+  }, [statesByInvestmentRange, finalToken, detectedState, allStates, getRangeKey]);
+
+  // Add to Payment
+  const handleAddToPayment = useCallback((investmentRangeLabel, uniquePackages) => {
     const defaultPlanForLabel = plans.find((p) =>
       p.packages?.some((pkg) => pkg.investmentRangeLabel === investmentRangeLabel)
     );
@@ -524,12 +593,11 @@ const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
         const key = getRangeKey(item.investmentRangeLabel, item.range);
         let states = statesByInvestmentRange[key];
         
-        // If no saved states, use defaults based on login status
         if (!states || states.length === 0) {
           if (!finalToken && detectedState) {
-            states = [detectedState]; // Before login: use detected state
+            states = [detectedState];
           } else if (finalToken) {
-            states = allStates; // After login: use expansion states
+            states = allStates;
           } else {
             states = [];
           }
@@ -556,7 +624,7 @@ const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
     const totalUniqueStates = uniqueStates.length;
     const dynamicAmount = totalUniqueStates * pricePerState;
 
-    const groupKey = `${selectedPlan._id}__${selectedPkg?.validityDays}__${pricePerState}__${selectedPkg?.totalLeads}`;
+    const groupKey = `${selectedPlan._id}__${selectedPkg?.validityDays}__${pricePerState}__${selectedPkg?.totalLeads}__${investmentRangeLabel}`;
 
     setPaymentSummary((prev) => {
       const existingGroup = prev.find((g) => g.groupKey === groupKey);
@@ -577,7 +645,7 @@ const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
         const newAmount = newTotalUniqueStates * pricePerState;
 
         openSnack(
-          `${newItems.length} ranges added. Unique States: ${newTotalUniqueStates}, Total: ₹${newAmount}`,
+          `${newItems.length} range(s) added. Unique States: ${newTotalUniqueStates}, Total: ₹${newAmount}`,
           "success"
         );
 
@@ -595,15 +663,17 @@ const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
       }
 
       openSnack(
-        `Package added: ${totalUniqueStates} unique states × ₹${pricePerState} = ₹${dynamicAmount}`,
+        `Package added: ${totalUniqueStates} unique state${totalUniqueStates > 1 ? 's' : ''} × ₹${pricePerState} = ₹${dynamicAmount}`,
         "success"
       );
+      
       return [
         ...prev,
         {
           groupKey,
           planId: selectedPlan._id,
           planName: selectedPlan.planName,
+          investmentRangeLabel: investmentRangeLabel,
           validityDays: selectedPkg?.validityDays,
           pricePerState: pricePerState,
           uniqueStates: uniqueStates,
@@ -614,9 +684,9 @@ const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
         },
       ];
     });
-  };
+  }, [plans, getSelectedPlanData, selected, getRangeKey, statesByInvestmentRange, finalToken, detectedState, allStates, getUniqueStatesAcrossRanges, openSnack]);
 
-  const handleRemoveItem = (groupKey, itemId) => {
+  const handleRemoveItem = useCallback((groupKey, itemId) => {
     setPaymentSummary((prev) => {
       const updated = prev
         .map((g) => {
@@ -645,9 +715,9 @@ const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
 
     setSelected((prev) => ({ ...prev, [itemId]: false }));
     openSnack("Investment range removed", "info");
-  };
+  }, [getUniqueStatesAcrossRanges, openSnack]);
 
-  const handleRemoveGroup = (groupKey) => {
+  const handleRemoveGroup = useCallback((groupKey) => {
     setPaymentSummary((prev) => {
       const group = prev.find((g) => g.groupKey === groupKey);
       if (group) {
@@ -661,39 +731,37 @@ const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
       return prev.filter((g) => g.groupKey !== groupKey);
     });
     openSnack("Plan removed", "info");
-  };
+  }, [openSnack]);
 
-  const calculateTotal = () => {
+  const calculateTotal = useCallback(() => {
     return paymentSummary.reduce((sum, g) => sum + (g.amount || 0), 0);
-  };
+  }, [paymentSummary]);
 
-  const handleProceedToPayment = () => {
+  const handleProceedToPayment = useCallback(() => {
     if (paymentSummary.length === 0) {
       openSnack("Please add at least one package", "warning");
       return;
     }
     localStorage.setItem("paymentSummary", JSON.stringify(paymentSummary));
     router.push("/brandDashboard/payment");
-  };
+  }, [paymentSummary, openSnack, router]);
 
-  const getStateCountForRange = (investmentRangeLabel, range) => {
+  const getStateCountForRange = useCallback((investmentRangeLabel, range) => {
     const key = getRangeKey(investmentRangeLabel, range);
     const savedStates = statesByInvestmentRange[key];
     
     if (savedStates && savedStates.length > 0) return savedStates.length;
     
-    // Before login: return 1 if state detected
     if (!finalToken && detectedState) return 1;
     
-    // After login: return expansion states count
     if (finalToken) return allStates.length;
     
     return 0;
-  };
+  }, [getRangeKey, statesByInvestmentRange, finalToken, detectedState, allStates]);
 
-  const handleAddInvestmentRange = (range, investmentRangeLabel) => {
+  const handleAddInvestmentRange = useCallback((range, investmentRangeLabel) => {
     onAddInvestmentRange(range, investmentRangeLabel);
-  };
+  }, [onAddInvestmentRange]);
 
   if (loading) {
     return (
@@ -707,30 +775,213 @@ const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
     return <Alert severity="error">{error}</Alert>;
   }
 
-  const uniquePackages = getUniquePackages();
-
-  // Get states to display in modal based on login status
   const getStatesToDisplay = () => {
     if (finalToken) {
-      // After login: show only expansion states
       return allStates;
     } else {
-      // Before login: show all Indian states
       return INDIA_STATES;
     }
   };
 
   return (
     <>
+     {/* Payment Summary Section */}
+        {paymentSummary.length > 0 && (
+          <Card sx={{ mt: 4 }}>
+            <CardContent>
+              <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                Payment Summary
+              </Typography>
+              <Divider sx={{ mb: 2 }} />
+
+              {paymentSummary.map((group, gIndex) => (
+                <Box key={group.groupKey} sx={{ mb: 3 }}>
+                  <Grid container spacing={2} alignItems="center" sx={{ py: 2 }}>
+                    <Grid item xs={12} md={3}>
+                      <Typography variant="body2" color="text.secondary">
+                        Plan
+                      </Typography>
+                      <Typography variant="body1" fontWeight={500}>
+                        {group.planName}
+                      </Typography>
+                      <Typography variant="caption" color="primary">
+                        {group.investmentRangeLabel}
+                      </Typography>
+                    </Grid>
+
+                    <Grid item xs={6} md={2}>
+                      <Typography variant="body2" color="text.secondary">
+                        Tenure
+                      </Typography>
+                      <Typography variant="body1" fontWeight={500}>
+                        {group.validityDays} Days
+                      </Typography>
+                    </Grid>
+
+                    <Grid item xs={6} md={2}>
+                      <Typography variant="body2" color="text.secondary">
+                        Lead Count
+                      </Typography>
+                      <Typography variant="body1" fontWeight={500}>
+                        {group.totalLeads}
+                      </Typography>
+                    </Grid>
+
+                    <Grid item xs={12} md={3}>
+                      <Typography variant="body2" color="text.secondary">
+                        Calculation
+                      </Typography>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 1,
+                          flexWrap: "wrap",
+                        }}
+                      >
+                        <Typography
+                          variant="body1"
+                          fontWeight={500}
+                          color="primary"
+                        >
+                          ₹{group.pricePerState.toLocaleString()}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          ×
+                        </Typography>
+                        <Typography
+                          variant="body1"
+                          fontWeight={500}
+                          color="primary"
+                        >
+                          {group.totalStates} State{group.totalStates > 1 ? 's' : ''}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          =
+                        </Typography>
+                        <Typography
+                          variant="h6"
+                          color="error"
+                          fontWeight={700}
+                        >
+                          ₹{group.amount.toLocaleString()}
+                        </Typography>
+                      </Box>
+                      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+                        (Unique states across all ranges)
+                      </Typography>
+                    </Grid>
+
+                    <Grid item xs={12} md={2} sx={{ textAlign: "right" }}>
+                      <Button
+                        variant="outlined"
+                        color="error"
+                        size="small"
+                        startIcon={<DeleteIcon />}
+                        onClick={() => handleRemoveGroup(group.groupKey)}
+                      >
+                        Remove
+                      </Button>
+                    </Grid>
+                  </Grid>
+
+                  <Box
+                    sx={{
+                      pl: 2,
+                      borderLeft: "3px solid #e0e0e0",
+                      ml: 1,
+                    }}
+                  >
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ mb: 1 }}
+                    >
+                      Included Investment Ranges ({group.items.length})
+                    </Typography>
+                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+                      {group.items.map((it) => (
+                        <Chip
+                          key={it.id}
+                          label={`${it.range} (${it.stateCount} states)`}
+                          onDelete={() =>
+                            handleRemoveItem(group.groupKey, it.id)
+                          }
+                          color="primary"
+                          variant="outlined"
+                          size="small"
+                        />
+                      ))}
+                    </Box>
+                    
+                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
+                      Unique States ({group.totalStates}): {group.uniqueStates.slice(0, 5).join(", ")}
+                      {group.uniqueStates.length > 5 && ` +${group.uniqueStates.length - 5} more`}
+                    </Typography>
+                  </Box>
+
+                  {gIndex < paymentSummary.length - 1 && (
+                    <Divider sx={{ mt: 2 }} />
+                  )}
+                </Box>
+              ))}
+
+              <Divider sx={{ my: 3 }} />
+
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  mb: 3,
+                }}
+              >
+                <Typography variant="h6" fontWeight={600}>
+                  Total Amount Payable
+                </Typography>
+                <Typography variant="h4" color="primary" fontWeight={700}>
+                  ₹{calculateTotal().toLocaleString()}
+                </Typography>
+              </Box>
+
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  gap: 2,
+                }}
+              >
+                <Button
+                  variant="outlined"
+                  color="error"
+                  onClick={() => {
+                    setPaymentSummary([]);
+                    setSelected({});
+                  }}
+                >
+                  Clear All
+                </Button>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  size="large"
+                  onClick={handleProceedToPayment}
+                >
+                  Proceed to Payment
+                </Button>
+              </Box>
+            </CardContent>
+          </Card>
+        )}
+
+        
       <Box sx={{ p: 3 }}>
-        {/* User Location Display (Before Login Only) */}
         {!finalToken && userLocation && (
           <Alert severity="info" sx={{ mb: 2 }}>
             Detected Location: {userLocation.city}, {userLocation.state}
           </Alert>
         )}
 
-        {/* Brand Expansion States Display (After Login Only) */}
         {finalToken && allStates.length > 0 && (
           <Alert severity="success" sx={{ mb: 2 }}>
             Showing packages for {allStates.length} expansion state{allStates.length > 1 ? 's' : ''}: {allStates.slice(0, 3).join(", ")}
@@ -738,7 +989,6 @@ const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
           </Alert>
         )}
 
-        {/* No States Warning (After Login) */}
         {finalToken && allStates.length === 0 && (
           <Alert 
             severity="warning" 
@@ -817,6 +1067,9 @@ const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
                   (pkgItem) =>
                     pkgItem.investmentRangeLabel === investmentRangeLabel
                 ).length;
+
+                const pricePerState = selectedPkg?.amount || 0;
+                const rangeTotal = calculateRangeTotal(investmentRangeLabel, range, pricePerState);
 
                 return (
                   <React.Fragment key={id}>
@@ -932,39 +1185,51 @@ const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
                             {selectedPkg?.validityDays} Days
                           </TableCell>
                           <TableCell rowSpan={rowSpan}>
-                            ₹{selectedPkg?.amount}
+                            ₹{selectedPkg?.amount?.toLocaleString()}
                           </TableCell>
                           <TableCell rowSpan={rowSpan}>
                             {selectedPkg?.totalLeads}
                           </TableCell>
-                          <TableCell></TableCell>
-                          <TableCell rowSpan={rowSpan} align="center">
-                            {!isGroupPartiallyAdded(
-                              investmentRangeLabel,
-                              uniquePackages
-                            ) ? (
-                              <Button
-                                variant="contained"
-                                size="small"
-                                onClick={() =>
-                                  handleAddToPayment(
-                                    investmentRangeLabel,
-                                    uniquePackages
-                                  )
-                                }
-                              >
-                                Add to Payment
-                              </Button>
-                            ) : (
-                              <Chip
-                                label="Added"
-                                color="success"
-                                size="small"
-                                variant="outlined"
-                              />
-                            )}
-                          </TableCell>
                         </>
+                      )}
+
+                      {/* ✅ Total Amount for this specific row */}
+                      <TableCell>
+                        <Typography variant="body2" fontWeight={600} color="primary">
+                          ₹{rangeTotal.toLocaleString()}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          ({getStateCountForRange(investmentRangeLabel, range)} × ₹{pricePerState})
+                        </Typography>
+                      </TableCell>
+
+                      {isFirstInGroup && (
+                        <TableCell rowSpan={rowSpan} align="center">
+                          {!isGroupPartiallyAdded(
+                            investmentRangeLabel,
+                            uniquePackages
+                          ) ? (
+                            <Button
+                              variant="contained"
+                              size="small"
+                              onClick={() =>
+                                handleAddToPayment(
+                                  investmentRangeLabel,
+                                  uniquePackages
+                                )
+                              }
+                            >
+                              Add to Payment
+                            </Button>
+                          ) : (
+                            <Chip
+                              label="Added"
+                              color="success"
+                              size="small"
+                              variant="outlined"
+                            />
+                          )}
+                        </TableCell>
                       )}
                     </TableRow>
                   </React.Fragment>
@@ -974,183 +1239,7 @@ const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
           </Table>
         </TableContainer>
 
-        {/* Payment Summary Section */}
-        {paymentSummary.length > 0 && (
-          <Card sx={{ mt: 4 }}>
-            <CardContent>
-              <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
-                Payment Summary
-              </Typography>
-              <Divider sx={{ mb: 2 }} />
-
-              {paymentSummary.map((group, gIndex) => (
-                <Box key={group.groupKey} sx={{ mb: 3 }}>
-                  <Grid container spacing={2} alignItems="center" sx={{ py: 2 }}>
-                    <Grid item xs={12} md={3}>
-                      <Typography variant="body2" color="text.secondary">
-                        Plan
-                      </Typography>
-                      <Typography variant="body1" fontWeight={500}>
-                        {group.planName}
-                      </Typography>
-                    </Grid>
-
-                    <Grid item xs={6} md={2}>
-                      <Typography variant="body2" color="text.secondary">
-                        Tenure
-                      </Typography>
-                      <Typography variant="body1" fontWeight={500}>
-                        {group.validityDays} Days
-                      </Typography>
-                    </Grid>
-
-                    <Grid item xs={6} md={2}>
-                      <Typography variant="body2" color="text.secondary">
-                        Lead Count
-                      </Typography>
-                      <Typography variant="body1" fontWeight={500}>
-                        {group.totalLeads}
-                      </Typography>
-                    </Grid>
-
-                    <Grid item xs={12} md={3}>
-                      <Typography variant="body2" color="text.secondary">
-                        Calculation
-                      </Typography>
-                      <Box
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 1,
-                          flexWrap: "wrap",
-                        }}
-                      >
-                        <Typography
-                          variant="body1"
-                          fontWeight={500}
-                          color="primary"
-                        >
-                          ₹{group.pricePerState}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          ×
-                        </Typography>
-                        <Typography
-                          variant="body1"
-                          fontWeight={500}
-                          color="primary"
-                        >
-                          {group.totalStates} States
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          =
-                        </Typography>
-                        <Typography
-                          variant="h6"
-                          color="error"
-                          fontWeight={700}
-                        >
-                          ₹{group.amount.toLocaleString()}
-                        </Typography>
-                      </Box>
-                    </Grid>
-
-                    <Grid item xs={12} md={2} sx={{ textAlign: "right" }}>
-                      <Button
-                        variant="outlined"
-                        color="error"
-                        size="small"
-                        startIcon={<DeleteIcon />}
-                        onClick={() => handleRemoveGroup(group.groupKey)}
-                      >
-                        Remove
-                      </Button>
-                    </Grid>
-                  </Grid>
-
-                  <Box
-                    sx={{
-                      pl: 2,
-                      borderLeft: "3px solid #e0e0e0",
-                      ml: 1,
-                    }}
-                  >
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{ mb: 1 }}
-                    >
-                      Included Investment Ranges ({group.items.length})
-                    </Typography>
-                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-                      {group.items.map((it) => (
-                        <Chip
-                          key={it.id}
-                          label={`${it.range} (${it.stateCount} states)`}
-                          onDelete={() =>
-                            handleRemoveItem(group.groupKey, it.id)
-                          }
-                          color="primary"
-                          variant="outlined"
-                          size="small"
-                        />
-                      ))}
-                    </Box>
-                  </Box>
-
-                  {gIndex < paymentSummary.length - 1 && (
-                    <Divider sx={{ mt: 2 }} />
-                  )}
-                </Box>
-              ))}
-
-              <Divider sx={{ my: 3 }} />
-
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  mb: 3,
-                }}
-              >
-                <Typography variant="h6" fontWeight={600}>
-                  Total Amount Payable
-                </Typography>
-                <Typography variant="h4" color="primary" fontWeight={700}>
-                  ₹{calculateTotal().toLocaleString()}
-                </Typography>
-              </Box>
-
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "flex-end",
-                  gap: 2,
-                }}
-              >
-                <Button
-                  variant="outlined"
-                  color="error"
-                  onClick={() => {
-                    setPaymentSummary([]);
-                    setSelected({});
-                  }}
-                >
-                  Clear All
-                </Button>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  size="large"
-                  onClick={handleProceedToPayment}
-                >
-                  Proceed to Payment
-                </Button>
-              </Box>
-            </CardContent>
-          </Card>
-        )}
+       
 
         {/* States Selection Modal */}
         <Dialog
