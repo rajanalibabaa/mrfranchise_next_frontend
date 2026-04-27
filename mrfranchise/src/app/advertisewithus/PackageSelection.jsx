@@ -27,17 +27,27 @@ import {
   IconButton,
   Typography,
   FormControlLabel,
+   Card,
+  CardContent,
+  Divider,
+  Grid,
+  // DeleteIcon,   
 } from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import { useSelector } from "react-redux";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
 
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
+  
+
   const router = useRouter();
+    const [paymentSummary, setPaymentSummary] = useState([]);
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [brandLoading, setBrandLoading] = useState(false);
@@ -101,6 +111,12 @@ useEffect(() => {
 
 const getRangeKey = (investmentRangeLabel, range) =>
   `${investmentRangeLabel}__${range}`;
+ const isGroupPartiallyAdded = (investmentRangeLabel, uniquePackages) => {
+    return uniquePackages.some((item) => {
+      if (item.investmentRangeLabel !== investmentRangeLabel) return false;
+      return paymentSummary.some((g) => g.items.some((it) => it.id === item.id));
+    });
+  };
 
   // Modal Handlers
 const handleOpenStateModal = (investmentRangeLabel, range) => {
@@ -136,6 +152,200 @@ const handleSaveStates = () => {
   localStorage.setItem("investmentRangeStates", JSON.stringify(updated));
   handleCloseStateModal();
 };
+
+const getUniqueStatesAcrossRanges = (items) => {
+  const allStates = new Set();
+  items.forEach(item => {
+    item.states.forEach(state => allStates.add(state));
+  });
+  return Array.from(allStates);
+};
+
+  // Add to Payment Handler
+const handleAddToPayment = (investmentRangeLabel, uniquePackages) => {
+  // 1. Get the plan settings for this label
+  const defaultPlanForLabel = plans.find(
+    (p) => p.packages?.some((pkg) => pkg.investmentRangeLabel === investmentRangeLabel)
+  );
+  
+  if (!defaultPlanForLabel) return;
+
+  const selectedPlan = getSelectedPlanData(investmentRangeLabel, defaultPlanForLabel);
+  const selectedPkg = selectedPlan?.packages?.find(
+    (p) => p.investmentRangeLabel === investmentRangeLabel
+  );
+
+  if (!selectedPkg) {
+    openSnack("No package details found for this selection", "warning");
+    return;
+  }
+
+  const pricePerState = selectedPkg?.amount || 0; 
+
+  // 2. Find all CHECKED items for this label
+  const itemsToAdd = uniquePackages
+    .filter((item) => {
+      if (item.investmentRangeLabel !== investmentRangeLabel) return false;
+      if (!selected[item.id]) return false; 
+      
+      const itemPlan = getSelectedPlanData(item.investmentRangeLabel, item.defaultPlan);
+      const itemPkg = itemPlan?.packages?.find(p => p.investmentRangeLabel === investmentRangeLabel) || item.pkg;
+      
+      return (
+        itemPlan._id === selectedPlan._id &&
+        itemPkg?.amount === selectedPkg?.amount &&
+        itemPkg?.validityDays === selectedPkg?.validityDays
+      );
+    })
+    .map((item) => {
+      const key = getRangeKey(item.investmentRangeLabel, item.range);
+      const states = statesByInvestmentRange[key] || allStates;
+      return {
+        id: item.id,
+        investmentRangeLabel: item.investmentRangeLabel,
+        range: item.range,
+        stateCount: states.length,
+        states: states,
+      };
+    });
+
+  if (itemsToAdd.length === 0) {
+    openSnack("Please select at least one investment range checkbox", "warning");
+    return;
+  }
+
+  // ✅ Calculate UNIQUE States for this Group (remove duplicates)
+  const uniqueStates = getUniqueStatesAcrossRanges(itemsToAdd);
+  const totalUniqueStates = uniqueStates.length;
+  
+  // ✅ Calculate Dynamic Amount: Unique States × Price Per State
+  const dynamicAmount = totalUniqueStates * pricePerState;
+
+  // 3. Create Group Key
+  const groupKey = `${selectedPlan._id}__${selectedPkg?.validityDays}__${pricePerState}__${selectedPkg?.totalLeads}`;
+
+  setPaymentSummary((prev) => {
+    const existingGroup = prev.find((g) => g.groupKey === groupKey);
+
+    if (existingGroup) {
+      const newItems = itemsToAdd.filter(
+        (newItem) => !existingGroup.items.some((ex) => ex.id === newItem.id)
+      );
+      
+      if (newItems.length === 0) {
+        openSnack("These ranges are already added", "info");
+        return prev;
+      }
+
+      // Recalculate UNIQUE states and amount for the updated group
+      const updatedItems = [...existingGroup.items, ...newItems];
+      const newUniqueStates = getUniqueStatesAcrossRanges(updatedItems);
+      const newTotalUniqueStates = newUniqueStates.length;
+      const newAmount = newTotalUniqueStates * pricePerState;
+
+      openSnack(
+        `${newItems.length} ranges added. Unique States: ${newTotalUniqueStates}, Total: ₹${newAmount}`, 
+        "success"
+      );
+      
+      return prev.map((g) =>
+        g.groupKey === groupKey
+          ? { 
+              ...g, 
+              items: updatedItems, 
+              uniqueStates: newUniqueStates, // Store unique states array
+              totalStates: newTotalUniqueStates, // Store unique count
+              amount: newAmount 
+            }
+          : g
+      );
+    }
+
+    // Create new group with unique states
+    openSnack(
+      `Package added: ${totalUniqueStates} unique states × ₹${pricePerState} = ₹${dynamicAmount}`, 
+      "success"
+    );
+    return [
+      ...prev,
+      {
+        groupKey,
+        planId: selectedPlan._id,
+        planName: selectedPlan.planName,
+        validityDays: selectedPkg?.validityDays,
+        pricePerState: pricePerState,
+        uniqueStates: uniqueStates, // Store unique states array
+        totalStates: totalUniqueStates, // Store unique count
+        amount: dynamicAmount,
+        totalLeads: selectedPkg?.totalLeads,
+        items: itemsToAdd,
+      },
+    ];
+  });
+};
+
+  // Remove a single investment range chip from a group
+  const handleRemoveItem = (groupKey, itemId) => {
+  setPaymentSummary((prev) => {
+    const updated = prev
+      .map((g) => {
+        if (g.groupKey !== groupKey) return g;
+        
+        const updatedItems = g.items.filter((it) => it.id !== itemId);
+        
+        if (updatedItems.length === 0) return null; // Will be filtered out
+        
+        // Recalculate unique states after removal
+        const newUniqueStates = getUniqueStatesAcrossRanges(updatedItems);
+        const newTotalUniqueStates = newUniqueStates.length;
+        const newAmount = newTotalUniqueStates * g.pricePerState;
+        
+        return {
+          ...g,
+          items: updatedItems,
+          uniqueStates: newUniqueStates,
+          totalStates: newTotalUniqueStates,
+          amount: newAmount
+        };
+      })
+      .filter(g => g !== null); // Remove empty groups
+    
+    return updated;
+  });
+  
+  setSelected((prev) => ({ ...prev, [itemId]: false }));
+  openSnack("Investment range removed", "info");
+};
+
+  // Remove the entire Plan group
+  const handleRemoveGroup = (groupKey) => {
+    setPaymentSummary((prev) => {
+      const group = prev.find((g) => g.groupKey === groupKey);
+      if (group) {
+        const idsToRemove = group.items.map((it) => it.id);
+        setSelected((s) => {
+          const copy = { ...s };
+          idsToRemove.forEach((id) => (copy[id] = false));
+          return copy;
+        });
+      }
+      return prev.filter((g) => g.groupKey !== groupKey);
+    });
+    openSnack("Plan removed", "info");
+  };
+
+  const calculateTotal = () => {
+    return paymentSummary.reduce((sum, g) => sum + (g.amount || 0), 0);
+  };
+
+  const handleProceedToPayment = () => {
+    if (paymentSummary.length === 0) {
+      openSnack("Please add at least one package", "warning");
+      return;
+    }
+    localStorage.setItem("paymentSummary", JSON.stringify(paymentSummary));
+    router.push("/brandDashboard/payment");
+  };
 
 const getStateCountForRange = (investmentRangeLabel, range) => {
   const key = getRangeKey(investmentRangeLabel, range);
@@ -363,13 +573,15 @@ const getStateCountForRange = (investmentRangeLabel, range) => {
               <TableCell>No. Of States</TableCell>
               <TableCell>Plan</TableCell>
               <TableCell>Tenure</TableCell>
-              <TableCell>Price</TableCell>
+              <TableCell>Price<br/>(Per state)</TableCell>
               <TableCell>Lead Count</TableCell>
+                            <TableCell>Total<br/>Amount</TableCell>
+
               <TableCell>Action</TableCell>
             </TableRow>
           </TableHead>
 
-          <TableBody>
+                 <TableBody>
             {uniquePackages.map((item, index) => {
               const {
                 id,
@@ -391,45 +603,41 @@ const getStateCountForRange = (investmentRangeLabel, range) => {
                 uniquePackages[index - 1].investmentRangeLabel !== investmentRangeLabel;
 
               const rowSpan = uniquePackages.filter(
-                (item) => item.investmentRangeLabel === investmentRangeLabel
+                (pkgItem) => pkgItem.investmentRangeLabel === investmentRangeLabel
               ).length;
 
               return (
                 <React.Fragment key={id}>
                   {isFirstInGroup && (
                     <TableRow sx={{ backgroundColor: "#f5f5f5" }}>
-                      <TableCell colSpan={8} sx={{ fontWeight: "bold", fontSize: "1rem" }}>
+                      <TableCell colSpan={9} sx={{ fontWeight: "bold", fontSize: "1rem" }}>
                         {investmentRangeLabel}
                       </TableCell>
                     </TableRow>
                   )}
 
                   <TableRow hover>
-               <TableCell padding="checkbox">
-  {(() => {
-    const isRecommended = isFicoInvestmentRange(range);
-
-    return (
-      <Checkbox
-        checked={!!selected[id]}
-        onClick={(e) => {
-          // prevent default checkbox toggle
-          e.preventDefault();
-
-          if (!isRecommended) {
-            openSnack(
-              "You have to add this investment range to your business model to select it.",
-              "warning"
-            );
-            return;
-          }
-
-          handleCheckboxChange(id);
-        }}
-      />
-    );
-  })()}
-</TableCell>
+                    <TableCell padding="checkbox">
+                      {(() => {
+                        const isRecommended = isFicoInvestmentRange(range);
+                        return (
+                          <Checkbox
+                            checked={!!selected[id]}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              if (!isRecommended) {
+                                openSnack(
+                                  "You have to add this investment range to your business model to select it.",
+                                  "warning"
+                                );
+                                return;
+                              }
+                              handleCheckboxChange(id);
+                            }}
+                          />
+                        );
+                      })()}
+                    </TableCell>
 
                     <TableCell>{range}</TableCell>
 
@@ -440,10 +648,7 @@ const getStateCountForRange = (investmentRangeLabel, range) => {
                           color="success"
                           size="small"
                           variant="filled"
-                          sx={{
-                            fontWeight: 600,
-                            borderRadius: "6px",
-                          }}
+                          sx={{ fontWeight: 600, borderRadius: "6px" }}
                         />
                       ) : (
                         <Button
@@ -458,25 +663,25 @@ const getStateCountForRange = (investmentRangeLabel, range) => {
                       )}
                     </TableCell>
 
-                    {/* No. Of States with Edit Icon */}
-                 <TableCell>
-  {brandLoading ? (
-    <CircularProgress size={18} />
-  ) : (
-    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-{getStateCountForRange(investmentRangeLabel, range)} states
-      <IconButton
-        size="small"
-        color="primary"
-onClick={() => handleOpenStateModal(investmentRangeLabel, range)}
-        title="Edit States"
-      >
-        <EditIcon fontSize="small" />
-      </IconButton>
-    </Box>
-  )}
-</TableCell>
+                    <TableCell>
+                      {brandLoading ? (
+                        <CircularProgress size={18} />
+                      ) : (
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                          {getStateCountForRange(investmentRangeLabel, range)} states
+                          <IconButton
+                            size="small"
+                            color="primary"
+                            onClick={() => handleOpenStateModal(investmentRangeLabel, range)}
+                            title="Edit States"
+                          >
+                            <EditIcon fontSize="small" />
+                          </IconButton>
+                        </Box>
+                      )}
+                    </TableCell>
 
+                    {/* Plan Dropdown - Only on first row */}
                     {isFirstInGroup && (
                       <TableCell rowSpan={rowSpan}>
                         <FormControl size="small" fullWidth>
@@ -497,6 +702,7 @@ onClick={() => handleOpenStateModal(investmentRangeLabel, range)}
                       </TableCell>
                     )}
 
+                    {/* Tenure, Price, Lead Count, AND Action Button - Only on first row */}
                     {isFirstInGroup && (
                       <>
                         <TableCell rowSpan={rowSpan}>
@@ -508,23 +714,23 @@ onClick={() => handleOpenStateModal(investmentRangeLabel, range)}
                         <TableCell rowSpan={rowSpan}>
                           {selectedPkg?.totalLeads}
                         </TableCell>
+                        <TableCell></TableCell>
+                        {/* ✅ ACTION BUTTON MOVED HERE */}
+                        <TableCell rowSpan={rowSpan} align="center">
+                          {!isGroupPartiallyAdded(investmentRangeLabel, uniquePackages) ? (
+                            <Button
+                              variant="contained"
+                              size="small"
+                              onClick={() => handleAddToPayment(investmentRangeLabel, uniquePackages)}
+                            >
+                              Add to Payment
+                            </Button>
+                          ) : (
+                            <Chip label="Added" color="success" size="small" variant="outlined" />
+                          )}
+                        </TableCell>
                       </>
                     )}
-                    <TableCell>
-  {selected[id] && (
-    <Button
-      variant="contained"
-      size="small"
-      onClick={() => {
-        // TODO: do something with this row
-        // example: navigate
-        router.push("/brandDashboard/payment");
-      }}
-    >
-      Add to Payment
-    </Button>
-  )}
-</TableCell>
                   </TableRow>
                 </React.Fragment>
               );
@@ -532,6 +738,125 @@ onClick={() => handleOpenStateModal(investmentRangeLabel, range)}
           </TableBody>
         </Table>
       </TableContainer>
+            {/* Payment Summary Section */}
+            {/* Payment Summary Section - Grouped by Plan */}
+      {paymentSummary.length > 0 && (
+        <Card sx={{ mt: 4 }}>
+          <CardContent>
+            <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+              Payment Summary
+            </Typography>
+            <Divider sx={{ mb: 2 }} />
+
+            {paymentSummary.map((group, gIndex) => (
+              <Box key={group.groupKey} sx={{ mb: 3 }}>
+                {/* Plan Header Row */}
+                <Grid container spacing={2} alignItems="center" sx={{ py: 2 }}>
+                  <Grid item xs={12} md={3}>
+                    <Typography variant="body2" color="text.secondary">Plan</Typography>
+                    <Typography variant="body1" fontWeight={500}>{group.planName}</Typography>
+                  </Grid>
+
+                  <Grid item xs={6} md={2}>
+                    <Typography variant="body2" color="text.secondary">Tenure</Typography>
+                    <Typography variant="body1" fontWeight={500}>
+                      {group.validityDays} Days
+                    </Typography>
+                  </Grid>
+
+                  <Grid item xs={6} md={2}>
+                    <Typography variant="body2" color="text.secondary">Lead Count</Typography>
+                    <Typography variant="body1" fontWeight={500}>
+                      {group.totalLeads}
+                    </Typography>
+                  </Grid>
+
+                  {/* ✅ Updated Price Column to show calculation */}
+                  <Grid item xs={12} md={3}>
+                    <Typography variant="body2" color="text.secondary">Calculation</Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                      <Typography variant="body1" fontWeight={500} color="primary">
+                        ₹{group.pricePerState}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">×</Typography>
+                      <Typography variant="body1" fontWeight={500} color="primary">
+                        {group.totalStates} States
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">=</Typography>
+                      <Typography variant="h6" color="error" fontWeight={700}>
+                        ₹{group.amount.toLocaleString()}
+                      </Typography>
+                    </Box>
+                  </Grid>
+
+                  <Grid item xs={12} md={2} sx={{ textAlign: "right" }}>
+                    <Button
+                      variant="outlined"
+                      color="error"
+                      size="small"
+                      startIcon={<DeleteIcon />}
+                      onClick={() => handleRemoveGroup(group.groupKey)}
+                    >
+                      Remove
+                    </Button>
+                  </Grid>
+                </Grid>
+
+                {/* Investment Ranges Array (Chips) */}
+                <Box sx={{ pl: 2, borderLeft: "3px solid #e0e0e0", ml: 1 }}>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                    Included Investment Ranges ({group.items.length})
+                  </Typography>
+                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+                    {group.items.map((it) => (
+                      <Chip
+                        key={it.id}
+                        label={`${it.range} (${it.stateCount} states)`}
+                        onDelete={() => handleRemoveItem(group.groupKey, it.id)}
+                        color="primary"
+                        variant="outlined"
+                        size="small"
+                      />
+                    ))}
+                  </Box>
+                </Box>
+
+                {gIndex < paymentSummary.length - 1 && <Divider sx={{ mt: 2 }} />}
+              </Box>
+            ))}
+
+            <Divider sx={{ my: 3 }} />
+
+            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
+              <Typography variant="h6" fontWeight={600}>Total Amount Payable</Typography>
+              <Typography variant="h4" color="primary" fontWeight={700}>
+                ₹{calculateTotal().toLocaleString()}
+              </Typography>
+            </Box>
+
+            <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 2 }}>
+              <Button
+                variant="outlined"
+                color="error"
+                onClick={() => {
+                  setPaymentSummary([]);
+                  setSelected({});
+                }}
+              >
+                Clear All
+              </Button>
+              <Button
+                variant="contained"
+                color="primary"
+                size="large"
+                onClick={handleProceedToPayment}
+              >
+                Proceed to Payment
+              </Button>
+            </Box>
+          </CardContent>
+        </Card>
+      )}
 
       {/* States Selection Modal */}
       <Dialog open={openStateModal} onClose={handleCloseStateModal} maxWidth="sm" fullWidth>

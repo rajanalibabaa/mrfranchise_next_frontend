@@ -37,9 +37,9 @@ const AdvertisingPage = () => {
 
       <Box sx={{ p: 3 }}>
         <PackageSelection onAddInvestmentRange={handleAddInvestmentRange} />
+        
       </Box>
 
-      {/* ====================== MODAL ====================== */}
       <Dialog
         open={openModal}
         onClose={handleCloseModal}
