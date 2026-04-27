@@ -35,6 +35,60 @@ import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+ const INDIA_STATES = [
+  "Andhra Pradesh",
+  "Arunachal Pradesh",
+  "Assam",
+  "Bihar",
+  "Chhattisgarh",
+  "Goa",
+  "Gujarat",
+  "Haryana",
+  "Himachal Pradesh",
+  "Jharkhand",
+  "Karnataka",
+  "Kerala",
+  "Madhya Pradesh",
+  "Maharashtra",
+  "Manipur",
+  "Meghalaya",
+  "Mizoram",
+  "Nagaland",
+  "Odisha",
+  "Punjab",
+  "Rajasthan",
+  "Sikkim",
+  "Tamil Nadu",
+  "Telangana",
+  "Tripura",
+  "Uttar Pradesh",
+  "Uttarakhand",
+  "West Bengal",
+  "Delhi"
+];
+const getInitialSelectedStates = () => {
+  if (typeof window === "undefined") return INDIA_STATES;
+
+  try {
+    const stored = localStorage.getItem("userLocation");
+
+    if (!stored) return INDIA_STATES;
+
+    const parsed = JSON.parse(stored);
+
+    if (
+      parsed?.state &&
+      INDIA_STATES.includes(parsed.state)
+    ) {
+      return [parsed.state]; // only detected state
+    }
+
+    return INDIA_STATES;
+  } catch (err) {
+    return INDIA_STATES;
+  }
+};
+
 
 const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
   const router = useRouter();
@@ -50,7 +104,7 @@ const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
   const [brandError, setBrandError] = useState(null);
   const [ficoInvestmentRanges, setFicoInvestmentRanges] = useState([]);
   
-
+const [initialStates, setInitialStates] = useState([]);
   // New states for modal
   const [openStateModal, setOpenStateModal] = useState(false);
   const [allStates, setAllStates] = useState([]);
@@ -85,19 +139,35 @@ const closeSnack = () => setSnack((s) => ({ ...s, open: false }));
   useEffect(() => {
     fetchData();
   }, []);
+
+
+  useEffect(() => {
+  setInitialStates(getInitialSelectedStates());
+}, []);
 useEffect(() => {
-  if (!finalBrandUUID) {
-    console.warn("Brand UUID not found in Redux or localStorage.");
-    return;
+  // fallback safety (VERY IMPORTANT)
+  if (allStates.length === 0) {
+    setAllStates(INDIA_STATES);
   }
+}, [allStates]);
+
+useEffect(() => {
+  if (!finalBrandUUID) return;
+
   fetchBrandDetails(finalBrandUUID, finalToken);
-  
-  // ADD this block
-  const savedStates = localStorage.getItem('investmentRangeStates');
+
+  const savedStates = localStorage.getItem("investmentRangeStates");
   if (savedStates) {
     setStatesByInvestmentRange(JSON.parse(savedStates));
   }
 }, [finalBrandUUID, finalToken]);
+useEffect(() => {
+  const saved = localStorage.getItem("investmentRangeStates");
+
+  if (saved) {
+    setStatesByInvestmentRange(JSON.parse(saved));
+  }
+}, []);
 
 const getRangeKey = (investmentRangeLabel, range) =>
   `${investmentRangeLabel}__${range}`;
@@ -108,11 +178,16 @@ const handleOpenStateModal = (investmentRangeLabel, range) => {
   setCurrentEditingRange(key);
 
   const savedStates = statesByInvestmentRange[key];
-  setSelectedStates(new Set(savedStates ?? allStates));
+
+  if (savedStates && savedStates.length > 0) {
+    setSelectedStates(new Set(savedStates));
+  } else {
+    const initial = initialStates.length ? initialStates : INDIA_STATES;
+    setSelectedStates(new Set(initial));
+  }
 
   setOpenStateModal(true);
 };
-
   const handleCloseStateModal = () => setOpenStateModal(false);
 
   const handleStateCheckboxChange = (state) => {
@@ -140,8 +215,10 @@ const handleSaveStates = () => {
 const getStateCountForRange = (investmentRangeLabel, range) => {
   const key = getRangeKey(investmentRangeLabel, range);
   const savedStates = statesByInvestmentRange[key];
-  return savedStates ? savedStates.length : allStates.length;
-};
+if (savedStates) return savedStates.length;
+
+// fallback → user location logic
+return initialStates.length;};
 
   const handleAddInvestmentRange = (range, investmentRangeLabel) => {
     // Navigate to PaymentBrandUpdate with the investment range data
@@ -236,14 +313,22 @@ const getStateCountForRange = (investmentRangeLabel, range) => {
       ).values(),
     ];
 
-    setAllStates(uniqueStatesList);
+  const finalStates = [
+  ...new Set([
+    ...INDIA_STATES,       // always include all India
+    ...uniqueStatesList    // add brand-specific
+  ])
+];
+
+setAllStates(finalStates);
     
     // Initialize default states for all ranges if not already saved
     const savedStates = localStorage.getItem('investmentRangeStates');
-    if (!savedStates) {
-      setNumberOfStates(uniqueStatesList.length);
-      setSelectedStates(new Set(uniqueStatesList));
-    }
+
+   if (!savedStates) {
+  const initial = getInitialSelectedStates();
+  setSelectedStates(new Set(initial));
+}
 
   } catch (err) {
     console.error("Brand fetch error:", err);
@@ -464,6 +549,8 @@ const getStateCountForRange = (investmentRangeLabel, range) => {
     <CircularProgress size={18} />
   ) : (
     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+
+
 {getStateCountForRange(investmentRangeLabel, range)} states
       <IconButton
         size="small"
@@ -562,12 +649,20 @@ onClick={() => handleOpenStateModal(investmentRangeLabel, range)}
   
   {/* LEFT SIDE */}
   <Box display="flex" alignItems="center" gap={1}>
-  <Button
+  {!localAccessToken ? (
+    <Button
+  variant="contained"
+>
+  Login to Add States
+</Button>
+  ) : (
+    <Button
   variant="outlined"
   onClick={() => router.push("/brandDashboard/brand_listing_controller")}
 >
   Add More States
 </Button>
+  )}
 
     <Tooltip title="If you add more states, your profile preferences will be updated. Are you sure you want to proceed?">
       <InfoOutlinedIcon sx={{ color: "text.secondary", cursor: "pointer" }} />

@@ -6,7 +6,7 @@ import Navbar from '@/Components/Navbar/NavBar';
 import Footer from '@/Components/Footers/Footer';
 import PaymentBrandUpdate from './PaymentBrandUpdate';
 import PackageSelection from './PackageSelection';
-
+import useUserLocation  from '@/config/useUserLocations';
 import {
   Dialog,
   DialogTitle,
@@ -82,6 +82,8 @@ const AdvertisingPage = () => {
       </Dialog>
 
       <Footer />
+      
+
     </Box>
   );
 };
