@@ -67,6 +67,10 @@ export default function RootLayout({ children }) {
             </Providers>
           </ReactQueryProvider>
         </ThemeRegistry>
+         <Script
+          src="https://checkout.razorpay.com/v1/checkout.js"
+          strategy="lazyOnload"
+        />
       </body>
     </html>
   );
