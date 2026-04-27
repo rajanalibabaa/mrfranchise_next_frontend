@@ -27,7 +27,12 @@ import {
   IconButton,
   Typography,
   FormControlLabel,
+  Card,
+  CardContent,
+  Divider,
+  Grid,
 } from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import { useSelector } from "react-redux";
@@ -35,7 +40,8 @@ import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
- const INDIA_STATES = [
+
+const INDIA_STATES = [
   "Andhra Pradesh",
   "Arunachal Pradesh",
   "Assam",
@@ -64,60 +70,65 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
   "Uttar Pradesh",
   "Uttarakhand",
   "West Bengal",
-  "Delhi"
+  "Delhi",
+  "Jammu and Kashmir",
+  "Ladakh",
+  "Puducherry",
+  "Lakshadweep",
+  "Chandigarh",
+  "Andaman and Nicobar Islands",
+  "Dadra and Nagar Haveli",
+  "Daman and Diu",
 ];
-const getInitialSelectedStates = () => {
-  if (typeof window === "undefined") return INDIA_STATES;
 
+// Function to get user's location using IP-based geolocation
+const getUserLocationFromIP = async () => {
   try {
-    const stored = localStorage.getItem("userLocation");
-
-    if (!stored) return INDIA_STATES;
-
-    const parsed = JSON.parse(stored);
-
-    if (
-      parsed?.state &&
-      INDIA_STATES.includes(parsed.state)
-    ) {
-      return [parsed.state]; // only detected state
+    const response = await fetch("https://ipapi.co/json/");
+    const data = await response.json();
+    
+    if (data.region) {
+      const matchedState = INDIA_STATES.find(
+        state => state.toLowerCase() === data.region.toLowerCase()
+      );
+      
+      return {
+        state: matchedState || data.region,
+        city: data.city,
+        country: data.country_name,
+      };
     }
-
-    return INDIA_STATES;
-  } catch (err) {
-    return INDIA_STATES;
+    return null;
+  } catch (error) {
+    console.error("Error fetching location from IP:", error);
+    return null;
   }
 };
 
-
 const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
   const router = useRouter();
+  const [paymentSummary, setPaymentSummary] = useState([]);
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [brandLoading, setBrandLoading] = useState(false);
   const [error, setError] = useState(null);
-
   const [selected, setSelected] = useState({});
   const [selectedPlans, setSelectedPlans] = useState({});
-
-  const [numberOfStates, setNumberOfStates] = useState(0);
   const [brandError, setBrandError] = useState(null);
   const [ficoInvestmentRanges, setFicoInvestmentRanges] = useState([]);
-  
-const [initialStates, setInitialStates] = useState([]);
-  // New states for modal
+
+  // Location states
+  const [locationLoading, setLocationLoading] = useState(false);
+  const [userLocation, setUserLocation] = useState(null);
+  const [detectedState, setDetectedState] = useState(null); // IP detected state
+
+  // State selection
   const [openStateModal, setOpenStateModal] = useState(false);
-  const [allStates, setAllStates] = useState([]);
+  const [allStates, setAllStates] = useState(INDIA_STATES); // Default to all states
   const [selectedStates, setSelectedStates] = useState(new Set());
   const [statesByInvestmentRange, setStatesByInvestmentRange] = useState({});
-const [currentEditingRange, setCurrentEditingRange] = useState(null);
-const [snack, setSnack] = useState({ open: false, message: "", severity: "info" });
-
-const openSnack = (message, severity = "info") =>
-  setSnack({ open: true, message, severity });
-
-const closeSnack = () => setSnack((s) => ({ ...s, open: false }));
-
+  const [currentEditingRange, setCurrentEditingRange] = useState(null);
+  const [snack, setSnack] = useState({ open: false, message: "", severity: "info" });
 
   const { brandUUID: reduxBrandUUID, token: reduxToken } = useSelector(
     (state) => state.auth
@@ -130,64 +141,126 @@ const closeSnack = () => setSnack((s) => ({ ...s, open: false }));
     if (typeof window !== "undefined") {
       setLocalBrandUUID(localStorage.getItem("brandUUID"));
       setLocalAccessToken(localStorage.getItem("accessToken"));
+
+      // Load saved state selections
+      const savedStates = localStorage.getItem("investmentRangeStates");
+      if (savedStates) {
+        setStatesByInvestmentRange(JSON.parse(savedStates));
+      }
     }
   }, []);
 
   const finalBrandUUID = reduxBrandUUID || localBrandUUID;
   const finalToken = reduxToken || localAccessToken;
 
+  const openSnack = (message, severity = "info") =>
+    setSnack({ open: true, message, severity });
+
+  const closeSnack = () => setSnack((s) => ({ ...s, open: false }));
+
+  // Auto-detect location via IP (BEFORE LOGIN ONLY)
+  useEffect(() => {
+    const detectLocation = async () => {
+      // Only detect if NOT logged in
+      if (finalToken) return;
+
+      // Check if location was already detected
+      const savedLocation = localStorage.getItem("userLocation");
+      if (savedLocation) {
+        try {
+          const parsed = JSON.parse(savedLocation);
+          setUserLocation(parsed);
+          if (parsed.state) {
+            const matchedState = INDIA_STATES.find(
+              s => s.toLowerCase() === parsed.state.toLowerCase()
+            );
+            if (matchedState) {
+              setDetectedState(matchedState);
+            }
+          }
+          return;
+        } catch (err) {
+          console.error("Error parsing saved location:", err);
+        }
+      }
+
+      // Auto-detect location via IP
+      setLocationLoading(true);
+      try {
+        const ipLocation = await getUserLocationFromIP();
+        if (ipLocation && ipLocation.state) {
+          const locationData = {
+            state: ipLocation.state,
+            city: ipLocation.city,
+            country: ipLocation.country,
+          };
+          
+          setUserLocation(locationData);
+          localStorage.setItem("userLocation", JSON.stringify(locationData));
+          
+          const matchedState = INDIA_STATES.find(
+            s => s.toLowerCase() === ipLocation.state.toLowerCase()
+          );
+          
+          if (matchedState) {
+            setDetectedState(matchedState);
+          }
+        }
+      } catch (error) {
+        console.error("Location detection error:", error);
+      } finally {
+        setLocationLoading(false);
+      }
+    };
+
+    detectLocation();
+  }, [finalToken]);
+
   useEffect(() => {
     fetchData();
   }, []);
 
-
   useEffect(() => {
-  setInitialStates(getInitialSelectedStates());
-}, []);
-useEffect(() => {
-  // fallback safety (VERY IMPORTANT)
-  if (allStates.length === 0) {
-    setAllStates(INDIA_STATES);
-  }
-}, [allStates]);
+    if (!finalBrandUUID) return;
+    fetchBrandDetails(finalBrandUUID, finalToken);
+  }, [finalBrandUUID, finalToken]);
 
-useEffect(() => {
-  if (!finalBrandUUID) return;
+  const getRangeKey = (investmentRangeLabel, range) =>
+    `${investmentRangeLabel}__${range}`;
 
-  fetchBrandDetails(finalBrandUUID, finalToken);
-
-  const savedStates = localStorage.getItem("investmentRangeStates");
-  if (savedStates) {
-    setStatesByInvestmentRange(JSON.parse(savedStates));
-  }
-}, [finalBrandUUID, finalToken]);
-useEffect(() => {
-  const saved = localStorage.getItem("investmentRangeStates");
-
-  if (saved) {
-    setStatesByInvestmentRange(JSON.parse(saved));
-  }
-}, []);
-
-const getRangeKey = (investmentRangeLabel, range) =>
-  `${investmentRangeLabel}__${range}`;
+  const isGroupPartiallyAdded = (investmentRangeLabel, uniquePackages) => {
+    return uniquePackages.some((item) => {
+      if (item.investmentRangeLabel !== investmentRangeLabel) return false;
+      return paymentSummary.some((g) => g.items.some((it) => it.id === item.id));
+    });
+  };
 
   // Modal Handlers
-const handleOpenStateModal = (investmentRangeLabel, range) => {
-  const key = getRangeKey(investmentRangeLabel, range);
-  setCurrentEditingRange(key);
+  const handleOpenStateModal = (investmentRangeLabel, range) => {
+    const key = getRangeKey(investmentRangeLabel, range);
+    setCurrentEditingRange(key);
 
-  const savedStates = statesByInvestmentRange[key];
+    const savedStates = statesByInvestmentRange[key];
 
-  if (savedStates && savedStates.length > 0) {
-    setSelectedStates(new Set(savedStates));
-  } else {
-    const initial = initialStates.length ? initialStates : INDIA_STATES;
-    setSelectedStates(new Set(initial));
-  }
+    if (savedStates && savedStates.length > 0) {
+      // Use previously saved states
+      setSelectedStates(new Set(savedStates));
+    } else {
+      // Set default based on login status
+      if (!finalToken && detectedState) {
+        // Before login: pre-select IP detected state
+        setSelectedStates(new Set([detectedState]));
+      } else if (finalToken && allStates.length > 0) {
+        // After login: pre-select all expansion states
+        setSelectedStates(new Set(allStates));
+      } else {
+        setSelectedStates(new Set());
+      }
+    }
 
-  setOpenStateModal(true);
-};
+    setOpenStateModal(true);
+  };
+
   const handleCloseStateModal = () => setOpenStateModal(false);
 
   const handleStateCheckboxChange = (state) => {
@@ -199,152 +272,121 @@ const handleOpenStateModal = (investmentRangeLabel, range) => {
     });
   };
 
-const handleSaveStates = () => {
-  const selectedArray = Array.from(selectedStates);
+  const handleSaveStates = () => {
+    const selectedArray = Array.from(selectedStates);
 
-  const updated = {
-    ...statesByInvestmentRange,
-    [currentEditingRange]: selectedArray,
+    const updated = {
+      ...statesByInvestmentRange,
+      [currentEditingRange]: selectedArray,
+    };
+
+    setStatesByInvestmentRange(updated);
+    localStorage.setItem("investmentRangeStates", JSON.stringify(updated));
+    openSnack(`Saved ${selectedArray.length} state${selectedArray.length > 1 ? 's' : ''}`, "success");
+    handleCloseStateModal();
   };
 
-  setStatesByInvestmentRange(updated);
-  localStorage.setItem("investmentRangeStates", JSON.stringify(updated));
-  handleCloseStateModal();
-};
-
-const getStateCountForRange = (investmentRangeLabel, range) => {
-  const key = getRangeKey(investmentRangeLabel, range);
-  const savedStates = statesByInvestmentRange[key];
-if (savedStates) return savedStates.length;
-
-// fallback → user location logic
-return initialStates.length;};
-
-  const handleAddInvestmentRange = (range, investmentRangeLabel) => {
-    // Navigate to PaymentBrandUpdate with the investment range data
-    onAddInvestmentRange(range, investmentRangeLabel);
+  const getUniqueStatesAcrossRanges = (items) => {
+    const allStatesSet = new Set();
+    items.forEach((item) => {
+      item.states.forEach((state) => allStatesSet.add(state));
+    });
+    return Array.from(allStatesSet);
   };
 
-  // Normalized range function
-  const normalizeRange = (value) => {
-    return String(value || "")
-      .toLowerCase()
-      .replace(/₹/g, "rs")
-      .replace(/\brupees\b/g, "rs")
-      .replace(/\brs\.?\b/g, "")
-      .replace(/\blakhs\b/g, "lakh")
-      .replace(/\bcrores\b/g, "crore")
-      .replace(/\bto\b/g, "-")
-      .replace(/[^a-z0-9]/g, "")
-      .trim();
-  };
+  // Fetch brand details
+  const fetchBrandDetails = async (uuid, accessToken) => {
+    try {
+      setBrandLoading(true);
+      setBrandError(null);
 
-  const isFicoInvestmentRange = (range) => {
-    const currentRange = normalizeRange(range);
-    return ficoInvestmentRanges.some(
-      (ficoRange) => normalizeRange(ficoRange) === currentRange
-    );
-  };
+      const response = await fetch(
+        `${API_URL}/api/v1/brandlisting/getBrandById/${uuid}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+          },
+        }
+      );
 
- const fetchBrandDetails = async (uuid, accessToken) => {
-  try {
-    setBrandLoading(true);
-    setBrandError(null);
+      const json = await response.json();
 
-    const response = await fetch(
-      `${API_URL}/api/v1/brandlisting/getBrandById/${uuid}`,
-      {
-        headers: {
-          "Content-Type": "application/json",
-          ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
-        },
+      if (!response.ok || json.success === false) {
+        throw new Error(json.message || "Failed to fetch brand details");
       }
-    );
 
-    const json = await response.json();
+      const brandData = Array.isArray(json.data) ? json.data[0] : json.data;
 
-    if (!response.ok || json.success === false) {
-      throw new Error(json.message || "Failed to fetch brand details");
-    }
+      const ficoData = Array.isArray(brandData?.franchiseDetails?.fico)
+        ? brandData.franchiseDetails.fico
+        : Array.isArray(brandData?.fico)
+        ? brandData.fico
+        : Array.isArray(brandData?.brandDetails?.fico)
+        ? brandData.brandDetails.fico
+        : [];
 
-    const brandData = Array.isArray(json.data) ? json.data[0] : json.data;
+      const ficoRanges = ficoData
+        .map((item) => item?.investmentRange)
+        .filter(Boolean);
+      setFicoInvestmentRanges(ficoRanges);
 
-    const ficoData = Array.isArray(brandData?.franchiseDetails?.fico)
-      ? brandData.franchiseDetails.fico
-      : Array.isArray(brandData?.fico)    
-      ? brandData.fico
-      : Array.isArray(brandData?.brandDetails?.fico)
-      ? brandData.brandDetails.fico
-      : [];
+      // Extract expansion location states (AFTER LOGIN)
+      const expansionLocations =
+        brandData?.expansionlocationdata?.expansionLocations?.domestic
+          ?.locations || [];
 
-    const ficoRanges = ficoData.map((item) => item?.investmentRange).filter(Boolean);
-    setFicoInvestmentRanges(ficoRanges);
-
-    const expansionLocations =
-      brandData?.expansionlocationdata?.expansionLocations?.domestic?.locations || [];
-
-    const extractedStates = expansionLocations
-      .map((location) => {
-        if (typeof location === "string") return location.trim();
-        if (typeof location?.state === "string") return location.state.trim();
-        if (typeof location?.state === "object" && location?.state !== null) {
+      const extractedStates = expansionLocations
+        .map((location) => {
+          if (typeof location === "string") return location.trim();
+          if (typeof location?.state === "string") return location.state.trim();
+          if (typeof location?.state === "object" && location?.state !== null) {
+            return (
+              location.state.name ||
+              location.state.label ||
+              location.state.value ||
+              location.state.stateName ||
+              ""
+            ).trim();
+          }
           return (
-            location.state.name ||
-            location.state.label ||
-            location.state.value ||
-            location.state.stateName ||
+            location?.stateName ||
+            location?.State ||
+            location?.state_name ||
+            location?.address?.state ||
+            location?.location?.state ||
             ""
           ).trim();
-        }
-        return (
-          location?.stateName ||
-          location?.State ||
-          location?.state_name ||
-          location?.address?.state ||
-          location?.location?.state ||
-          ""
-        ).trim();
-      })
-      .filter(Boolean);
+        })
+        .filter(Boolean);
 
-    const uniqueStatesList = [
-      ...new Map(
-        extractedStates.map((state) => [state.toLowerCase(), state])
-      ).values(),
-    ];
+      const uniqueStatesList = [
+        ...new Map(
+          extractedStates.map((state) => [state.toLowerCase(), state])
+        ).values(),
+      ];
 
-  const finalStates = [
-  ...new Set([
-    ...INDIA_STATES,       // always include all India
-    ...uniqueStatesList    // add brand-specific
-  ])
-];
-
-setAllStates(finalStates);
-    
-    // Initialize default states for all ranges if not already saved
-    const savedStates = localStorage.getItem('investmentRangeStates');
-
-   if (!savedStates) {
-  const initial = getInitialSelectedStates();
-  setSelectedStates(new Set(initial));
-}
-
-  } catch (err) {
-    console.error("Brand fetch error:", err);
-    setBrandError(err.message);
-  } finally {
-    setBrandLoading(false);
-  }
-};
+      // After login: ONLY use brand's expansion states
+      if (uniqueStatesList.length > 0) {
+        setAllStates(uniqueStatesList);
+      } else {
+        setAllStates([]);
+      }
+    } catch (err) {
+      console.error("Brand fetch error:", err);
+      setBrandError(err.message);
+    } finally {
+      setBrandLoading(false);
+    }
+  };
 
   const fetchData = async () => {
     try {
       setLoading(true);
-   
+
       const response = await fetch(`${API_URL}/api/v1/admin/plans/getAllPlans`);
       const json = await response.json();
- console.log("Complete API Response:", json);
+
       if (json.success && Array.isArray(json.data)) {
         setPlans(json.data);
 
@@ -416,6 +458,243 @@ setAllStates(finalStates);
     return plans.find((plan) => plan._id === selectedPlanId) || defaultPlan;
   };
 
+  const normalizeRange = (value) => {
+    return String(value || "")
+      .toLowerCase()
+      .replace(/₹/g, "rs")
+      .replace(/\brupees\b/g, "rs")
+      .replace(/\brs\.?\b/g, "")
+      .replace(/\blakhs\b/g, "lakh")
+      .replace(/\bcrores\b/g, "crore")
+      .replace(/\bto\b/g, "-")
+      .replace(/[^a-z0-9]/g, "")
+      .trim();
+  };
+
+  const isFicoInvestmentRange = (range) => {
+    const currentRange = normalizeRange(range);
+    return ficoInvestmentRanges.some(
+      (ficoRange) => normalizeRange(ficoRange) === currentRange
+    );
+  };
+
+  const handleAddToPayment = (investmentRangeLabel, uniquePackages) => {
+    const defaultPlanForLabel = plans.find((p) =>
+      p.packages?.some((pkg) => pkg.investmentRangeLabel === investmentRangeLabel)
+    );
+
+    if (!defaultPlanForLabel) return;
+
+    const selectedPlan = getSelectedPlanData(
+      investmentRangeLabel,
+      defaultPlanForLabel
+    );
+    const selectedPkg = selectedPlan?.packages?.find(
+      (p) => p.investmentRangeLabel === investmentRangeLabel
+    );
+
+    if (!selectedPkg) {
+      openSnack("No package details found for this selection", "warning");
+      return;
+    }
+
+    const pricePerState = selectedPkg?.amount || 0;
+
+    const itemsToAdd = uniquePackages
+      .filter((item) => {
+        if (item.investmentRangeLabel !== investmentRangeLabel) return false;
+        if (!selected[item.id]) return false;
+
+        const itemPlan = getSelectedPlanData(
+          item.investmentRangeLabel,
+          item.defaultPlan
+        );
+        const itemPkg =
+          itemPlan?.packages?.find(
+            (p) => p.investmentRangeLabel === investmentRangeLabel
+          ) || item.pkg;
+
+        return (
+          itemPlan._id === selectedPlan._id &&
+          itemPkg?.amount === selectedPkg?.amount &&
+          itemPkg?.validityDays === selectedPkg?.validityDays
+        );
+      })
+      .map((item) => {
+        const key = getRangeKey(item.investmentRangeLabel, item.range);
+        let states = statesByInvestmentRange[key];
+        
+        // If no saved states, use defaults based on login status
+        if (!states || states.length === 0) {
+          if (!finalToken && detectedState) {
+            states = [detectedState]; // Before login: use detected state
+          } else if (finalToken) {
+            states = allStates; // After login: use expansion states
+          } else {
+            states = [];
+          }
+        }
+        
+        return {
+          id: item.id,
+          investmentRangeLabel: item.investmentRangeLabel,
+          range: item.range,
+          stateCount: states.length,
+          states: states,
+        };
+      });
+
+    if (itemsToAdd.length === 0) {
+      openSnack(
+        "Please select at least one investment range checkbox",
+        "warning"
+      );
+      return;
+    }
+
+    const uniqueStates = getUniqueStatesAcrossRanges(itemsToAdd);
+    const totalUniqueStates = uniqueStates.length;
+    const dynamicAmount = totalUniqueStates * pricePerState;
+
+    const groupKey = `${selectedPlan._id}__${selectedPkg?.validityDays}__${pricePerState}__${selectedPkg?.totalLeads}`;
+
+    setPaymentSummary((prev) => {
+      const existingGroup = prev.find((g) => g.groupKey === groupKey);
+
+      if (existingGroup) {
+        const newItems = itemsToAdd.filter(
+          (newItem) => !existingGroup.items.some((ex) => ex.id === newItem.id)
+        );
+
+        if (newItems.length === 0) {
+          openSnack("These ranges are already added", "info");
+          return prev;
+        }
+
+        const updatedItems = [...existingGroup.items, ...newItems];
+        const newUniqueStates = getUniqueStatesAcrossRanges(updatedItems);
+        const newTotalUniqueStates = newUniqueStates.length;
+        const newAmount = newTotalUniqueStates * pricePerState;
+
+        openSnack(
+          `${newItems.length} ranges added. Unique States: ${newTotalUniqueStates}, Total: ₹${newAmount}`,
+          "success"
+        );
+
+        return prev.map((g) =>
+          g.groupKey === groupKey
+            ? {
+                ...g,
+                items: updatedItems,
+                uniqueStates: newUniqueStates,
+                totalStates: newTotalUniqueStates,
+                amount: newAmount,
+              }
+            : g
+        );
+      }
+
+      openSnack(
+        `Package added: ${totalUniqueStates} unique states × ₹${pricePerState} = ₹${dynamicAmount}`,
+        "success"
+      );
+      return [
+        ...prev,
+        {
+          groupKey,
+          planId: selectedPlan._id,
+          planName: selectedPlan.planName,
+          validityDays: selectedPkg?.validityDays,
+          pricePerState: pricePerState,
+          uniqueStates: uniqueStates,
+          totalStates: totalUniqueStates,
+          amount: dynamicAmount,
+          totalLeads: selectedPkg?.totalLeads,
+          items: itemsToAdd,
+        },
+      ];
+    });
+  };
+
+  const handleRemoveItem = (groupKey, itemId) => {
+    setPaymentSummary((prev) => {
+      const updated = prev
+        .map((g) => {
+          if (g.groupKey !== groupKey) return g;
+
+          const updatedItems = g.items.filter((it) => it.id !== itemId);
+
+          if (updatedItems.length === 0) return null;
+
+          const newUniqueStates = getUniqueStatesAcrossRanges(updatedItems);
+          const newTotalUniqueStates = newUniqueStates.length;
+          const newAmount = newTotalUniqueStates * g.pricePerState;
+
+          return {
+            ...g,
+            items: updatedItems,
+            uniqueStates: newUniqueStates,
+            totalStates: newTotalUniqueStates,
+            amount: newAmount,
+          };
+        })
+        .filter((g) => g !== null);
+
+      return updated;
+    });
+
+    setSelected((prev) => ({ ...prev, [itemId]: false }));
+    openSnack("Investment range removed", "info");
+  };
+
+  const handleRemoveGroup = (groupKey) => {
+    setPaymentSummary((prev) => {
+      const group = prev.find((g) => g.groupKey === groupKey);
+      if (group) {
+        const idsToRemove = group.items.map((it) => it.id);
+        setSelected((s) => {
+          const copy = { ...s };
+          idsToRemove.forEach((id) => (copy[id] = false));
+          return copy;
+        });
+      }
+      return prev.filter((g) => g.groupKey !== groupKey);
+    });
+    openSnack("Plan removed", "info");
+  };
+
+  const calculateTotal = () => {
+    return paymentSummary.reduce((sum, g) => sum + (g.amount || 0), 0);
+  };
+
+  const handleProceedToPayment = () => {
+    if (paymentSummary.length === 0) {
+      openSnack("Please add at least one package", "warning");
+      return;
+    }
+    localStorage.setItem("paymentSummary", JSON.stringify(paymentSummary));
+    router.push("/brandDashboard/payment");
+  };
+
+  const getStateCountForRange = (investmentRangeLabel, range) => {
+    const key = getRangeKey(investmentRangeLabel, range);
+    const savedStates = statesByInvestmentRange[key];
+    
+    if (savedStates && savedStates.length > 0) return savedStates.length;
+    
+    // Before login: return 1 if state detected
+    if (!finalToken && detectedState) return 1;
+    
+    // After login: return expansion states count
+    if (finalToken) return allStates.length;
+    
+    return 0;
+  };
+
+  const handleAddInvestmentRange = (range, investmentRangeLabel) => {
+    onAddInvestmentRange(range, investmentRangeLabel);
+  };
+
   if (loading) {
     return (
       <Box sx={{ p: 4, display: "flex", justifyContent: "center" }}>
@@ -430,272 +709,549 @@ setAllStates(finalStates);
 
   const uniquePackages = getUniquePackages();
 
+  // Get states to display in modal based on login status
+  const getStatesToDisplay = () => {
+    if (finalToken) {
+      // After login: show only expansion states
+      return allStates;
+    } else {
+      // Before login: show all Indian states
+      return INDIA_STATES;
+    }
+  };
+
   return (
-    <Box sx={{ p: 3 }}>
-      {brandError && (
-        <Alert severity="warning" sx={{ mb: 2 }}>
-          Could not fetch brand states: {brandError}
-        </Alert>
-      )}
+    <>
+      <Box sx={{ p: 3 }}>
+        {/* User Location Display (Before Login Only) */}
+        {!finalToken && userLocation && (
+          <Alert severity="info" sx={{ mb: 2 }}>
+            Detected Location: {userLocation.city}, {userLocation.state}
+          </Alert>
+        )}
 
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead sx={{ backgroundColor: "#fff8e1" }}>
-            <TableRow>
-              <TableCell>Select</TableCell>
-              <TableCell>Investment Range</TableCell>
-              <TableCell>Recommended</TableCell>
-              <TableCell>No. Of States</TableCell>
-              <TableCell>Plan</TableCell>
-              <TableCell>Tenure</TableCell>
-              <TableCell>Price</TableCell>
-              <TableCell>Lead Count</TableCell>
-              <TableCell>Action</TableCell>
-            </TableRow>
-          </TableHead>
+        {/* Brand Expansion States Display (After Login Only) */}
+        {finalToken && allStates.length > 0 && (
+          <Alert severity="success" sx={{ mb: 2 }}>
+            Showing packages for {allStates.length} expansion state{allStates.length > 1 ? 's' : ''}: {allStates.slice(0, 3).join(", ")}
+            {allStates.length > 3 && ` +${allStates.length - 3} more`}
+          </Alert>
+        )}
 
-          <TableBody>
-            {uniquePackages.map((item, index) => {
-              const {
-                id,
-                investmentRangeLabel,
-                range,
-                defaultPlan,
-                pkg,
-                allPlans,
-              } = item;
+        {/* No States Warning (After Login) */}
+        {finalToken && allStates.length === 0 && (
+          <Alert 
+            severity="warning" 
+            sx={{ mb: 2 }}
+            action={
+              <Button 
+                color="inherit" 
+                size="small"
+                onClick={() => router.push("/brandDashboard/brand_listing_controller")}
+              >
+                Add States
+              </Button>
+            }
+          >
+            No expansion states found. Please add expansion locations to your profile.
+          </Alert>
+        )}
 
-              const selectedPlan = getSelectedPlanData(investmentRangeLabel, defaultPlan);
-              const selectedPkg =
-                selectedPlan?.packages?.find(
-                  (p) => p.investmentRangeLabel === investmentRangeLabel
-                ) || pkg;
+        {brandError && (
+          <Alert severity="warning" sx={{ mb: 2 }}>
+            Could not fetch brand states: {brandError}
+          </Alert>
+        )}
 
-              const isFirstInGroup =
-                index === 0 ||
-                uniquePackages[index - 1].investmentRangeLabel !== investmentRangeLabel;
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead sx={{ backgroundColor: "#fff8e1" }}>
+              <TableRow>
+                <TableCell>Select</TableCell>
+                <TableCell>Investment Range</TableCell>
+                <TableCell>Recommended</TableCell>
+                <TableCell>No. Of States</TableCell>
+                <TableCell>Plan</TableCell>
+                <TableCell>Tenure</TableCell>
+                <TableCell>
+                  Price
+                  <br />
+                  (Per state)
+                </TableCell>
+                <TableCell>Lead Count</TableCell>
+                <TableCell>
+                  Total
+                  <br />
+                  Amount
+                </TableCell>
+                <TableCell>Action</TableCell>
+              </TableRow>
+            </TableHead>
 
-              const rowSpan = uniquePackages.filter(
-                (item) => item.investmentRangeLabel === investmentRangeLabel
-              ).length;
+            <TableBody>
+              {uniquePackages.map((item, index) => {
+                const {
+                  id,
+                  investmentRangeLabel,
+                  range,
+                  defaultPlan,
+                  pkg,
+                  allPlans,
+                } = item;
 
-              return (
-                <React.Fragment key={id}>
-                  {isFirstInGroup && (
-                    <TableRow sx={{ backgroundColor: "#f5f5f5" }}>
-                      <TableCell colSpan={8} sx={{ fontWeight: "bold", fontSize: "1rem" }}>
-                        {investmentRangeLabel}
+                const selectedPlan = getSelectedPlanData(
+                  investmentRangeLabel,
+                  defaultPlan
+                );
+                const selectedPkg =
+                  selectedPlan?.packages?.find(
+                    (p) => p.investmentRangeLabel === investmentRangeLabel
+                  ) || pkg;
+
+                const isFirstInGroup =
+                  index === 0 ||
+                  uniquePackages[index - 1].investmentRangeLabel !==
+                    investmentRangeLabel;
+
+                const rowSpan = uniquePackages.filter(
+                  (pkgItem) =>
+                    pkgItem.investmentRangeLabel === investmentRangeLabel
+                ).length;
+
+                return (
+                  <React.Fragment key={id}>
+                    {isFirstInGroup && (
+                      <TableRow sx={{ backgroundColor: "#f5f5f5" }}>
+                        <TableCell
+                          colSpan={10}
+                          sx={{ fontWeight: "bold", fontSize: "1rem" }}
+                        >
+                          {investmentRangeLabel}
+                        </TableCell>
+                      </TableRow>
+                    )}
+
+                    <TableRow hover>
+                      <TableCell padding="checkbox">
+                        {(() => {
+                          const isRecommended = isFicoInvestmentRange(range);
+                          return (
+                            <Checkbox
+                              checked={!!selected[id]}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                if (!isRecommended) {
+                                  openSnack(
+                                    "You have to add this investment range to your business model to select it.",
+                                    "warning"
+                                  );
+                                  return;
+                                }
+                                handleCheckboxChange(id);
+                              }}
+                            />
+                          );
+                        })()}
                       </TableCell>
+
+                      <TableCell>{range}</TableCell>
+
+                      <TableCell>
+                        {isFicoInvestmentRange(range) ? (
+                          <Chip
+                            label="Recommended"
+                            color="success"
+                            size="small"
+                            variant="filled"
+                            sx={{ fontWeight: 600, borderRadius: "6px" }}
+                          />
+                        ) : (
+                          <Button
+                            variant="outlined"
+                            size="small"
+                            color="primary"
+                            onClick={() =>
+                              handleAddInvestmentRange(range, investmentRangeLabel)
+                            }
+                            sx={{ textTransform: "none", borderRadius: "6px" }}
+                          >
+                            Add Investment Range
+                          </Button>
+                        )}
+                      </TableCell>
+
+                      <TableCell>
+                        {brandLoading || locationLoading ? (
+                          <CircularProgress size={18} />
+                        ) : (
+                          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                            {getStateCountForRange(investmentRangeLabel, range)} state{getStateCountForRange(investmentRangeLabel, range) !== 1 ? 's' : ''}
+                            <IconButton
+                              size="small"
+                              color="primary"
+                              onClick={() =>
+                                handleOpenStateModal(investmentRangeLabel, range)
+                              }
+                              title="Edit States"
+                            >
+                              <EditIcon fontSize="small" />
+                            </IconButton>
+                          </Box>
+                        )}
+                      </TableCell>
+
+                      {isFirstInGroup && (
+                        <TableCell rowSpan={rowSpan}>
+                          <FormControl size="small" fullWidth>
+                            <Select
+                              value={
+                                selectedPlans[investmentRangeLabel] ||
+                                defaultPlan._id
+                              }
+                              onChange={(e) =>
+                                handlePlanChange(
+                                  investmentRangeLabel,
+                                  e.target.value
+                                )
+                              }
+                              sx={{ minWidth: 120 }}
+                            >
+                              {allPlans.map((plan) => (
+                                <MenuItem key={plan._id} value={plan._id}>
+                                  {plan.planName}
+                                </MenuItem>
+                              ))}
+                            </Select>
+                          </FormControl>
+                        </TableCell>
+                      )}
+
+                      {isFirstInGroup && (
+                        <>
+                          <TableCell rowSpan={rowSpan}>
+                            {selectedPkg?.validityDays} Days
+                          </TableCell>
+                          <TableCell rowSpan={rowSpan}>
+                            ₹{selectedPkg?.amount}
+                          </TableCell>
+                          <TableCell rowSpan={rowSpan}>
+                            {selectedPkg?.totalLeads}
+                          </TableCell>
+                          <TableCell></TableCell>
+                          <TableCell rowSpan={rowSpan} align="center">
+                            {!isGroupPartiallyAdded(
+                              investmentRangeLabel,
+                              uniquePackages
+                            ) ? (
+                              <Button
+                                variant="contained"
+                                size="small"
+                                onClick={() =>
+                                  handleAddToPayment(
+                                    investmentRangeLabel,
+                                    uniquePackages
+                                  )
+                                }
+                              >
+                                Add to Payment
+                              </Button>
+                            ) : (
+                              <Chip
+                                label="Added"
+                                color="success"
+                                size="small"
+                                variant="outlined"
+                              />
+                            )}
+                          </TableCell>
+                        </>
+                      )}
                     </TableRow>
-                  )}
+                  </React.Fragment>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </TableContainer>
 
-                  <TableRow hover>
-               <TableCell padding="checkbox">
-  {(() => {
-    const isRecommended = isFicoInvestmentRange(range);
+        {/* Payment Summary Section */}
+        {paymentSummary.length > 0 && (
+          <Card sx={{ mt: 4 }}>
+            <CardContent>
+              <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                Payment Summary
+              </Typography>
+              <Divider sx={{ mb: 2 }} />
 
-    return (
-      <Checkbox
-        checked={!!selected[id]}
-        onClick={(e) => {
-          // prevent default checkbox toggle
-          e.preventDefault();
+              {paymentSummary.map((group, gIndex) => (
+                <Box key={group.groupKey} sx={{ mb: 3 }}>
+                  <Grid container spacing={2} alignItems="center" sx={{ py: 2 }}>
+                    <Grid item xs={12} md={3}>
+                      <Typography variant="body2" color="text.secondary">
+                        Plan
+                      </Typography>
+                      <Typography variant="body1" fontWeight={500}>
+                        {group.planName}
+                      </Typography>
+                    </Grid>
 
-          if (!isRecommended) {
-            openSnack(
-              "You have to add this investment range to your business model to select it.",
-              "warning"
-            );
-            return;
-          }
+                    <Grid item xs={6} md={2}>
+                      <Typography variant="body2" color="text.secondary">
+                        Tenure
+                      </Typography>
+                      <Typography variant="body1" fontWeight={500}>
+                        {group.validityDays} Days
+                      </Typography>
+                    </Grid>
 
-          handleCheckboxChange(id);
-        }}
-      />
-    );
-  })()}
-</TableCell>
+                    <Grid item xs={6} md={2}>
+                      <Typography variant="body2" color="text.secondary">
+                        Lead Count
+                      </Typography>
+                      <Typography variant="body1" fontWeight={500}>
+                        {group.totalLeads}
+                      </Typography>
+                    </Grid>
 
-                    <TableCell>{range}</TableCell>
+                    <Grid item xs={12} md={3}>
+                      <Typography variant="body2" color="text.secondary">
+                        Calculation
+                      </Typography>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 1,
+                          flexWrap: "wrap",
+                        }}
+                      >
+                        <Typography
+                          variant="body1"
+                          fontWeight={500}
+                          color="primary"
+                        >
+                          ₹{group.pricePerState}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          ×
+                        </Typography>
+                        <Typography
+                          variant="body1"
+                          fontWeight={500}
+                          color="primary"
+                        >
+                          {group.totalStates} States
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          =
+                        </Typography>
+                        <Typography
+                          variant="h6"
+                          color="error"
+                          fontWeight={700}
+                        >
+                          ₹{group.amount.toLocaleString()}
+                        </Typography>
+                      </Box>
+                    </Grid>
 
-                    <TableCell>
-                      {isFicoInvestmentRange(range) ? (
+                    <Grid item xs={12} md={2} sx={{ textAlign: "right" }}>
+                      <Button
+                        variant="outlined"
+                        color="error"
+                        size="small"
+                        startIcon={<DeleteIcon />}
+                        onClick={() => handleRemoveGroup(group.groupKey)}
+                      >
+                        Remove
+                      </Button>
+                    </Grid>
+                  </Grid>
+
+                  <Box
+                    sx={{
+                      pl: 2,
+                      borderLeft: "3px solid #e0e0e0",
+                      ml: 1,
+                    }}
+                  >
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ mb: 1 }}
+                    >
+                      Included Investment Ranges ({group.items.length})
+                    </Typography>
+                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+                      {group.items.map((it) => (
                         <Chip
-                          label="Recommended"
-                          color="success"
-                          size="small"
-                          variant="filled"
-                          sx={{
-                            fontWeight: 600,
-                            borderRadius: "6px",
-                          }}
-                        />
-                      ) : (
-                        <Button
+                          key={it.id}
+                          label={`${it.range} (${it.stateCount} states)`}
+                          onDelete={() =>
+                            handleRemoveItem(group.groupKey, it.id)
+                          }
+                          color="primary"
                           variant="outlined"
                           size="small"
-                          color="primary"
-                          onClick={() => handleAddInvestmentRange(range, investmentRangeLabel)}
-                          sx={{ textTransform: "none", borderRadius: "6px" }}
-                        >
-                          Add Investment Range
-                        </Button>
-                      )}
-                    </TableCell>
+                        />
+                      ))}
+                    </Box>
+                  </Box>
 
-                    {/* No. Of States with Edit Icon */}
-                 <TableCell>
-  {brandLoading ? (
-    <CircularProgress size={18} />
-  ) : (
-    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  {gIndex < paymentSummary.length - 1 && (
+                    <Divider sx={{ mt: 2 }} />
+                  )}
+                </Box>
+              ))}
 
+              <Divider sx={{ my: 3 }} />
 
-{getStateCountForRange(investmentRangeLabel, range)} states
-      <IconButton
-        size="small"
-        color="primary"
-onClick={() => handleOpenStateModal(investmentRangeLabel, range)}
-        title="Edit States"
-      >
-        <EditIcon fontSize="small" />
-      </IconButton>
-    </Box>
-  )}
-</TableCell>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  mb: 3,
+                }}
+              >
+                <Typography variant="h6" fontWeight={600}>
+                  Total Amount Payable
+                </Typography>
+                <Typography variant="h4" color="primary" fontWeight={700}>
+                  ₹{calculateTotal().toLocaleString()}
+                </Typography>
+              </Box>
 
-                    {isFirstInGroup && (
-                      <TableCell rowSpan={rowSpan}>
-                        <FormControl size="small" fullWidth>
-                          <Select
-                            value={selectedPlans[investmentRangeLabel] || defaultPlan._id}
-                            onChange={(e) =>
-                              handlePlanChange(investmentRangeLabel, e.target.value)
-                            }
-                            sx={{ minWidth: 120 }}
-                          >
-                            {allPlans.map((plan) => (
-                              <MenuItem key={plan._id} value={plan._id}>
-                                {plan.planName}
-                              </MenuItem>
-                            ))}
-                          </Select>
-                        </FormControl>
-                      </TableCell>
-                    )}
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  gap: 2,
+                }}
+              >
+                <Button
+                  variant="outlined"
+                  color="error"
+                  onClick={() => {
+                    setPaymentSummary([]);
+                    setSelected({});
+                  }}
+                >
+                  Clear All
+                </Button>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  size="large"
+                  onClick={handleProceedToPayment}
+                >
+                  Proceed to Payment
+                </Button>
+              </Box>
+            </CardContent>
+          </Card>
+        )}
 
-                    {isFirstInGroup && (
-                      <>
-                        <TableCell rowSpan={rowSpan}>
-                          {selectedPkg?.validityDays} Days
-                        </TableCell>
-                        <TableCell rowSpan={rowSpan}>
-                          ₹{selectedPkg?.amount}
-                        </TableCell>
-                        <TableCell rowSpan={rowSpan}>
-                          {selectedPkg?.totalLeads}
-                        </TableCell>
-                      </>
-                    )}
-                    <TableCell>
-  {selected[id] && (
-    <Button
-      variant="contained"
-      size="small"
-      onClick={() => {
-        // TODO: do something with this row
-        // example: navigate
-        router.push("/brandDashboard/payment");
-      }}
-    >
-      Add to Payment
-    </Button>
-  )}
-</TableCell>
-                  </TableRow>
-                </React.Fragment>
-              );
-            })}
-          </TableBody>
-        </Table>
-      </TableContainer>
+        {/* States Selection Modal */}
+        <Dialog
+          open={openStateModal}
+          onClose={handleCloseStateModal}
+          maxWidth="sm"
+          fullWidth
+        >
+          <DialogTitle>
+            {!finalToken ? (
+              <>Select States ({selectedStates.size} selected of {INDIA_STATES.length})</>
+            ) : (
+              <>Select States for {currentEditingRange} ({selectedStates.size} selected of {allStates.length})</>
+            )}
+          </DialogTitle>
+          <DialogContent dividers sx={{ maxHeight: 420, overflow: "auto" }}>
+            {getStatesToDisplay().length > 0 ? (
+              getStatesToDisplay().map((state) => (
+                <FormControlLabel
+                  key={state}
+                  control={
+                    <Checkbox
+                      checked={selectedStates.has(state)}
+                      onChange={() => handleStateCheckboxChange(state)}
+                    />
+                  }
+                  label={state}
+                  sx={{ display: "block", py: 0.5 }}
+                />
+              ))
+            ) : (
+              <Box sx={{ textAlign: "center", py: 3 }}>
+                <Typography color="text.secondary" paragraph>
+                  No expansion states found for your brand.
+                </Typography>
+                <Button
+                  variant="outlined"
+                  onClick={() => {
+                    router.push("/brandDashboard/brand_listing_controller");
+                    handleCloseStateModal();
+                  }}
+                >
+                  Add Expansion States
+                </Button>
+              </Box>
+            )}
+          </DialogContent>
 
-      {/* States Selection Modal */}
-      <Dialog open={openStateModal} onClose={handleCloseStateModal} maxWidth="sm" fullWidth>
-      <DialogTitle>
-  Select States for {currentEditingRange} ({selectedStates.size} selected of {allStates.length})
-</DialogTitle>
-        <DialogContent dividers sx={{ maxHeight: 420, overflow: "auto" }}>
-          {allStates.length > 0 ? (
-            allStates.map((state) => (
-              <FormControlLabel
-                key={state}
-                control={
-                  <Checkbox
-                    checked={selectedStates.has(state)}
-                    onChange={() => handleStateCheckboxChange(state)}
-                  />
-                }
-                label={state}
-                sx={{ display: "block", py: 0.5 }}
-              />
-            ))
-          ) : (
-            <Typography color="text.secondary">No states found.</Typography>
-          )}
-        </DialogContent>
-  
-       <DialogActions sx={{ justifyContent: "space-between", px: 3, pb: 2 }}>
-  
-  {/* LEFT SIDE */}
-  <Box display="flex" alignItems="center" gap={1}>
-  {!localAccessToken ? (
-    <Button
-  variant="contained"
->
-  Login to Add States
-</Button>
-  ) : (
-    <Button
-  variant="outlined"
-  onClick={() => router.push("/brandDashboard/brand_listing_controller")}
->
-  Add More States
-</Button>
-  )}
+          <DialogActions sx={{ justifyContent: "space-between", px: 3, pb: 2 }}>
+            <Box display="flex" alignItems="center" gap={1}>
+              {finalToken && (
+                <>
+                  <Button
+                    variant="outlined"
+                    onClick={() =>
+                      router.push("/brandDashboard/brand_listing_controller")
+                    }
+                  >
+                    Add More States
+                  </Button>
+                  <Tooltip title="Adding more states will update your brand's expansion locations.">
+                    <InfoOutlinedIcon
+                      sx={{ color: "text.secondary", cursor: "pointer" }}
+                    />
+                  </Tooltip>
+                </>
+              )}
+            </Box>
 
-    <Tooltip title="If you add more states, your profile preferences will be updated. Are you sure you want to proceed?">
-      <InfoOutlinedIcon sx={{ color: "text.secondary", cursor: "pointer" }} />
-    </Tooltip>
-  </Box>
+            <Box display="flex" gap={1}>
+              <Button onClick={handleCloseStateModal} color="inherit">
+                Cancel
+              </Button>
+              <Button
+                onClick={handleSaveStates}
+                variant="contained"
+                color="primary"
+                disabled={selectedStates.size === 0}
+              >
+                Save Changes
+              </Button>
+            </Box>
+          </DialogActions>
+        </Dialog>
 
-  {/* RIGHT SIDE */}
-  <Box display="flex" gap={1}>
-    <Button onClick={handleCloseStateModal} color="inherit">
-      Cancel
-    </Button>
-    <Button
-      onClick={handleSaveStates}
-      variant="contained"
-      color="primary"
-    >
-      Save Changes
-    </Button>
-  </Box>
-
-</DialogActions>
-      </Dialog>
-      <Snackbar
-  open={snack.open}
-  autoHideDuration={3000}
-  onClose={closeSnack}
-  anchorOrigin={{ vertical: "top", horizontal: "center" }}
->
-  <MuiAlert onClose={closeSnack} severity={snack.severity} variant="filled">
-    {snack.message}
-  </MuiAlert>
-</Snackbar>
-    </Box>
+        <Snackbar
+          open={snack.open}
+          autoHideDuration={3000}
+          onClose={closeSnack}
+          anchorOrigin={{ vertical: "top", horizontal: "center" }}
+        >
+          <MuiAlert
+            onClose={closeSnack}
+            severity={snack.severity}
+            variant="filled"
+          >
+            {snack.message}
+          </MuiAlert>
+        </Snackbar>
+      </Box>
+    </>
   );
 };
 

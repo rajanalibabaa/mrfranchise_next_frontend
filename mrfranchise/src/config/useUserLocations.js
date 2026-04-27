@@ -1,14 +1,42 @@
-"use client";
+import React, { useEffect, useState } from "react";
+import LocationPermissionModal from "./LocationPermissionModal";
+import { getUserLocationWithPermission } from "./locationService";
 
-import { useEffect, useState } from "react";
-import { getOrSetUserLocation } from "./locationService";
-
-export default function useUserLocation() {
-  const [location, setLocation] = useState(null);
+const YourComponent = () => {
+  const [openLocationModal, setOpenLocationModal] = useState(false);
 
   useEffect(() => {
-    getOrSetUserLocation().then(setLocation);
+    const saved = localStorage.getItem("userLocation");
+
+    if (!saved) {
+      setOpenLocationModal(true); // show popup only first time
+    }
   }, []);
 
-  return location;
-}
+  const handleAllow = async () => {
+    setOpenLocationModal(false);
+
+    const location = await getUserLocationWithPermission();
+
+    console.log("User Location:", location);
+
+    // 👉 here trigger your state logic
+    window.location.reload(); // optional (or update state)
+  };
+
+  const handleDeny = () => {
+    setOpenLocationModal(false);
+  };
+
+  return (
+    <>
+      <LocationPermissionModal
+        open={openLocationModal}
+        onAllow={handleAllow}
+        onDeny={handleDeny}
+      />
+    </>
+  );
+};
+
+export default YourComponent;

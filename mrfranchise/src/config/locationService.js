@@ -1,12 +1,7 @@
-export const getOrSetUserLocation = async () => {
-  // ✅ Step 1: Check localStorage first (FAST)
-  const saved = localStorage.getItem("userLocation");
-  if (saved) return JSON.parse(saved);
-
+export const getUserLocationWithPermission = async () => {
   let finalLocation = null;
 
   try {
-    // ✅ Step 2: Try GPS (REAL location)
     const position = await new Promise((resolve, reject) =>
       navigator.geolocation.getCurrentPosition(resolve, reject, {
         enableHighAccuracy: true,
@@ -21,7 +16,6 @@ export const getOrSetUserLocation = async () => {
       accuracy: position.coords.accuracy,
     };
 
-    // Optional: reverse geocode (frontend API)
     const res = await fetch(
       `https://nominatim.openstreetmap.org/reverse?lat=${finalLocation.lat}&lon=${finalLocation.lng}&format=json`
     );
@@ -36,7 +30,7 @@ export const getOrSetUserLocation = async () => {
     finalLocation.state = data.address.state;
     finalLocation.country = data.address.country;
   } catch (err) {
-    // ❌ GPS failed → fallback IP
+    // fallback IP
     const res = await fetch("https://ipapi.co/json/");
     const data = await res.json();
 
@@ -52,7 +46,6 @@ export const getOrSetUserLocation = async () => {
     };
   }
 
-  // ✅ Step 3: Store in localStorage
   localStorage.setItem("userLocation", JSON.stringify(finalLocation));
 
   return finalLocation;
