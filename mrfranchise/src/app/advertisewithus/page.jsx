@@ -14,6 +14,7 @@ import {
   DialogActions,
   Button,
   IconButton,
+  Typography,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 
@@ -48,7 +49,10 @@ const AdvertisingPage = () => {
         scroll="paper"
       >
         <DialogTitle sx={{ backgroundColor: '#f8f9fa', m: 0, p: 2, pr: 6 }}>
-          Add New Investment Range — {investmentRangeData?.range}
+          You Are Adding a New Franchise Business Model For This Investment Range — {investmentRangeData?.range}
+          <Typography variant="subtitle2" color="textSecondary">
+          (By adding Franchise Business Model, Your brand view page will display this Investment Range to all Franchise Investors.)
+          </Typography>
           <IconButton
             onClick={handleCloseModal}
             sx={{
