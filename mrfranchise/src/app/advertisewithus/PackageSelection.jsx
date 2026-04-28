@@ -136,12 +136,14 @@ const InvestmentRangeRow = memo(({
   isInPayment,
   brandLoading,
   locationLoading,
-  openSnack
+  openSnack,
+  finalToken 
 }) => {
   const { id, investmentRangeLabel, range } = item;
   const pricePerState = selectedPkg?.amount || 0;
   const rangeTotal = calculateRangeTotal(investmentRangeLabel, range, pricePerState);
   const isRecommended = isFicoInvestmentRange(range);
+   const canAdd = !finalToken || isRecommended; 
   const inPayment = isInPayment(id);
 
   return (
@@ -224,7 +226,7 @@ const InvestmentRangeRow = memo(({
       size="small"
       startIcon={<AddIcon />}
       onClick={() => handleAddSingleToPayment(item, selectedPlan, selectedPkg) }
-      disabled={!isRecommended }
+     disabled={!canAdd}
     >
       Add to Plan
     </Button>
@@ -911,8 +913,14 @@ const filteredPlans = useMemo(() => {
   }, [getRangeKey, statesByInvestmentRange, finalToken, detectedState, allStates]);
 
   const handleAddInvestmentRange = useCallback((range, investmentRangeLabel) => {
+    if (!finalToken) {
+      setShowLogin(true);
+      openSnack("Please log in to add or customize investment ranges", "warning");
+      return;
+    }
+
     onAddInvestmentRange(range, investmentRangeLabel);
-  }, [onAddInvestmentRange]);
+  }, [onAddInvestmentRange, finalToken, openSnack]);
 
   if (loading) {
     return (
@@ -1224,6 +1232,7 @@ const filteredPlans = useMemo(() => {
                         brandLoading={brandLoading}
                         locationLoading={locationLoading}
                         openSnack={openSnack}
+                        finalToken={finalToken}
                       />
                     ))}
                   </React.Fragment>
