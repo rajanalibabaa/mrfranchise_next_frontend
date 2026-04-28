@@ -129,6 +129,7 @@
 //   const [statesByInvestmentRange, setStatesByInvestmentRange] = useState({});
 //   const [currentEditingRange, setCurrentEditingRange] = useState(null);
 //   const [snack, setSnack] = useState({ open: false, message: "", severity: "info" });
+//   const [selectedInvestmentRangeLabel, setSelectedInvestmentRangeLabel] = useState(null);
 
 //   const { brandUUID: reduxBrandUUID, token: reduxToken } = useSelector(
 //     (state) => state.auth
@@ -1614,6 +1615,7 @@ const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
   const [statesByInvestmentRange, setStatesByInvestmentRange] = useState({});
   const [currentEditingRange, setCurrentEditingRange] = useState(null);
   const [snack, setSnack] = useState({ open: false, message: "", severity: "info" });
+  const [selectedInvestmentRangeLabel, setSelectedInvestmentRangeLabel] = useState(null);
 
   const { brandUUID: reduxBrandUUID, token: reduxToken } = useSelector(
     (state) => state.auth
@@ -1982,6 +1984,14 @@ const filteredPlans = useMemo(() => {
     return groups;
   }, [uniquePackages]);
 
+  // ✅ Set initial investment range to the first one
+  useEffect(() => {
+    if (Object.keys(groupedPackages).length > 0 && !selectedInvestmentRangeLabel) {
+      const firstLabel = Object.keys(groupedPackages)[0];
+      setSelectedInvestmentRangeLabel(firstLabel);
+    }
+  }, [groupedPackages, selectedInvestmentRangeLabel]);
+
   const handleCheckboxChange = useCallback((id) => {
     setSelected((prev) => ({ ...prev, [id]: !prev[id] }));
   }, []);
@@ -2238,7 +2248,259 @@ const filteredPlans = useMemo(() => {
 
   return (
     <>
-        {/* Payment Summary Section */}
+     
+      <Box >
+        {!finalToken && userLocation && (
+          <AlertMessage
+            severity="info"
+            message={`Detected Location: ${userLocation.city}, ${userLocation.state}`}
+          />
+        )}
+
+        {finalToken && allStates.length > 0 && (
+          <AlertMessage
+            severity="success"
+            message={`Showing packages for ${allStates.length} expansion state${allStates.length > 1 ? 's' : ''}: ${allStates.slice(0, 3).join(", ")}${allStates.length > 3 ? ` +${allStates.length - 3} more` : ''}`}
+          />
+        )}
+
+        {finalToken && allStates.length === 0 && (
+          <AlertMessage
+            severity="warning"
+            message="No expansion states found. Please add expansion locations to your profile."
+            action={
+              <Button 
+                color="inherit" 
+                size="small"
+                onClick={() => router.push("/brandDashboard/brand_listing_controller")}
+              >
+                Add States
+              </Button>
+            }
+          />
+        )}
+
+        {brandError && (
+          <AlertMessage
+            severity="warning"
+            message={`Could not fetch brand states: ${brandError}`}
+          />
+        )}
+
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead sx={{ backgroundColor: "#fff8e1" }}>
+              <TableRow>
+                <TableCell>Select</TableCell>
+                <TableCell>Investment Range</TableCell>
+                <TableCell>Recommended</TableCell>
+                <TableCell>No. Of States</TableCell>
+                <TableCell>
+                  Total Amount
+                  <br />
+                  (For this range)
+                </TableCell>
+                <TableCell align="center">Action</TableCell>
+              </TableRow>
+            </TableHead>
+
+            <TableBody>
+              {Object.entries(groupedPackages).map(([label, items]) => {
+                // Filter based on selected investment range label dropdown
+                if (selectedInvestmentRangeLabel && selectedInvestmentRangeLabel !== "" && selectedInvestmentRangeLabel !== label) {
+                  return null;
+                }
+
+                const firstItem = items[0];
+                const selectedPlan = getSelectedPlanData(label, firstItem.defaultPlan);
+                const selectedPkg = selectedPlan?.packages?.find(
+                  (p) => p.investmentRangeLabel === label
+                ) || firstItem.pkg;
+
+                return (
+                  <React.Fragment key={label}>
+                    {/* Group Header */}
+                    <TableRow sx={{ backgroundColor: "#f5f5f5" }}>
+                      <TableCell colSpan={6} sx={{ fontWeight: "bold", fontSize: "1rem" }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <FormControl sx={{ minWidth: 200 }}>
+                            <Select
+                              value={selectedInvestmentRangeLabel || label}
+                              onChange={(e) => setSelectedInvestmentRangeLabel(e.target.value)}
+                              displayEmpty
+                            >
+                              <MenuItem value="">All Investment Ranges</MenuItem>
+                              {Object.keys(groupedPackages).map((rangeLabel) => (
+                                <MenuItem key={rangeLabel} value={rangeLabel}>
+                                  {rangeLabel}
+                                </MenuItem>
+                              ))}
+                            </Select>
+                          </FormControl>
+                          <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                        <FormControl size="small" sx={{ minWidth: 180 }}>
+  <Select
+    value={selectedPlans[label] || firstItem.defaultPlan._id}
+    onChange={(e) => handlePlanChange(label, e.target.value)}
+  >
+    {firstItem.allPlans.map((plan) => (  // ✅ already filtered
+      <MenuItem key={plan._id} value={plan._id}>
+        {plan.planName}
+      </MenuItem>
+    ))}
+  </Select>
+</FormControl>
+                            <Chip 
+                              label={`${selectedPkg?.validityDays} Days`} 
+                              color="primary" 
+                              size="small" 
+                            />
+                            <Chip 
+                              label={`₹${selectedPkg?.amount} / state`} 
+                              color="secondary" 
+                              size="small" 
+                            />
+                            <Chip 
+                              label={`${selectedPkg?.totalLeads} Leads`} 
+                              color="info" 
+                              size="small" 
+                            />
+                          </Box>
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+
+                    {/* Investment Range Rows */}
+                    {items.map((item) => (
+                      <InvestmentRangeRow
+                        key={item.id}
+                        item={item}
+                        selectedPlan={selectedPlan}
+                        selectedPkg={selectedPkg}
+                        selected={selected}
+                        isFicoInvestmentRange={isFicoInvestmentRange}
+                        getStateCountForRange={getStateCountForRange}
+                        calculateRangeTotal={calculateRangeTotal}
+                        handleCheckboxChange={handleCheckboxChange}
+                        handleAddInvestmentRange={handleAddInvestmentRange}
+                        handleOpenStateModal={handleOpenStateModal}
+                        handleAddSingleToPayment={handleAddSingleToPayment}
+                        handleRemoveSingleFromPayment={handleRemoveSingleFromPayment}
+                        isInPayment={isInPayment}
+                        brandLoading={brandLoading}
+                        locationLoading={locationLoading}
+                        openSnack={openSnack}
+                      />
+                    ))}
+                  </React.Fragment>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </TableContainer>
+
+    
+
+        {/* States Selection Modal */}
+        <Dialog
+          open={openStateModal}
+          onClose={handleCloseStateModal}
+          maxWidth="sm"
+          fullWidth
+        >
+          <DialogTitle>
+            {!finalToken ? (
+              <>Select States ({selectedStates.size} selected of {INDIA_STATES.length})</>
+            ) : (
+              <>Select States for {currentEditingRange} ({selectedStates.size} selected of {allStates.length})</>
+            )}
+          </DialogTitle>
+          <DialogContent dividers sx={{ maxHeight: 420, overflow: "auto" }}>
+            {getStatesToDisplay().length > 0 ? (
+              getStatesToDisplay().map((state) => (
+                <FormControlLabel
+                  key={state}
+                  control={
+                    <Checkbox
+                      checked={selectedStates.has(state)}
+                      onChange={() => handleStateCheckboxChange(state)}
+                    />
+                  }
+                  label={state}
+                  sx={{ display: "block", py: 0.5 }}
+                />
+              ))
+            ) : (
+              <Box sx={{ textAlign: "center", py: 3 }}>
+                <Typography color="text.secondary" paragraph>
+                  No expansion states found for your brand.
+                </Typography>
+                <Button
+                  variant="outlined"
+                  onClick={() => {
+                    router.push("/brandDashboard/brand_listing_controller");
+                    handleCloseStateModal();
+                  }}
+                >
+                  Add Expansion States
+                </Button>
+              </Box>
+            )}
+          </DialogContent>
+
+          <DialogActions sx={{ justifyContent: "space-between", px: 3, pb: 2 }}>
+            <Box display="flex" alignItems="center" gap={1}>
+              {finalToken && (
+                <>
+                  <Button
+                    variant="outlined"
+                    onClick={() =>
+                      router.push("/brandDashboard/brand_listing_controller")
+                    }
+                  >
+                    Add More States
+                  </Button>
+                  <Tooltip title="Adding more states will update your brand's expansion locations.">
+                    <InfoOutlinedIcon
+                      sx={{ color: "text.secondary", cursor: "pointer" }}
+                    />
+                  </Tooltip>
+                </>
+              )}
+            </Box>
+
+            <Box display="flex" gap={1}>
+              <Button onClick={handleCloseStateModal} color="inherit">
+                Cancel
+              </Button>
+              <Button
+                onClick={handleSaveStates}
+                variant="contained"
+                color="primary"
+                disabled={selectedStates.size === 0}
+              >
+                Save Changes
+              </Button>
+            </Box>
+          </DialogActions>
+        </Dialog>
+
+        <Snackbar
+          open={snack.open}
+          autoHideDuration={3000}
+          onClose={closeSnack}
+          anchorOrigin={{ vertical: "top", horizontal: "center" }}
+        >
+          <MuiAlert
+            onClose={closeSnack}
+            severity={snack.severity}
+            variant="filled"
+          >
+            {snack.message}
+          </MuiAlert>
+        </Snackbar>
+      </Box>
+         {/* Payment Summary Section */}
         {paymentSummary.length > 0 && (
           <Card sx={{ mt: 4 }}>
             <CardContent>
@@ -2423,239 +2685,6 @@ const filteredPlans = useMemo(() => {
             </CardContent>
           </Card>
         )}
-      <Box >
-        {!finalToken && userLocation && (
-          <AlertMessage
-            severity="info"
-            message={`Detected Location: ${userLocation.city}, ${userLocation.state}`}
-          />
-        )}
-
-        {finalToken && allStates.length > 0 && (
-          <AlertMessage
-            severity="success"
-            message={`Showing packages for ${allStates.length} expansion state${allStates.length > 1 ? 's' : ''}: ${allStates.slice(0, 3).join(", ")}${allStates.length > 3 ? ` +${allStates.length - 3} more` : ''}`}
-          />
-        )}
-
-        {finalToken && allStates.length === 0 && (
-          <AlertMessage
-            severity="warning"
-            message="No expansion states found. Please add expansion locations to your profile."
-            action={
-              <Button 
-                color="inherit" 
-                size="small"
-                onClick={() => router.push("/brandDashboard/brand_listing_controller")}
-              >
-                Add States
-              </Button>
-            }
-          />
-        )}
-
-        {brandError && (
-          <AlertMessage
-            severity="warning"
-            message={`Could not fetch brand states: ${brandError}`}
-          />
-        )}
-
-        <TableContainer component={Paper}>
-          <Table>
-            <TableHead sx={{ backgroundColor: "#fff8e1" }}>
-              <TableRow>
-                <TableCell>Select</TableCell>
-                <TableCell>Investment Range</TableCell>
-                <TableCell>Recommended</TableCell>
-                <TableCell>No. Of States</TableCell>
-                <TableCell>
-                  Total Amount
-                  <br />
-                  (For this range)
-                </TableCell>
-                <TableCell align="center">Action</TableCell>
-              </TableRow>
-            </TableHead>
-
-            <TableBody>
-              {Object.entries(groupedPackages).map(([label, items]) => {
-                const firstItem = items[0];
-                const selectedPlan = getSelectedPlanData(label, firstItem.defaultPlan);
-                const selectedPkg = selectedPlan?.packages?.find(
-                  (p) => p.investmentRangeLabel === label
-                ) || firstItem.pkg;
-
-                return (
-                  <React.Fragment key={label}>
-                    {/* Group Header */}
-                    <TableRow sx={{ backgroundColor: "#f5f5f5" }}>
-                      <TableCell colSpan={6} sx={{ fontWeight: "bold", fontSize: "1rem" }}>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <span>{label}</span>
-                          <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-                        <FormControl size="small" sx={{ minWidth: 180 }}>
-  <Select
-    value={selectedPlans[label] || firstItem.defaultPlan._id}
-    onChange={(e) => handlePlanChange(label, e.target.value)}
-  >
-    {firstItem.allPlans.map((plan) => (  // ✅ already filtered
-      <MenuItem key={plan._id} value={plan._id}>
-        {plan.planName}
-      </MenuItem>
-    ))}
-  </Select>
-</FormControl>
-                            <Chip 
-                              label={`${selectedPkg?.validityDays} Days`} 
-                              color="primary" 
-                              size="small" 
-                            />
-                            <Chip 
-                              label={`₹${selectedPkg?.amount} / state`} 
-                              color="secondary" 
-                              size="small" 
-                            />
-                            <Chip 
-                              label={`${selectedPkg?.totalLeads} Leads`} 
-                              color="info" 
-                              size="small" 
-                            />
-                          </Box>
-                        </Box>
-                      </TableCell>
-                    </TableRow>
-
-                    {/* Investment Range Rows */}
-                    {items.map((item) => (
-                      <InvestmentRangeRow
-                        key={item.id}
-                        item={item}
-                        selectedPlan={selectedPlan}
-                        selectedPkg={selectedPkg}
-                        selected={selected}
-                        isFicoInvestmentRange={isFicoInvestmentRange}
-                        getStateCountForRange={getStateCountForRange}
-                        calculateRangeTotal={calculateRangeTotal}
-                        handleCheckboxChange={handleCheckboxChange}
-                        handleAddInvestmentRange={handleAddInvestmentRange}
-                        handleOpenStateModal={handleOpenStateModal}
-                        handleAddSingleToPayment={handleAddSingleToPayment}
-                        handleRemoveSingleFromPayment={handleRemoveSingleFromPayment}
-                        isInPayment={isInPayment}
-                        brandLoading={brandLoading}
-                        locationLoading={locationLoading}
-                        openSnack={openSnack}
-                      />
-                    ))}
-                  </React.Fragment>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </TableContainer>
-
-    
-
-        {/* States Selection Modal */}
-        <Dialog
-          open={openStateModal}
-          onClose={handleCloseStateModal}
-          maxWidth="sm"
-          fullWidth
-        >
-          <DialogTitle>
-            {!finalToken ? (
-              <>Select States ({selectedStates.size} selected of {INDIA_STATES.length})</>
-            ) : (
-              <>Select States for {currentEditingRange} ({selectedStates.size} selected of {allStates.length})</>
-            )}
-          </DialogTitle>
-          <DialogContent dividers sx={{ maxHeight: 420, overflow: "auto" }}>
-            {getStatesToDisplay().length > 0 ? (
-              getStatesToDisplay().map((state) => (
-                <FormControlLabel
-                  key={state}
-                  control={
-                    <Checkbox
-                      checked={selectedStates.has(state)}
-                      onChange={() => handleStateCheckboxChange(state)}
-                    />
-                  }
-                  label={state}
-                  sx={{ display: "block", py: 0.5 }}
-                />
-              ))
-            ) : (
-              <Box sx={{ textAlign: "center", py: 3 }}>
-                <Typography color="text.secondary" paragraph>
-                  No expansion states found for your brand.
-                </Typography>
-                <Button
-                  variant="outlined"
-                  onClick={() => {
-                    router.push("/brandDashboard/brand_listing_controller");
-                    handleCloseStateModal();
-                  }}
-                >
-                  Add Expansion States
-                </Button>
-              </Box>
-            )}
-          </DialogContent>
-
-          <DialogActions sx={{ justifyContent: "space-between", px: 3, pb: 2 }}>
-            <Box display="flex" alignItems="center" gap={1}>
-              {finalToken && (
-                <>
-                  <Button
-                    variant="outlined"
-                    onClick={() =>
-                      router.push("/brandDashboard/brand_listing_controller")
-                    }
-                  >
-                    Add More States
-                  </Button>
-                  <Tooltip title="Adding more states will update your brand's expansion locations.">
-                    <InfoOutlinedIcon
-                      sx={{ color: "text.secondary", cursor: "pointer" }}
-                    />
-                  </Tooltip>
-                </>
-              )}
-            </Box>
-
-            <Box display="flex" gap={1}>
-              <Button onClick={handleCloseStateModal} color="inherit">
-                Cancel
-              </Button>
-              <Button
-                onClick={handleSaveStates}
-                variant="contained"
-                color="primary"
-                disabled={selectedStates.size === 0}
-              >
-                Save Changes
-              </Button>
-            </Box>
-          </DialogActions>
-        </Dialog>
-
-        <Snackbar
-          open={snack.open}
-          autoHideDuration={3000}
-          onClose={closeSnack}
-          anchorOrigin={{ vertical: "top", horizontal: "center" }}
-        >
-          <MuiAlert
-            onClose={closeSnack}
-            severity={snack.severity}
-            variant="filled"
-          >
-            {snack.message}
-          </MuiAlert>
-        </Snackbar>
-      </Box>
       {/* Brand Listing Package Table */}
 <Box sx={{ mt: 4 }}>
   <Typography variant="h6" fontWeight={700} sx={{ mb: 2,textAlign: 'center' }}>
