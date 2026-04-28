@@ -19,9 +19,9 @@ export default function PaymentPage() {
   const subtotal = paymentData.reduce((sum, g) => sum + g.amount, 0);
 
   const gst = Math.round(subtotal * 0.18); // 18% GST
-  const platformFee = 50; // optional
+  
   const finalAmount = subtotal + gst ;
-
+const packagesNames = paymentData.map(g => g.planName).join(", ");
   return (
     <div style={{ padding: 40 }}>
       <h1>Checkout</h1>
@@ -38,14 +38,13 @@ export default function PaymentPage() {
 
       <h3>Subtotal: ₹{subtotal}</h3>
       <h3>GST (18%): ₹{gst}</h3>
-      <h3>Platform Fee: ₹{platformFee}</h3>
 
       <h2>Total: ₹{finalAmount}</h2>
 
       {/* ✅ Pass correct data */}
       <PaymentButton
         amount={finalAmount}
-        paymentData={paymentData}
+        packageName={packagesNames}
       />
     </div>
   );
