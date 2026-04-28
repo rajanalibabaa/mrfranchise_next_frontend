@@ -1591,6 +1591,7 @@ InvestmentRangeRow.displayName = "InvestmentRangeRow";
 
 const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
   const router = useRouter();
+  
   const [paymentSummary, setPaymentSummary] = useState([]);
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -1901,68 +1902,73 @@ const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
       setBrandLoading(false);
     }
   };
+const fetchData = async () => {
+  try {
+    setLoading(true);
+    const response = await fetch(`${API_URL}/api/v1/admin/plans/getAllPlans`);
+    const json = await response.json();
 
-  const fetchData = async () => {
-    try {
-      setLoading(true);
+    if (json.success && Array.isArray(json.data)) {
+      setPlans(json.data);
 
-      const response = await fetch(`${API_URL}/api/v1/admin/plans/getAllPlans`);
-      const json = await response.json();
+      // ✅ Filter here too
+      const filtered = json.data.filter((plan) => plan.packages?.length > 1);
 
-      if (json.success && Array.isArray(json.data)) {
-        setPlans(json.data);
+      const launchPadPlan = filtered.find(
+        (plan) => plan.planName?.toLowerCase() === "launch pad program"
+      );
 
-        const launchPadPlan = json.data.find(
-          (plan) => plan.planName?.toLowerCase() === "launch pad program"
-        );
-
-        if (launchPadPlan) {
-          const investmentRangeLabels = new Set();
-          json.data.forEach((plan) => {
-            plan.packages?.forEach((pkg) => {
-              investmentRangeLabels.add(pkg.investmentRangeLabel);
-            });
+      if (launchPadPlan) {
+        const investmentRangeLabels = new Set();
+        filtered.forEach((plan) => {  // ✅ use filtered
+          plan.packages?.forEach((pkg) => {
+            investmentRangeLabels.add(pkg.investmentRangeLabel);
           });
+        });
 
-          const defaultPlans = {};
-          investmentRangeLabels.forEach((label) => {
-            defaultPlans[label] = launchPadPlan._id;
-          });
+        const defaultPlans = {};
+        investmentRangeLabels.forEach((label) => {
+          defaultPlans[label] = launchPadPlan._id;
+        });
 
-          setSelectedPlans(defaultPlans);
-        }
-      } else {
-        throw new Error("Invalid data format");
+        setSelectedPlans(defaultPlans);
       }
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
+    } else {
+      throw new Error("Invalid data format");
     }
-  };
+  } catch (err) {
+    setError(err.message);
+  } finally {
+    setLoading(false);
+  }
+};
+  // ✅ Filter out plans with only 1 package (Paid Listing 1 & 2)
+const filteredPlans = useMemo(() => {
+  return plans.filter((plan) => plan.packages?.length > 1);
+}, [plans]);
 
   // ✅ Memoized unique packages
-  const uniquePackages = useMemo(() => {
-    const uniqueMap = new Map();
-    plans.forEach((plan) => {
-      plan.packages?.forEach((pkg, pIndex) => {
-        pkg.investmentRange?.forEach((range, rIndex) => {
-          const key = `${pkg.investmentRangeLabel}-${range}`;
-          if (!uniqueMap.has(key)) {
-            uniqueMap.set(key, {
-              id: `${plan._id}-${pIndex}-${rIndex}`,
-              investmentRangeLabel: pkg.investmentRangeLabel,
-              range,
-              defaultPlan: plan,
-              pkg,
-              allPlans: plans,
-            });
-          }
-        });
+ const uniquePackages = useMemo(() => {
+  const uniqueMap = new Map();
+  filteredPlans.forEach((plan) => {  // ✅ use filteredPlans
+    plan.packages?.forEach((pkg, pIndex) => {
+      pkg.investmentRange?.forEach((range, rIndex) => {
+        const key = `${pkg.investmentRangeLabel}-${range}`;
+        if (!uniqueMap.has(key)) {
+          uniqueMap.set(key, {
+            id: `${plan._id}-${pIndex}-${rIndex}`,
+            investmentRangeLabel: pkg.investmentRangeLabel,
+            range,
+            defaultPlan: plan,
+            pkg,
+            allPlans: filteredPlans,  // ✅ use filteredPlans
+          });
+        }
       });
     });
-    return Array.from(uniqueMap.values());
-  }, [plans]);
+  });
+  return Array.from(uniqueMap.values());
+}, [filteredPlans]);  // ✅ depend on filteredPlans
 
   // ✅ Group packages by investment range label
   const groupedPackages = useMemo(() => {
@@ -2127,6 +2133,8 @@ const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
     setSelected((prev) => ({ ...prev, [id]: true }));
   }, [getRangeKey, statesByInvestmentRange, finalToken, detectedState, allStates, getUniqueStatesAcrossRanges, openSnack]);
 
+
+
   // ✅ Remove single investment range from payment
   const handleRemoveSingleFromPayment = useCallback((item) => {
     const { id } = item;
@@ -2230,138 +2238,6 @@ const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
 
   return (
     <>
-      <Box sx={{ p: 3 }}>
-        {!finalToken && userLocation && (
-          <AlertMessage
-            severity="info"
-            message={`Detected Location: ${userLocation.city}, ${userLocation.state}`}
-          />
-        )}
-
-        {finalToken && allStates.length > 0 && (
-          <AlertMessage
-            severity="success"
-            message={`Showing packages for ${allStates.length} expansion state${allStates.length > 1 ? 's' : ''}: ${allStates.slice(0, 3).join(", ")}${allStates.length > 3 ? ` +${allStates.length - 3} more` : ''}`}
-          />
-        )}
-
-        {finalToken && allStates.length === 0 && (
-          <AlertMessage
-            severity="warning"
-            message="No expansion states found. Please add expansion locations to your profile."
-            action={
-              <Button 
-                color="inherit" 
-                size="small"
-                onClick={() => router.push("/brandDashboard/brand_listing_controller")}
-              >
-                Add States
-              </Button>
-            }
-          />
-        )}
-
-        {brandError && (
-          <AlertMessage
-            severity="warning"
-            message={`Could not fetch brand states: ${brandError}`}
-          />
-        )}
-
-        <TableContainer component={Paper}>
-          <Table>
-            <TableHead sx={{ backgroundColor: "#fff8e1" }}>
-              <TableRow>
-                <TableCell>Select</TableCell>
-                <TableCell>Investment Range</TableCell>
-                <TableCell>Recommended</TableCell>
-                <TableCell>No. Of States</TableCell>
-                <TableCell>
-                  Total Amount
-                  <br />
-                  (For this range)
-                </TableCell>
-                <TableCell align="center">Action</TableCell>
-              </TableRow>
-            </TableHead>
-
-            <TableBody>
-              {Object.entries(groupedPackages).map(([label, items]) => {
-                const firstItem = items[0];
-                const selectedPlan = getSelectedPlanData(label, firstItem.defaultPlan);
-                const selectedPkg = selectedPlan?.packages?.find(
-                  (p) => p.investmentRangeLabel === label
-                ) || firstItem.pkg;
-
-                return (
-                  <React.Fragment key={label}>
-                    {/* Group Header */}
-                    <TableRow sx={{ backgroundColor: "#f5f5f5" }}>
-                      <TableCell colSpan={6} sx={{ fontWeight: "bold", fontSize: "1rem" }}>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <span>{label}</span>
-                          <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-                            <FormControl size="small" sx={{ minWidth: 180 }}>
-                              <Select
-                                value={selectedPlans[label] || firstItem.defaultPlan._id}
-                                onChange={(e) => handlePlanChange(label, e.target.value)}
-                              >
-                                {firstItem.allPlans.map((plan) => (
-                                  <MenuItem key={plan._id} value={plan._id}>
-                                    {plan.planName}
-                                  </MenuItem>
-                                ))}
-                              </Select>
-                            </FormControl>
-                            <Chip 
-                              label={`${selectedPkg?.validityDays} Days`} 
-                              color="primary" 
-                              size="small" 
-                            />
-                            <Chip 
-                              label={`₹${selectedPkg?.amount} / state`} 
-                              color="secondary" 
-                              size="small" 
-                            />
-                            <Chip 
-                              label={`${selectedPkg?.totalLeads} Leads`} 
-                              color="info" 
-                              size="small" 
-                            />
-                          </Box>
-                        </Box>
-                      </TableCell>
-                    </TableRow>
-
-                    {/* Investment Range Rows */}
-                    {items.map((item) => (
-                      <InvestmentRangeRow
-                        key={item.id}
-                        item={item}
-                        selectedPlan={selectedPlan}
-                        selectedPkg={selectedPkg}
-                        selected={selected}
-                        isFicoInvestmentRange={isFicoInvestmentRange}
-                        getStateCountForRange={getStateCountForRange}
-                        calculateRangeTotal={calculateRangeTotal}
-                        handleCheckboxChange={handleCheckboxChange}
-                        handleAddInvestmentRange={handleAddInvestmentRange}
-                        handleOpenStateModal={handleOpenStateModal}
-                        handleAddSingleToPayment={handleAddSingleToPayment}
-                        handleRemoveSingleFromPayment={handleRemoveSingleFromPayment}
-                        isInPayment={isInPayment}
-                        brandLoading={brandLoading}
-                        locationLoading={locationLoading}
-                        openSnack={openSnack}
-                      />
-                    ))}
-                  </React.Fragment>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </TableContainer>
-
         {/* Payment Summary Section */}
         {paymentSummary.length > 0 && (
           <Card sx={{ mt: 4 }}>
@@ -2547,6 +2423,139 @@ const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
             </CardContent>
           </Card>
         )}
+      <Box >
+        {!finalToken && userLocation && (
+          <AlertMessage
+            severity="info"
+            message={`Detected Location: ${userLocation.city}, ${userLocation.state}`}
+          />
+        )}
+
+        {finalToken && allStates.length > 0 && (
+          <AlertMessage
+            severity="success"
+            message={`Showing packages for ${allStates.length} expansion state${allStates.length > 1 ? 's' : ''}: ${allStates.slice(0, 3).join(", ")}${allStates.length > 3 ? ` +${allStates.length - 3} more` : ''}`}
+          />
+        )}
+
+        {finalToken && allStates.length === 0 && (
+          <AlertMessage
+            severity="warning"
+            message="No expansion states found. Please add expansion locations to your profile."
+            action={
+              <Button 
+                color="inherit" 
+                size="small"
+                onClick={() => router.push("/brandDashboard/brand_listing_controller")}
+              >
+                Add States
+              </Button>
+            }
+          />
+        )}
+
+        {brandError && (
+          <AlertMessage
+            severity="warning"
+            message={`Could not fetch brand states: ${brandError}`}
+          />
+        )}
+
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead sx={{ backgroundColor: "#fff8e1" }}>
+              <TableRow>
+                <TableCell>Select</TableCell>
+                <TableCell>Investment Range</TableCell>
+                <TableCell>Recommended</TableCell>
+                <TableCell>No. Of States</TableCell>
+                <TableCell>
+                  Total Amount
+                  <br />
+                  (For this range)
+                </TableCell>
+                <TableCell align="center">Action</TableCell>
+              </TableRow>
+            </TableHead>
+
+            <TableBody>
+              {Object.entries(groupedPackages).map(([label, items]) => {
+                const firstItem = items[0];
+                const selectedPlan = getSelectedPlanData(label, firstItem.defaultPlan);
+                const selectedPkg = selectedPlan?.packages?.find(
+                  (p) => p.investmentRangeLabel === label
+                ) || firstItem.pkg;
+
+                return (
+                  <React.Fragment key={label}>
+                    {/* Group Header */}
+                    <TableRow sx={{ backgroundColor: "#f5f5f5" }}>
+                      <TableCell colSpan={6} sx={{ fontWeight: "bold", fontSize: "1rem" }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span>{label}</span>
+                          <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                        <FormControl size="small" sx={{ minWidth: 180 }}>
+  <Select
+    value={selectedPlans[label] || firstItem.defaultPlan._id}
+    onChange={(e) => handlePlanChange(label, e.target.value)}
+  >
+    {firstItem.allPlans.map((plan) => (  // ✅ already filtered
+      <MenuItem key={plan._id} value={plan._id}>
+        {plan.planName}
+      </MenuItem>
+    ))}
+  </Select>
+</FormControl>
+                            <Chip 
+                              label={`${selectedPkg?.validityDays} Days`} 
+                              color="primary" 
+                              size="small" 
+                            />
+                            <Chip 
+                              label={`₹${selectedPkg?.amount} / state`} 
+                              color="secondary" 
+                              size="small" 
+                            />
+                            <Chip 
+                              label={`${selectedPkg?.totalLeads} Leads`} 
+                              color="info" 
+                              size="small" 
+                            />
+                          </Box>
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+
+                    {/* Investment Range Rows */}
+                    {items.map((item) => (
+                      <InvestmentRangeRow
+                        key={item.id}
+                        item={item}
+                        selectedPlan={selectedPlan}
+                        selectedPkg={selectedPkg}
+                        selected={selected}
+                        isFicoInvestmentRange={isFicoInvestmentRange}
+                        getStateCountForRange={getStateCountForRange}
+                        calculateRangeTotal={calculateRangeTotal}
+                        handleCheckboxChange={handleCheckboxChange}
+                        handleAddInvestmentRange={handleAddInvestmentRange}
+                        handleOpenStateModal={handleOpenStateModal}
+                        handleAddSingleToPayment={handleAddSingleToPayment}
+                        handleRemoveSingleFromPayment={handleRemoveSingleFromPayment}
+                        isInPayment={isInPayment}
+                        brandLoading={brandLoading}
+                        locationLoading={locationLoading}
+                        openSnack={openSnack}
+                      />
+                    ))}
+                  </React.Fragment>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </TableContainer>
+
+    
 
         {/* States Selection Modal */}
         <Dialog
@@ -2647,6 +2656,149 @@ const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
           </MuiAlert>
         </Snackbar>
       </Box>
+      {/* Brand Listing Package Table */}
+<Box sx={{ mt: 4 }}>
+  <Typography variant="h6" fontWeight={700} sx={{ mb: 2,textAlign: 'center' }}>
+    Brand Listing Package
+  </Typography>
+  <TableContainer component={Paper}>
+    <Table>
+      <TableHead sx={{ backgroundColor: "#fff8e1" }}>
+        <TableRow>
+          <TableCell>Select</TableCell>
+          <TableCell>Plan Name</TableCell>
+          <TableCell>Validity</TableCell>
+          <TableCell>Amount</TableCell>
+          <TableCell>Total Leads</TableCell>
+          <TableCell align="center">Action</TableCell>
+        </TableRow>
+      </TableHead>
+      <TableBody>
+        {plans
+          .filter((plan) => plan.packages?.length === 1)
+          .map((plan) => {
+            const pkg = plan.packages[0];
+            const isSelected = !!selected[`listing-${plan._id}`];
+            const isAdded = paymentSummary.some(
+              (g) => g.groupKey === `listing-${plan._id}`
+            );
+
+            return (
+              <TableRow key={plan._id} hover>
+                <TableCell padding="checkbox">
+                  <Checkbox
+                    checked={isSelected}
+                    onChange={() =>
+                      setSelected((prev) => ({
+                        ...prev,
+                        [`listing-${plan._id}`]: !prev[`listing-${plan._id}`],
+                      }))
+                    }
+                  />
+                </TableCell>
+
+                <TableCell>
+                  <Typography variant="body2" fontWeight={600}>
+                    {plan.planName}
+                  </Typography>
+                </TableCell>
+
+                <TableCell>
+                  <Chip
+                    label={`${pkg.validityDays} Days`}
+                    color="primary"
+                    size="small"
+                  />
+                </TableCell>
+
+                <TableCell>
+                  <Typography variant="body2" fontWeight={600} color="primary">
+                    ₹{pkg.amount?.toLocaleString()}
+                  </Typography>
+                </TableCell>
+
+                <TableCell>
+                  <Chip
+                    label={`${pkg.totalLeads} Leads`}
+                    color="info"
+                    size="small"
+                  />
+                </TableCell>
+
+                <TableCell align="center">
+                  {isAdded ? (
+                    <Button
+                      variant="outlined"
+                      color="error"
+                      size="small"
+                      startIcon={<RemoveIcon />}
+                      onClick={() => {
+                        setPaymentSummary((prev) =>
+                          prev.filter(
+                            (g) => g.groupKey !== `listing-${plan._id}`
+                          )
+                        );
+                        setSelected((prev) => ({
+                          ...prev,
+                          [`listing-${plan._id}`]: false,
+                        }));
+                        openSnack("Brand Listing Package removed", "info");
+                      }}
+                    >
+                      Remove
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      size="small"
+                      startIcon={<AddIcon />}
+                      onClick={() => {
+                        const groupKey = `listing-${plan._id}`;
+                        setPaymentSummary((prev) => {
+                          if (prev.some((g) => g.groupKey === groupKey)) {
+                            openSnack("Already added", "info");
+                            return prev;
+                          }
+                          openSnack(
+                            `${plan.planName} added. Total: ₹${pkg.amount}`,
+                            "success"
+                          );
+                          return [
+                            ...prev,
+                            {
+                              groupKey,
+                              planId: plan._id,
+                              planName: plan.planName,
+                              investmentRangeLabel: pkg.investmentRangeLabel,
+                              validityDays: pkg.validityDays,
+                              pricePerState: pkg.amount,
+                              uniqueStates: [],
+                              totalStates: 0,
+                              amount: pkg.amount,
+                              totalLeads: pkg.totalLeads,
+                              items: [],
+                              isListingPlan: true,
+                            },
+                          ];
+                        });
+                        setSelected((prev) => ({
+                          ...prev,
+                          [`listing-${plan._id}`]: true,
+                        }));
+                      }}
+                    >
+                      Add
+                    </Button>
+                  )}
+                </TableCell>
+              </TableRow>
+            );
+          })}
+      </TableBody>
+    </Table>
+  </TableContainer>
+</Box>
     </>
   );
 };
