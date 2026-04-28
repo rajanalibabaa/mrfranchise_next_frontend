@@ -1,57 +1,68 @@
 "use client";
 
-import { createPayment, verifyPayment } from "@/lib/paymentapi";
-import {getUserId,getToken} from '@/Utils/autherId'
+import { getUserId } from "@/Utils/autherId";
+import axios from "axios";
 
-export default function PaymentButton({ user }) {
+export default function PaymentButton({  amount = 500, packageName = "Gold Plan" }) {
+
   const handlePayment = async () => {
     try {
-      // 🔥 STEP 1: CREATE ORDER
-      const orderRes = await createPayment({
-        userId: getUserId(),
-        planId: "PLAN123",
-        brandOwnerId: "",
-        packageName: "Gold Plan",
-        amount: 500,
-      });
+      // ✅ 1. Create order from backend
+      const { data } = await axios.post(
+        
+        "http://localhost:5000/api/v1/payment/create",
+        {
+          brandOwnerId: getUserId(),
+          amount,
+          packageName,
+        }
+      );
 
-      console.log("ORDER RESPONSE:", orderRes);
+      const { orderId, key, currency } = data.data;
 
-      if (!orderRes.success) {
-        alert(orderRes.message);
+      // ✅ 2. Load Razorpay script
+      const loadScript = () =>
+        new Promise((resolve) => {
+          const script = document.createElement("script");
+          script.src = "https://checkout.razorpay.com/v1/checkout.js";
+          script.onload = () => resolve(true);
+          script.onerror = () => resolve(false);
+          document.body.appendChild(script);
+        });
+
+      const res = await loadScript();
+      if (!res) {
+        alert("Razorpay SDK failed to load");
         return;
       }
 
-      const { orderId, key, amount } = orderRes.data;
-
-      // 🔥 STEP 2: OPEN RAZORPAY
+      // ✅ 3. Open Razorpay UI
       const options = {
         key,
         amount,
-        currency: "INR",
+        currency,
+        name: "Mr Franchise",
+        description: packageName,
         order_id: orderId,
 
-        name: "Mr Franchise",
-        description: "Plan Purchase",
-
         handler: async function (response) {
-          console.log("RAZORPAY RESPONSE:", response);
+          // ✅ 4. Verify payment
+          await axios.post(
+            "http://localhost:5000/api/v1/payment/verify",
+            response
+          );
 
-          // 🔥 STEP 3: VERIFY
-          const verifyRes = await verifyPayment(response);
-
-          if (verifyRes.success) {
-            alert("Payment Success ✅");
-            window.location.href = "/payment/success";
-          } else {
-            alert("Verification failed ❌");
-          }
+          alert("Payment Success ✅");
         },
 
-        modal: {
-          ondismiss: function () {
-            alert("Payment cancelled");
-          },
+        prefill: {
+          name: "Test User",
+          email: "test@email.com",
+          contact: "9999999999",
+        },
+
+        theme: {
+          color: "#ff9800",
         },
       };
 
@@ -59,14 +70,22 @@ export default function PaymentButton({ user }) {
       rzp.open();
 
     } catch (err) {
-      console.error(err);
-      alert("Payment failed");
-    }
+  console.log("FULL ERROR:", err); // 🔥 always prints something
+
+  if (err.response) {
+    console.log("STATUS:", err.response.status);
+    console.log("DATA:", err.response.data);
+  } else if (err.request) {
+    console.log("NO RESPONSE:", err.request);
+  } else {
+    console.log("ERROR MESSAGE:", err.message);
+  }
+}
   };
 
   return (
     <button onClick={handlePayment}>
-      Pay ₹500
+      Pay ₹{amount}
     </button>
   );
 }
