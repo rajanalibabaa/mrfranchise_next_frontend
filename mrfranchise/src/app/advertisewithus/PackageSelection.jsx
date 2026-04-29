@@ -1,5 +1,3 @@
-
-
 "use client";
 
 import React, { useState, useEffect, useMemo, useCallback, memo } from "react";
@@ -137,7 +135,10 @@ const InvestmentRangeRow = memo(({
   brandLoading,
   locationLoading,
   openSnack,
-  finalToken 
+  finalToken ,
+  leadsDropdownData,      // NEW
+  selectedLeadsPerRange,  // NEW
+  handleLeadsChange       // NEW
 }) => {
   const { id, investmentRangeLabel, range } = item;
   const pricePerState = selectedPkg?.amount || 0;
@@ -145,6 +146,14 @@ const InvestmentRangeRow = memo(({
   const isRecommended = isFicoInvestmentRange(range);
    const canAdd = !finalToken || isRecommended; 
   const inPayment = isInPayment(id);
+ const stateCount = getStateCountForRange(investmentRangeLabel, range);
+    // ✅ Get available leads options for this investment range
+  const leadsDataKey = `${selectedPlan._id}_${investmentRangeLabel}`;
+  const availableLeads = leadsDropdownData[leadsDataKey] || [];
+  
+  // ✅ Get selected leads or default to first option
+  const selectedLeads = selectedLeadsPerRange[id] || (availableLeads.length > 0 ? availableLeads[0] : 0);
+  const totalLeads = selectedLeads * stateCount;
 
   return (
     <TableRow hover>
@@ -267,6 +276,9 @@ const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
   const [showLogin, setShowLogin] = useState(false);
   const [snack, setSnack] = useState({ open: false, message: "", severity: "info" });
   const [selectedInvestmentRangeLabel, setSelectedInvestmentRangeLabel] = useState(null);
+
+  const [leadsDropdownData, setLeadsDropdownData] = useState({});
+const [selectedLeadsPerRange, setSelectedLeadsPerRange] = useState({});
 
   const { brandUUID: reduxBrandUUID, token: reduxToken } = useSelector(
     (state) => state.auth
@@ -595,6 +607,16 @@ const fetchData = async () => {
     if (json.success && Array.isArray(json.data)) {
       setPlans(json.data);
 
+
+   const leadsData = {};
+      json.data.forEach(plan => {
+        plan.packages?.forEach(pkg => {
+          const key = `${plan._id}_${pkg.investmentRangeLabel}`;
+          leadsData[key] = pkg.totalLeads || [];
+        });
+      });
+      setLeadsDropdownData(leadsData);
+
       // ✅ Filter here too
       const filtered = json.data.filter((plan) => plan.packages?.length > 1);
 
@@ -626,9 +648,9 @@ const fetchData = async () => {
     setLoading(false);
   }
 };
-  // ✅ Filter out plans with only 1 package (Paid Listing 1 & 2)
+  // ✅ Filter out plans with only 1 package (Paid Listing 1 & 2) and FREE plans
 const filteredPlans = useMemo(() => {
-  return plans.filter((plan) => plan.packages?.length > 1);
+  return plans.filter((plan) => plan.packages?.length > 1 && plan.planName?.toLowerCase() !== 'free');
 }, [plans]);
 
   // ✅ Memoized unique packages
@@ -735,96 +757,100 @@ const filteredPlans = useMemo(() => {
     );
   }, [paymentSummary]);
 
-  // ✅ Add single investment range to payment
-  const handleAddSingleToPayment = useCallback((item, selectedPlan, selectedPkg) => {
-    const { id, investmentRangeLabel, range } = item;
-    const pricePerState = selectedPkg?.amount || 0;
+const handleAddSingleToPayment = useCallback((item, selectedPlan, selectedPkg) => {
+  const { id, investmentRangeLabel, range } = item;
+  const pricePerState = selectedPkg?.amount || 0;
 
-    const key = getRangeKey(investmentRangeLabel, range);
-    let states = statesByInvestmentRange[key];
-    
-    if (!states || states.length === 0) {
-      if (!finalToken && detectedState) {
-        states = [detectedState];
-      } else if (finalToken) {
-        states = allStates;
-      } else {
-        states = [];
-      }
+  const key = getRangeKey(investmentRangeLabel, range);
+  let states = statesByInvestmentRange[key];
+  
+  if (!states || states.length === 0) {
+    if (!finalToken && detectedState) {
+      states = [detectedState];
+    } else if (finalToken) {
+      states = allStates;
+    } else {
+      states = [];
     }
+  }
 
-    if (states.length === 0) {
-      openSnack("Please select at least one state", "warning");
-      return;
-    }
+  if (states.length === 0) {
+    openSnack("Please select at least one state", "warning");
+    return;
+  }
 
-    const newItem = {
-      id,
-      investmentRangeLabel,
-      range,
-      stateCount: states.length,
-      states: states,
-    };
+  // ✅ Get the selected leads for this item
+  const leadsDataKey = `${selectedPlan._id}_${investmentRangeLabel}`;
+  const availableLeads = leadsDropdownData[leadsDataKey] || [];
+  const selectedLeads = selectedLeadsPerRange[id] || (availableLeads.length > 0 ? availableLeads[0] : 0);
 
-    const groupKey = `${selectedPlan._id}__${selectedPkg?.validityDays}__${pricePerState}__${selectedPkg?.totalLeads}__${investmentRangeLabel}`;
+  const newItem = {
+    id,
+    investmentRangeLabel,
+    range,
+    stateCount: states.length,
+    states: states,
+    selectedLeads, // ✅ Add selected leads to item
+  };
 
-    setPaymentSummary((prev) => {
-      const existingGroup = prev.find((g) => g.groupKey === groupKey);
+  // ✅ Update groupKey to include selected leads
+  const groupKey = `${selectedPlan._id}__${selectedPkg?.validityDays}__${pricePerState}__${selectedLeads}__${investmentRangeLabel}`;
 
-      if (existingGroup) {
-        // Check if already added
-        if (existingGroup.items.some((ex) => ex.id === newItem.id)) {
-          openSnack("This range is already added", "info");
-          return prev;
-        }
+  setPaymentSummary((prev) => {
+    const existingGroup = prev.find((g) => g.groupKey === groupKey);
 
-        const updatedItems = [...existingGroup.items, newItem];
-        const uniqueStates = getUniqueStatesAcrossRanges(updatedItems);
-        const totalUniqueStates = uniqueStates.length;
-        const newAmount = totalUniqueStates * pricePerState;
-
-        openSnack(`Added ${range}. Total: ₹${newAmount}`, "success");
-
-        return prev.map((g) =>
-          g.groupKey === groupKey
-            ? {
-                ...g,
-                items: updatedItems,
-                uniqueStates: uniqueStates,
-                totalStates: totalUniqueStates,
-                amount: newAmount,
-              }
-            : g
-        );
+    if (existingGroup) {
+      if (existingGroup.items.some((ex) => ex.id === newItem.id)) {
+        openSnack("This range is already added", "info");
+        return prev;
       }
 
-      const uniqueStates = getUniqueStatesAcrossRanges([newItem]);
+      const updatedItems = [...existingGroup.items, newItem];
+      const uniqueStates = getUniqueStatesAcrossRanges(updatedItems);
       const totalUniqueStates = uniqueStates.length;
-      const dynamicAmount = totalUniqueStates * pricePerState;
+      const newAmount = totalUniqueStates * pricePerState;
 
-      openSnack(`Added ${range}. Total: ₹${dynamicAmount}`, "success");
+      openSnack(`Added ${range}. Total: ₹${newAmount}`, "success");
 
-      return [
-        ...prev,
-        {
-          groupKey,
-          planId: selectedPlan._id,
-          planName: selectedPlan.planName,
-          investmentRangeLabel: investmentRangeLabel,
-          validityDays: selectedPkg?.validityDays,
-          pricePerState: pricePerState,
-          uniqueStates: uniqueStates,
-          totalStates: totalUniqueStates,
-          amount: dynamicAmount,
-          totalLeads: selectedPkg?.totalLeads,
-          items: [newItem],
-        },
-      ];
-    });
+      return prev.map((g) =>
+        g.groupKey === groupKey
+          ? {
+              ...g,
+              items: updatedItems,
+              uniqueStates: uniqueStates,
+              totalStates: totalUniqueStates,
+              amount: newAmount,
+            }
+          : g
+      );
+    }
 
-    setSelected((prev) => ({ ...prev, [id]: true }));
-  }, [getRangeKey, statesByInvestmentRange, finalToken, detectedState, allStates, getUniqueStatesAcrossRanges, openSnack]);
+    const uniqueStates = getUniqueStatesAcrossRanges([newItem]);
+    const totalUniqueStates = uniqueStates.length;
+    const dynamicAmount = totalUniqueStates * pricePerState;
 
+    openSnack(`Added ${range}. Total: ₹${dynamicAmount}`, "success");
+
+    return [
+      ...prev,
+      {
+        groupKey,
+        planId: selectedPlan._id,
+        planName: selectedPlan.planName,
+        investmentRangeLabel: investmentRangeLabel,
+        validityDays: selectedPkg?.validityDays,
+        pricePerState: pricePerState,
+        uniqueStates: uniqueStates,
+        totalStates: totalUniqueStates,
+        amount: dynamicAmount,
+        totalLeads: selectedLeads, // ✅ Use selected leads instead of pkg totalLeads
+        items: [newItem],
+      },
+    ];
+  });
+
+  setSelected((prev) => ({ ...prev, [id]: true }));
+}, [getRangeKey, statesByInvestmentRange, finalToken, detectedState, allStates, getUniqueStatesAcrossRanges, openSnack, leadsDropdownData, selectedLeadsPerRange]);
 
 
   // ✅ Remove single investment range from payment
@@ -922,6 +948,13 @@ const filteredPlans = useMemo(() => {
     onAddInvestmentRange(range, investmentRangeLabel);
   }, [onAddInvestmentRange, finalToken, openSnack]);
 
+  const handleLeadsChange = useCallback((itemId, newLeadsValue) => {
+    setSelectedLeadsPerRange((prev) => ({
+      ...prev,
+      [itemId]: newLeadsValue,
+    }));
+  }, []);
+
   if (loading) {
     return (
       <Box sx={{ p: 4, display: "flex", justifyContent: "center" }}>
@@ -961,7 +994,7 @@ const filteredPlans = useMemo(() => {
       </TableHead>
       <TableBody>
         {plans
-          .filter((plan) => plan.packages?.length === 1)
+          .filter((plan) => plan.packages?.length === 1 && plan.planName?.toLowerCase() !== 'free')
           .map((plan) => {
             const pkg = plan.packages[0];
             const isSelected = !!selected[`listing-${plan._id}`];
@@ -1142,6 +1175,7 @@ const filteredPlans = useMemo(() => {
                   Total Amount
                   
                 </TableCell>
+                
                 <TableCell align="center">Action</TableCell>
               </TableRow>
             </TableHead>
@@ -1192,21 +1226,62 @@ const filteredPlans = useMemo(() => {
     ))}
   </Select>
 </FormControl>
+{/* ✅ LEADS DROPDOWN - Corrected */}
+{(() => {
+  const leadsDataKey = `${selectedPlan._id}_${label}`;
+  const availableLeads = leadsDropdownData[leadsDataKey] || [];
+  const firstItemId = items[0]?.id;
+  const headerSelectedLeads = selectedLeadsPerRange[firstItemId] || (availableLeads.length > 0 ? availableLeads[0] : 0);
+
+  return availableLeads.length > 0 ? (
+    <FormControl size="small" sx={{ minWidth: 120 }}>
+      <Select
+        value={headerSelectedLeads}
+        onChange={(e) => {
+          // Update all items in this investment range label group
+          items.forEach(item => {
+            handleLeadsChange(item.id, e.target.value);
+          });
+        }}
+        sx={{
+          '& .MuiOutlinedInput-notchedOutline': {
+            borderColor: 'primary.main',
+          },
+          '&:hover .MuiOutlinedInput-notchedOutline': {
+            borderColor: 'primary.dark',
+          },
+        }}
+      >
+        {availableLeads.map((leadOption) => (
+          <MenuItem key={leadOption} value={leadOption}>
+            {leadOption} Leads
+          </MenuItem>
+        ))}
+      </Select>
+    </FormControl>
+  ) : (
+    <Chip 
+      label={`${selectedPkg?.totalLeads?.[0] || 0} Leads`} 
+      color="info" 
+      size="small" 
+    />
+  );
+})()}
                             <Chip 
                               label={`${selectedPkg?.validityDays} Days`} 
                               color="primary" 
                               size="small" 
                             />
-                            <Chip 
+                            {/* <Chip 
                               label={`₹${selectedPkg?.amount} / state`} 
                               color="primary" 
                               size="small" 
-                            />
-                            <Chip 
+                            /> */}
+                            {/* <Chip 
                               label={`${selectedPkg?.totalLeads} Leads`} 
                               color="info" 
                               size="small" 
-                            />
+                            /> */}
                           </Box>
                         </Box>
                       </TableCell>
@@ -1233,6 +1308,9 @@ const filteredPlans = useMemo(() => {
                         locationLoading={locationLoading}
                         openSnack={openSnack}
                         finalToken={finalToken}
+                        leadsDropdownData={leadsDropdownData}
+                        selectedLeadsPerRange={selectedLeadsPerRange}
+                        handleLeadsChange={handleLeadsChange}
                       />
                     ))}
                   </React.Fragment>
