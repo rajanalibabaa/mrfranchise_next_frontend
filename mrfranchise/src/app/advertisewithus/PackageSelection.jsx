@@ -153,7 +153,11 @@ const InvestmentRangeRow = memo(({
   
   // ✅ Get selected leads or default to first option
   const selectedLeads = selectedLeadsPerRange[id] || (availableLeads.length > 0 ? availableLeads[0] : 0);
-  const totalLeads = selectedLeads * stateCount;
+  
+  // ✅ Calculate total based on formula: (pricePerState / basicLeads) × selectedLeads × stateCount
+  const basicLeads = availableLeads.length > 0 ? Math.min(...availableLeads) : 1;
+  const pricePerLead = basicLeads > 0 ? pricePerState / basicLeads : 0;
+  const totalLeadsPrice = pricePerLead * selectedLeads * stateCount;
 
   return (
     <TableRow hover>
@@ -208,11 +212,14 @@ const InvestmentRangeRow = memo(({
 
       <TableCell>
         <Typography variant="body2" fontWeight={600} color="primary">
-          ₹{rangeTotal.toLocaleString()}
+          ₹{totalLeadsPrice.toLocaleString()}
         </Typography>
         <Typography variant="caption" color="text.secondary">
           ({getStateCountForRange(investmentRangeLabel, range)} × ₹{pricePerState})
-        </Typography>
+        </Typography> 
+         {/* <Typography variant="caption" color="success" sx={{ display: "block", mt: 0.5, fontWeight: 500 }}>
+          Leads Total: ₹{totalLeadsPrice.toLocaleString()} ({selectedLeads} leads × {stateCount} states @ ₹{pricePerLead.toLocaleString()}/lead)
+        </Typography> */}
       </TableCell>
 
       <TableCell align="center">
@@ -1610,16 +1617,16 @@ const handleAddSingleToPayment = useCallback((item, selectedPlan, selectedPkg) =
                     >
                       Total Leads
                     </Typography>
-                    <Typography 
-                      variant="h6" 
-                      sx={{ 
-                        fontWeight: 700,
-                        color: '#1e293b',
-                        mt: 0.5
-                      }}
-                    >
-                      {group.totalLeads}
-                    </Typography>
+                  <Typography
+  variant="h6"
+  sx={{
+    fontWeight: 700,
+    color: '#1e293b',
+    mt: 0.5
+  }}
+>
+  {group.totalLeads * group.totalStates}
+</Typography>
                   </Box>
                 </Grid>
 
