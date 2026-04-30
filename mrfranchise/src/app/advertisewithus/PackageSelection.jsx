@@ -1577,7 +1577,7 @@ const filteredPlans = useMemo(() => {
                           fontSize: '1rem'
                         }}
                       >
-                        ₹{group.pricePerState.toLocaleString()}
+                        ₹{group.pricePerState}
                       </Typography>
                       <Box
                         sx={{
