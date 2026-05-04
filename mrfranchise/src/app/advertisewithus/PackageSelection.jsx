@@ -217,9 +217,9 @@ const InvestmentRangeRow = memo(({
         <Typography variant="caption" color="text.secondary">
           ({getStateCountForRange(investmentRangeLabel, range)} × ₹{pricePerState})
         </Typography> 
-         {/* <Typography variant="caption" color="success" sx={{ display: "block", mt: 0.5, fontWeight: 500 }}>
+         <Typography variant="caption" color="success" sx={{ display: "block", mt: 0.5, fontWeight: 500 }}>
           Leads Total: ₹{totalLeadsPrice.toLocaleString()} ({selectedLeads} leads × {stateCount} states @ ₹{pricePerLead.toLocaleString()}/lead)
-        </Typography> */}
+        </Typography>
       </TableCell>
 
       <TableCell align="center">
