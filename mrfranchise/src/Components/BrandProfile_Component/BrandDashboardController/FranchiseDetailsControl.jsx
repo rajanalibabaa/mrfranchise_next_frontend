@@ -420,7 +420,8 @@ const FranchiseDetailsControl = ({
     "State Franchise",
   ];
 
-  const franchiseModels = ["FOFO ", "FOCO ", "FICO ", "COCO ", "KIOSK","SHOPPING SHOP","CLOUD KITCHEN"];
+  const franchiseModels = ["FOFO ", "FOCO ", "FICO ", "COCO ", "KIOSK","SHOPPING SHOP","CLOUD KITCHEN",  "DEALERS & DISTRIBUTORS",
+    "CHANNEL PARTNERS",];
 
   const investmentRanges = [
     { label: "Below ₹50K", value: "Below-50,000" },
