@@ -31,14 +31,16 @@ import {
   CardContent,
   Divider,
   Grid,
-  CardActions
+  CardActions,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
 } from "@mui/material";
 import { keyframes } from '@mui/system';
-import DeleteIcon from "@mui/icons-material/Delete";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import EditIcon from "@mui/icons-material/Edit";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
-import AddIcon from "@mui/icons-material/Add";
-import RemoveIcon from "@mui/icons-material/Remove";
+
 import { useSelector } from "react-redux";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
@@ -235,6 +237,7 @@ const [checkedItems, setCheckedItems] = useState({});
 const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
 const [pendingSelection, setPendingSelection] = useState(null);
 const [openNoSelectionDialog, setOpenNoSelectionDialog] = useState(false);
+const [expandedRegion, setExpandedRegion] = useState(null);
 
   const { brandUUID: reduxBrandUUID, token: reduxToken } = useSelector(
     (state) => state.auth
@@ -1221,6 +1224,173 @@ const getRowBackgroundColor = useCallback((investmentRangeLabel, isInPayment, id
   const groupIdx = allGroups.indexOf(investmentRangeLabel);
   return groupIdx % 2 === 0 ? "#fff0c5" : "#c8e6ac";
 }, [selectedGroup, filteredPlans]);
+
+// Add this function inside your component, before the return statement
+const renderStatesByRegion = () => {
+  const statesToDisplay = getStatesToDisplay();
+  
+  return Object.entries(INDIA_STATES).map(([region, states]) => {
+    // Filter states based on what's available to display
+    const availableStates = states.filter(state => 
+      statesToDisplay.includes(state)
+    );
+    
+    if (availableStates.length === 0) return null;
+    
+    const selectedCount = availableStates.filter(state => selectedStates.has(state)).length;
+    
+    return (
+    <Accordion 
+  key={region}
+  expanded={expandedRegion === region}
+  onChange={(event, isExpanded) => {
+    setExpandedRegion(isExpanded ? region : null);
+  }}
+  elevation={0}
+  sx={{
+    border: `1px solid ${COLORS.border}`,
+    borderRadius: '8px !important',
+    mb: 1.5,
+    '&:before': {
+      display: 'none',
+    },
+    '&.Mui-expanded': {
+      margin: '0 0 12px 0',
+    },
+  }}
+>
+  <AccordionSummary
+    expandIcon={<ExpandMoreIcon sx={{ color: COLORS.primary }} />}
+    sx={{
+      backgroundColor: COLORS.grey[50],
+      borderRadius: '8px',
+      '&.Mui-expanded': {
+        borderRadius: '8px 8px 0 0',
+      },
+      '& .MuiAccordionSummary-content': {
+        alignItems: 'center',
+        justifyContent: 'space-between',
+      },
+    }}
+  >
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+      <Typography sx={{ 
+        fontSize: TEXT_SIZES.medium, 
+        fontWeight: 700,
+        color: COLORS.black,
+      }}>
+        {region}
+      </Typography>
+      <Chip 
+        label={`${selectedCount}/${availableStates.length}`}
+        size="small"
+        sx={{
+          height: 20,
+          fontSize: '0.7rem',
+          backgroundColor: selectedCount === availableStates.length ? COLORS.secondary : COLORS.grey[400],
+          color: COLORS.white,
+          fontWeight: 600,
+        }}
+      />
+    </Box>
+    
+    {/* Replace Button with Box that has onClick */}
+    <Box
+      component="span"
+      onClick={(e) => {
+        e.stopPropagation();
+        const newSet = new Set(selectedStates);
+        const allInRegion = availableStates;
+        const allSelected = allInRegion.every(state => selectedStates.has(state));
+        
+        if (allSelected) {
+          allInRegion.forEach(state => newSet.delete(state));
+          openSnack(`Deselected all states in ${region}`, "info");
+        } else {
+          allInRegion.forEach(state => newSet.add(state));
+          openSnack(`Selected all states in ${region}`, "success");
+        }
+        setSelectedStates(newSet);
+      }}
+      sx={{
+        fontSize: '0.7rem',
+        textTransform: 'none',
+        color: COLORS.primary,
+        cursor: 'pointer',
+        display: 'inline-flex',
+        alignItems: 'center',
+        padding: '4px 8px',
+        borderRadius: '4px',
+        '&:hover': {
+          backgroundColor: COLORS.lightOrange,
+        },
+      }}
+    >
+      {availableStates.every(state => selectedStates.has(state)) ? "Deselect All" : "Select All"}
+    </Box>
+  </AccordionSummary>
+  
+  <AccordionDetails sx={{ p: 2 }}>
+    <Box sx={{
+      display: 'grid',
+      gridTemplateColumns: 'repeat(2, 1fr)',
+      gap: 1,
+    }}>
+      {availableStates.map((state) => (
+        <FormControlLabel
+          key={state}
+          control={
+            <Checkbox 
+              checked={selectedStates.has(state)} 
+              onChange={() => handleStateCheckboxChange(state)}
+              sx={{
+                color: COLORS.primary,
+                '&.Mui-checked': {
+                  color: COLORS.secondary,
+                },
+              }}
+            />
+          }
+          label={
+            <Typography sx={{ 
+              fontSize: TEXT_SIZES.medium, 
+              color: COLORS.black,
+              fontWeight: selectedStates.has(state) ? 600 : 400,
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            }}>
+              {state}
+            </Typography>
+          }
+          sx={{ 
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "center",
+            margin: 0,
+            py: 0.5,
+            px: 1,
+            borderRadius: 1.5,
+            transition: 'all 0.2s ease',
+            backgroundColor: selectedStates.has(state) ? COLORS.lightGreen : 'transparent',
+            width: '100%',
+            '&:hover': {
+              backgroundColor: selectedStates.has(state) ? COLORS.lightGreen : COLORS.lightOrange,
+            },
+            '& .MuiFormControlLabel-label': {
+              width: 'calc(100% - 35px)',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            }
+          }}
+        />
+      ))}
+    </Box>
+  </AccordionDetails>
+</Accordion>
+    );
+  });
+};
 
 
   if (loading) {
@@ -2854,13 +3024,14 @@ const handleAddListingPlan = () => {
   <>Select States ({selectedStates.size} of {allStates.length})</>
 )}
         </DialogTitle>
-   <DialogContent dividers sx={{ 
-  maxHeight: 420, 
+  <DialogContent dividers sx={{ 
+  maxHeight: 500, 
   overflow: "auto",
+  p: 2,
   '&::-webkit-scrollbar': {
     width: 8,
   },
-  '&-webkit-scrollbar-thumb': {
+  '&::-webkit-scrollbar-thumb': {
     backgroundColor: COLORS.primary,
     borderRadius: 4,
   },
@@ -2869,6 +3040,7 @@ const handleAddListingPlan = () => {
     const statesToDisplay = getStatesToDisplay();
     return statesToDisplay.length > 0 ? (
       <>
+        {/* Global Actions */}
         <Box sx={{ display: "flex", gap: 1.5, mb: 2.5, justifyContent: "flex-end" }}>
           <Button 
             variant="outlined" 
@@ -2915,48 +3087,10 @@ const handleAddListingPlan = () => {
             Clear All
           </Button>
         </Box>
-        <Box sx={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(2, 1fr)',
-          gap: 1,
-        }}>
-          {statesToDisplay.map((state) => (
-            <FormControlLabel
-              key={state}
-              control={
-                <Checkbox 
-                  checked={selectedStates.has(state)} 
-                  onChange={() => handleStateCheckboxChange(state)}
-                  sx={{
-                    color: COLORS.primary,
-                    '&.Mui-checked': {
-                      color: COLORS.secondary,
-                    },
-                  }}
-                />
-              }
-              label={
-                <Typography sx={{ 
-                  fontSize: TEXT_SIZES.medium, 
-                  color: COLORS.black,
-                  fontWeight: selectedStates.has(state) ? 600 : 400,
-                }}>
-                  {state}
-                </Typography>
-              }
-              sx={{ 
-                display: "block", 
-                py: 0.5,
-                px: 1,
-                borderRadius: 1.5,
-                transition: 'all 0.2s ease',
-                backgroundColor: selectedStates.has(state) ? COLORS.lightGreen : 'transparent',
-                '&:hover': {
-                  backgroundColor: selectedStates.has(state) ? COLORS.lightGreen : COLORS.lightOrange,
-                },
-              }}
-            />
-          ))}
+
+        {/* Accordion Sections by Region */}
+        <Box>
+          {renderStatesByRegion()}
         </Box>
       </>
     ) : (
