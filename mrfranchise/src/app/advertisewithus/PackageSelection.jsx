@@ -37,10 +37,11 @@ import {
   AccordionDetails,
 } from "@mui/material";
 import { keyframes } from '@mui/system';
+import RemoveIcon from "@mui/icons-material/Remove";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import EditIcon from "@mui/icons-material/Edit";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
-
+import AddIcon from "@mui/icons-material/Add";
 import { useSelector } from "react-redux";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
@@ -440,41 +441,47 @@ const handleSelectAll = useCallback(() => {
   }
 }, [getStatesToDisplay, openSnack]);
 
-// Helper function to check for duplicate states across existing payment items
-const hasDuplicateStates = useCallback((newStates, currentGroupKey = null) => {
-  // Get all existing states from payment summary (excluding the current group if updating)
-  const existingStates = new Set();
+// Helper function to check for duplicate states across different INVESTMENT GROUPS (not ranges within same group)
+const hasDuplicateStates = useCallback((newStates, currentInvestmentRangeLabel, currentPlanId = null) => {
+  // Get all existing states from payment summary, grouping by investment range label
+  const existingStatesByGroup = new Map(); // Map<investmentRangeLabel, Set<states>>
   
   paymentSummary.forEach((group) => {
-    // Skip the current group if we're updating it
-    if (currentGroupKey && group.groupKey === currentGroupKey) {
-      return;
+    const groupLabel = group.investmentRangeLabel;
+    if (!existingStatesByGroup.has(groupLabel)) {
+      existingStatesByGroup.set(groupLabel, new Set());
     }
-    
     group.items.forEach((item) => {
       item.states.forEach((state) => {
-        existingStates.add(state);
+        existingStatesByGroup.get(groupLabel).add(state);
       });
     });
   });
   
-  // Check for duplicates within the new states themselves
+  // Check for duplicates only in DIFFERENT investment groups
+  let duplicateStates = [];
   const newStatesArray = [...newStates];
-  const hasInternalDuplicates = newStatesArray.length !== new Set(newStatesArray).size;
   
-  if (hasInternalDuplicates) {
-    openSnack(`Cannot add: Duplicate states found within the same selection. Each state can only be selected once.`, "warning");
-    return true;
+  for (const [groupLabel, existingStates] of existingStatesByGroup.entries()) {
+    // Skip the current group we're adding to
+    if (groupLabel === currentInvestmentRangeLabel) continue;
+    
+    // Check if any new states exist in other groups
+    const overlappingStates = newStatesArray.filter(state => existingStates.has(state));
+    if (overlappingStates.length > 0) {
+      duplicateStates.push(...overlappingStates);
+    }
   }
   
-  // Check if any of the new states already exist
-  const duplicates = newStatesArray.filter(state => existingStates.has(state));
+  // Remove duplicates from the array
+  duplicateStates = [...new Set(duplicateStates)];
   
-  if (duplicates.length > 0) {
-    openSnack(`Cannot add: State(s) "${duplicates.join(', ')}" already selected in another investment range. Each state can only be selected once.`, "warning");
-    return true;
+  if (duplicateStates.length > 0) {
+    openSnack(`Cannot add: State(s) "${duplicateStates.join(', ')}" already selected in another investment group (${currentInvestmentRangeLabel !== duplicateStates ? 'different group' : ''}). Each state can only be used in one investment group.`, "warning");
+    return { hasDuplicate: true, duplicateStates };
   }
-  return false;
+  
+  return { hasDuplicate: false, duplicateStates: [] };
 }, [paymentSummary, openSnack]);
 
 const handleClearAll = useCallback(() => {
@@ -536,9 +543,9 @@ const handleMoveToPayment = useCallback((groupKey) => {
           const uniqueStates = Array.from(allStatesSet);
           const totalUniqueStates = uniqueStates.length;
 
-          // Align backend calculations with custom lead-formula pipeline
-          const leadsDataKey = `${group.planId}_${group.investmentRangeLabel}`;
-          const availableLeads = leadsDropdownData[leadsDataKey] || [];
+// Align backend calculations with custom lead-formula pipeline
+const leadsDataKey = `${group.planId}_${group.investmentRangeLabel}`;
+const availableLeads = leadsDropdownData[leadsDataKey] || [];
           const minLeads = availableLeads.length > 0 ? Math.min(...availableLeads) : 1;
           const divisor = minLeads > 0 ? minLeads : 1;
           const selectedLeads = group.items[0]?.selectedLeads || 0;
@@ -581,14 +588,30 @@ const handleOpenStateModal = useCallback((investmentRangeLabel, range, selectedL
     setOpenStateModal(false);
   }, []);
 
-  const handleStateCheckboxChange = useCallback((state) => {
-    setSelectedStates((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(state)) newSet.delete(state);
-      else newSet.add(state);
-      return newSet;
+const handleStateCheckboxChange = useCallback((state) => {
+  // Check if this state is already selected in other ranges
+  let isSelectedInOtherRange = false;
+  
+  if (currentEditingRange) {
+    Object.entries(statesByInvestmentRange).forEach(([rangeKey, states]) => {
+      if (rangeKey !== currentEditingRange && states.includes(state)) {
+        isSelectedInOtherRange = true;
+      }
     });
-  }, []);
+  }
+  
+  if (isSelectedInOtherRange && !selectedStates.has(state)) {
+    openSnack(`State "${state}" is already selected in another investment range and cannot be added`, "warning");
+    return;
+  }
+  
+  setSelectedStates((prev) => {
+    const newSet = new Set(prev);
+    if (newSet.has(state)) newSet.delete(state);
+    else newSet.add(state);
+    return newSet;
+  });
+}, [statesByInvestmentRange, currentEditingRange, openSnack]);
 
   const handleSaveStates = useCallback(() => {
     const selectedArray = Array.from(selectedStates);
@@ -804,8 +827,14 @@ const handleAddSingleToPayment = useCallback((item, selectedPlan, selectedPkg) =
   // Get current selected leads value
   const leadsDataKey = `${selectedPlan._id}_${investmentRangeLabel}`;
   const availableLeads = leadsDropdownData[leadsDataKey] || [];
-  const selectedLeads = selectedLeadsPerRange[`plan-${selectedPlan._id}`] || 
-                       (availableLeads.length > 0 ? availableLeads[0] : 0);
+
+  // Get selected leads with proper fallback
+  let selectedLeads = selectedLeadsPerRange[`plan-${selectedPlan._id}`];
+  if (!selectedLeads && availableLeads.length > 0) {
+    selectedLeads = availableLeads[0];
+  } else if (!selectedLeads) {
+    selectedLeads = 0;
+  }
   
   // Use key with selectedLeads to get unique states per lead count
   const key = getRangeKey(investmentRangeLabel, range, selectedLeads);
@@ -826,6 +855,13 @@ const handleAddSingleToPayment = useCallback((item, selectedPlan, selectedPkg) =
     return;
   }
   
+  // CHECK FOR DUPLICATE STATES BEFORE ADDING
+const { hasDuplicate, duplicateStates } = hasDuplicateStates(states, investmentRangeLabel);
+  if (hasDuplicate) {
+    // Don't add if duplicates exist
+    return;
+  }
+  
   const minLeads = availableLeads.length > 0 ? Math.min(...availableLeads) : 1;
   const divisor = minLeads > 0 ? minLeads : 1;
 
@@ -840,10 +876,11 @@ const handleAddSingleToPayment = useCallback((item, selectedPlan, selectedPkg) =
     totalAmount: pricePerState * states.length,
   };
   
+  console.log("New Item being added:", newItem); // Debug log
+  
   // Include selectedLeads in groupKey to differentiate
   const groupKey = `${selectedPlan._id}__${selectedPkg?.validityDays}__${pricePerState}__${selectedLeads}__${investmentRangeLabel}`;
   
-  // Rest of the function remains the same...
   setPaymentSummary((prev) => {
     const existingGroup = prev.find((g) => g.groupKey === groupKey);
     let newSummary;
@@ -1043,6 +1080,8 @@ const autoSelectFICORanges = useCallback(() => {
   }
 }, [ficoInvestmentRanges, filteredPlans, checkedItems, selectedGroup, normalizeRange, handleAddSingleToPayment, openSnack, scrollToPaymentSummary]);
 
+
+
 // 10. Define the auto-selection useEffect (depends on autoSelectFICORanges)
 useEffect(() => {
   if (finalToken && ficoInvestmentRanges.length > 0 && filteredPlans.length > 0) {
@@ -1224,13 +1263,62 @@ const getRowBackgroundColor = useCallback((investmentRangeLabel, isInPayment, id
   const groupIdx = allGroups.indexOf(investmentRangeLabel);
   return groupIdx % 2 === 0 ? "#fff0c5" : "#c8e6ac";
 }, [selectedGroup, filteredPlans]);
+const handleRemoveListingPlan = useCallback((planId) => {
+  const groupKey = `listing-${planId}`;
+  setPaymentSummary((prev) => {
+    const newSummary = prev.filter((g) => g.groupKey !== groupKey);
+    if (newSummary.length === 0 && typeof window !== "undefined") {
+      localStorage.removeItem("paymentSummaryDraft");
+      localStorage.removeItem("movedGroupKeys");
+    }
+    return newSummary;
+  });
+  setMovedGroupKeys((prev) => prev.filter((key) => key !== groupKey));
+  setSelected((prev) => {
+    const copy = { ...prev };
+    delete copy[groupKey];
+    return copy;
+  });
+  setSelectedListingPlanId(null);
+  openSnack("Listing plan removed from cart", "info");
+}, [openSnack]);
+
+// Add this function before renderStatesByRegion
+const getAlreadySelectedStatesInOtherRanges = useCallback(() => {
+  const selectedInOtherRanges = new Set();
+  
+  if (!currentEditingRange) return selectedInOtherRanges;
+  
+  // Get the investment range label for the current editing range
+  let currentInvestmentRangeLabel = null;
+  // Extract the investment range label from currentEditingRange (format: "Upto 5 Lakhs__Below 50k__20")
+  const parts = currentEditingRange.split('__');
+  if (parts.length >= 1) {
+    currentInvestmentRangeLabel = parts[0];
+  }
+  
+  Object.entries(statesByInvestmentRange).forEach(([rangeKey, states]) => {
+    if (rangeKey === currentEditingRange) return;
+    
+    // Extract the investment range label from this key
+    const keyParts = rangeKey.split('__');
+    const rangeLabel = keyParts.length >= 1 ? keyParts[0] : null;
+    
+    // Only block states from DIFFERENT investment groups
+    if (rangeLabel !== currentInvestmentRangeLabel && Array.isArray(states)) {
+      states.forEach(state => selectedInOtherRanges.add(state));
+    }
+  });
+  
+  return selectedInOtherRanges;
+}, [statesByInvestmentRange, currentEditingRange]);
 
 // Add this function inside your component, before the return statement
 const renderStatesByRegion = () => {
   const statesToDisplay = getStatesToDisplay();
+  const alreadySelectedStates = getAlreadySelectedStatesInOtherRanges();
   
   return Object.entries(INDIA_STATES).map(([region, states]) => {
-    // Filter states based on what's available to display
     const availableStates = states.filter(state => 
       statesToDisplay.includes(state)
     );
@@ -1240,157 +1328,178 @@ const renderStatesByRegion = () => {
     const selectedCount = availableStates.filter(state => selectedStates.has(state)).length;
     
     return (
-    <Accordion 
-  key={region}
-  expanded={expandedRegion === region}
-  onChange={(event, isExpanded) => {
-    setExpandedRegion(isExpanded ? region : null);
-  }}
-  elevation={0}
-  sx={{
-    border: `1px solid ${COLORS.border}`,
-    borderRadius: '8px !important',
-    mb: 1.5,
-    '&:before': {
-      display: 'none',
-    },
-    '&.Mui-expanded': {
-      margin: '0 0 12px 0',
-    },
-  }}
->
-  <AccordionSummary
-    expandIcon={<ExpandMoreIcon sx={{ color: COLORS.primary }} />}
-    sx={{
-      backgroundColor: COLORS.grey[50],
-      borderRadius: '8px',
-      '&.Mui-expanded': {
-        borderRadius: '8px 8px 0 0',
-      },
-      '& .MuiAccordionSummary-content': {
-        alignItems: 'center',
-        justifyContent: 'space-between',
-      },
-    }}
-  >
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-      <Typography sx={{ 
-        fontSize: TEXT_SIZES.medium, 
-        fontWeight: 700,
-        color: COLORS.black,
-      }}>
-        {region}
-      </Typography>
-      <Chip 
-        label={`${selectedCount}/${availableStates.length}`}
-        size="small"
-        sx={{
-          height: 20,
-          fontSize: '0.7rem',
-          backgroundColor: selectedCount === availableStates.length ? COLORS.secondary : COLORS.grey[400],
-          color: COLORS.white,
-          fontWeight: 600,
+      <Accordion 
+        key={region}
+        expanded={expandedRegion === region}
+        onChange={(event, isExpanded) => {
+          setExpandedRegion(isExpanded ? region : null);
         }}
-      />
-    </Box>
-    
-    {/* Replace Button with Box that has onClick */}
-    <Box
-      component="span"
-      onClick={(e) => {
-        e.stopPropagation();
-        const newSet = new Set(selectedStates);
-        const allInRegion = availableStates;
-        const allSelected = allInRegion.every(state => selectedStates.has(state));
-        
-        if (allSelected) {
-          allInRegion.forEach(state => newSet.delete(state));
-          openSnack(`Deselected all states in ${region}`, "info");
-        } else {
-          allInRegion.forEach(state => newSet.add(state));
-          openSnack(`Selected all states in ${region}`, "success");
-        }
-        setSelectedStates(newSet);
-      }}
-      sx={{
-        fontSize: '0.7rem',
-        textTransform: 'none',
-        color: COLORS.primary,
-        cursor: 'pointer',
-        display: 'inline-flex',
-        alignItems: 'center',
-        padding: '4px 8px',
-        borderRadius: '4px',
-        '&:hover': {
-          backgroundColor: COLORS.lightOrange,
-        },
-      }}
-    >
-      {availableStates.every(state => selectedStates.has(state)) ? "Deselect All" : "Select All"}
-    </Box>
-  </AccordionSummary>
-  
-  <AccordionDetails sx={{ p: 2 }}>
-    <Box sx={{
-      display: 'grid',
-      gridTemplateColumns: 'repeat(2, 1fr)',
-      gap: 1,
-    }}>
-      {availableStates.map((state) => (
-        <FormControlLabel
-          key={state}
-          control={
-            <Checkbox 
-              checked={selectedStates.has(state)} 
-              onChange={() => handleStateCheckboxChange(state)}
-              sx={{
-                color: COLORS.primary,
-                '&.Mui-checked': {
-                  color: COLORS.secondary,
-                },
-              }}
-            />
-          }
-          label={
+        elevation={0}
+        sx={{
+          border: `1px solid ${COLORS.border}`,
+          borderRadius: '8px !important',
+          mb: 1.5,
+          '&:before': {
+            display: 'none',
+          },
+          '&.Mui-expanded': {
+            margin: '0 0 12px 0',
+          },
+        }}
+      >
+        <AccordionSummary
+          expandIcon={<ExpandMoreIcon sx={{ color: COLORS.primary }} />}
+          sx={{
+            backgroundColor: COLORS.grey[50],
+            borderRadius: '8px',
+            '&.Mui-expanded': {
+              borderRadius: '8px 8px 0 0',
+            },
+            '& .MuiAccordionSummary-content': {
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            },
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Typography sx={{ 
               fontSize: TEXT_SIZES.medium, 
+              fontWeight: 700,
               color: COLORS.black,
-              fontWeight: selectedStates.has(state) ? 600 : 400,
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
             }}>
-              {state}
+              {region}
             </Typography>
-          }
-          sx={{ 
-            display: "flex",
-            flexDirection: "row",
-            alignItems: "center",
-            margin: 0,
-            py: 0.5,
-            px: 1,
-            borderRadius: 1.5,
-            transition: 'all 0.2s ease',
-            backgroundColor: selectedStates.has(state) ? COLORS.lightGreen : 'transparent',
-            width: '100%',
-            '&:hover': {
-              backgroundColor: selectedStates.has(state) ? COLORS.lightGreen : COLORS.lightOrange,
-            },
-            '& .MuiFormControlLabel-label': {
-              width: 'calc(100% - 35px)',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-            }
-          }}
-        />
-      ))}
-    </Box>
-  </AccordionDetails>
-</Accordion>
+            <Chip 
+              label={`${selectedCount}/${availableStates.length}`}
+              size="small"
+              sx={{
+                height: 20,
+                fontSize: '0.7rem',
+                backgroundColor: selectedCount === availableStates.length ? COLORS.secondary : COLORS.grey[400],
+                color: COLORS.white,
+                fontWeight: 600,
+              }}
+            />
+          </Box>
+          
+          <Box
+            component="span"
+            onClick={(e) => {
+              e.stopPropagation();
+              const newSet = new Set(selectedStates);
+              const allInRegion = availableStates;
+              
+              const selectableStates = allInRegion.filter(state => !alreadySelectedStates.has(state));
+              const allSelected = selectableStates.every(state => selectedStates.has(state));
+              
+              if (allSelected) {
+                selectableStates.forEach(state => newSet.delete(state));
+                openSnack(`Deselected all states in ${region}`, "info");
+              } else {
+                selectableStates.forEach(state => newSet.add(state));
+                openSnack(`Selected all states in ${region}`, "success");
+              }
+              setSelectedStates(newSet);
+            }}
+            sx={{
+              fontSize: '0.7rem',
+              textTransform: 'none',
+              color: COLORS.primary,
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              padding: '4px 8px',
+              borderRadius: '4px',
+              '&:hover': {
+                backgroundColor: COLORS.lightOrange,
+              },
+            }}
+          >
+            Select All Available
+          </Box>
+        </AccordionSummary>
+        
+        <AccordionDetails sx={{ p: 2 }}>
+          <Box sx={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(2, 1fr)',
+            gap: 1,
+          }}>
+            {availableStates.map((state) => {
+              const isDisabled = alreadySelectedStates.has(state) && !selectedStates.has(state);
+              const isChecked = selectedStates.has(state);
+              
+              return (
+                <FormControlLabel
+                  key={state}
+                  control={
+                    <Checkbox 
+                      checked={isChecked} 
+                      onChange={() => {
+                        if (!isDisabled) {
+                          handleStateCheckboxChange(state);
+                        } else {
+                          openSnack(`This state is already selected in another investment range`, "warning");
+                        }
+                      }}
+                      disabled={isDisabled}
+                      sx={{
+                        color: COLORS.primary,
+                        '&.Mui-checked': {
+                          color: COLORS.secondary,
+                        },
+                        '&.Mui-disabled': {
+                          color: COLORS.grey[400],
+                        },
+                      }}
+                    />
+                  }
+                  label={
+                    <Typography sx={{ 
+                      fontSize: TEXT_SIZES.medium, 
+                      color: isDisabled ? COLORS.grey[500] : COLORS.black,
+                      fontWeight: isChecked ? 600 : 400,
+                      textDecoration: isDisabled ? 'line-through' : 'none',
+                    }}>
+                      {state}
+                      {isDisabled && (
+                        <Tooltip title="Already selected in another investment range">
+                          <InfoOutlinedIcon sx={{ fontSize: 14, ml: 0.5, color: COLORS.grey[500] }} />
+                        </Tooltip>
+                      )}
+                    </Typography>
+                  }
+                  sx={{ 
+                    display: "flex",
+                    flexDirection: "row",
+                    alignItems: "center",
+                    margin: 0,
+                    py: 0.5,
+                    px: 1,
+                    borderRadius: 1.5,
+                    transition: 'all 0.2s ease',
+                    backgroundColor: isChecked ? COLORS.lightGreen : 'transparent',
+                    width: '100%',
+                    opacity: isDisabled ? 0.6 : 1,
+                    '&:hover': {
+                      backgroundColor: !isDisabled && (isChecked ? COLORS.lightGreen : COLORS.lightOrange),
+                    },
+                    '& .MuiFormControlLabel-label': {
+                      width: 'calc(100% - 35px)',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                    }
+                  }}
+                />
+              );
+            })}
+          </Box>
+        </AccordionDetails>
+      </Accordion>
     );
   });
 };
+
 
 
   if (loading) {
@@ -1445,28 +1554,29 @@ const renderStatesByRegion = () => {
         >
           {selectedGroup ? (
             <Box>
-              {(() => {
-                const selectedPlan = filteredPlans.find(p => p._id === selectedGroup);
-                
-                if (!selectedPlan) return null;
+            {(() => {
+  const selectedPlan = filteredPlans.find(p => p._id === selectedGroup);
+  
+  if (!selectedPlan) return null;
 
-                const allPackagesFromPlan = [];
-                selectedPlan.packages?.forEach((pkg) => {
-                  pkg.investmentRange?.forEach((range) => {
-                    allPackagesFromPlan.push({
-                      investmentRangeLabel: pkg.investmentRangeLabel,
-                      range: range,
-                      pkg: pkg,
-                    });
-                  });
-                });
+  // DEFINE availableLeads HERE - before using it
+  const firstPkg = selectedPlan.packages?.[0];
+  const leadsDataKey = `${selectedPlan._id}_${firstPkg?.investmentRangeLabel}`;
+  const availableLeads = leadsDropdownData[leadsDataKey] || [];
 
-                const firstPkg = selectedPlan.packages?.[0];
-                const leadsDataKey = `${selectedPlan._id}_${firstPkg?.investmentRangeLabel}`;
-                const availableLeads = leadsDropdownData[leadsDataKey] || [];
-                const selectedLeads = selectedLeadsPerRange[`plan-${selectedPlan._id}`] || 
-                                     (availableLeads.length > 0 ? availableLeads[0] : (firstPkg?.totalLeads?.[0] || 0));
+  const allPackagesFromPlan = [];
+  selectedPlan.packages?.forEach((pkg) => {
+    pkg.investmentRange?.forEach((range) => {
+      allPackagesFromPlan.push({
+        investmentRangeLabel: pkg.investmentRangeLabel,
+        range: range,
+        pkg: pkg,
+      });
+    });
+  });
 
+  const selectedLeads = selectedLeadsPerRange[`plan-${selectedPlan._id}`] || 
+                       (availableLeads.length > 0 ? availableLeads[0] : 0);
                 const uniqueValidityDays = [...new Set(
                   selectedPlan.packages?.map(pkg => pkg.validityDays).filter(Boolean)
                 )];
@@ -1554,23 +1664,20 @@ const renderStatesByRegion = () => {
                             </TableCell>
                             
                             {/* Leads Per State Column */}
-                            {availableLeads.length > 0 && (
-                              <TableCell
-                                sx={{
-                                  fontWeight: 700,
-                                  fontSize: TEXT_SIZES.small,
-                                  color: COLORS.white,
-                                  background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryDark} 100%)`,
-                                  px: 1.5,
-                                  py: 1.5,
-                                  width: '5%',
-                                  textAlign: 'center',
-                                }}
-                              >
-                                Leads per State
-                              </TableCell>
-                            )}
-
+                        <TableCell
+  sx={{
+    fontWeight: 700,
+    fontSize: TEXT_SIZES.small,
+    color: COLORS.white,
+    background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryDark} 100%)`,
+    px: 1.5,
+    py: 1.5,
+    width: '5%',
+    textAlign: 'center',
+  }}
+>
+  Leads per State
+</TableCell>
                             {/* Investment Group Column */}
                             <TableCell
                               sx={{
@@ -1754,7 +1861,7 @@ const renderStatesByRegion = () => {
                                 renderedLabels.add(item.investmentRangeLabel);
                               }
                               const rowSpan = labelCounts[item.investmentRangeLabel];
-                              const showFirstRow = firstRow;
+                              const isFirstRowOfTable = idx === 0;
                               if (firstRow) firstRow = false;
 
                             return (
@@ -1769,7 +1876,7 @@ const renderStatesByRegion = () => {
     }}
   >
                                   {/* Plan Selection - Show only in first row */}
-                                  {showFirstRow && (
+                                   {isFirstRowOfTable && (
                                     <TableCell 
                                       rowSpan={totalRows}
                                       sx={{ 
@@ -1846,77 +1953,79 @@ const renderStatesByRegion = () => {
                                   )}
                                   
                                   {/* Leads Per State - Show only in first row if available */}
-                                  {availableLeads.length > 0 && showFirstRow && (
-                                    <TableCell 
-                                      rowSpan={totalRows}
-                                      sx={{ 
-                                        // px: 1.5, 
-                                        py: 1.5,
-                                        borderRight: `2px solid ${COLORS.border}`,
-                                        verticalAlign: 'middle',
-                                        backgroundColor:  "#fff0c5",
-                                      }}
-                                    >
-                                      <Box sx={{ 
-                                        display: 'flex', 
-                                        flexDirection: 'column', 
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        height: '100%',
-                                      }}>
-                                        <Box sx={{ display: 'flex', flexDirection: 'column', spacing: 1, justifyContent:"space-between",gap:4}}>
-                                          {availableLeads.map((leadOption) => {
-                                            const isSelected = 
-                                              selectedLeadsPerRange[`plan-${selectedPlan._id}`] === leadOption ||
-                                              (!selectedLeadsPerRange[`plan-${selectedPlan._id}`] && leadOption === availableLeads[0]);
+                                {isFirstRowOfTable && (
+  <TableCell 
+    rowSpan={totalRows}
+    sx={{ 
+      py: 1.5,
+      borderRight: `2px solid ${COLORS.border}`,
+      verticalAlign: 'middle',
+      backgroundColor: "#fff0c5",
+    }}
+  >
+    <Box sx={{ 
+      display: 'flex', 
+      flexDirection: 'column', 
+      alignItems: 'center',
+      justifyContent: 'center',
+      height: '100%',
+    }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', spacing: 1, justifyContent:"space-between", gap:4}}>
+        {availableLeads.length > 0 ? (
+          availableLeads.map((leadOption) => {
+            const isSelected = 
+              selectedLeadsPerRange[`plan-${selectedPlan._id}`] === leadOption ||
+              (!selectedLeadsPerRange[`plan-${selectedPlan._id}`] && leadOption === availableLeads[0]);
 
-                                            return (
-                                              <Box 
-                                                key={leadOption}
-                                                onClick={() => {
-                                                  handleLeadsChange(`plan-${selectedPlan._id}`, leadOption);
-                                                }}
-                                                sx={{
-                                                  py: 0.8,
-                                                  px: 1.5,
-                                                  borderRadius: 1.5,
-                                                  cursor: "pointer",
-                                                  transition: "all 0.2s ease",
-                                                  backgroundColor: isSelected ? COLORS.secondary : COLORS.white,
-                                                  color: isSelected ? COLORS.white : COLORS.black,
-                                                  fontWeight: isSelected ? 800 : 700,
-                                                  fontSize: TEXT_SIZES.medium,
-                                                  border: `1px solid ${isSelected ? COLORS.secondary : COLORS.border}`,
-                                                  boxShadow: isSelected ? `0 2px 6px ${COLORS.shadow}` : 'none',
-                                                  display: "flex",
-                                                  alignItems: "center",
-                                                  justifyContent: "center",
-                                                  "&:hover": {
-                                                    backgroundColor: isSelected ? COLORS.secondaryDark : COLORS.lightGreen,
-                                                    transform: 'translateX(2px)',
-                                                  },
-                                                }}
-                                              >
-                                                <span>{leadOption}</span>
-                                              </Box>
-                                            );
-                                          })}
-                                        </Box>
-                                      </Box>
-                                    </TableCell>
-                                  )}
+            return (
+              <Box 
+                key={leadOption}
+                onClick={() => {
+                  handleLeadsChange(`plan-${selectedPlan._id}`, leadOption);
+                }}
+                sx={{
+                  py: 0.8,
+                  px: 1.5,
+                  borderRadius: 1.5,
+                  cursor: "pointer",
+                  transition: "all 0.2s ease",
+                  backgroundColor: isSelected ? COLORS.secondary : COLORS.white,
+                  color: isSelected ? COLORS.white : COLORS.black,
+                  fontWeight: isSelected ? 800 : 700,
+                  fontSize: TEXT_SIZES.medium,
+                  border: `1px solid ${isSelected ? COLORS.secondary : COLORS.border}`,
+                  boxShadow: isSelected ? `0 2px 6px ${COLORS.shadow}` : 'none',
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  "&:hover": {
+                    backgroundColor: isSelected ? COLORS.secondaryDark : COLORS.lightGreen,
+                    transform: 'translateX(2px)',
+                  },
+                 }}
+              >
+                <span>{leadOption}</span>
+              </Box>
+            );
+          })
+        ) : (
+          <Typography sx={{ color: COLORS.grey[500] }}>No leads available</Typography>
+        )}
+      </Box>
+    </Box>
+  </TableCell>
+)}
 
-                               
-     {/* Investment Group - Merged cell for same groups */}
+{/* Investment Group - Merged cell for same groups */}
 {isFirstInGroup && (() => {
-  // Get the index of this investment group within the groups array
+  // Calculate groupIdx here
   const groupIndices = {};
   let currentGroupIndex = 0;
   
   // First pass: calculate indices for each unique investment group
-  allPackagesFromPlan.forEach((item) => {
-    if (!groupIndices.hasOwnProperty(item.investmentRangeLabel)) {
-      groupIndices[item.investmentRangeLabel] = currentGroupIndex;
+  allPackagesFromPlan.forEach((packageItem) => {
+    if (!groupIndices.hasOwnProperty(packageItem.investmentRangeLabel)) {
+      groupIndices[packageItem.investmentRangeLabel] = currentGroupIndex;
       currentGroupIndex++;
     }
   });
@@ -1930,7 +2039,6 @@ const renderStatesByRegion = () => {
         borderRight: `2px solid ${COLORS.border}`,
         verticalAlign: "middle",
         px: 1,
-        // Alternate colors based on group index
         backgroundColor: groupIdx % 2 === 0 ? "#fff0c5" : "#c8e6ac",
       }}
     >
@@ -2106,7 +2214,7 @@ checked={checkedItems[itemId] || false}
                                         sx={{
                                           fontSize: TEXT_SIZES.xl,
                                           fontWeight: 700,
-                                          color: COLORS.primary,
+                                          color: COLORS.black,
                                         }}
                                       >
                                         ₹{pricePerState.toLocaleString('en-IN')}
@@ -2193,111 +2301,99 @@ checked={checkedItems[itemId] || false}
         <Button
           variant="contained"
           size="small"
-          onClick={() => {
-            // Add selected items to cart
-            if (!hasSelectedItems) {
-              openSnack("Please select at least one investment range to add", "warning");
-              return;
-            }
-            
-            // Get the CURRENT selected leads value for this plan
-            const currentSelectedLeads = selectedLeadsPerRange[`plan-${selectedPlan._id}`] || 
-                                        (availableLeads.length > 0 ? availableLeads[0] : 0);
-            
-// COLLECT ALL STATES from selected items before adding
-const allNewStates = new Set();
-const itemsWithStates = [];
-
-selectedItemsInGroup.forEach((selectedItem) => {
-  const key = getRangeKey(selectedItem.investmentRangeLabel, selectedItem.range, currentSelectedLeads);
-  let states = statesByInvestmentRange[key];
-  
-  if (!states || states.length === 0) {
-    if (!finalToken && detectedState) {
-      states = [detectedState];
-    } else if (finalToken) {
-      states = allStates;
-    } else {
-      states = [];
-    }
+       onClick={() => {
+  // Add selected items to cart
+  if (!hasSelectedItems) {
+    openSnack("Please select at least one investment range to add", "warning");
+    return;
   }
   
-  states.forEach(state => allNewStates.add(state));
-  itemsWithStates.push({ selectedItem, states });
-});
+  // Get the CURRENT selected leads value for this plan
+  const currentSelectedLeads = selectedLeadsPerRange[`plan-${selectedPlan._id}`] || 
+                              (availableLeads.length > 0 ? availableLeads[0] : 0);
+  
+  // COLLECT ALL STATES from selected items before adding
+  const allNewStates = new Set();
+  const itemsWithStates = [];
 
-// CHECK FOR DUPLICATE STATES within the same selected items (across different ranges)
-const allStatesArray = [...allNewStates];
-const hasDuplicateWithinSelection = allStatesArray.length !== new Set(allStatesArray).size;
-
-if (hasDuplicateWithinSelection) {
-  openSnack(`Cannot add: The same state cannot be selected multiple times within this selection`, "warning");
-  return;
-}
-
-// CHECK FOR DUPLICATE STATES with existing payment items (across all groups)
-const existingStates = new Set();
-paymentSummary.forEach((group) => {
-  group.items.forEach((item) => {
-    item.states.forEach((state) => {
-      existingStates.add(state);
-    });
+  selectedItemsInGroup.forEach((selectedItem) => {
+    const key = getRangeKey(selectedItem.investmentRangeLabel, selectedItem.range, currentSelectedLeads);
+    let states = statesByInvestmentRange[key];
+    
+    if (!states || states.length === 0) {
+      if (!finalToken && detectedState) {
+        states = [detectedState];
+      } else if (finalToken) {
+        states = allStates;
+      } else {
+        states = [];
+      }
+    }
+    
+    states.forEach(state => allNewStates.add(state));
+    itemsWithStates.push({ selectedItem, states });
   });
-});
 
-const duplicateStates = allStatesArray.filter(state => existingStates.has(state));
+  // CHECK FOR DUPLICATE STATES BEFORE ADDING
+  const newStatesArray = Array.from(allNewStates);
+const { hasDuplicate, duplicateStates } = hasDuplicateStates(newStatesArray, item.investmentRangeLabel);
+  
+  if (hasDuplicate) {
+    // Optionally show which states are duplicate and which items would be affected
+    openSnack(`Cannot add: State(s) "${duplicateStates.join(', ')}" already selected in another investment range.`, "warning");
+    return;
+  }
 
-if (duplicateStates.length > 0) {
-  openSnack(`Cannot add State(s), already selected in another investment range. Each state can only be selected once.`, "warning");
-  return;
-}
-            
-            // Check if selected items are recommended (only works after login)
-            const hasNonRecommendedSelected = finalToken && selectedItemsInGroup.some(
-              p => !isFicoInvestmentRange(p.range)
-            );
-            
-            if (hasNonRecommendedSelected) {
-              // Get the non-recommended items for the confirmation message
-              const nonRecommendedItems = selectedItemsInGroup.filter(p => !isFicoInvestmentRange(p.range));
-              const rangeNames = nonRecommendedItems.map(p => p.range).join(', ');
-              
-              setPendingSelection({
-                selectedItemsInGroup,
-                selectedPlan,
-                rangeNames
-              });
-              setOpenConfirmDialog(true);
-              return;
-            }
-            
-            // Add ALL selected items
-            selectedItemsInGroup.forEach((selectedItem) => {
-              const itemObject = {
-                id: `${selectedPlan._id}-${selectedItem.investmentRangeLabel}-${selectedItem.range}`,
-                investmentRangeLabel: selectedItem.investmentRangeLabel,
-                range: selectedItem.range,
-              };
-              
-              handleAddSingleToPayment(itemObject, selectedPlan, selectedItem.pkg);
-            });
-            
-            // After adding, uncheck the checkboxes for all items that were added
-            setCheckedItems((prev) => {
-              const newState = { ...prev };
-              selectedItemsInGroup.forEach(addedItem => {
-                const itemId = `${selectedPlan._id}-${addedItem.investmentRangeLabel}-${addedItem.range}`;
-                delete newState[itemId];
-              });
-              return newState;
-            });
-            
-            openSnack(
-              `${selectedItemsInGroup.length} selected range(s) added to cart`,
-              "success"
-            );
-          }}
-          disabled={!!selectedListingPlanId}
+  // REMOVED: Duplicate state restrictions
+  // States can now be selected in multiple investment ranges (e.g., Below 50k and 50k-1L)
+  // The getUniqueStatesAcrossRanges function will handle deduplication for billing
+
+  // Check if selected items are recommended (only works after login)
+  const hasNonRecommendedSelected = finalToken && selectedItemsInGroup.some(
+    p => !isFicoInvestmentRange(p.range)
+  );
+  
+  if (hasNonRecommendedSelected) {
+    // Get the non-recommended items for the confirmation message
+    const nonRecommendedItems = selectedItemsInGroup.filter(p => !isFicoInvestmentRange(p.range));
+    const rangeNames = nonRecommendedItems.map(p => p.range).join(', ');
+    
+    setPendingSelection({
+      selectedItemsInGroup,
+      selectedPlan,
+      rangeNames
+    });
+    setOpenConfirmDialog(true);
+    return;
+  }
+  
+  // Add ALL selected items
+  selectedItemsInGroup.forEach((selectedItem) => {
+    const itemObject = {
+      id: `${selectedPlan._id}-${selectedItem.investmentRangeLabel}-${selectedItem.range}`,
+      investmentRangeLabel: selectedItem.investmentRangeLabel,
+      range: selectedItem.range,
+    };
+    
+    handleAddSingleToPayment(itemObject, selectedPlan, selectedItem.pkg);
+  });
+  
+  // After adding, uncheck the checkboxes for all items that were added
+  setCheckedItems((prev) => {
+    const newState = { ...prev };
+    selectedItemsInGroup.forEach(addedItem => {
+      const itemId = `${selectedPlan._id}-${addedItem.investmentRangeLabel}-${addedItem.range}`;
+      delete newState[itemId];
+    });
+    return newState;
+  });
+  
+  openSnack(
+    `${selectedItemsInGroup.length} selected range(s) added to cart`,
+    "success"
+  );
+}}
+     disabled={!!selectedListingPlanId}
           sx={{
             minWidth: 70,
             height: 30,
@@ -2353,7 +2449,7 @@ if (duplicateStates.length > 0) {
         </Card>
       </Box>
          {/* LISTING PLANS SECTION */}
-      {/* <Box sx={{ mb: 4 }}>
+      <Box sx={{ mb: 4 }}>
         <Box sx={{ mb: 2 }}>
           <Typography variant="h5" sx={{ 
             fontWeight: 700, 
@@ -2383,7 +2479,7 @@ if (duplicateStates.length > 0) {
                 (a.packages?.[0]?.amount || 0) - (b.packages?.[0]?.amount || 0)
             );
 
-          const hasInvestmentPlans = paymentSummary.some((g) => !g.isListingPlan);
+          // const hasInvestmentPlans = paymentSummary.some((g) => !g.isListingPlan);
 
           return (
             <TableContainer 
@@ -2443,7 +2539,7 @@ if (duplicateStates.length > 0) {
                     const hasOtherListingPlan = paymentSummary.some(
                       (g) => g.isListingPlan && g.groupKey !== groupKey
                     );
-                    const disableAdd = hasInvestmentPlans || hasOtherListingPlan;
+                    const disableAdd =  hasOtherListingPlan;
 const handleAddListingPlan = () => {
   const groupKey = `listing-${plan._id}`;
   setPaymentSummary((prev) => {
@@ -2539,7 +2635,7 @@ const handleAddListingPlan = () => {
                             size="medium"
                             endIcon={isAdded ? <RemoveIcon /> : <AddIcon />}
                             disabled={!isAdded && disableAdd}
-                            onClick={isAdded ? handleRemoveListingPlan : handleAddListingPlan}
+                       onClick={isAdded ? () => handleRemoveListingPlan(plan._id) : handleAddListingPlan}
                             sx={{
                               minWidth: 110,
                               height: 40,
@@ -2592,7 +2688,7 @@ const handleAddListingPlan = () => {
             Select recommended packages to proceed
           </Typography>
         </Box>
-      </Box> */}
+      </Box>
 
       
 
