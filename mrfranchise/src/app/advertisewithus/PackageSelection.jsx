@@ -33,7 +33,7 @@ import {
   Grid,
   CardActions
 } from "@mui/material";
-// import FicoModel from "@/Components/FicoModel/FicoModel";
+import { keyframes } from '@mui/system';
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
@@ -83,18 +83,75 @@ const TEXT_SIZES = {
   xl: '1.125rem',      // 18px
   xxl: '1.25rem',      // 20px
 };
+const bounceAnimation = keyframes`
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateX(-50%) translateY(0);
+  }
+  40% {
+    transform: translateX(-50%) translateY(-10px);
+  }
+  60% {
+    transform: translateX(-50%) translateY(-5px);
+  }
+`;
 
-const INDIA_STATES = [
-  "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh",
-  "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jharkhand",
-  "Karnataka", "Kerala", "Madhya Pradesh", "Maharashtra", "Manipur",
-  "Meghalaya", "Mizoram", "Nagaland", "Odisha", "Punjab",
-  "Rajasthan", "Sikkim", "Tamil Nadu", "Telangana", "Tripura",
-  "Uttar Pradesh", "Uttarakhand", "West Bengal", "Delhi",
-  "Jammu and Kashmir", "Ladakh", "Puducherry", "Lakshadweep",
-  "Chandigarh", "Andaman and Nicobar Islands", "Dadra and Nagar Haveli",
-  "Daman and Diu",
-];
+const INDIA_STATES = {
+  North: [
+    "Delhi",
+    "Haryana",
+    "Himachal Pradesh",
+    "Punjab",
+    "Rajasthan",
+    "Uttar Pradesh",
+    "Uttarakhand",
+    "Jammu and Kashmir",
+    "Ladakh",
+    "Chandigarh",
+  ],
+
+  South: [
+    "Andhra Pradesh",
+    "Karnataka",
+    "Kerala",
+    "Tamil Nadu",
+    "Telangana",
+    "Puducherry",
+    "Lakshadweep",
+  ],
+
+  East: [
+    "Bihar",
+    "Jharkhand",
+    "Odisha",
+    "West Bengal",
+    "Andaman and Nicobar Islands",
+  ],
+
+  West: [
+    "Goa",
+    "Gujarat",
+    "Maharashtra",
+    "Dadra and Nagar Haveli",
+    "Daman and Diu",
+  ],
+
+  NorthEast: [
+    "Arunachal Pradesh",
+    "Assam",
+    "Manipur",
+    "Meghalaya",
+    "Mizoram",
+    "Nagaland",
+    "Sikkim",
+    "Tripura",
+  ],
+
+  Central: [
+    "Chhattisgarh",
+    "Madhya Pradesh",
+  ],
+};
+const ALL_INDIA_STATES = Object.values(INDIA_STATES).flat();
 
 const AlertMessage = memo(({ severity, message, action }) => (
   <Alert 
@@ -124,9 +181,9 @@ const getUserLocationFromIP = async () => {
     const data = await response.json();
     
     if (data.region) {
-      const matchedState = INDIA_STATES.find(
-        state => state.toLowerCase() === data.region.toLowerCase()
-      );
+    const matchedState = ALL_INDIA_STATES.find(
+  state => state.toLowerCase() === data.region.toLowerCase()
+);
       
       return {
         state: matchedState || data.region,
@@ -159,7 +216,7 @@ const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
   const [userLocation, setUserLocation] = useState(null);
   const [detectedState, setDetectedState] = useState(null);
   const [openStateModal, setOpenStateModal] = useState(false);
-  const [allStates, setAllStates] = useState(INDIA_STATES);
+const [allStates, setAllStates] = useState(ALL_INDIA_STATES);
   const [selectedStates, setSelectedStates] = useState(new Set());
   const [statesByInvestmentRange, setStatesByInvestmentRange] = useState({});
   const [currentEditingRange, setCurrentEditingRange] = useState(null);
@@ -304,9 +361,9 @@ useEffect(() => {
           const parsed = JSON.parse(savedLocation);
           setUserLocation(parsed);
           if (parsed.state) {
-            const matchedState = INDIA_STATES.find(
-              s => s.toLowerCase() === parsed.state.toLowerCase()
-            );
+           const matchedState = ALL_INDIA_STATES.find(
+  s => s.toLowerCase() === parsed.state.toLowerCase()
+);
             if (matchedState) {
               setDetectedState(matchedState);
             }
@@ -327,9 +384,9 @@ useEffect(() => {
           };
           setUserLocation(locationData);
           localStorage.setItem("userLocation", JSON.stringify(locationData));
-          const matchedState = INDIA_STATES.find(
-            s => s.toLowerCase() === ipLocation.state.toLowerCase()
-          );
+         const matchedState = ALL_INDIA_STATES.find(
+  s => s.toLowerCase() === ipLocation.state.toLowerCase()
+);
           if (matchedState) {
             setDetectedState(matchedState);
           }
@@ -352,17 +409,22 @@ useEffect(() => {
     fetchBrandDetails(finalBrandUUID, finalToken);
   }, [finalBrandUUID, finalToken]);
 
-  const getRangeKey = useCallback((investmentRangeLabel, range) =>
-    `${investmentRangeLabel}__${range}`, []);
+const getRangeKey = useCallback((investmentRangeLabel, range, selectedLeads = null) => {
+  if (selectedLeads !== null) {
+    return `${investmentRangeLabel}__${range}__${selectedLeads}`;
+  }
+  return `${investmentRangeLabel}__${range}`;
+}, []);
 
-    const getStatesToDisplay = () => {
-    if (finalToken) {
-      return allStates;
-    } else {
-      return INDIA_STATES;
-    }
-  };
 
+
+const getStatesToDisplay = useCallback(() => {
+  if (finalToken) {
+    return allStates;
+  } else {
+    return ALL_INDIA_STATES;  
+  }
+}, [finalToken, allStates]);
 
 const handleSelectAll = useCallback(() => {
   const states = getStatesToDisplay();
@@ -374,6 +436,43 @@ const handleSelectAll = useCallback(() => {
     openSnack("No states available to select", "warning");
   }
 }, [getStatesToDisplay, openSnack]);
+
+// Helper function to check for duplicate states across existing payment items
+const hasDuplicateStates = useCallback((newStates, currentGroupKey = null) => {
+  // Get all existing states from payment summary (excluding the current group if updating)
+  const existingStates = new Set();
+  
+  paymentSummary.forEach((group) => {
+    // Skip the current group if we're updating it
+    if (currentGroupKey && group.groupKey === currentGroupKey) {
+      return;
+    }
+    
+    group.items.forEach((item) => {
+      item.states.forEach((state) => {
+        existingStates.add(state);
+      });
+    });
+  });
+  
+  // Check for duplicates within the new states themselves
+  const newStatesArray = [...newStates];
+  const hasInternalDuplicates = newStatesArray.length !== new Set(newStatesArray).size;
+  
+  if (hasInternalDuplicates) {
+    openSnack(`Cannot add: Duplicate states found within the same selection. Each state can only be selected once.`, "warning");
+    return true;
+  }
+  
+  // Check if any of the new states already exist
+  const duplicates = newStatesArray.filter(state => existingStates.has(state));
+  
+  if (duplicates.length > 0) {
+    openSnack(`Cannot add: State(s) "${duplicates.join(', ')}" already selected in another investment range. Each state can only be selected once.`, "warning");
+    return true;
+  }
+  return false;
+}, [paymentSummary, openSnack]);
 
 const handleClearAll = useCallback(() => {
   setSelectedStates(new Set());
@@ -457,23 +556,23 @@ const handleMoveToPayment = useCallback((groupKey) => {
     }
   }, [statesByInvestmentRange, finalToken, detectedState, allStates, getRangeKey, leadsDropdownData]);
 
-  const handleOpenStateModal = useCallback((investmentRangeLabel, range) => {
-    const key = getRangeKey(investmentRangeLabel, range);
-    setCurrentEditingRange(key);
-    const savedStates = statesByInvestmentRange[key];
-    if (savedStates && savedStates.length > 0) {
-      setSelectedStates(new Set(savedStates));
+const handleOpenStateModal = useCallback((investmentRangeLabel, range, selectedLeads) => {
+  const key = getRangeKey(investmentRangeLabel, range, selectedLeads);
+  setCurrentEditingRange(key);
+  const savedStates = statesByInvestmentRange[key];
+  if (savedStates && savedStates.length > 0) {
+    setSelectedStates(new Set(savedStates));
+  } else {
+    if (!finalToken && detectedState) {
+      setSelectedStates(new Set([detectedState]));
+    } else if (finalToken && allStates.length > 0) {
+      setSelectedStates(new Set(allStates));
     } else {
-      if (!finalToken && detectedState) {
-        setSelectedStates(new Set([detectedState]));
-      } else if (finalToken && allStates.length > 0) {
-        setSelectedStates(new Set(allStates));
-      } else {
-        setSelectedStates(new Set());
-      }
+      setSelectedStates(new Set());
     }
-    setOpenStateModal(true);
-  }, [getRangeKey, statesByInvestmentRange, finalToken, detectedState, allStates]);
+  }
+  setOpenStateModal(true);
+}, [getRangeKey, statesByInvestmentRange, finalToken, detectedState, allStates]);
 
   const handleCloseStateModal = useCallback(() => {
     setOpenStateModal(false);
@@ -695,11 +794,20 @@ const handleMoveToPayment = useCallback((groupKey) => {
     return Array.from(allStatesSet);
   }, []);
 
-  const handleAddSingleToPayment = useCallback((item, selectedPlan, selectedPkg) => {
+const handleAddSingleToPayment = useCallback((item, selectedPlan, selectedPkg) => {
   const { id, investmentRangeLabel, range } = item;
   const pricePerState = selectedPkg?.amount || 0;
-  const key = getRangeKey(investmentRangeLabel, range);
+  
+  // Get current selected leads value
+  const leadsDataKey = `${selectedPlan._id}_${investmentRangeLabel}`;
+  const availableLeads = leadsDropdownData[leadsDataKey] || [];
+  const selectedLeads = selectedLeadsPerRange[`plan-${selectedPlan._id}`] || 
+                       (availableLeads.length > 0 ? availableLeads[0] : 0);
+  
+  // Use key with selectedLeads to get unique states per lead count
+  const key = getRangeKey(investmentRangeLabel, range, selectedLeads);
   let states = statesByInvestmentRange[key];
+  
   if (!states || states.length === 0) {
     if (!finalToken && detectedState) {
       states = [detectedState];
@@ -709,13 +817,12 @@ const handleMoveToPayment = useCallback((groupKey) => {
       states = [];
     }
   }
+  
   if (states.length === 0) {
     openSnack("Please select at least one state", "warning");
     return;
   }
-  const leadsDataKey = `${selectedPlan._id}_${investmentRangeLabel}`;
-  const availableLeads = leadsDropdownData[leadsDataKey] || [];
-  const selectedLeads = selectedLeadsPerRange[id] || (availableLeads.length > 0 ? availableLeads[0] : 0);
+  
   const minLeads = availableLeads.length > 0 ? Math.min(...availableLeads) : 1;
   const divisor = minLeads > 0 ? minLeads : 1;
 
@@ -725,45 +832,73 @@ const handleMoveToPayment = useCallback((groupKey) => {
     range,
     stateCount: states.length,
     states,
-    selectedLeads,
+    selectedLeads: selectedLeads,
     totalLeads: selectedLeads * states.length,
     totalAmount: pricePerState * states.length,
   };
+  
+  // Include selectedLeads in groupKey to differentiate
   const groupKey = `${selectedPlan._id}__${selectedPkg?.validityDays}__${pricePerState}__${selectedLeads}__${investmentRangeLabel}`;
   
-  // Update paymentSummary
+  // Rest of the function remains the same...
   setPaymentSummary((prev) => {
     const existingGroup = prev.find((g) => g.groupKey === groupKey);
     let newSummary;
     
     if (existingGroup) {
-      if (existingGroup.items.some((ex) => ex.id === newItem.id)) {
-        return prev;
-      }
-      const updatedItems = [...existingGroup.items, newItem];
-      const uniqueStates = getUniqueStatesAcrossRanges(updatedItems);
-      const totalUniqueStates = uniqueStates.length;
+      const existingItemIndex = existingGroup.items.findIndex((ex) => ex.id === newItem.id);
       
-      const newAmount = (pricePerState / divisor) * totalUniqueStates * selectedLeads;
-
-      newSummary = prev.map((g) =>
-        g.groupKey === groupKey
-          ? {
-              ...g,
-              items: updatedItems,
-              uniqueStates: uniqueStates,
-              totalStates: totalUniqueStates,
-              amount: newAmount,
-              totalLeads: totalUniqueStates * selectedLeads,
-            }
-          : g
-      );
+      if (existingItemIndex !== -1) {
+        const updatedItems = [...existingGroup.items];
+        updatedItems[existingItemIndex] = {
+          ...updatedItems[existingItemIndex],
+          states: newItem.states,
+          stateCount: newItem.stateCount,
+          selectedLeads: newItem.selectedLeads,
+          totalLeads: newItem.selectedLeads * newItem.stateCount,
+          totalAmount: pricePerState * newItem.stateCount,
+        };
+        
+        const uniqueStates = getUniqueStatesAcrossRanges(updatedItems);
+        const totalUniqueStates = uniqueStates.length;
+        const newAmount = (pricePerState / divisor) * totalUniqueStates * selectedLeads;
+        
+        newSummary = prev.map((g) =>
+          g.groupKey === groupKey
+            ? {
+                ...g,
+                items: updatedItems,
+                uniqueStates: uniqueStates,
+                totalStates: totalUniqueStates,
+                amount: newAmount,
+                totalLeads: totalUniqueStates * selectedLeads,
+              }
+            : g
+        );
+      } else {
+        const updatedItems = [...existingGroup.items, newItem];
+        const uniqueStates = getUniqueStatesAcrossRanges(updatedItems);
+        const totalUniqueStates = uniqueStates.length;
+        const newAmount = (pricePerState / divisor) * totalUniqueStates * selectedLeads;
+        
+        newSummary = prev.map((g) =>
+          g.groupKey === groupKey
+            ? {
+                ...g,
+                items: updatedItems,
+                uniqueStates: uniqueStates,
+                totalStates: totalUniqueStates,
+                amount: newAmount,
+                totalLeads: totalUniqueStates * selectedLeads,
+              }
+            : g
+        );
+      }
     } else {
       const uniqueStates = getUniqueStatesAcrossRanges([newItem]);
       const totalUniqueStates = uniqueStates.length;
-      
       const dynamicAmount = (pricePerState / divisor) * totalUniqueStates * selectedLeads;
-
+      
       newSummary = [
         ...prev,
         {
@@ -782,7 +917,6 @@ const handleMoveToPayment = useCallback((groupKey) => {
       ];
     }
     
-    // Also update movedGroupKeys immediately
     setMovedGroupKeys((prevKeys) => {
       if (!prevKeys.includes(groupKey)) {
         return [...prevKeys, groupKey];
@@ -790,13 +924,12 @@ const handleMoveToPayment = useCallback((groupKey) => {
       return prevKeys;
     });
     
-    openSnack(`Added ${range} to cart`, "success");
+    openSnack(`Added ${range} with ${selectedLeads} leads to cart`, "success");
     setTimeout(() => scrollToPaymentSummary(), 100);
     
     return newSummary;
   });
   
-  // Mark checkbox as checked
   setSelected((prev) => ({ ...prev, [id]: true }));
   setCheckedItems((prev) => ({ ...prev, [id]: true }));
 }, [getRangeKey, statesByInvestmentRange, finalToken, detectedState, allStates, getUniqueStatesAcrossRanges, openSnack, leadsDropdownData, selectedLeadsPerRange, scrollToPaymentSummary]);
@@ -942,6 +1075,7 @@ useEffect(() => {
     );
   }, [paymentSummary]);
 
+  
 
 
 
@@ -1004,14 +1138,14 @@ const handleClearAllPayment = useCallback(() => {
     router.push("/payment");
   }, [finalToken, openSnack, paymentSummary, movedGroupKeys, router]);
 
-  const getStateCountForRange = useCallback((investmentRangeLabel, range) => {
-    const key = getRangeKey(investmentRangeLabel, range);
-    const savedStates = statesByInvestmentRange[key];
-    if (savedStates && savedStates.length > 0) return savedStates.length;
-    if (!finalToken && detectedState) return 1;
-    if (finalToken) return allStates.length;
-    return 0;
-  }, [getRangeKey, statesByInvestmentRange, finalToken, detectedState, allStates]);
+ const getStateCountForRange = useCallback((investmentRangeLabel, range, selectedLeads) => {
+  const key = getRangeKey(investmentRangeLabel, range, selectedLeads);
+  const savedStates = statesByInvestmentRange[key];
+  if (savedStates && savedStates.length > 0) return savedStates.length;
+  if (!finalToken && detectedState) return 1;
+  if (finalToken) return allStates.length;
+  return 0;
+}, [getRangeKey, statesByInvestmentRange, finalToken, detectedState, allStates]);
 
  
 
@@ -1064,8 +1198,29 @@ const getInvestmentGroupColor = useCallback((investmentRangeLabel, allGroupsList
   });
   
   const groupIdx = groupIndices[investmentRangeLabel] || 0;
-  return groupIdx % 2 === 0 ? "#fff0c5" : "#B5E18B";
+  return groupIdx % 2 === 0 ? "#fff0c5" : "#c8e6ac";
 }, []);
+
+// Add the getRowBackgroundColor function separately (outside getInvestmentGroupColor)
+const getRowBackgroundColor = useCallback((investmentRangeLabel, isInPayment, idx) => {
+
+  
+  // Get index of the investment group
+  const allGroups = [];
+  if (selectedGroup) {
+    const selectedPlanData = filteredPlans.find(p => p._id === selectedGroup);
+    if (selectedPlanData) {
+      selectedPlanData.packages?.forEach((pkg) => {
+        if (pkg.investmentRangeLabel && !allGroups.includes(pkg.investmentRangeLabel)) {
+          allGroups.push(pkg.investmentRangeLabel);
+        }
+      });
+    }
+  }
+  
+  const groupIdx = allGroups.indexOf(investmentRangeLabel);
+  return groupIdx % 2 === 0 ? "#fff0c5" : "#c8e6ac";
+}, [selectedGroup, filteredPlans]);
 
 
   if (loading) {
@@ -1216,7 +1371,7 @@ const getInvestmentGroupColor = useCallback((investmentRangeLabel, allGroupsList
                             <TableCell
                               sx={{
                                 fontWeight: 700,
-                                fontSize: TEXT_SIZES.xs,
+                                fontSize: TEXT_SIZES.small,
                                 color: COLORS.white,
                                 background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryDark} 100%)`,
                                 px: 1.5,
@@ -1233,7 +1388,7 @@ const getInvestmentGroupColor = useCallback((investmentRangeLabel, allGroupsList
                               <TableCell
                                 sx={{
                                   fontWeight: 700,
-                                  fontSize: TEXT_SIZES.xs,
+                                  fontSize: TEXT_SIZES.small,
                                   color: COLORS.white,
                                   background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryDark} 100%)`,
                                   px: 1.5,
@@ -1250,7 +1405,7 @@ const getInvestmentGroupColor = useCallback((investmentRangeLabel, allGroupsList
                             <TableCell
                               sx={{
                                 fontWeight: 700,
-                                fontSize: TEXT_SIZES.xs,
+                                fontSize: TEXT_SIZES.small,
                                 color: COLORS.white,
                                 background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryDark} 100%)`,
                                 width: '6%',
@@ -1264,7 +1419,7 @@ const getInvestmentGroupColor = useCallback((investmentRangeLabel, allGroupsList
                             <TableCell
                               sx={{
                                 fontWeight: 700,
-                                fontSize: TEXT_SIZES.xs,
+                                fontSize: TEXT_SIZES.small,
                                 color: COLORS.white,
                                 background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryDark} 100%)`,
                                 px: 1,
@@ -1280,7 +1435,7 @@ const getInvestmentGroupColor = useCallback((investmentRangeLabel, allGroupsList
                             <TableCell
                               sx={{
                                 fontWeight: 700,
-                                fontSize: TEXT_SIZES.xs,
+                                fontSize: TEXT_SIZES.small,
                                 color: COLORS.white,
                                 background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryDark} 100%)`,
                                 px: 1.5,
@@ -1296,7 +1451,7 @@ const getInvestmentGroupColor = useCallback((investmentRangeLabel, allGroupsList
                             <TableCell
                               sx={{
                                 fontWeight: 700,
-                                fontSize: TEXT_SIZES.xs,
+                                fontSize: TEXT_SIZES.small,
                                 color: COLORS.white,
                                 background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryDark} 100%)`,
                                 px: 1,
@@ -1312,7 +1467,7 @@ const getInvestmentGroupColor = useCallback((investmentRangeLabel, allGroupsList
                             <TableCell
                               sx={{
                                 fontWeight: 700,
-                                fontSize: TEXT_SIZES.xs,
+                                fontSize: TEXT_SIZES.small,
                                 color: COLORS.white,
                                 background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryDark} 100%)`,
                                 px: 1,
@@ -1328,7 +1483,7 @@ const getInvestmentGroupColor = useCallback((investmentRangeLabel, allGroupsList
                             <TableCell
                               sx={{
                                 fontWeight: 700,
-                                fontSize: TEXT_SIZES.xs,
+                                fontSize: TEXT_SIZES.small,
                                 color: COLORS.white,
                                 background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryDark} 100%)`,
                                 px: 1,
@@ -1344,7 +1499,7 @@ const getInvestmentGroupColor = useCallback((investmentRangeLabel, allGroupsList
                             <TableCell
                               sx={{
                                 fontWeight: 700,
-                                fontSize: TEXT_SIZES.xs,
+                                fontSize: TEXT_SIZES.small,
                                 color: COLORS.white,
                                 background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryDark} 100%)`,
                                 px: 1,
@@ -1360,7 +1515,7 @@ const getInvestmentGroupColor = useCallback((investmentRangeLabel, allGroupsList
                             <TableCell
                               sx={{
                                 fontWeight: 700,
-                                fontSize: TEXT_SIZES.xs,
+                                fontSize: TEXT_SIZES.small,
                                 color: COLORS.white,
                                 background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryDark} 100%)`,
                                 px: 1,
@@ -1392,7 +1547,8 @@ const getInvestmentGroupColor = useCallback((investmentRangeLabel, allGroupsList
                               const isRecommended = isFicoInvestmentRange(item.range);
                               const stateCount = getStateCountForRange(
                                 item.investmentRangeLabel,
-                                item.range
+                                item.range,
+                                 selectedLeads 
                               );
                               const inPayment = paymentSummary.some((group) =>
                                 group.items.some(
@@ -1431,17 +1587,17 @@ const getInvestmentGroupColor = useCallback((investmentRangeLabel, allGroupsList
                               const showFirstRow = firstRow;
                               if (firstRow) firstRow = false;
 
-                              return (
-                                <TableRow
-                                  key={itemId}
-                                  sx={{
-                                    backgroundColor: inPayment ? COLORS.lightGreen : (idx % 2 === 0 ? COLORS.white : COLORS.grey[50]),
-                                    transition: 'all 0.3s ease',
-                                    "&:hover": {
-                                      backgroundColor: inPayment ? COLORS.lightGreen : COLORS.lightOrange,
-                                    },
-                                  }}
-                                >
+                            return (
+  <TableRow
+    key={itemId}
+    sx={{
+      backgroundColor: getRowBackgroundColor(item.investmentRangeLabel, inPayment, idx),
+      transition: 'all 0.3s ease',
+      "&:hover": {
+        backgroundColor: inPayment ? COLORS.lightGreen : COLORS.lightOrange,
+      },
+    }}
+  >
                                   {/* Plan Selection - Show only in first row */}
                                   {showFirstRow && (
                                     <TableCell 
@@ -1451,7 +1607,7 @@ const getInvestmentGroupColor = useCallback((investmentRangeLabel, allGroupsList
                                         py: 1.5,
                                         borderRight: `2px solid ${COLORS.border}`,
                                         verticalAlign: 'middle',
-                                        backgroundColor: "rgb(243, 190, 122)",
+                                        backgroundColor: "#fff0c5",
                                         height: '100%',
                                       }}
                                     >
@@ -1528,7 +1684,7 @@ const getInvestmentGroupColor = useCallback((investmentRangeLabel, allGroupsList
                                         py: 1.5,
                                         borderRight: `2px solid ${COLORS.border}`,
                                         verticalAlign: 'middle',
-                                        backgroundColor:  "rgb(243, 190, 122)",
+                                        backgroundColor:  "#fff0c5",
                                       }}
                                     >
                                       <Box sx={{ 
@@ -1605,7 +1761,7 @@ const getInvestmentGroupColor = useCallback((investmentRangeLabel, allGroupsList
         verticalAlign: "middle",
         px: 1,
         // Alternate colors based on group index
-        backgroundColor: groupIdx % 2 === 0 ? "#fff0c5" : "#B5E18B",
+        backgroundColor: groupIdx % 2 === 0 ? "#fff0c5" : "#c8e6ac",
       }}
     >
       <Typography
@@ -1658,16 +1814,16 @@ checked={checkedItems[itemId] || false}
     }}
   />
 </TableCell>
-                                  {/* Investment Range */}
-        <TableCell sx={{ px: 1.5, py: 1.5, verticalAlign: 'middle' }}>
+
+   {/* Investment Range */}
+<TableCell sx={{ px: 1.5, py: 1.5, verticalAlign: 'middle' }}>
   <Box
     sx={{
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
       gap: 0,
-      // flexWrap: 'nowrap',   // <- prevents multi-line height changes
-      minHeight:20,       
+      minHeight: 20,
     }}
   >
     <Typography
@@ -1694,7 +1850,8 @@ checked={checkedItems[itemId] || false}
           fontWeight: 600,
         }}
       />
-    ) : !isRecommended && !inPayment ? (
+    ) : !isRecommended && !inPayment && finalToken ? (
+      // Only show "Add to business profile" if user is logged in (finalToken exists)
       <Chip
         label="Add to business profile"
         size="small"
@@ -1709,7 +1866,7 @@ checked={checkedItems[itemId] || false}
         onClick={() => handleAddInvestmentRange(item.range, item.investmentRangeLabel)}
       />
     ) : (
-      // Placeholder so height stays same when no chip is shown
+      // Placeholder to maintain height consistency
       <Box sx={{ height: 16, width: 110 }} />
     )}
   </Box>
@@ -1737,27 +1894,29 @@ checked={checkedItems[itemId] || false}
                                       </Typography>
                                       <Tooltip title="Edit States" arrow>
                                         <IconButton
-                                          size="small"
-                                          onClick={() =>
-                                            handleOpenStateModal(
-                                              item.investmentRangeLabel,
-                                              item.range
-                                            )
-                                          }
-                                          sx={{ 
-                                            p: 0.3,
-                                            '&:hover': {
-                                              backgroundColor: COLORS.lightOrange,
-                                            },
-                                          }}
-                                        >
-                                          <EditIcon
-                                            sx={{
-                                              fontSize: TEXT_SIZES.small,
-                                              color: COLORS.primary,
-                                            }}
-                                          />
-                                        </IconButton>
+  size="small"
+  onClick={() =>
+    handleOpenStateModal(
+      item.investmentRangeLabel,
+      item.range,
+      selectedLeads  // Pass the current selected leads
+    )
+  }
+  sx={{ 
+    p: 0.3,
+    '&:hover': {
+      backgroundColor: COLORS.lightOrange,
+    },
+  }}
+>
+  <EditIcon
+    sx={{
+      fontSize: TEXT_SIZES.small,
+      color: COLORS.primary,
+    }}
+  />
+</IconButton>
+                                         
                                       </Tooltip>
                                     </Box>
                                   </TableCell>
@@ -1831,8 +1990,11 @@ checked={checkedItems[itemId] || false}
                                     </TableCell>
                                   )}
 
-{/* Action Button - Unified once per Group */}
 
+
+
+
+{/* Action Button - Unified once per Group */}
 {isFirstInGroup && (
   <TableCell 
     rowSpan={rowSpan}
@@ -1841,160 +2003,148 @@ checked={checkedItems[itemId] || false}
       py: 1.5, 
       textAlign: 'center', 
       verticalAlign: 'middle',
-      backgroundColor: "rgb(243, 190, 122)",
-      borderLeft: `1px solid ${COLORS.border}`
     }}
   >
     {(() => {
-      const groupKey = `${selectedPlan._id}__${item.pkg?.validityDays}__${pricePerState}__${selectedLeads}__${item.investmentRangeLabel}`;
+      // Get all items in this group
+      const itemsInGroup = allPackagesFromPlan.filter(
+        (p) => p.investmentRangeLabel === item.investmentRangeLabel
+      );
+
+      // Get selected items (where checkbox is checked)
+      const selectedItemsInGroup = itemsInGroup.filter((p) => {
+        const itemId = `${selectedPlan._id}-${p.investmentRangeLabel}-${p.range}`;
+        return checkedItems[itemId];
+      });
+
+      const hasSelectedItems = selectedItemsInGroup.length > 0;
       
-      // Check if ANY item in this group is in payment summary
-     // Get all items in this group
-const itemsInGroup = allPackagesFromPlan.filter(
-  (p) => p.investmentRangeLabel === item.investmentRangeLabel
-);
-
-// Get selected items (where checkbox is checked)
-const selectedItemsInGroup = itemsInGroup.filter((p) => {
-  const itemId = `${selectedPlan._id}-${p.investmentRangeLabel}-${p.range}`;
-  return checkedItems[itemId];
-});
-
-const hasSelectedItems = selectedItemsInGroup.length > 0;
-
-// Selected item ids
-const selectedItemIds = selectedItemsInGroup.map(
-  (p) => `${selectedPlan._id}-${p.investmentRangeLabel}-${p.range}`
-);
-
-// Already added ids
-const addedItemIds = paymentSummary.flatMap(
-  (group) => group.items?.map((it) => it.id) || []
-);
-
-// Group is fully added only if ALL selected items exist
-const isGroupInPayment =
-  selectedItemIds.length > 0 &&
-  selectedItemIds.every((id) => addedItemIds.includes(id));
       return (
         <Button
           variant="contained"
           size="small"
           onClick={() => {
-            if (isGroupInPayment) {
-              // REMOVE ALL items of this group from payment summary
-              const allGroupItems = itemsInGroup.map(p => ({
-                id: `${selectedPlan._id}-${p.investmentRangeLabel}-${p.range}`,
-                investmentRangeLabel: p.investmentRangeLabel,
-                range: p.range,
-              }));
-              
-              // Get the group key to remove from movedGroupKeys
-              const groupKeyToRemove = `${selectedPlan._id}__${item.pkg?.validityDays}__${pricePerState}__${selectedLeads}__${item.investmentRangeLabel}`;
-              
-              allGroupItems.forEach(item => {
-                handleRemoveSingleFromPayment(item);
-              });
-              
-              // Also remove from movedGroupKeys
-              setMovedGroupKeys((prev) => prev.filter(key => key !== groupKeyToRemove));
-              
-              // Also uncheck all checkboxes for this group
-              setCheckedItems((prev) => {
-                const newState = { ...prev };
-                itemsInGroup.forEach(p => {
-                  const itemId = `${selectedPlan._id}-${p.investmentRangeLabel}-${p.range}`;
-                  delete newState[itemId];
-                });
-                return newState;
-              });
-              
-              openSnack("All ranges removed from cart", "info");
-            } else {
-              // Add only selected items to cart
-              if (!hasSelectedItems) {
-                openSnack("Please select at least one investment range to add", "warning");
-                return;
-              }
-              
-              // Check if all selected items are recommended
-              const hasNonRecommendedSelected = selectedItemsInGroup.some(
-                p => !isFicoInvestmentRange(p.range)
-              );
-              
-if (hasNonRecommendedSelected) {
-  // Get the non-recommended items for the confirmation message
-  const nonRecommendedItems = selectedItemsInGroup.filter(p => !isFicoInvestmentRange(p.range));
-  const rangeNames = nonRecommendedItems.map(p => p.range).join(', ');
+            // Add selected items to cart
+            if (!hasSelectedItems) {
+              openSnack("Please select at least one investment range to add", "warning");
+              return;
+            }
+            
+            // Get the CURRENT selected leads value for this plan
+            const currentSelectedLeads = selectedLeadsPerRange[`plan-${selectedPlan._id}`] || 
+                                        (availableLeads.length > 0 ? availableLeads[0] : 0);
+            
+// COLLECT ALL STATES from selected items before adding
+const allNewStates = new Set();
+const itemsWithStates = [];
+
+selectedItemsInGroup.forEach((selectedItem) => {
+  const key = getRangeKey(selectedItem.investmentRangeLabel, selectedItem.range, currentSelectedLeads);
+  let states = statesByInvestmentRange[key];
   
-  setPendingSelection({
-    selectedItemsInGroup,
-    selectedPlan,
-    rangeNames
-  });
-  setOpenConfirmDialog(true);
+  if (!states || states.length === 0) {
+    if (!finalToken && detectedState) {
+      states = [detectedState];
+    } else if (finalToken) {
+      states = allStates;
+    } else {
+      states = [];
+    }
+  }
+  
+  states.forEach(state => allNewStates.add(state));
+  itemsWithStates.push({ selectedItem, states });
+});
+
+// CHECK FOR DUPLICATE STATES within the same selected items (across different ranges)
+const allStatesArray = [...allNewStates];
+const hasDuplicateWithinSelection = allStatesArray.length !== new Set(allStatesArray).size;
+
+if (hasDuplicateWithinSelection) {
+  openSnack(`Cannot add: The same state cannot be selected multiple times within this selection`, "warning");
   return;
 }
+
+// CHECK FOR DUPLICATE STATES with existing payment items (across all groups)
+const existingStates = new Set();
+paymentSummary.forEach((group) => {
+  group.items.forEach((item) => {
+    item.states.forEach((state) => {
+      existingStates.add(state);
+    });
+  });
+});
+
+const duplicateStates = allStatesArray.filter(state => existingStates.has(state));
+
+if (duplicateStates.length > 0) {
+  openSnack(`Cannot add State(s), already selected in another investment range. Each state can only be selected once.`, "warning");
+  return;
+}
+            
+            // Check if selected items are recommended (only works after login)
+            const hasNonRecommendedSelected = finalToken && selectedItemsInGroup.some(
+              p => !isFicoInvestmentRange(p.range)
+            );
+            
+            if (hasNonRecommendedSelected) {
+              // Get the non-recommended items for the confirmation message
+              const nonRecommendedItems = selectedItemsInGroup.filter(p => !isFicoInvestmentRange(p.range));
+              const rangeNames = nonRecommendedItems.map(p => p.range).join(', ');
               
-              // Filter only items that are NOT already added
-              const newItemsToAdd = selectedItemsInGroup.filter((selectedItem) => {
-                const groupItemId = `${selectedPlan._id}-${selectedItem.investmentRangeLabel}-${selectedItem.range}`;
-                // Check if item is already in any payment group
-                return !paymentSummary.some((group) =>
-                  group.items?.some((it) => it.id === groupItemId)
-                );
+              setPendingSelection({
+                selectedItemsInGroup,
+                selectedPlan,
+                rangeNames
               });
-              
-              if (newItemsToAdd.length === 0) {
-                openSnack("Selected ranges are already added to cart", "info");
-                return;
-              }
-              
-              // Add only new items
-              newItemsToAdd.forEach((selectedItem) => {
-                const itemObject = {
-                  id: `${selectedPlan._id}-${selectedItem.investmentRangeLabel}-${selectedItem.range}`,
-                  investmentRangeLabel: selectedItem.investmentRangeLabel,
-                  range: selectedItem.range,
-                };
-                
-                handleAddSingleToPayment(itemObject, selectedPlan, selectedItem.pkg);
-              });
-              
-              // After adding, uncheck the checkboxes for the items that were added
-              setCheckedItems((prev) => {
-                const newState = { ...prev };
-                newItemsToAdd.forEach(addedItem => {
-                  const itemId = `${selectedPlan._id}-${addedItem.investmentRangeLabel}-${addedItem.range}`;
-                  delete newState[itemId];
-                });
-                return newState;
-              });
-              
-              openSnack(
-                `${newItemsToAdd.length} selected range(s) added to cart`,
-                "success"
-              );
+              setOpenConfirmDialog(true);
+              return;
             }
+            
+            // Add ALL selected items
+            selectedItemsInGroup.forEach((selectedItem) => {
+              const itemObject = {
+                id: `${selectedPlan._id}-${selectedItem.investmentRangeLabel}-${selectedItem.range}`,
+                investmentRangeLabel: selectedItem.investmentRangeLabel,
+                range: selectedItem.range,
+              };
+              
+              handleAddSingleToPayment(itemObject, selectedPlan, selectedItem.pkg);
+            });
+            
+            // After adding, uncheck the checkboxes for all items that were added
+            setCheckedItems((prev) => {
+              const newState = { ...prev };
+              selectedItemsInGroup.forEach(addedItem => {
+                const itemId = `${selectedPlan._id}-${addedItem.investmentRangeLabel}-${addedItem.range}`;
+                delete newState[itemId];
+              });
+              return newState;
+            });
+            
+            openSnack(
+              `${selectedItemsInGroup.length} selected range(s) added to cart`,
+              "success"
+            );
           }}
           disabled={!!selectedListingPlanId}
           sx={{
             minWidth: 70,
             height: 30,
-            fontSize: '0.65rem',
+            fontSize: '0.85rem',
             textTransform: "none",
-            fontWeight: 700,
+            fontWeight: 1000,
             borderRadius: 1.5,
-            backgroundColor: isGroupInPayment ? COLORS.secondary : COLORS.primary,
+            backgroundColor: COLORS.primary,
             color: COLORS.white,
             transition: 'all 0.3s ease',
             "&:hover": {
-              backgroundColor: isGroupInPayment ? COLORS.secondaryDark : COLORS.primaryDark,
+              backgroundColor: COLORS.primaryDark,
               transform: 'scale(1.05)',
             },
           }}
         >
-          {isGroupInPayment ? "Remove" : "Add"}
+          Add
         </Button>
       );
     })()}
@@ -2278,23 +2428,49 @@ const handleAddListingPlan = () => {
 
 
       {/* REACTIVE CHECKOUT & REDESIGNED TABLE PAYMENT SUMMARY SECTION */}
-{paymentSummary.filter(g => movedGroupKeys.includes(g.groupKey)).length > 0 && (
+{(paymentSummary.filter(g => movedGroupKeys.includes(g.groupKey)).length > 0 || paymentSummary.length > 0) && (
   <>
     {/* Checkout Summary Strip */}
-    <Box sx={{ 
-      mt: 3, 
-      mb: 4,
-      p: 2.5,
-      backgroundColor: COLORS.white,
-      borderRadius: 2,
-      border: `1px solid ${COLORS.border}`,
-      display: 'flex', 
-      justifyContent: 'space-between', 
-      alignItems: 'center',
-      flexWrap: 'wrap',
-      gap: 2,
-      boxShadow: `0 2px 8px ${COLORS.shadow}`,
-    }}>
+ <Box
+  sx={{
+    position: 'fixed',
+    bottom: 20,
+    left: '50%',
+    transform: 'translateX(-50%)',
+    
+    width: {
+      xs: '95%',
+      sm: '90%',
+      md: '80%',
+      lg: '70%',
+    },
+
+    zIndex: 1300,
+
+    p: 2.5,
+    backgroundColor: COLORS.white,
+    borderRadius: 3,
+    border: `1px solid ${COLORS.border}`,
+
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 2,
+
+    boxShadow: `0 10px 30px ${COLORS.shadow}`,
+    backdropFilter: 'blur(10px)',
+
+    animation: `${bounceAnimation} 2s infinite`,
+    transition: 'all 0.3s ease',
+
+    '&:hover': {
+      animationPlayState: 'paused',
+      transform: 'translateX(-50%) scale(1.02)',
+    },
+  }}
+
+>
       <Box>
         <Typography sx={{ fontSize: TEXT_SIZES.small, color: COLORS.grey[600], fontWeight: 500 }}>
           Total Payable (for added items)
@@ -2395,35 +2571,37 @@ const handleAddListingPlan = () => {
         </TableRow>
       </TableHead>
       <TableBody>
-        {paymentSummary
-          .filter(group => group.planId === selectedGroup)
-          .map((group, index) => {
+        {paymentSummary && paymentSummary.length > 0 ? (
+          paymentSummary.map((group, groupIndex) => {
             const isMoved = movedGroupKeys.includes(group.groupKey);
             
-            // Get price per state from the group (it's stored at group level)
+            // Get price per state from the group
             const pricePerState = group.pricePerState || 0;
             
-            // Calculate totals from items
+            // Calculate total states from uniqueStates or items
             const totalStates = group.uniqueStates?.length || 
                               group.totalStates || 
-                              group.items?.reduce((sum, item) => sum + (item.stateCount || 0), 0) || 0;
+                              (group.items ? group.items.reduce((sum, item) => sum + (item.stateCount || 0), 0) : 0) || 0;
             
+            // Calculate total leads
             const totalLeads = group.totalLeads || 
-                              group.items?.reduce(
-                                (sum, item) => sum + ((item.stateCount || 0) * (item.selectedLeads || 0)),
-                                0
-                              ) || 0;
+                              (group.items ? group.items.reduce((sum, item) => sum + ((item.stateCount || 0) * (item.selectedLeads || 0)), 0) : 0) || 0;
             
-            // Calculate total amount using group's amount or compute from pricePerState * totalStates
-            const totalAmount = group.amount || (pricePerState * totalStates) || 0;
+            // Calculate total amount
+            const totalAmount = group.amount || 
+                              (pricePerState * totalStates) || 
+                              (group.items ? group.items.reduce((sum, item) => sum + (item.totalAmount || 0), 0) : 0) || 0;
             
-            const validityDays = group.validityDays || group.items?.[0]?.validityDays || 0;
-
+            const validityDays = group.validityDays || (group.items && group.items[0] ? group.items[0].validityDays : 0);
+            
+            // Skip rendering if no items in group
+            if (!group.items || group.items.length === 0) return null;
+            
             return (
               <TableRow
-                key={group.groupKey}
+                key={group.groupKey || groupIndex}
                 sx={{
-                  backgroundColor: index % 2 === 0 ? COLORS.white : COLORS.grey[50],
+                  backgroundColor: groupIndex % 2 === 0 ? COLORS.white : COLORS.grey[50],
                   transition: "all 0.3s ease",
                   "&:hover": {
                     backgroundColor: COLORS.lightGreen,
@@ -2439,48 +2617,49 @@ const handleAddListingPlan = () => {
                       color: COLORS.black,
                     }}
                   >
-                    {group.planName}
+                    {group.planName || (group.items[0] ? group.items[0].planName : 'Plan Name')}
                   </Typography>
                 </TableCell>
 
                 {/* Investment Group */}
-<TableCell sx={{ verticalAlign: "top", py: 2 }}>
-  <Chip
-    label={group.investmentRangeLabel}
-    size="small"
-    sx={{
-      fontSize: "0.7rem",
-      height: 24,
-      backgroundColor: (() => {
-        // Get all unique investment groups from the selected plan
-        const selectedPlanData = filteredPlans.find(p => p._id === selectedGroup);
-        if (selectedPlanData) {
-          const allGroups = [];
-          selectedPlanData.packages?.forEach((pkg) => {
-            if (pkg.investmentRangeLabel && !allGroups.includes(pkg.investmentRangeLabel)) {
-              allGroups.push(pkg.investmentRangeLabel);
-            }
-          });
-          
-          const groupIndices = {};
-          let currentGroupIndex = 0;
-          allGroups.forEach((label) => {
-            if (!groupIndices.hasOwnProperty(label)) {
-              groupIndices[label] = currentGroupIndex;
-              currentGroupIndex++;
-            }
-          });
-          
-          const groupIdx = groupIndices[group.investmentRangeLabel] || 0;
-          return groupIdx % 2 === 0 ? "#fff0c5" : "#B5E18B";
-        }
-        return COLORS.lightGreen;
-      })(),
-      color: COLORS.black,
-      fontWeight: 600,
-    }}
-  />
-</TableCell>
+                <TableCell sx={{ verticalAlign: "top", py: 2 }}>
+                  <Chip
+                    label={group.investmentRangeLabel || (group.items[0] ? group.items[0].investmentRangeLabel : 'Group')}
+                    size="small"
+                    sx={{
+                      fontSize: "0.7rem",
+                      height: 24,
+                      backgroundColor: (() => {
+                        // Get all unique investment groups for this specific plan
+                        const planData = plans.find(p => p._id === group.planId);
+                        if (planData) {
+                          const allGroups = [];
+                          planData.packages?.forEach((pkg) => {
+                            if (pkg.investmentRangeLabel && !allGroups.includes(pkg.investmentRangeLabel)) {
+                              allGroups.push(pkg.investmentRangeLabel);
+                            }
+                          });
+                          
+                          const groupIndices = {};
+                          let currentGroupIndex = 0;
+                          allGroups.forEach((label) => {
+                            if (!groupIndices.hasOwnProperty(label)) {
+                              groupIndices[label] = currentGroupIndex;
+                              currentGroupIndex++;
+                            }
+                          });
+                          
+                          const currentLabel = group.investmentRangeLabel || (group.items[0] ? group.items[0].investmentRangeLabel : '');
+                          const groupIdx = groupIndices[currentLabel] || 0;
+                          return groupIdx % 2 === 0 ? "#fff0c5" : "#c8e6ac";
+                        }
+                        return "#c8e6ac";
+                      })(),
+                      color: COLORS.black,
+                      fontWeight: 600,
+                    }}
+                  />
+                </TableCell>
 
                 {/* Investment Range Multiple Rows */}
                 <TableCell sx={{ p: 0 }}>
@@ -2490,10 +2669,7 @@ const handleAddListingPlan = () => {
                       sx={{
                         px: 2,
                         py: 2,
-                        borderBottom:
-                          idx !== group.items.length - 1
-                            ? `1px solid ${COLORS.border}`
-                            : "none",
+                        borderBottom: idx !== group.items.length - 1 ? `1px solid ${COLORS.border}` : "none",
                       }}
                     >
                       <Chip
@@ -2630,14 +2806,15 @@ const handleAddListingPlan = () => {
                 </TableCell>
               </TableRow>
             );
-          })}
+          })
+        ) : null}
         
         {/* Show empty state if no items */}
-        {paymentSummary.filter(group => group.planId === selectedGroup).length === 0 && (
+        {(!paymentSummary || paymentSummary.length === 0) && (
           <TableRow>
             <TableCell colSpan={8} align="center" sx={{ py: 8 }}>
               <Typography sx={{ color: COLORS.grey[500], fontSize: TEXT_SIZES.medium }}>
-                No items added to this plan yet. Select investment ranges and click "Add" to proceed.
+                No items added yet. Select investment ranges and click "Add" to proceed.
               </Typography>
             </TableCell>
           </TableRow>
@@ -2647,74 +2824,7 @@ const handleAddListingPlan = () => {
   </TableContainer>
 </Box>
 
-    {/* Floating Checkout Button */}
-    <Box sx={{ 
-      position: 'fixed',
-      bottom: 20,
-      left: '50%',
-      transform: 'translateX(-50%)',
-      zIndex: 1000,
-      backgroundColor: COLORS.primary,
-      borderRadius: 50,
-      display: 'flex',
-      alignItems: 'center',
-      gap: 1,
-      boxShadow: `0 4px 20px rgba(255, 153, 0, 0.4)`,
-      cursor: 'pointer',
-      animation: 'bounce 1s ease-in-out infinite, rotate 4s ease-in-out infinite',
-      transition: 'all 0.3s ease',
-      '&:hover': {
-        transform: 'translateX(-50%) scale(1.1)',
-        backgroundColor: COLORS.primaryDark,
-      },
-      '@keyframes bounce': {
-        '0%, 100%': {
-          transform: 'translateX(-50%) translateY(0) scale(1)',
-        },
-        '50%': {
-          transform: 'translateX(-50%) translateY(-12px) scale(1.02)',
-        },
-      },
-      '@keyframes rotate': {
-        '0%, 100%': {
-          transform: 'translateX(-50%) rotate(0deg)',
-        },
-        '25%': {
-          transform: 'translateX(-50%) rotate(5deg)',
-        },
-        '75%': {
-          transform: 'translateX(-50%) rotate(-5deg)',
-        },
-      },
-    }}
-    onClick={handleProceedToPayment}
-    >
-      <Box sx={{ 
-        p: 1.5,
-        display: 'flex',
-        alignItems: 'center',
-        gap: 1.5,
-      }}>
-        <Typography sx={{ fontSize: '1.2rem' }}>🛒</Typography>
-        <Typography sx={{ 
-          fontSize: '1rem', 
-          fontWeight: 800, 
-          color: COLORS.white,
-          backgroundColor: 'rgba(255,255,255,0.2)',
-          borderRadius: 50,
-          px: 1,
-          py: 0.5,
-        }}>
-          ₹{paymentSummary
-            .filter(g => movedGroupKeys.includes(g.groupKey))
-            .reduce((acc, curr) => acc + curr.amount, 0)
-            .toLocaleString('en-IN')}
-        </Typography>
-        <Typography sx={{ fontSize: '0.75rem', color: COLORS.white, fontWeight: 600, mr: 1 }}>
-          Checkout
-        </Typography>
-      </Box>
-    </Box>
+
   </>
 )}
       {/* State Selection Modal */}
@@ -2739,10 +2849,10 @@ const handleAddListingPlan = () => {
           py: 2.5,
         }}>
           {!finalToken ? (
-            <>Select States ({selectedStates.size} of {INDIA_STATES.length})</>
-          ) : (
-            <>Select States ({selectedStates.size} of {allStates.length})</>
-          )}
+  <>Select States ({selectedStates.size} of {ALL_INDIA_STATES.length})</>
+) : (
+  <>Select States ({selectedStates.size} of {allStates.length})</>
+)}
         </DialogTitle>
    <DialogContent dividers sx={{ 
   maxHeight: 420, 
