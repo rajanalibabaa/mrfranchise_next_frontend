@@ -223,6 +223,7 @@ const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
   const [ficoInvestmentRanges, setFicoInvestmentRanges] = useState([]);
   const [locationLoading, setLocationLoading] = useState(false);
   const [userLocation, setUserLocation] = useState(null);
+  const [tooltipAnchorEl, setTooltipAnchorEl] = useState(null);
   const [detectedState, setDetectedState] = useState(null);
   const [openStateModal, setOpenStateModal] = useState(false);
   const [allStates, setAllStates] = useState(ALL_INDIA_STATES);
@@ -448,82 +449,83 @@ const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
     }
   }, [finalToken, allStates]);
 
-  useEffect(() => {
-    if (paymentSummary.length > 0) {
-      setPaymentSummary((prev) => {
-        return prev.map((group) => {
-          const updatedItems = group.items.map((item) => {
-            // Include group.planId in the key to make it unique per plan
-            const key = getRangeKey(
-              item.investmentRangeLabel,
-              item.range,
-              group.planId,
-            );
-            let states = statesByInvestmentRange[key];
+useEffect(() => {
+  if (paymentSummary.length > 0) {
+    setPaymentSummary((prev) => {
+      return prev.map((group) => {
+        const updatedItems = group.items.map((item) => {
+          const key = getRangeKey(
+            item.investmentRangeLabel,
+            item.range,
+            group.planId,
+          );
+          let states = statesByInvestmentRange[key];
 
-            // CRITICAL FIX: Don't fallback to existing item.states if statesByInvestmentRange returns empty
-            // If user cleared all states, that should be respected
-            if (!states || states.length === 0) {
-              // Check if the key exists in statesByInvestmentRange (even if empty array)
-              if (statesByInvestmentRange.hasOwnProperty(key)) {
-                states = statesByInvestmentRange[key]; // This will be [] if user cleared
+          if (!states || states.length === 0) {
+            if (statesByInvestmentRange.hasOwnProperty(key)) {
+              states = statesByInvestmentRange[key];
+            } else {
+              if (!finalToken && detectedState) {
+                states = [detectedState];
+              } else if (finalToken) {
+                states = allStates;
               } else {
-                // Only use defaults if user has never edited this range
-                if (!finalToken && detectedState) {
-                  states = [detectedState];
-                } else if (finalToken) {
-                  states = allStates;
-                } else {
-                  states = [];
-                }
+                states = [];
               }
             }
+          }
 
-            return {
-              ...item,
-              states: states || [],
-              stateCount: (states || []).length,
-            };
-          });
-
-          const allStatesSet = new Set();
-          updatedItems.forEach((item) => {
-            item.states.forEach((state) => allStatesSet.add(state));
-          });
-          const uniqueStates = Array.from(allStatesSet);
-          const totalUniqueStates = uniqueStates.length;
-
+          // Get leads data for calculation
           const leadsDataKey = `${group.planId}_${group.investmentRangeLabel}`;
           const availableLeads = leadsDropdownData[leadsDataKey] || [];
-          const minLeads =
-            availableLeads.length > 0 ? Math.min(...availableLeads) : 1;
+          const minLeads = availableLeads.length > 0 ? Math.min(...availableLeads) : 1;
           const divisor = minLeads > 0 ? minLeads : 1;
-          const selectedLeads = group.items[0]?.selectedLeads || 0;
-
-          const newAmount = group.isListingPlan
-            ? group.amount
-            : (group.pricePerState / divisor) *
-              totalUniqueStates *
-              selectedLeads;
+          
+          // Calculate amount with divisor
+          const itemAmount = (group.pricePerState / divisor) * (states || []).length * (item.selectedLeads || 0);
 
           return {
-            ...group,
-            items: updatedItems,
-            uniqueStates: uniqueStates,
-            totalStates: totalUniqueStates,
-            amount: newAmount,
+            ...item,
+            states: states || [],
+            stateCount: (states || []).length,
+            totalLeads: (item.selectedLeads || 0) * (states || []).length,
+            totalAmount: itemAmount,
           };
         });
+
+        // Calculate group totals - sum across all items
+        let totalAmount = 0;
+        let totalLeads = 0;
+        const allStatesSet = new Set();
+        
+        updatedItems.forEach((item) => {
+          totalAmount += item.totalAmount || 0;
+          totalLeads += item.totalLeads || 0;
+          item.states.forEach((state) => allStatesSet.add(state));
+        });
+        
+        const uniqueStates = Array.from(allStatesSet);
+        const totalUniqueStates = uniqueStates.length;
+
+        return {
+          ...group,
+          items: updatedItems,
+          uniqueStates: uniqueStates,
+          totalStates: totalUniqueStates,
+          amount: totalAmount,
+          totalLeads: totalLeads,
+        };
       });
-    }
-  }, [
-    statesByInvestmentRange,
-    finalToken,
-    detectedState,
-    allStates,
-    getRangeKey,
-    leadsDropdownData,
-  ]);
+    });
+  }
+}, [
+  statesByInvestmentRange,
+  finalToken,
+  detectedState,
+  allStates,
+  getRangeKey,
+  leadsDropdownData,
+]);
 
   const handleOpenStateModal = useCallback(
     (investmentRangeLabel, range, planId = null) => {
@@ -579,136 +581,136 @@ const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
     setOpenStateModal(false);
   }, []);
 
-  const getAlreadySelectedStatesInOtherRanges = useCallback(() => {
-    const selectedInOtherRanges = new Set();
-    if (!currentEditingRange) return selectedInOtherRanges;
+const getAlreadySelectedStatesInOtherRanges = useCallback(() => {
+  const selectedInOtherRanges = new Set();
+  if (!currentEditingRange) return selectedInOtherRanges;
 
-    // Extract the unique key for the current range being edited
-    // Key format is either: "planId__investmentRangeLabel__range" or "investmentRangeLabel__range"
-    const currentKey = currentEditingRange;
+  // Key format: "planId__investmentRangeLabel__range"
+  const currentRange = currentEditingRange.split("__")[2]; // e.g. "Below 50k"
 
-   
+  paymentSummary.forEach((group) => {
+    group.items.forEach((item) => {
+      const itemKey = getRangeKey(
+        item.investmentRangeLabel,
+        item.range,
+        group.planId,
+      );
 
-    paymentSummary.forEach((group) => {
-      group.items.forEach((item) => {
-        // For each item in payment summary, get its states
-        // Skip if this is the same plan and same range (current editing item)
+      // Skip the exact item we're editing
+      if (itemKey === currentEditingRange) return;
+
+      // Block if the range value matches — regardless of plan or investment range label
+      if (item.range === currentRange) {
+        item.states.forEach((state) => selectedInOtherRanges.add(state));
+      }
+    });
+  });
+
+  return selectedInOtherRanges;
+}, [currentEditingRange, paymentSummary, getRangeKey]);
+
+const handleSaveStates = useCallback(() => {
+  const blocked = getAlreadySelectedStatesInOtherRanges();
+
+  // Filter out any states that are already used elsewhere
+  const selectedArray = Array.from(selectedStates).filter(
+    (state) => !blocked.has(state),
+  );
+
+  if (selectedArray.length === 0 && selectedStates.size > 0) {
+    openSnack(
+      "Cannot save: Selected states are already used in other investment ranges",
+      "warning",
+    );
+    return;
+  }
+
+  console.log(`Saving states for ${currentEditingRange}:`, selectedArray);
+
+  // Update statesByInvestmentRange
+  const updated = {
+    ...statesByInvestmentRange,
+    [currentEditingRange]: selectedArray,
+  };
+  setStatesByInvestmentRange(updated);
+  localStorage.setItem("investmentRangeStates", JSON.stringify(updated));
+
+  // Update paymentSummary if this range is already committed
+  setPaymentSummary((prev) =>
+    prev.map((group) => {
+      let groupHasRange = false;
+      const updatedItems = group.items.map((item) => {
         const itemKey = getRangeKey(
           item.investmentRangeLabel,
           item.range,
           group.planId,
         );
+        if (itemKey !== currentEditingRange) return item;
 
-        // If this is the exact same item we're editing, skip (don't block its own states)
-        if (itemKey === currentKey) return;
-
-        // Block all states from other items (different plan or different range)
-        // This ensures states already used anywhere else cannot be selected again
-        item.states.forEach((state) => selectedInOtherRanges.add(state));
-      });
-    });
-
-    return selectedInOtherRanges;
-  }, [currentEditingRange, paymentSummary, getRangeKey]);
-
-  const handleSaveStates = useCallback(() => {
-    const blocked = getAlreadySelectedStatesInOtherRanges();
-
-    // Filter out any states that are already used elsewhere
-    const selectedArray = Array.from(selectedStates).filter(
-      (state) => !blocked.has(state),
-    );
-
-    if (selectedArray.length === 0 && selectedStates.size > 0) {
-      openSnack(
-        "Cannot save: Selected states are already used in other investment ranges",
-        "warning",
-      );
-      return;
-    }
-
-    // Debug log to see what's being saved
-    console.log(`Saving states for ${currentEditingRange}:`, selectedArray);
-
-    // Update statesByInvestmentRange - REPLACE completely, don't merge
-    const updated = {
-      ...statesByInvestmentRange,
-      [currentEditingRange]: selectedArray,
-    };
-    setStatesByInvestmentRange(updated);
-    localStorage.setItem("investmentRangeStates", JSON.stringify(updated));
-
-    // Update paymentSummary if this range is already committed
-    setPaymentSummary((prev) =>
-      prev.map((group) => {
-        // Check if this group contains the range we're editing
-        let groupHasRange = false;
-        const updatedItems = group.items.map((item) => {
-          const itemKey = getRangeKey(
-            item.investmentRangeLabel,
-            item.range,
-            group.planId,
-          );
-          if (itemKey !== currentEditingRange) return item;
-
-          groupHasRange = true;
-
-          return {
-            ...item,
-            states: [...selectedArray],
-            stateCount: selectedArray.length,
-            totalLeads: item.selectedLeads * selectedArray.length,
-            totalAmount: group.pricePerState * selectedArray.length,
-          };
-        });
-
-        if (!groupHasRange) return group;
-
-        const allStatesSet = new Set();
-        updatedItems.forEach((item) => {
-          item.states.forEach((state) => allStatesSet.add(state));
-        });
-        const uniqueStates = Array.from(allStatesSet);
-        const totalUniqueStates = uniqueStates.length;
-
+        groupHasRange = true;
+        
+        // Get leads data for calculation
         const leadsDataKey = `${group.planId}_${group.investmentRangeLabel}`;
         const availableLeads = leadsDropdownData[leadsDataKey] || [];
-        const minLeads =
-          availableLeads.length > 0 ? Math.min(...availableLeads) : 1;
+        const minLeads = availableLeads.length > 0 ? Math.min(...availableLeads) : 1;
         const divisor = minLeads > 0 ? minLeads : 1;
-        const selectedLeads = updatedItems[0]?.selectedLeads || 0;
-        const newAmount = group.isListingPlan
-          ? group.amount
-          : (group.pricePerState / divisor) * totalUniqueStates * selectedLeads;
+        
+        // Calculate amount with divisor
+        const itemAmount = (group.pricePerState / divisor) * selectedArray.length * (item.selectedLeads || 0);
 
         return {
-          ...group,
-          items: updatedItems,
-          uniqueStates: uniqueStates,
-          totalStates: totalUniqueStates,
-          amount: newAmount,
-          totalLeads: totalUniqueStates * selectedLeads,
+          ...item,
+          states: [...selectedArray],
+          stateCount: selectedArray.length,
+          totalLeads: (item.selectedLeads || 0) * selectedArray.length,
+          totalAmount: itemAmount,
         };
-      }),
-    );
+      });
 
-    openSnack(
-      selectedArray.length === 0
-        ? "All states cleared"
-        : `Saved ${selectedArray.length} state${selectedArray.length > 1 ? "s" : ""}`,
-      selectedArray.length === 0 ? "info" : "success",
-    );
-    handleCloseStateModal();
-  }, [
-    selectedStates,
-    statesByInvestmentRange,
-    currentEditingRange,
-    getRangeKey,
-    leadsDropdownData,
-    openSnack,
-    handleCloseStateModal,
-    getAlreadySelectedStatesInOtherRanges,
-  ]);
+      if (!groupHasRange) return group;
+
+      // Calculate totals - sum across all items
+      let totalAmount = 0;
+      let totalLeads = 0;
+      const allStatesSet = new Set();
+      
+      updatedItems.forEach((item) => {
+        totalAmount += item.totalAmount || 0;
+        totalLeads += item.totalLeads || 0;
+        item.states.forEach((state) => allStatesSet.add(state));
+      });
+      
+      const uniqueStates = Array.from(allStatesSet);
+      const totalUniqueStates = uniqueStates.length;
+
+      return {
+        ...group,
+        items: updatedItems,
+        uniqueStates: uniqueStates,
+        totalStates: totalUniqueStates,
+        amount: totalAmount,
+        totalLeads: totalLeads,
+      };
+    }),
+  );
+
+  openSnack(
+    selectedArray.length === 0
+      ? "All states cleared"
+      : `Saved ${selectedArray.length} state${selectedArray.length > 1 ? "s" : ""}`,
+    selectedArray.length === 0 ? "info" : "success",
+  );
+  handleCloseStateModal();
+}, [
+  selectedStates,
+  statesByInvestmentRange,
+  currentEditingRange,
+  getRangeKey,
+  leadsDropdownData,
+  openSnack,
+  handleCloseStateModal,
+  getAlreadySelectedStatesInOtherRanges,
+]);
 
   const fetchBrandDetails = async (uuid, accessToken) => {
     try {
@@ -1470,210 +1472,220 @@ const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
       ).length;
 
       return (
-        <Accordion
-          key={region}
-          expanded={expandedRegion === region}
-          onChange={(event, isExpanded) => {
-            setExpandedRegion(isExpanded ? region : null);
-          }}
-          elevation={0}
-          sx={{
-            border: `1px solid ${COLORS.border}`,
-            borderRadius: "8px !important",
-            mb: 1.5,
-            "&:before": {
-              display: "none",
-            },
-            "&.Mui-expanded": {
-              margin: "0 0 12px 0",
-            },
-          }}
-        >
-          <AccordionSummary
-            expandIcon={<ExpandMoreIcon sx={{ color: COLORS.primary }} />}
-            sx={{
-              backgroundColor: COLORS.grey[50],
-              borderRadius: "8px",
-              "&.Mui-expanded": {
-                borderRadius: "8px 8px 0 0",
-              },
-              "& .MuiAccordionSummary-content": {
-                alignItems: "center",
-                justifyContent: "space-between",
-              },
-            }}
+       <Accordion
+  key={region}
+  expanded={expandedRegion === region}
+  onChange={(event, isExpanded) => {
+    setExpandedRegion(isExpanded ? region : null);
+  }}
+  elevation={0}
+  sx={{
+    border: `1px solid ${COLORS.border}`,
+    borderRadius: "8px !important",
+    mb: 1.5,
+    "&:before": {
+      display: "none",
+    },
+    "&.Mui-expanded": {
+      margin: "0 0 12px 0",
+    },
+  }}
+>
+  <AccordionSummary
+    expandIcon={<ExpandMoreIcon sx={{ color: COLORS.primary }} />}
+    sx={{
+      backgroundColor: COLORS.grey[50],
+      borderRadius: "8px",
+      "&.Mui-expanded": {
+        borderRadius: "8px 8px 0 0",
+      },
+      "& .MuiAccordionSummary-content": {
+        alignItems: "center",
+        justifyContent: "space-between",
+      },
+    }}
+  >
+    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+      <Typography
+        sx={{
+          fontSize: TEXT_SIZES.medium,
+          fontWeight: 700,
+          color: COLORS.black,
+        }}
+      >
+        {region}
+      </Typography>
+      <Chip
+        label={`${selectedCount}/${availableToSelectCount} available`}
+        size="small"
+        sx={{
+          height: 20,
+          fontSize: "0.7rem",
+          backgroundColor:
+            selectedCount === availableToSelectCount
+              ? COLORS.secondary
+              : COLORS.grey[400],
+          color: COLORS.white,
+          fontWeight: 600,
+        }}
+      />
+    </Box>
+    {/* REMOVED the Select All button from here */}
+  </AccordionSummary>
+
+  <AccordionDetails sx={{ p: 2 }}>
+    {/* MOVED the Select All button inside AccordionDetails */}
+    <Box
+      sx={{
+        display: "flex",
+        justifyContent: "flex-end",
+        mb: 2,
+      }}
+    >
+      <Box
+        component="span"
+        onClick={(e) => {
+          e.stopPropagation();
+          const newSet = new Set(selectedStates);
+          const allInRegion = availableStates;
+
+          // Only select states that are NOT already selected in ANY other range
+          const selectableStates = allInRegion.filter(
+            (state) => !alreadySelectedStates.has(state),
+          );
+          const allSelected = selectableStates.every((state) =>
+            selectedStates.has(state),
+          );
+
+          if (allSelected) {
+            selectableStates.forEach((state) => newSet.delete(state));
+            openSnack(
+              `Deselected all selectable states in ${region}`,
+              "info",
+            );
+          } else {
+            selectableStates.forEach((state) => newSet.add(state));
+            openSnack(
+              `Selected ${selectableStates.length} states in ${region}`,
+              "success",
+            );
+          }
+          setSelectedStates(newSet);
+        }}
+        sx={{
+          fontSize: "0.7rem",
+          textTransform: "none",
+          color: COLORS.primary,
+          cursor: "pointer",
+          display: "inline-flex",
+          alignItems: "center",
+          padding: "4px 8px",
+          borderRadius: "4px",
+          "&:hover": {
+            backgroundColor: COLORS.lightOrange,
+          },
+        }}
+      >
+        Select All Available ({availableToSelectCount})
+      </Box>
+    </Box>
+
+    <Box
+      sx={{
+        display: "grid",
+        gridTemplateColumns: "repeat(2, 1fr)",
+        gap: 1,
+      }}
+    >
+      {availableStates.map((state) => {
+        const isDisabled = alreadySelectedStates.has(state);
+        const isChecked = selectedStates.has(state);
+
+        // Get tooltip message
+        let tooltipMessage = "";
+        if (isDisabled) {
+          tooltipMessage =
+            "This state is already used in investment range and cannot be selected again";
+        }
+
+        return (
+          <Tooltip
+            key={state}
+            title={tooltipMessage}
+            arrow
+            placement="top"
           >
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <Typography
-                sx={{
-                  fontSize: TEXT_SIZES.medium,
-                  fontWeight: 700,
-                  color: COLORS.black,
-                }}
-              >
-                {region}
-              </Typography>
-              <Chip
-                label={`${selectedCount}/${availableToSelectCount} available`}
-                size="small"
-                sx={{
-                  height: 20,
-                  fontSize: "0.7rem",
-                  backgroundColor:
-                    selectedCount === availableToSelectCount
-                      ? COLORS.secondary
-                      : COLORS.grey[400],
-                  color: COLORS.white,
-                  fontWeight: 600,
-                }}
-              />
-            </Box>
-
-            <Box
-              component="span"
-              onClick={(e) => {
-                e.stopPropagation();
-                const newSet = new Set(selectedStates);
-                const allInRegion = availableStates;
-
-                // Only select states that are NOT already selected in ANY other range
-                const selectableStates = allInRegion.filter(
-                  (state) => !alreadySelectedStates.has(state),
-                );
-                const allSelected = selectableStates.every((state) =>
-                  selectedStates.has(state),
-                );
-
-                if (allSelected) {
-                  selectableStates.forEach((state) => newSet.delete(state));
-                  openSnack(
-                    `Deselected all selectable states in ${region}`,
-                    "info",
-                  );
-                } else {
-                  selectableStates.forEach((state) => newSet.add(state));
-                  openSnack(
-                    `Selected ${selectableStates.length} states in ${region}`,
-                    "success",
-                  );
-                }
-                setSelectedStates(newSet);
-              }}
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={isChecked}
+                  onChange={() => {
+                    if (!isDisabled) {
+                      handleStateCheckboxChange(state);
+                    } else {
+                      openSnack(tooltipMessage, "warning");
+                    }
+                  }}
+                  disabled={isDisabled}
+                  sx={{
+                    color: COLORS.primary,
+                    "&.Mui-checked": {
+                      color: COLORS.secondary,
+                    },
+                    "&.Mui-disabled": {
+                      color: COLORS.grey[400],
+                    },
+                  }}
+                />
+              }
+              label={
+                <Typography
+                  sx={{
+                    fontSize: TEXT_SIZES.medium,
+                    color: isDisabled ? COLORS.grey[500] : COLORS.black,
+                    fontWeight: isChecked ? 600 : 400,
+                    textDecoration: isDisabled
+                      ? "line-through"
+                      : "none",
+                  }}
+                >
+                  {state}
+                </Typography>
+              }
               sx={{
-                fontSize: "0.7rem",
-                textTransform: "none",
-                color: COLORS.primary,
-                cursor: "pointer",
-                display: "inline-flex",
+                display: "flex",
+                flexDirection: "row",
                 alignItems: "center",
-                padding: "4px 8px",
-                borderRadius: "4px",
+                margin: 0,
+                py: 0.5,
+                px: 1,
+                borderRadius: 1.5,
+                transition: "all 0.2s ease",
+                backgroundColor: isChecked
+                  ? COLORS.lightGreen
+                  : "transparent",
+                width: "100%",
+                opacity: isDisabled ? 0.6 : 1,
                 "&:hover": {
-                  backgroundColor: COLORS.lightOrange,
+                  backgroundColor:
+                    !isDisabled &&
+                    (isChecked
+                      ? COLORS.lightGreen
+                      : COLORS.lightOrange),
+                },
+                "& .MuiFormControlLabel-label": {
+                  width: "calc(100% - 35px)",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
                 },
               }}
-            >
-              Select All Available ({availableToSelectCount})
-            </Box>
-          </AccordionSummary>
-
-          <AccordionDetails sx={{ p: 2 }}>
-            <Box
-              sx={{
-                display: "grid",
-                gridTemplateColumns: "repeat(2, 1fr)",
-                gap: 1,
-              }}
-            >
-              {availableStates.map((state) => {
-                const isDisabled = alreadySelectedStates.has(state);
-                const isChecked = selectedStates.has(state);
-
-                // Get tooltip message
-                let tooltipMessage = "";
-                if (isDisabled) {
-                  tooltipMessage =
-                    "This state is already used in  investment range and cannot be selected again";
-                }
-
-                return (
-                  <Tooltip
-                    key={state}
-                    title={tooltipMessage}
-                    arrow
-                    placement="top"
-                  >
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          checked={isChecked}
-                          onChange={() => {
-                            if (!isDisabled) {
-                              handleStateCheckboxChange(state);
-                            } else {
-                              openSnack(tooltipMessage, "warning");
-                            }
-                          }}
-                          disabled={isDisabled}
-                          sx={{
-                            color: COLORS.primary,
-                            "&.Mui-checked": {
-                              color: COLORS.secondary,
-                            },
-                            "&.Mui-disabled": {
-                              color: COLORS.grey[400],
-                            },
-                          }}
-                        />
-                      }
-                      label={
-                        <Typography
-                          sx={{
-                            fontSize: TEXT_SIZES.medium,
-                            color: isDisabled ? COLORS.grey[500] : COLORS.black,
-                            fontWeight: isChecked ? 600 : 400,
-                            textDecoration: isDisabled
-                              ? "line-through"
-                              : "none",
-                          }}
-                        >
-                          {state}
-                        </Typography>
-                      }
-                      sx={{
-                        display: "flex",
-                        flexDirection: "row",
-                        alignItems: "center",
-                        margin: 0,
-                        py: 0.5,
-                        px: 1,
-                        borderRadius: 1.5,
-                        transition: "all 0.2s ease",
-                        backgroundColor: isChecked
-                          ? COLORS.lightGreen
-                          : "transparent",
-                        width: "100%",
-                        opacity: isDisabled ? 0.6 : 1,
-                        "&:hover": {
-                          backgroundColor:
-                            !isDisabled &&
-                            (isChecked
-                              ? COLORS.lightGreen
-                              : COLORS.lightOrange),
-                        },
-                        "& .MuiFormControlLabel-label": {
-                          width: "calc(100% - 35px)",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                        },
-                      }}
-                    />
-                  </Tooltip>
-                );
-              })}
-            </Box>
-          </AccordionDetails>
-        </Accordion>
+            />
+          </Tooltip>
+        );
+      })}
+    </Box>
+  </AccordionDetails>
+</Accordion>
       );
     });
   };
@@ -2829,7 +2841,7 @@ const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
                                           },
                                         }}
                                       >
-                                        Add
+                                        Add to summary
                                       </Button>
                                     </TableCell>
                                   )}

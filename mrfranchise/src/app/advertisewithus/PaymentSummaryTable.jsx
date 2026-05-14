@@ -30,37 +30,52 @@ const PaymentSummaryTable = ({
 }) => {
   const groupedByPlan = {};
 
-  paymentSummary.forEach((group) => {
-    if (!group.items || group.items.length === 0) return;
+paymentSummary.forEach((group) => {
+  if (!group.items || group.items.length === 0) return;
 
-    if (!groupedByPlan[group.planId]) {
-      groupedByPlan[group.planId] = {
-        planName: group.planName,
-        validityDays: group.validityDays,
-        items: [],
-        totalPlanAmount: 0,
-        totalPlanLeads: 0,
-        totalPlanStates: 0,
-      };
-    }
+  if (!groupedByPlan[group.planId]) {
+    groupedByPlan[group.planId] = {
+      planName: group.planName,
+      validityDays: group.validityDays,
+      items: [],
+      totalPlanAmount: 0,
+      totalPlanLeads: 0,
+      totalPlanStates: 0,
+    };
+  }
 
-    group.items.forEach((item) => {
-      groupedByPlan[group.planId].items.push({
-        ...item,
-        pricePerState: group.pricePerState,
-        validityDays: group.validityDays,
-      });
-
-      groupedByPlan[group.planId].totalPlanAmount +=
-        (group.pricePerState * (item.stateCount || 0)) || 0;
-
-      groupedByPlan[group.planId].totalPlanLeads +=
-        (item.selectedLeads * (item.stateCount || 0)) || 0;
-
-      groupedByPlan[group.planId].totalPlanStates +=
-        item.stateCount || 0;
+  // Add all items first
+  group.items.forEach((item) => {
+    groupedByPlan[group.planId].items.push({
+      ...item,
+      pricePerState: group.pricePerState,
+      validityDays: group.validityDays,
     });
   });
+
+  // Collect ALL unique states across ALL items in this plan
+  const uniqueStatesSet = new Set();
+  groupedByPlan[group.planId].items.forEach((item) => {
+    if (item.states && Array.isArray(item.states)) {
+      item.states.forEach(state => uniqueStatesSet.add(state));
+    }
+  });
+
+  const uniqueStatesCount = uniqueStatesSet.size;
+
+  // Calculate totals using unique states count (avoiding duplicates)
+  groupedByPlan[group.planId].items.forEach((item) => {
+    const divisor = item.selectedLeads || 1;
+    
+    groupedByPlan[group.planId].totalPlanAmount +=
+      (group.pricePerState / divisor) * uniqueStatesCount * (item.selectedLeads || 0);
+    
+    groupedByPlan[group.planId].totalPlanLeads +=
+      (item.selectedLeads * uniqueStatesCount) || 0;
+  });
+
+  groupedByPlan[group.planId].totalPlanStates = uniqueStatesCount;
+});
 
   let rowIndex = 0;
 
@@ -227,45 +242,44 @@ const PaymentSummaryTable = ({
               {paymentSummary.length > 0 ? (
                 Object.entries(groupedByPlan).map(
                   ([planId, planData]) => {
-                    const groupedByRange = planData.items.reduce(
-                      (acc, item) => {
-                        const rangeKey = `${planId}_${item.range}`;
+ const groupedByRange = planData.items.reduce(
+  (acc, item) => {
+    const rangeKey = `${planId}_${item.range}`;
 
-                        if (!acc[rangeKey]) {
-                          acc[rangeKey] = {
-                            range: item.range,
-                            investmentRangeLabel:
-                              item.investmentRangeLabel,
-                            planId,
-                            items: [],
-                            totalStates: 0,
-                            totalLeads: 0,
-                            totalAmount: 0,
-                            selectedLeads: item.selectedLeads,
-                            pricePerState: item.pricePerState,
-                            validityDays: item.validityDays,
-                          };
-                        }
+    if (!acc[rangeKey]) {
+      acc[rangeKey] = {
+        range: item.range,
+        investmentRangeLabel: item.investmentRangeLabel,
+        planId,
+        items: [],
+        totalStates: 0,
+        totalLeads: 0,
+        totalAmount: 0,
+        selectedLeads: item.selectedLeads,
+        pricePerState: item.pricePerState,
+        validityDays: item.validityDays,
+      };
+    }
 
-                        acc[rangeKey].items.push(item);
+    acc[rangeKey].items.push(item);
+    
+    // Calculate unique states for this specific range
+    const uniqueStatesForRange = new Set();
+    acc[rangeKey].items.forEach(i => {
+      if (i.states && Array.isArray(i.states)) {
+        i.states.forEach(s => uniqueStatesForRange.add(s));
+      }
+    });
+    
+    const uniqueRangeStatesCount = uniqueStatesForRange.size;
+    acc[rangeKey].totalStates = uniqueRangeStatesCount;
+    acc[rangeKey].totalLeads = (item.selectedLeads || 0) * uniqueRangeStatesCount;
+    acc[rangeKey].totalAmount = (item.pricePerState || 0) * uniqueRangeStatesCount;
 
-                        acc[rangeKey].totalStates +=
-                          item.stateCount || 0;
-
-                        acc[rangeKey].totalLeads +=
-                          (item.stateCount || 0) *
-                          (item.selectedLeads || 0);
-
-                        acc[rangeKey].totalAmount +=
-                          item.totalAmount ||
-                          item.pricePerState *
-                            (item.stateCount || 0) ||
-                          0;
-
-                        return acc;
-                      },
-                      {}
-                    );
+    return acc;
+  },
+  {}
+);
 
                     const sortedRanges = Object.values(
                       groupedByRange
@@ -287,330 +301,146 @@ const PaymentSummaryTable = ({
 
                     const rangeRows = [];
 
-                    sortedRanges.forEach((rangeGroup, idx) => {
-                      rangeRows.push(
-                        <TableRow
-                          key={`${planId}-${rangeGroup.range}`}
-                          sx={{
-                            backgroundColor:
-                              rowIndex % 2 === 0
-                                ? COLORS.white
-                                : COLORS.grey[50],
+                  sortedRanges.forEach((rangeGroup, idx) => {
+  rangeRows.push(
+    <TableRow
+      key={`${planId}-${rangeGroup.range}`}
+      sx={{
+        backgroundColor: rowIndex % 2 === 0 ? COLORS.white : COLORS.grey[50],
+        "&:hover": { backgroundColor: COLORS.lightGreen },
+        "& td": { borderBottom: "none", py: 0.75 },
+      }}
+    >
+      {/* Plan Name - only on first range */}
+      {idx === 0 && (
+        <TableCell
+          rowSpan={sortedRanges.length}
+          sx={{
+            verticalAlign: "top",
+            py: 0.75,
+            borderRight: `2px solid ${COLORS.border}`,
+            backgroundColor: rowIndex % 2 === 0 ? COLORS.white : COLORS.grey[50],
+            borderBottom: "none",
+          }}
+        >
+          <Box>
+            <Typography sx={{ fontSize: TEXT_SIZES.small, fontWeight: 700, color: COLORS.black, mb: 0.3 }}>
+              {planData.planName}
+            </Typography>
+            <Chip
+              icon={<CalendarMonthRoundedIcon sx={{ fontSize: "0.65rem" }} />}
+              label={`${planData.validityDays} Days`}
+              size="small"
+              sx={{ height: 20, fontSize: "0.6rem", backgroundColor: COLORS.lightOrange, color: COLORS.black, fontWeight: 500 }}
+            />
+          </Box>
+        </TableCell>
+      )}
 
-                            "&:hover": {
-                              backgroundColor:
-                                COLORS.lightGreen,
-                            },
+      {/* Investment Label */}
+      <TableCell sx={{ py: 0.75, borderBottom: "none" }}>
+        <Chip
+          label={rangeGroup.investmentRangeLabel || "—"}
+          size="small"
+          sx={{ fontSize: "0.68rem", height: 24, backgroundColor: COLORS.lightGreen, color: COLORS.black, fontWeight: 600 }}
+        />
+      </TableCell>
 
-                            "& td": {
-                              borderBottom: "none",
-                              py: 0.75,
-                            },
-                          }}
-                        >
-                          {/* Plan Name */}
-                          {idx === 0 && (
-                            <TableCell
-                              rowSpan={sortedRanges.length}
-                              sx={{
-                                verticalAlign: "top",
-                                py: 0.75,
-                                borderRight: `2px solid ${COLORS.border}`,
-                                backgroundColor:
-                                  rowIndex % 2 === 0
-                                    ? COLORS.white
-                                    : COLORS.grey[50],
-                                borderBottom: "none",
-                              }}
-                            >
-                              <Box>
-                                <Typography
-                                  sx={{
-                                    fontSize:
-                                      TEXT_SIZES.small,
-                                    fontWeight: 700,
-                                    color: COLORS.black,
-                                    mb: 0.3,
-                                  }}
-                                >
-                                  {planData.planName}
-                                </Typography>
+      {/* Investment Range */}
+      <TableCell>
+        <Chip
+          label={rangeGroup.range}
+          size="small"
+          sx={{ fontSize: "0.68rem", height: 24, backgroundColor: COLORS.lightOrange, color: COLORS.black, fontWeight: 600 }}
+        />
+      </TableCell>
 
-                                <Chip
-                                  icon={
-                                    <CalendarMonthRoundedIcon
-                                      sx={{
-                                        fontSize: "0.65rem",
-                                      }}
-                                    />
-                                  }
-                                  label={`${planData.validityDays} Days`}
-                                  size="small"
-                                  sx={{
-                                    height: 20,
-                                    fontSize: "0.6rem",
-                                    backgroundColor:
-                                      COLORS.lightOrange,
-                                    color: COLORS.black,
-                                    fontWeight: 500,
-                                  }}
-                                />
-                              </Box>
-                            </TableCell>
-                          )}
+      {/* States */}
+      <TableCell align="center">
+        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 0.3 }}>
+          {rangeGroup.items[0]?.isListingPlan ? (
+            <Typography sx={{ fontSize: TEXT_SIZES.small, fontWeight: 700 }}>ALL STATES</Typography>
+          ) : (
+            <>
+              <Typography sx={{ fontSize: TEXT_SIZES.small, fontWeight: 700 }}>{rangeGroup.totalStates}</Typography>
+              <Tooltip title="View states" arrow>
+                <IconButton
+                  size="small"
+                  onClick={(e) => {
+                    const allStatesList = [...new Set(rangeGroup.items.flatMap((item) => item.states || []))];
+                    handleShowStates(e, allStatesList);
+                  }}
+                  sx={{ p: 0.2 }}
+                >
+                  <VisibilityIcon sx={{ fontSize: "0.8rem", color: COLORS.primary }} />
+                </IconButton>
+              </Tooltip>
+            </>
+          )}
+        </Box>
+      </TableCell>
 
-                          {/* Investment Label */}
-                          <TableCell
-                            sx={{
-                              py: 0.75,
-                              borderBottom: "none",
-                            }}
-                          >
-                            <Chip
-                              label={
-                                rangeGroup.investmentRangeLabel ||
-                                "—"
-                              }
-                              size="small"
-                              sx={{
-                                fontSize: "0.68rem",
-                                height: 24,
-                                backgroundColor:
-                                  COLORS.lightGreen,
-                                color: COLORS.black,
-                                fontWeight: 600,
-                              }}
-                            />
-                          </TableCell>
+      {/* Leads */}
+      <TableCell align="center">
+        {rangeGroup.items[0]?.isListingPlan ? (
+          <Typography sx={{ fontSize: TEXT_SIZES.small, fontWeight: 700 }}>-</Typography>
+        ) : (
+          <>
+            <Typography sx={{ fontSize: TEXT_SIZES.small, fontWeight: 700 }}>
+              {typeof rangeGroup.totalLeads === "number"
+                ? rangeGroup.totalLeads.toLocaleString("en-IN")
+                : rangeGroup.totalLeads}
+            </Typography>
+            <Typography sx={{ fontSize: "0.55rem", color: COLORS.grey[600], mt: 0.2 }}>
+              {rangeGroup.selectedLeads} × {rangeGroup.totalStates}
+            </Typography>
+          </>
+        )}
+      </TableCell>
 
-                          {/* Investment Range */}
-                          <TableCell>
-                            <Chip
-                              label={rangeGroup.range}
-                              size="small"
-                              sx={{
-                                fontSize: "0.68rem",
-                                height: 24,
-                                backgroundColor:
-                                  COLORS.lightOrange,
-                                color: COLORS.black,
-                                fontWeight: 600,
-                              }}
-                            />
-                          </TableCell>
+      {/* Subtotal - only on first range row, spans all ranges */}
+      {idx === 0 && (
+        <TableCell
+          align="right"
+          rowSpan={sortedRanges.length}
+          sx={{ verticalAlign: "middle" }}
+        >
+          <Typography sx={{ fontSize: TEXT_SIZES.small, fontWeight: 700, color: COLORS.secondaryDark }}>
+            ₹{planData.totalPlanAmount.toLocaleString("en-IN")}
+          </Typography>
+        </TableCell>
+      )}
 
-                          {/* States */}
-                          <TableCell align="center">
-                            <Box
-                              sx={{
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent:
-                                  "center",
-                                gap: 0.3,
-                              }}
-                            >
-                              {rangeGroup.items[0]
-                                ?.isListingPlan ? (
-                                <Typography
-                                  sx={{
-                                    fontSize:
-                                      TEXT_SIZES.small,
-                                    fontWeight: 700,
-                                  }}
-                                >
-                                  ALL STATES
-                                </Typography>
-                              ) : (
-                                <>
-                                  <Typography
-                                    sx={{
-                                      fontSize:
-                                        TEXT_SIZES.small,
-                                      fontWeight: 700,
-                                    }}
-                                  >
-                                    {rangeGroup.totalStates}
-                                  </Typography>
+      {/* Actions - only on first range row, spans all ranges */}
+      {idx === 0 && (
+        <TableCell
+          align="center"
+          rowSpan={sortedRanges.length}
+          sx={{ verticalAlign: "middle" }}
+        >
+          <Tooltip title="Remove from summary" arrow>
+            <IconButton
+              onClick={() => {
+                setItemToRemove({
+                  planName: planData.planName,
+                  range: rangeGroup.range,
+                  investmentRangeLabel: rangeGroup.investmentRangeLabel,
+                  items: rangeGroup.items,
+                });
+                setOpenRemoveConfirmDialog(true);
+              }}
+              sx={{ color: COLORS.grey[600], p: 0.3, "&:hover": { color: COLORS.primary, backgroundColor: COLORS.lightOrange } }}
+            >
+              <DeleteIcon sx={{ fontSize: 18 }} />
+            </IconButton>
+          </Tooltip>
+        </TableCell>
+      )}
+    </TableRow>
+  );
 
-                                  <Tooltip
-                                    title="View states"
-                                    arrow
-                                  >
-                                    <IconButton
-                                      size="small"
-                                      onClick={(e) => {
-                                        const allStatesList =
-                                          [
-                                            ...new Set(
-                                              rangeGroup.items.flatMap(
-                                                (
-                                                  item
-                                                ) =>
-                                                  item.states ||
-                                                  []
-                                              )
-                                            ),
-                                          ];
-
-                                        handleShowStates(
-                                          e,
-                                          allStatesList
-                                        );
-                                      }}
-                                      sx={{ p: 0.2 }}
-                                    >
-                                      <VisibilityIcon
-                                        sx={{
-                                          fontSize:
-                                            "0.8rem",
-                                          color:
-                                            COLORS.primary,
-                                        }}
-                                      />
-                                    </IconButton>
-                                  </Tooltip>
-                                </>
-                              )}
-                            </Box>
-                          </TableCell>
-
-                          {/* Leads */}
-                          <TableCell align="center">
-                            {rangeGroup.items[0]
-                              ?.isListingPlan ? (
-                              <Typography
-                                sx={{
-                                  fontSize:
-                                    TEXT_SIZES.small,
-                                  fontWeight: 700,
-                                }}
-                              >
-                                -
-                              </Typography>
-                            ) : (
-                              <>
-                                <Typography
-                                  sx={{
-                                    fontSize:
-                                      TEXT_SIZES.small,
-                                    fontWeight: 700,
-                                  }}
-                                >
-                                  {typeof rangeGroup.totalLeads ===
-                                  "number"
-                                    ? rangeGroup.totalLeads.toLocaleString(
-                                        "en-IN"
-                                      )
-                                    : rangeGroup.totalLeads}
-                                </Typography>
-
-                                <Typography
-                                  sx={{
-                                    fontSize: "0.55rem",
-                                    color:
-                                      COLORS.grey[600],
-                                    mt: 0.2,
-                                  }}
-                                >
-                                  {
-                                    rangeGroup.selectedLeads
-                                  }{" "}
-                                  ×{" "}
-                                  {
-                                    rangeGroup.totalStates
-                                  }
-                                </Typography>
-                              </>
-                            )}
-                          </TableCell>
-
-                          {/* Amount */}
-                          <TableCell align="right">
-                            <Typography
-                              sx={{
-                                fontSize:
-                                  TEXT_SIZES.small,
-                                fontWeight: 700,
-                                color:
-                                  COLORS.secondaryDark,
-                              }}
-                            >
-                              ₹
-                              {rangeGroup.totalAmount.toLocaleString(
-                                "en-IN"
-                              )}
-                            </Typography>
-
-                            {rangeGroup.pricePerState >
-                              0 && (
-                              <Typography
-                                sx={{
-                                  fontSize: "0.55rem",
-                                  color:
-                                    COLORS.grey[600],
-                                  mt: 0.2,
-                                }}
-                              >
-                                ₹
-                                {rangeGroup.pricePerState.toLocaleString(
-                                  "en-IN"
-                                )}{" "}
-                                ×{" "}
-                                {
-                                  rangeGroup.totalStates
-                                }
-                              </Typography>
-                            )}
-                          </TableCell>
-
-                          {/* Actions */}
-                          <TableCell align="center">
-                            <Tooltip
-                              title="Remove from summary"
-                              arrow
-                            >
-                              <IconButton
-                                onClick={() => {
-                                  setItemToRemove({
-                                    planName:
-                                      planData.planName,
-                                    range:
-                                      rangeGroup.range,
-                                    investmentRangeLabel:
-                                      rangeGroup.investmentRangeLabel,
-                                    items:
-                                      rangeGroup.items,
-                                  });
-
-                                  setOpenRemoveConfirmDialog(
-                                    true
-                                  );
-                                }}
-                                sx={{
-                                  color:
-                                    COLORS.grey[600],
-                                  p: 0.3,
-
-                                  "&:hover": {
-                                    color:
-                                      COLORS.primary,
-                                    backgroundColor:
-                                      COLORS.lightOrange,
-                                  },
-                                }}
-                              >
-                                <DeleteIcon
-                                  sx={{ fontSize: 18 }}
-                                />
-                              </IconButton>
-                            </Tooltip>
-                          </TableCell>
-                        </TableRow>
-                      );
-
-                      rowIndex++;
-                    });
+  rowIndex++;
+});
 
                     rangeRows.push(
                       <TableRow
