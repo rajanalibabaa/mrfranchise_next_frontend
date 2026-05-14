@@ -30,6 +30,7 @@ import {
 } from "@mui/icons-material";
 import { toast } from "react-hot-toast";
 import PaymentButton from "./PaymentButton";
+import { GSTCalculator } from "@/Utils/gstCalculator";
 
 export default function PaymentPage() {
   const [paymentData, setPaymentData] = useState(null);
@@ -48,20 +49,27 @@ export default function PaymentPage() {
     setLoading(false);
   }, []);
 
-  // ✅ GST Calculation (Client-side preview)
-  const calculateGST = (items) => {
-    const subtotal = items.reduce((sum, item) => sum + item.amount, 0);
-    const gstAmount = Math.round(subtotal * 0.18);
-    const finalAmount = subtotal + gstAmount;
+ 
 
-    setGstBreakdown({
-      subtotal,
-      cgst: Math.round(gstAmount / 2),
-      sgst: Math.round(gstAmount / 2),
-      totalGst: gstAmount,
-      finalAmount,
-    });
-  };
+  const calculateGST = (items) => {
+  const subtotal = items.reduce(
+    (sum, item) => sum + item.amount,
+    0
+  );
+
+  // Example:
+  // Company State = TN
+  // Customer Billing State = TN
+
+  const gstData = GSTCalculator.calculate(
+    subtotal,
+    "TN", // seller state
+    "TN"  // buyer state
+  );
+
+  setGstBreakdown(gstData);
+};
+
 
   const handlePaymentSuccess = (paymentData) => {
     // Save payment success data
@@ -112,7 +120,7 @@ export default function PaymentPage() {
 
   // Calculate totals
   const subtotal = gstBreakdown?.subtotal || paymentData.reduce((sum, g) => sum + g.amount, 0);
-  const finalAmount = gstBreakdown?.finalAmount || subtotal;
+  const finalAmount = gstBreakdown?.subtotal || subtotal;
   const packagesNames = paymentData.map(g => g.planName).join(", ");
 
   return (
@@ -273,7 +281,7 @@ export default function PaymentPage() {
                 <Box display="flex" justifyContent="space-between">
                   <Typography fontWeight={600}>Total GST (18%)</Typography>
                   <Typography fontWeight={600}>
-                    ₹{gstBreakdown?.totalGst?.toLocaleString()}
+                    ₹{gstBreakdown?.totalGST?.toLocaleString()}
                   </Typography>
                 </Box>
 

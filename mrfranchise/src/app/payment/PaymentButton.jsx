@@ -98,32 +98,62 @@ export default function PaymentButton({ amount, packageName, packageData, onSucc
         return;
       }
 
+      const firstPackage = packageData?.[0];
+const firstItem = firstPackage?.items?.[0];
+const payload = {
+  // =========================
+  // USER
+  // =========================
+  brandOwnerId: uuid,
+
+  email: brandData.email,
+  phone: brandData.phone,
+  name: brandData.name,
+  brandID: brandData.brandID,
+
+  // =========================
+  // PLAN
+  // =========================
+  packageName: firstPackage?.planName,
+  planId: firstPackage?.planId,
+  planUniqueId: firstPackage?.planUniqueId,
+
+  // =========================
+  // PACKAGE
+  // =========================
+  investmentRangeLabel: firstPackage?.investmentRangeLabel,
+   range: firstItem?.range,
+  totalStates:
+    firstPackage?.totalStates,
+
+  uniqueStates:
+    firstPackage?.uniqueStates || [],
+
+  // =========================
+  // AMOUNT
+  // =========================
+  baseAmount: firstPackage?.amount,
+
+  // =========================
+  // GST
+  // =========================
+  billingState: "TN",
+  companyState: "TN",
+
+  // =========================
+  // OPTIONAL
+  // =========================
+  gstNumber: "",
+  pan: "",
+};
+
+console.log("PAYLOAD:", payload);
+
+
+
       // ✅ 2. Create Payment Order (Pass ALL required fields)
       const orderResponse = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/payment/create`,
-        {
-          // Core Required Fields
-          brandOwnerId: uuid,
-          baseAmount: amount, // Base amount before GST
-          packageName,
-          
-          // Customer Details (from brand)
-          email: brandData.email,
-          phone: brandData.phone,
-          name: brandData.name,
-          brandID: brandData.brandID,
-
-          // ✅ Compliance Fields (GST & PAN)
-          gstNumber: brandData.gstNumber || "", // Optional
-          pan: brandData.pan || "", // Optional
-
-          // ✅ State Information for GST (CGST/SGST vs IGST)
-          billingState: "MH", // Customer billing state
-          companyState: "MH", // Your company state
-
-          // ✅ Package Details Array (for multiple packages)
-          packageData: packageData || [],
-        },
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/payment/create`,payload,
         {
           headers: {
             "Content-Type": "application/json",
@@ -203,6 +233,10 @@ export default function PaymentButton({ amount, packageName, packageData, onSucc
 
     } catch (err) {
       console.error("Payment Error:", err);
+  console.log(
+    "BACKEND RESPONSE:",
+    err?.response?.data
+  );
 
       // Enhanced Error Handling
       if (err.code === "ECONNABORTED") {

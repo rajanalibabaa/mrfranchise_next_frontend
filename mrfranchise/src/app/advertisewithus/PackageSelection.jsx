@@ -872,7 +872,7 @@ const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
       );
     },
     [ficoInvestmentRanges, normalizeRange],
-  );
+  );  
 
   const getUniqueStatesAcrossRanges = useCallback((items) => {
     const allStatesSet = new Set();
@@ -1018,6 +1018,8 @@ const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
               groupKey,
               planId: selectedPlan._id,
               planName: selectedPlan.planName,
+              planUniqueId: selectedPlan.planUniqueId,
+              planPackageId: selectedPkg._id,
               investmentRangeLabel,
               validityDays: selectedPkg?.validityDays,
               pricePerState,
@@ -1137,6 +1139,8 @@ const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
           packagesType: group.isListingPlan ? "listing" : "investment",
           packagesName: group.planName,
           planUniqueId: group.planId,
+          planPackageId: group.planPackageId,
+          
           InvestmetPackages: [],
         });
       }
@@ -2963,6 +2967,8 @@ const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
                           groupKey,
                           planId: plan._id,
                           planName: plan.planName,
+                          planUniqueId: plan.planUniqueId,
+                          planpackageId:pkg._id,
                           investmentRangeLabel: "ALL INVESTMENT RANGE",
                           validityDays: pkg.validityDays,
                           pricePerState: pkg.amount,
