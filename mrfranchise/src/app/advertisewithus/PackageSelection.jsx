@@ -4148,8 +4148,6 @@ const handleAddListingPlan = (plan, pkg) => {
       );
     }
   } else {
-    // Came from "Add New Investment Range" button — no specific range pre-selected
-    // Call with empty args so parent opens the PaymentBrandUpdate dialog fresh
     if (!finalToken) {
       setShowLogin(true);
       openSnack("Please log in to add investment ranges", "warning");
