@@ -37,6 +37,7 @@ import {
   AccordionDetails,
 } from "@mui/material";
 import { keyframes } from '@mui/system';
+import DeleteIcon from "@mui/icons-material/Delete";
 import RemoveIcon from "@mui/icons-material/Remove";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import EditIcon from "@mui/icons-material/Edit";
@@ -47,7 +48,15 @@ import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
 import LoginPage from "@/Components/LoginPage/LoginPage.jsx";
 import CalendarMonthRoundedIcon from "@mui/icons-material/CalendarMonthRounded";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import CloseIcon from "@mui/icons-material/Close";
+import LayersIcon from "@mui/icons-material/Layers";
+import GroupIcon from "@mui/icons-material/Group";  
+import BarChartIcon from "@mui/icons-material/BarChart";
+import GridViewIcon from "@mui/icons-material/GridView";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import StarBorderRoundedIcon from "@mui/icons-material/StarBorderRounded";
+import WorkspacePremiumRoundedIcon from "@mui/icons-material/WorkspacePremiumRounded";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
@@ -100,42 +109,41 @@ const bounceAnimation = keyframes`
 
 const INDIA_STATES = {
   North: [
+    "Chandigarh",
     "Delhi",
     "Haryana",
     "Himachal Pradesh",
+    "Jammu and Kashmir",
+    "Ladakh",
     "Punjab",
     "Rajasthan",
     "Uttar Pradesh",
     "Uttarakhand",
-    "Jammu and Kashmir",
-    "Ladakh",
-    "Chandigarh",
   ],
 
   South: [
     "Andhra Pradesh",
     "Karnataka",
     "Kerala",
+    "Lakshadweep",
+    "Puducherry",
     "Tamil Nadu",
     "Telangana",
-    "Puducherry",
-    "Lakshadweep",
   ],
 
   East: [
+    "Andaman and Nicobar Islands",
     "Bihar",
     "Jharkhand",
     "Odisha",
     "West Bengal",
-    "Andaman and Nicobar Islands",
   ],
 
   West: [
+    "Dadra and Nagar Haveli and Daman and Diu",
     "Goa",
     "Gujarat",
     "Maharashtra",
-    "Dadra and Nagar Haveli",
-    "Daman and Diu",
   ],
 
   NorthEast: [
@@ -239,7 +247,11 @@ const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
 const [pendingSelection, setPendingSelection] = useState(null);
 const [openNoSelectionDialog, setOpenNoSelectionDialog] = useState(false);
 const [expandedRegion, setExpandedRegion] = useState(null);
-
+const [draftStatesByRange, setDraftStatesByRange] = useState({});
+const [openStatesTooltip, setOpenStatesTooltip] = useState(false);
+const [tooltipStates, setTooltipStates] = useState([]);
+const [openRemoveConfirmDialog, setOpenRemoveConfirmDialog] = useState(false);
+const [itemToRemove, setItemToRemove] = useState(null);
   const { brandUUID: reduxBrandUUID, token: reduxToken } = useSelector(
     (state) => state.auth
   );
@@ -413,9 +425,9 @@ useEffect(() => {
     fetchBrandDetails(finalBrandUUID, finalToken);
   }, [finalBrandUUID, finalToken]);
 
-const getRangeKey = useCallback((investmentRangeLabel, range, selectedLeads = null) => {
-  if (selectedLeads !== null) {
-    return `${investmentRangeLabel}__${range}__${selectedLeads}`;
+const getRangeKey = useCallback((investmentRangeLabel, range, planId = null) => {
+  if (planId) {
+    return `${planId}__${investmentRangeLabel}__${range}`;
   }
   return `${investmentRangeLabel}__${range}`;
 }, []);
@@ -430,66 +442,54 @@ const getStatesToDisplay = useCallback(() => {
   }
 }, [finalToken, allStates]);
 
-const handleSelectAll = useCallback(() => {
-  const states = getStatesToDisplay();
-  console.log('Selecting all states:', states); // Debug log
-  if (states && states.length > 0) {
-    setSelectedStates(new Set(states));
-    openSnack(`Selected ${states.length} states`, "success");
-  } else {
-    openSnack("No states available to select", "warning");
-  }
-}, [getStatesToDisplay, openSnack]);
+// const handleSelectAll = useCallback(() => {
+//   const states = getStatesToDisplay();
+//   const blocked = getAlreadySelectedStatesInOtherRanges();
 
-// Helper function to check for duplicate states across different INVESTMENT GROUPS (not ranges within same group)
-const hasDuplicateStates = useCallback((newStates, currentInvestmentRangeLabel, currentPlanId = null) => {
-  // Get all existing states from payment summary, grouping by investment range label
-  const existingStatesByGroup = new Map(); // Map<investmentRangeLabel, Set<states>>
-  
-  paymentSummary.forEach((group) => {
-    const groupLabel = group.investmentRangeLabel;
-    if (!existingStatesByGroup.has(groupLabel)) {
-      existingStatesByGroup.set(groupLabel, new Set());
-    }
-    group.items.forEach((item) => {
-      item.states.forEach((state) => {
-        existingStatesByGroup.get(groupLabel).add(state);
-      });
-    });
-  });
-  
-  // Check for duplicates only in DIFFERENT investment groups
-  let duplicateStates = [];
-  const newStatesArray = [...newStates];
-  
-  for (const [groupLabel, existingStates] of existingStatesByGroup.entries()) {
-    // Skip the current group we're adding to
-    if (groupLabel === currentInvestmentRangeLabel) continue;
-    
-    // Check if any new states exist in other groups
-    const overlappingStates = newStatesArray.filter(state => existingStates.has(state));
-    if (overlappingStates.length > 0) {
-      duplicateStates.push(...overlappingStates);
-    }
-  }
-  
-  // Remove duplicates from the array
-  duplicateStates = [...new Set(duplicateStates)];
-  
-  if (duplicateStates.length > 0) {
-    openSnack(`Cannot add: State(s) "${duplicateStates.join(', ')}" already selected in another investment group (${currentInvestmentRangeLabel !== duplicateStates ? 'different group' : ''}). Each state can only be used in one investment group.`, "warning");
-    return { hasDuplicate: true, duplicateStates };
-  }
-  
-  return { hasDuplicate: false, duplicateStates: [] };
-}, [paymentSummary, openSnack]);
+//   const selectableStates = states.filter(state => !blocked.has(state));
 
-const handleClearAll = useCallback(() => {
-  setSelectedStates(new Set());
-  openSnack("Cleared all selected states", "info");
-}, [openSnack]);
+//   if (selectableStates.length > 0) {
+//     setSelectedStates(new Set(selectableStates));
+//     openSnack(`Selected ${selectableStates.length} states`, "success");
+//   } else {
+//     openSnack("No states available to select", "warning");
+//   }
+// }, [getStatesToDisplay, getAlreadySelectedStatesInOtherRanges, openSnack]);
 
-// Replace your handleMoveToPayment function with this:
+// Replace the hasDuplicateStates function (around line 200)
+
+// let hasCrossGroupConflict = false;
+// let conflictingStates = [];
+
+// selectedItemsInGroup.forEach((selectedItem) => {
+//   const key = getRangeKey(selectedItem.investmentRangeLabel, selectedItem.range);
+//   let states = statesByInvestmentRange[key];
+//   if (!states || states.length === 0) {
+//     if (!finalToken && detectedState) states = [detectedState];
+//     else if (finalToken) states = allStates;
+//     else states = [];
+//   }
+
+//   // Only check against items from DIFFERENT investment range labels
+//   paymentSummary.forEach((group) => {
+//     if (group.investmentRangeLabel === selectedItem.investmentRangeLabel) return; // same group, skip
+//     group.items.forEach((existingItem) => {
+//       if (existingItem.investmentRangeLabel === selectedItem.investmentRangeLabel) return;
+//       existingItem.states.forEach((state) => {
+//         if (states.includes(state) && !conflictingStates.includes(state)) {
+//           conflictingStates.push(state);
+//           hasCrossGroupConflict = true;
+//         }
+//       });
+//     });
+//   });
+// });
+
+// if (hasCrossGroupConflict) {
+//   openSnack(`Cannot add: State(s) "${conflictingStates.join(', ')}" already used in a different investment group.`, "warning");
+//   return;
+// }
+
 const handleMoveToPayment = useCallback((groupKey) => {
   // Find the group in paymentSummary
   const groupToMove = paymentSummary.find(g => g.groupKey === groupKey);
@@ -514,14 +514,23 @@ const handleMoveToPayment = useCallback((groupKey) => {
 }, [paymentSummary, openSnack, scrollToPaymentSummary]);
   
 
-  useEffect(() => {
-    if (paymentSummary.length > 0) {
-      setPaymentSummary((prev) => {
-        return prev.map((group) => {
-          const updatedItems = group.items.map((item) => {
-            const key = getRangeKey(item.investmentRangeLabel, item.range);
-            let states = statesByInvestmentRange[key];
-            if (!states || states.length === 0) {
+useEffect(() => {
+  if (paymentSummary.length > 0) {
+    setPaymentSummary((prev) => {
+      return prev.map((group) => {
+        const updatedItems = group.items.map((item) => {
+          // Include group.planId in the key to make it unique per plan
+          const key = getRangeKey(item.investmentRangeLabel, item.range, group.planId);
+          let states = statesByInvestmentRange[key];
+          
+          // CRITICAL FIX: Don't fallback to existing item.states if statesByInvestmentRange returns empty
+          // If user cleared all states, that should be respected
+          if (!states || states.length === 0) {
+            // Check if the key exists in statesByInvestmentRange (even if empty array)
+            if (statesByInvestmentRange.hasOwnProperty(key)) {
+              states = statesByInvestmentRange[key]; // This will be [] if user cleared
+            } else {
+              // Only use defaults if user has never edited this range
               if (!finalToken && detectedState) {
                 states = [detectedState];
               } else if (finalToken) {
@@ -530,104 +539,219 @@ const handleMoveToPayment = useCallback((groupKey) => {
                 states = [];
               }
             }
-            return {
-              ...item,
-              states: states,
-              stateCount: states.length,
-            };
-          });
-          const allStatesSet = new Set();
-          updatedItems.forEach((item) => {
-            item.states.forEach((state) => allStatesSet.add(state));
-          });
-          const uniqueStates = Array.from(allStatesSet);
-          const totalUniqueStates = uniqueStates.length;
-
-// Align backend calculations with custom lead-formula pipeline
-const leadsDataKey = `${group.planId}_${group.investmentRangeLabel}`;
-const availableLeads = leadsDropdownData[leadsDataKey] || [];
-          const minLeads = availableLeads.length > 0 ? Math.min(...availableLeads) : 1;
-          const divisor = minLeads > 0 ? minLeads : 1;
-          const selectedLeads = group.items[0]?.selectedLeads || 0;
-
-          const newAmount = group.isListingPlan 
-            ? group.amount 
-            : (group.pricePerState / divisor) * totalUniqueStates * selectedLeads;
-
+          }
+          
           return {
-            ...group,
-            items: updatedItems,
-            uniqueStates: uniqueStates,
-            totalStates: totalUniqueStates,
-            amount: newAmount,
+            ...item,
+            states: states || [],
+            stateCount: (states || []).length,
           };
         });
-      });
-    }
-  }, [statesByInvestmentRange, finalToken, detectedState, allStates, getRangeKey, leadsDropdownData]);
+        
+        const allStatesSet = new Set();
+        updatedItems.forEach((item) => {
+          item.states.forEach((state) => allStatesSet.add(state));
+        });
+        const uniqueStates = Array.from(allStatesSet);
+        const totalUniqueStates = uniqueStates.length;
 
-const handleOpenStateModal = useCallback((investmentRangeLabel, range, selectedLeads) => {
-  const key = getRangeKey(investmentRangeLabel, range, selectedLeads);
+        const leadsDataKey = `${group.planId}_${group.investmentRangeLabel}`;
+        const availableLeads = leadsDropdownData[leadsDataKey] || [];
+        const minLeads = availableLeads.length > 0 ? Math.min(...availableLeads) : 1;
+        const divisor = minLeads > 0 ? minLeads : 1;
+        const selectedLeads = group.items[0]?.selectedLeads || 0;
+
+        const newAmount = group.isListingPlan 
+          ? group.amount 
+          : (group.pricePerState / divisor) * totalUniqueStates * selectedLeads;
+
+        return {
+          ...group,
+          items: updatedItems,
+          uniqueStates: uniqueStates,
+          totalStates: totalUniqueStates,
+          amount: newAmount,
+        };
+      });
+    });
+  }
+}, [statesByInvestmentRange, finalToken, detectedState, allStates, getRangeKey, leadsDropdownData]);
+
+const handleOpenStateModal = useCallback((investmentRangeLabel, range, planId = null) => {
+  const key = getRangeKey(investmentRangeLabel, range, planId);
   setCurrentEditingRange(key);
+  
+  // Check if this range is already committed to payment summary
+  const committedItem = paymentSummary
+    .flatMap(g => g.items)
+    .find(item => {
+      const itemKey = getRangeKey(item.investmentRangeLabel, item.range, planId);
+      return itemKey === key;
+    });
+    
+  // Priority: committed states > draft states > saved states > default
+  const committedStates = committedItem?.states;
+  const draftStates = draftStatesByRange[key];
   const savedStates = statesByInvestmentRange[key];
-  if (savedStates && savedStates.length > 0) {
-    setSelectedStates(new Set(savedStates));
+  const statesToPreselect = committedStates || draftStates || savedStates;
+  
+  if (statesToPreselect && statesToPreselect.length > 0) {
+    setSelectedStates(new Set(statesToPreselect));
   } else {
     if (!finalToken && detectedState) {
       setSelectedStates(new Set([detectedState]));
-    } else if (finalToken && allStates.length > 0) {
-      setSelectedStates(new Set(allStates));
     } else {
       setSelectedStates(new Set());
     }
   }
   setOpenStateModal(true);
-}, [getRangeKey, statesByInvestmentRange, finalToken, detectedState, allStates]);
+}, [getRangeKey, paymentSummary, draftStatesByRange, statesByInvestmentRange, finalToken, detectedState]);
 
+const handleShowStates = useCallback((event, statesList) => {
+  setTooltipStates(statesList);
+  setTooltipAnchorEl(event.currentTarget);
+  setOpenStatesTooltip(true);
+}, []);
+
+const handleCloseStatesTooltip = useCallback(() => {
+  setOpenStatesTooltip(false);
+  setTooltipAnchorEl(null);
+  setTooltipStates([]);
+}, []);
   const handleCloseStateModal = useCallback(() => {
     setOpenStateModal(false);
   }, []);
 
-const handleStateCheckboxChange = useCallback((state) => {
-  // Check if this state is already selected in other ranges
-  let isSelectedInOtherRange = false;
+// const handleStateCheckboxChange = useCallback(
+//   (state) => {
+//     const blocked = getAlreadySelectedStatesInOtherRanges();
+
+//     if (blocked.has(state) && !selectedStates.has(state)) {
+//       openSnack(`"${state}" is already used in another investment range`, "warning");
+//       return;
+//     }
+
+//     setSelectedStates((prev) => {
+//       const next = new Set(prev);
+//       if (next.has(state)) next.delete(state);
+//       else next.add(state);
+//       return next;
+//     });
+//   },
+//   [getAlreadySelectedStatesInOtherRanges, selectedStates, openSnack]
+// );
+const getAlreadySelectedStatesInOtherRanges = useCallback(() => {
+  const selectedInOtherRanges = new Set();
+  if (!currentEditingRange) return selectedInOtherRanges;
+
+  // Extract the unique key for the current range being edited
+  // Key format is either: "planId__investmentRangeLabel__range" or "investmentRangeLabel__range"
+  const currentKey = currentEditingRange;
   
-  if (currentEditingRange) {
-    Object.entries(statesByInvestmentRange).forEach(([rangeKey, states]) => {
-      if (rangeKey !== currentEditingRange && states.includes(state)) {
-        isSelectedInOtherRange = true;
-      }
+  // Get the current planId if it exists in the key
+  const currentPlanId = currentKey.includes('__') && currentKey.split('__').length === 3 
+    ? currentKey.split('__')[0] 
+    : null;
+
+  paymentSummary.forEach((group) => {
+    group.items.forEach((item) => {
+      // For each item in payment summary, get its states
+      // Skip if this is the same plan and same range (current editing item)
+      const itemKey = getRangeKey(item.investmentRangeLabel, item.range, group.planId);
+      
+      // If this is the exact same item we're editing, skip (don't block its own states)
+      if (itemKey === currentKey) return;
+      
+      // Block all states from other items (different plan or different range)
+      // This ensures states already used anywhere else cannot be selected again
+      item.states.forEach((state) => selectedInOtherRanges.add(state));
     });
-  }
+  });
+
+  return selectedInOtherRanges;
+}, [currentEditingRange, paymentSummary, getRangeKey]);
+const handleSaveStates = useCallback(() => {
+  const blocked = getAlreadySelectedStatesInOtherRanges();
   
-  if (isSelectedInOtherRange && !selectedStates.has(state)) {
-    openSnack(`State "${state}" is already selected in another investment range and cannot be added`, "warning");
+  // Filter out any states that are already used elsewhere
+  const selectedArray = Array.from(selectedStates).filter(state => !blocked.has(state));
+  
+  if (selectedArray.length === 0 && selectedStates.size > 0) {
+    openSnack("Cannot save: Selected states are already used in other investment ranges", "warning");
     return;
   }
   
-  setSelectedStates((prev) => {
-    const newSet = new Set(prev);
-    if (newSet.has(state)) newSet.delete(state);
-    else newSet.add(state);
-    return newSet;
-  });
-}, [statesByInvestmentRange, currentEditingRange, openSnack]);
+  // Debug log to see what's being saved
+  console.log(`Saving states for ${currentEditingRange}:`, selectedArray);
 
-  const handleSaveStates = useCallback(() => {
-    const selectedArray = Array.from(selectedStates);
-    const updated = {
-      ...statesByInvestmentRange,
-      [currentEditingRange]: selectedArray,
-    };
-    setStatesByInvestmentRange(updated);
-    localStorage.setItem("investmentRangeStates", JSON.stringify(updated));
-    openSnack(`Saved ${selectedArray.length} state${selectedArray.length > 1 ? 's' : ''}`, "success");
-    handleCloseStateModal();
-  }, [selectedStates, statesByInvestmentRange, currentEditingRange, openSnack, handleCloseStateModal]);
+  // Update statesByInvestmentRange - REPLACE completely, don't merge
+  const updated = {
+    ...statesByInvestmentRange,
+    [currentEditingRange]: selectedArray,
+  };
+  setStatesByInvestmentRange(updated);
+  localStorage.setItem("investmentRangeStates", JSON.stringify(updated));
+
+  // Update paymentSummary if this range is already committed
+  setPaymentSummary((prev) =>
+    prev.map((group) => {
+      // Check if this group contains the range we're editing
+      let groupHasRange = false;
+      const updatedItems = group.items.map((item) => {
+        const itemKey = getRangeKey(item.investmentRangeLabel, item.range, group.planId);
+        if (itemKey !== currentEditingRange) return item;
+        
+        groupHasRange = true;
+        
+        return {
+          ...item,
+          states: [...selectedArray],
+          stateCount: selectedArray.length,
+          totalLeads: item.selectedLeads * selectedArray.length,
+          totalAmount: group.pricePerState * selectedArray.length,
+        };
+      });
+
+      if (!groupHasRange) return group;
+
+      const allStatesSet = new Set();
+      updatedItems.forEach((item) => {
+        item.states.forEach((state) => allStatesSet.add(state));
+      });
+      const uniqueStates = Array.from(allStatesSet);
+      const totalUniqueStates = uniqueStates.length;
+
+      const leadsDataKey = `${group.planId}_${group.investmentRangeLabel}`;
+      const availableLeads = leadsDropdownData[leadsDataKey] || [];
+      const minLeads = availableLeads.length > 0 ? Math.min(...availableLeads) : 1;
+      const divisor = minLeads > 0 ? minLeads : 1;
+      const selectedLeads = updatedItems[0]?.selectedLeads || 0;
+      const newAmount = group.isListingPlan
+        ? group.amount
+        : (group.pricePerState / divisor) * totalUniqueStates * selectedLeads;
+
+      return {
+        ...group,
+        items: updatedItems,
+        uniqueStates: uniqueStates,
+        totalStates: totalUniqueStates,
+        amount: newAmount,
+        totalLeads: totalUniqueStates * selectedLeads,
+      };
+    })
+  );
+
+  openSnack(
+    selectedArray.length === 0
+      ? "All states cleared"
+      : `Saved ${selectedArray.length} state${selectedArray.length > 1 ? "s" : ""}`,
+    selectedArray.length === 0 ? "info" : "success"
+  );
+  handleCloseStateModal();
+}, [selectedStates, statesByInvestmentRange, currentEditingRange, getRangeKey, leadsDropdownData, openSnack, handleCloseStateModal, getAlreadySelectedStatesInOtherRanges]);
 
 
-
- const fetchBrandDetails = async (uuid, accessToken) => {
+const fetchBrandDetails = async (uuid, accessToken) => {
   try {
     setBrandLoading(true);
     setBrandError(null);
@@ -641,10 +765,19 @@ const handleStateCheckboxChange = useCallback((state) => {
       }
     );
     const json = await response.json();
+
     if (!response.ok || json.success === false) {
       throw new Error(json.message || "Failed to fetch brand details");
     }
+    
     const brandData = Array.isArray(json.data) ? json.data[0] : json.data;
+    
+    // Store brandOwnerId
+    if (brandData.brandOwnerId) {
+      localStorage.setItem("brandOwnerId", brandData.brandOwnerId);
+    } else if (brandData._id) {
+      localStorage.setItem("brandOwnerId", brandData._id);
+    }
     const ficoData = Array.isArray(brandData?.franchiseDetails?.fico)
       ? brandData.franchiseDetails.fico
       : Array.isArray(brandData?.fico)
@@ -824,22 +957,17 @@ const handleAddSingleToPayment = useCallback((item, selectedPlan, selectedPkg) =
   const { id, investmentRangeLabel, range } = item;
   const pricePerState = selectedPkg?.amount || 0;
   
-  // Get current selected leads value
   const leadsDataKey = `${selectedPlan._id}_${investmentRangeLabel}`;
   const availableLeads = leadsDropdownData[leadsDataKey] || [];
 
-  // Get selected leads with proper fallback
-  let selectedLeads = selectedLeadsPerRange[`plan-${selectedPlan._id}`];
+let selectedLeads = selectedLeadsPerRange[`plan-${selectedPlan._id}-${investmentRangeLabel}`];
   if (!selectedLeads && availableLeads.length > 0) {
     selectedLeads = availableLeads[0];
   } else if (!selectedLeads) {
     selectedLeads = 0;
   }
-  
-  // Use key with selectedLeads to get unique states per lead count
-  const key = getRangeKey(investmentRangeLabel, range, selectedLeads);
-  let states = statesByInvestmentRange[key];
-  
+const key = getRangeKey(investmentRangeLabel, range, selectedPlan._id);
+let states = statesByInvestmentRange[key];
   if (!states || states.length === 0) {
     if (!finalToken && detectedState) {
       states = [detectedState];
@@ -855,12 +983,8 @@ const handleAddSingleToPayment = useCallback((item, selectedPlan, selectedPkg) =
     return;
   }
   
-  // CHECK FOR DUPLICATE STATES BEFORE ADDING
-const { hasDuplicate, duplicateStates } = hasDuplicateStates(states, investmentRangeLabel);
-  if (hasDuplicate) {
-    // Don't add if duplicates exist
-    return;
-  }
+  // ✅ REMOVED: hasDuplicateStates check — no longer block here
+  // State overlap within same investment group is allowed
   
   const minLeads = availableLeads.length > 0 ? Math.min(...availableLeads) : 1;
   const divisor = minLeads > 0 ? minLeads : 1;
@@ -871,66 +995,53 @@ const { hasDuplicate, duplicateStates } = hasDuplicateStates(states, investmentR
     range,
     stateCount: states.length,
     states,
-    selectedLeads: selectedLeads,
+    selectedLeads,
     totalLeads: selectedLeads * states.length,
     totalAmount: pricePerState * states.length,
   };
-  
-  console.log("New Item being added:", newItem); // Debug log
-  
-  // Include selectedLeads in groupKey to differentiate
-  const groupKey = `${selectedPlan._id}__${selectedPkg?.validityDays}__${pricePerState}__${selectedLeads}__${investmentRangeLabel}`;
-  
-  setPaymentSummary((prev) => {
+
+const groupKey = `${selectedPlan._id}__${selectedPkg?.validityDays}__${pricePerState}__${investmentRangeLabel}__${range}`;  setPaymentSummary((prev) => {
     const existingGroup = prev.find((g) => g.groupKey === groupKey);
     let newSummary;
     
     if (existingGroup) {
       const existingItemIndex = existingGroup.items.findIndex((ex) => ex.id === newItem.id);
-      
+
       if (existingItemIndex !== -1) {
-        const updatedItems = [...existingGroup.items];
-        updatedItems[existingItemIndex] = {
-          ...updatedItems[existingItemIndex],
-          states: newItem.states,
-          stateCount: newItem.stateCount,
+        const updatedItems = existingGroup.items.map((it) => ({
+          ...it,
           selectedLeads: newItem.selectedLeads,
-          totalLeads: newItem.selectedLeads * newItem.stateCount,
-          totalAmount: pricePerState * newItem.stateCount,
-        };
-        
+          totalLeads: newItem.selectedLeads * it.stateCount,
+          totalAmount: pricePerState * it.stateCount,
+          ...(it.id === newItem.id ? {
+            states: newItem.states,
+            stateCount: newItem.stateCount,
+          } : {}),
+        }));
+
         const uniqueStates = getUniqueStatesAcrossRanges(updatedItems);
         const totalUniqueStates = uniqueStates.length;
-        const newAmount = (pricePerState / divisor) * totalUniqueStates * selectedLeads;
-        
+        const newAmount = (pricePerState / divisor) * totalUniqueStates * newItem.selectedLeads;
+
         newSummary = prev.map((g) =>
           g.groupKey === groupKey
-            ? {
-                ...g,
-                items: updatedItems,
-                uniqueStates: uniqueStates,
-                totalStates: totalUniqueStates,
-                amount: newAmount,
-                totalLeads: totalUniqueStates * selectedLeads,
-              }
+            ? { ...g, items: updatedItems, uniqueStates, totalStates: totalUniqueStates, amount: newAmount, totalLeads: totalUniqueStates * newItem.selectedLeads }
             : g
         );
       } else {
-        const updatedItems = [...existingGroup.items, newItem];
+        const updatedItems = [...existingGroup.items, newItem].map((it) => ({
+          ...it,
+          selectedLeads: newItem.selectedLeads,
+          totalLeads: newItem.selectedLeads * it.stateCount,
+        }));
+
         const uniqueStates = getUniqueStatesAcrossRanges(updatedItems);
         const totalUniqueStates = uniqueStates.length;
-        const newAmount = (pricePerState / divisor) * totalUniqueStates * selectedLeads;
-        
+        const newAmount = (pricePerState / divisor) * totalUniqueStates * newItem.selectedLeads;
+
         newSummary = prev.map((g) =>
           g.groupKey === groupKey
-            ? {
-                ...g,
-                items: updatedItems,
-                uniqueStates: uniqueStates,
-                totalStates: totalUniqueStates,
-                amount: newAmount,
-                totalLeads: totalUniqueStates * selectedLeads,
-              }
+            ? { ...g, items: updatedItems, uniqueStates, totalStates: totalUniqueStates, amount: newAmount, totalLeads: totalUniqueStates * newItem.selectedLeads }
             : g
         );
       }
@@ -958,9 +1069,7 @@ const { hasDuplicate, duplicateStates } = hasDuplicateStates(states, investmentR
     }
     
     setMovedGroupKeys((prevKeys) => {
-      if (!prevKeys.includes(groupKey)) {
-        return [...prevKeys, groupKey];
-      }
+      if (!prevKeys.includes(groupKey)) return [...prevKeys, groupKey];
       return prevKeys;
     });
     
@@ -1083,20 +1192,20 @@ const autoSelectFICORanges = useCallback(() => {
 
 
 // 10. Define the auto-selection useEffect (depends on autoSelectFICORanges)
-useEffect(() => {
-  if (finalToken && ficoInvestmentRanges.length > 0 && filteredPlans.length > 0) {
-    const hasAutoSelected = localStorage.getItem(`autoSelected_${finalBrandUUID}`);
+// useEffect(() => {
+//   if (finalToken && ficoInvestmentRanges.length > 0 && filteredPlans.length > 0) {
+//     const hasAutoSelected = localStorage.getItem(`autoSelected_${finalBrandUUID}`);
     
-    if (!hasAutoSelected) {
-      const timer = setTimeout(() => {
-        autoSelectFICORanges();
-        localStorage.setItem(`autoSelected_${finalBrandUUID}`, 'true');
-      }, 1000);
+//     if (!hasAutoSelected) {
+//       const timer = setTimeout(() => {
+//         autoSelectFICORanges();
+//         localStorage.setItem(`autoSelected_${finalBrandUUID}`, 'true');
+//       }, 1000);
       
-      return () => clearTimeout(timer);
-    }
-  }
-}, [finalToken, ficoInvestmentRanges, filteredPlans, finalBrandUUID, autoSelectFICORanges]);
+//       return () => clearTimeout(timer);
+//     }
+//   }
+// }, [finalToken, ficoInvestmentRanges, filteredPlans, finalBrandUUID, autoSelectFICORanges]);
 
   
   useEffect(() => {
@@ -1118,7 +1227,84 @@ useEffect(() => {
   }, [paymentSummary]);
 
   
+const createBrandPackages = async (brandOwnerId, packages, token) => {
+  try {
+    const response = await fetch(`${API_URL}/api/v1/brand-packages-plans/create`, {
+      method: 'PATCH',  // Change from 'POST' to 'PATCH'
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({
+        brandOwnerId,
+        packages,
+      }),
+    });
+    
+    // Check if response is OK
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Error response:', errorText);
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error creating brand packages:", error);
+    throw error;
+  }
+};
 
+// Add this transformation function
+const transformPaymentToAPIFormat = useCallback((paymentGroups) => {
+  // Group by planId
+  const plansMap = new Map();
+  
+  paymentGroups.forEach((group) => {
+    if (!plansMap.has(group.planId)) {
+      plansMap.set(group.planId, {
+        packagesType: group.isListingPlan ? "listing" : "investment",
+        packagesName: group.planName,
+        planUniqueId: group.planId,
+        InvestmetPackages: [],
+      });
+    }
+    
+    const plan = plansMap.get(group.planId);
+    
+    // Transform each item in the group
+    group.items.forEach((item) => {
+      // Skip listing plans as they have different structure
+      if (item.isListingPlan) {
+        plan.InvestmetPackages.push({
+          PackageName: item.investmentRangeLabel,
+          Amount: group.pricePerState,
+          Validity: group.validityDays,
+          TotalLeads: "-",
+          States: item.states || ["ALL STATES"],
+          InvestmentRange: item.range,
+          InvestmentRangeLabel: item.investmentRangeLabel,
+          LeadsPerState: "-",
+        });
+      } else {
+        // For investment ranges
+        plan.InvestmetPackages.push({
+          PackageName: item.investmentRangeLabel,
+          Amount: group.pricePerState,
+          Validity: group.validityDays,
+          TotalLeads: item.selectedLeads * (item.stateCount || 0),
+          States: item.states || [],
+          InvestmentRange: item.range,
+          InvestmentRangeLabel: item.investmentRangeLabel,
+          LeadsPerState: item.selectedLeads,
+        });
+      }
+    });
+  });
+  
+  return Array.from(plansMap.values());
+}, []);
 
 
 // Add this function
@@ -1164,31 +1350,48 @@ const handleClearAllPayment = useCallback(() => {
   openSnack("Plan removed", "info");
 }, [openSnack]);
 
-  const handleProceedToPayment = useCallback(() => {
-    const movedGroups = paymentSummary.filter(g => movedGroupKeys.includes(g.groupKey));
-    if (movedGroups.length === 0) {
-      openSnack("Please move at least one plan to payment", "warning");
-      return;
-    }
-    if (!finalToken) {
-      localStorage.setItem("paymentSummaryDraft", JSON.stringify(movedGroups));
-      openSnack("Please login to continue to payment", "warning");
-      setShowLogin(true);
-      return;
-    }
-    localStorage.setItem("paymentSummary", JSON.stringify(movedGroups));
-    router.push("/payment");
-  }, [finalToken, openSnack, paymentSummary, movedGroupKeys, router]);
+const handleProceedToPayment = useCallback(() => {
+  const movedGroups = paymentSummary.filter(g => movedGroupKeys.includes(g.groupKey));
+  
+  if (movedGroups.length === 0) {
+    openSnack("Please move at least one plan to payment", "warning");
+    return;
+  }
+  
+  if (!finalToken) {
+    localStorage.setItem("paymentSummaryDraft", JSON.stringify(movedGroups));
+    openSnack("Please login to continue to payment", "warning");
+    setShowLogin(true);
+    return;
+  }
+  
+  // Store the selected packages data for after payment
+  const packagesData = transformPaymentToAPIFormat(movedGroups);
+  localStorage.setItem("pendingPackages", JSON.stringify({
+    packages: packagesData,
+    timestamp: Date.now(),
+    totalAmount: movedGroups.reduce((acc, g) => acc + (g.amount || 0), 0)
+  }));
+  
+  // Store payment summary for display
+  localStorage.setItem("paymentSummary", JSON.stringify(movedGroups));
+  
+  // Navigate to payment page
+  router.push("/payment");
+}, [finalToken, openSnack, paymentSummary, movedGroupKeys, router, transformPaymentToAPIFormat]);
 
- const getStateCountForRange = useCallback((investmentRangeLabel, range, selectedLeads) => {
-  const key = getRangeKey(investmentRangeLabel, range, selectedLeads);
-  const savedStates = statesByInvestmentRange[key];
-  if (savedStates && savedStates.length > 0) return savedStates.length;
+
+const getStateCountForRange = useCallback((investmentRangeLabel, range, planId = null) => {
+  const key = getRangeKey(investmentRangeLabel, range, planId);
+  
+  if (Object.prototype.hasOwnProperty.call(statesByInvestmentRange, key)) {
+    return statesByInvestmentRange[key].length;
+  }
+  
   if (!finalToken && detectedState) return 1;
   if (finalToken) return allStates.length;
   return 0;
 }, [getRangeKey, statesByInvestmentRange, finalToken, detectedState, allStates]);
-
  
 
 const handleAddInvestmentRange = useCallback((range, investmentRangeLabel) => {
@@ -1202,12 +1405,66 @@ const handleAddInvestmentRange = useCallback((range, investmentRangeLabel) => {
   onAddInvestmentRange(range, investmentRangeLabel);
 }, [onAddInvestmentRange, finalToken, openSnack]);
 
-  const handleLeadsChange = useCallback((itemId, newLeadsValue) => {
-    setSelectedLeadsPerRange((prev) => ({
-      ...prev,
-      [itemId]: newLeadsValue,
-    }));
-  }, []);
+const handleLeadsChange = useCallback((planGroupKey, newLeadsValue) => {
+  setSelectedLeadsPerRange((prev) => ({
+    ...prev,
+    [planGroupKey]: newLeadsValue,
+  }));
+
+  // Extract the range from the key
+  const withoutPrefix = planGroupKey.replace('plan-', '');
+  const parts = withoutPrefix.split('-');
+  const actualPlanId = parts[0];
+  const investmentRangeLabel = parts[1];
+  const specificRange = parts.slice(2).join('-'); // Get the full range name
+
+  setPaymentSummary((prev) =>
+    prev.map((group) => {
+      // Match by checking if the group contains this specific range
+      const hasRange = group.items.some(item => item.range === specificRange);
+      if (group.planId !== actualPlanId) return group;
+      if (!hasRange) return group;
+
+      const updatedItems = group.items.map((item) => {
+        if (item.range !== specificRange) return item;
+        
+        return {
+          ...item,
+          selectedLeads: newLeadsValue,
+          totalLeads: newLeadsValue * item.stateCount,
+          totalAmount: group.pricePerState * item.stateCount,
+        };
+      });
+
+      const allStatesSet = new Set();
+      updatedItems.forEach((item) => item.states.forEach((s) => allStatesSet.add(s)));
+      const uniqueStates = Array.from(allStatesSet);
+      const totalUniqueStates = uniqueStates.length;
+
+      const leadsDataKey = `${group.planId}_${group.investmentRangeLabel}`;
+      const availableLeads = leadsDropdownData[leadsDataKey] || [];
+      const minLeads = availableLeads.length > 0 ? Math.min(...availableLeads) : 1;
+      const divisor = minLeads > 0 ? minLeads : 1;
+      
+      // Calculate total amount across all items (each with their own leads count)
+      let totalAmount = 0;
+      updatedItems.forEach(item => {
+        totalAmount += (group.pricePerState / divisor) * item.stateCount * item.selectedLeads;
+      });
+
+      return {
+        ...group,
+        items: updatedItems,
+        uniqueStates,
+        totalStates: totalUniqueStates,
+        amount: totalAmount,
+        totalLeads: updatedItems.reduce((sum, item) => sum + (item.selectedLeads * item.stateCount), 0),
+      };
+    })
+  );
+
+  openSnack(`Leads updated to ${newLeadsValue}`, "info");
+}, [leadsDropdownData, openSnack]);
 
   // Add this useEffect to clear localStorage when payment summary is empty
 useEffect(() => {
@@ -1261,8 +1518,9 @@ const getRowBackgroundColor = useCallback((investmentRangeLabel, isInPayment, id
   }
   
   const groupIdx = allGroups.indexOf(investmentRangeLabel);
-  return groupIdx % 2 === 0 ? "#fff0c5" : "#c8e6ac";
+  return groupIdx % 2 === 0 ?"#fff0c5" : "#fff0c5";
 }, [selectedGroup, filteredPlans]);
+
 const handleRemoveListingPlan = useCallback((planId) => {
   const groupKey = `listing-${planId}`;
   setPaymentSummary((prev) => {
@@ -1273,47 +1531,61 @@ const handleRemoveListingPlan = useCallback((planId) => {
     }
     return newSummary;
   });
+  // ✅ Also remove from movedGroupKeys
   setMovedGroupKeys((prev) => prev.filter((key) => key !== groupKey));
   setSelected((prev) => {
     const copy = { ...prev };
     delete copy[groupKey];
     return copy;
   });
-  setSelectedListingPlanId(null);
   openSnack("Listing plan removed from cart", "info");
 }, [openSnack]);
 
-// Add this function before renderStatesByRegion
-const getAlreadySelectedStatesInOtherRanges = useCallback(() => {
-  const selectedInOtherRanges = new Set();
+
+
+
+
+const handleSelectAll = useCallback(() => {
+  const states = getStatesToDisplay();
+  const blocked = getAlreadySelectedStatesInOtherRanges();
+  const selectableStates = states.filter(state => !blocked.has(state));
+  if (selectableStates.length > 0) {
+    setSelectedStates(new Set(selectableStates));
+    openSnack(`Selected ${selectableStates.length} states`, "success");
+  } else {
+    openSnack("No states available to select", "warning");
+  }
+}, [getStatesToDisplay, getAlreadySelectedStatesInOtherRanges, openSnack]);
+
+const handleClearAll = useCallback(() => {
+  const blocked = getAlreadySelectedStatesInOtherRanges();
+  setSelectedStates((prev) => {
+    const next = new Set();
+    prev.forEach(state => {
+      if (blocked.has(state)) next.add(state);
+    });
+    return next;
+  });
+  openSnack("Cleared all selectable states", "info");
+}, [getAlreadySelectedStatesInOtherRanges, openSnack]);
+
+const handleStateCheckboxChange = useCallback((state) => {
+  const blocked = getAlreadySelectedStatesInOtherRanges();
   
-  if (!currentEditingRange) return selectedInOtherRanges;
-  
-  // Get the investment range label for the current editing range
-  let currentInvestmentRangeLabel = null;
-  // Extract the investment range label from currentEditingRange (format: "Upto 5 Lakhs__Below 50k__20")
-  const parts = currentEditingRange.split('__');
-  if (parts.length >= 1) {
-    currentInvestmentRangeLabel = parts[0];
+  // Check if the state is already used in ANY other item
+  if (blocked.has(state)) {
+    openSnack(`"${state}" is already used in another investment range. Please select a different state.`, "warning");
+    return;
   }
   
-  Object.entries(statesByInvestmentRange).forEach(([rangeKey, states]) => {
-    if (rangeKey === currentEditingRange) return;
-    
-    // Extract the investment range label from this key
-    const keyParts = rangeKey.split('__');
-    const rangeLabel = keyParts.length >= 1 ? keyParts[0] : null;
-    
-    // Only block states from DIFFERENT investment groups
-    if (rangeLabel !== currentInvestmentRangeLabel && Array.isArray(states)) {
-      states.forEach(state => selectedInOtherRanges.add(state));
-    }
+  setSelectedStates((prev) => {
+    const next = new Set(prev);
+    if (next.has(state)) next.delete(state);
+    else next.add(state);
+    return next;
   });
-  
-  return selectedInOtherRanges;
-}, [statesByInvestmentRange, currentEditingRange]);
+}, [getAlreadySelectedStatesInOtherRanges, openSnack]);
 
-// Add this function inside your component, before the return statement
 const renderStatesByRegion = () => {
   const statesToDisplay = getStatesToDisplay();
   const alreadySelectedStates = getAlreadySelectedStatesInOtherRanges();
@@ -1326,6 +1598,7 @@ const renderStatesByRegion = () => {
     if (availableStates.length === 0) return null;
     
     const selectedCount = availableStates.filter(state => selectedStates.has(state)).length;
+    const availableToSelectCount = availableStates.filter(state => !alreadySelectedStates.has(state)).length;
     
     return (
       <Accordion 
@@ -1370,53 +1643,54 @@ const renderStatesByRegion = () => {
               {region}
             </Typography>
             <Chip 
-              label={`${selectedCount}/${availableStates.length}`}
+              label={`${selectedCount}/${availableToSelectCount} available`}
               size="small"
               sx={{
                 height: 20,
                 fontSize: '0.7rem',
-                backgroundColor: selectedCount === availableStates.length ? COLORS.secondary : COLORS.grey[400],
+                backgroundColor: selectedCount === availableToSelectCount ? COLORS.secondary : COLORS.grey[400],
                 color: COLORS.white,
                 fontWeight: 600,
               }}
             />
           </Box>
           
-          <Box
-            component="span"
-            onClick={(e) => {
-              e.stopPropagation();
-              const newSet = new Set(selectedStates);
-              const allInRegion = availableStates;
-              
-              const selectableStates = allInRegion.filter(state => !alreadySelectedStates.has(state));
-              const allSelected = selectableStates.every(state => selectedStates.has(state));
-              
-              if (allSelected) {
-                selectableStates.forEach(state => newSet.delete(state));
-                openSnack(`Deselected all states in ${region}`, "info");
-              } else {
-                selectableStates.forEach(state => newSet.add(state));
-                openSnack(`Selected all states in ${region}`, "success");
-              }
-              setSelectedStates(newSet);
-            }}
-            sx={{
-              fontSize: '0.7rem',
-              textTransform: 'none',
-              color: COLORS.primary,
-              cursor: 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              padding: '4px 8px',
-              borderRadius: '4px',
-              '&:hover': {
-                backgroundColor: COLORS.lightOrange,
-              },
-            }}
-          >
-            Select All Available
-          </Box>
+         <Box
+  component="span"
+  onClick={(e) => {
+    e.stopPropagation();
+    const newSet = new Set(selectedStates);
+    const allInRegion = availableStates;
+    
+    // Only select states that are NOT already selected in ANY other range
+    const selectableStates = allInRegion.filter(state => !alreadySelectedStates.has(state));
+    const allSelected = selectableStates.every(state => selectedStates.has(state));
+    
+    if (allSelected) {
+      selectableStates.forEach(state => newSet.delete(state));
+      openSnack(`Deselected all selectable states in ${region}`, "info");
+    } else {
+      selectableStates.forEach(state => newSet.add(state));
+      openSnack(`Selected ${selectableStates.length} states in ${region}`, "success");
+    }
+    setSelectedStates(newSet);
+  }}
+  sx={{
+    fontSize: '0.7rem',
+    textTransform: 'none',
+    color: COLORS.primary,
+    cursor: 'pointer',
+    display: 'inline-flex',
+    alignItems: 'center',
+    padding: '4px 8px',
+    borderRadius: '4px',
+    '&:hover': {
+      backgroundColor: COLORS.lightOrange,
+    },
+  }}
+>
+  Select All Available ({availableToSelectCount})
+</Box>
         </AccordionSummary>
         
         <AccordionDetails sx={{ p: 2 }}>
@@ -1425,74 +1699,77 @@ const renderStatesByRegion = () => {
             gridTemplateColumns: 'repeat(2, 1fr)',
             gap: 1,
           }}>
-            {availableStates.map((state) => {
-              const isDisabled = alreadySelectedStates.has(state) && !selectedStates.has(state);
-              const isChecked = selectedStates.has(state);
-              
-              return (
-                <FormControlLabel
-                  key={state}
-                  control={
-                    <Checkbox 
-                      checked={isChecked} 
-                      onChange={() => {
-                        if (!isDisabled) {
-                          handleStateCheckboxChange(state);
-                        } else {
-                          openSnack(`This state is already selected in another investment range`, "warning");
-                        }
-                      }}
-                      disabled={isDisabled}
-                      sx={{
-                        color: COLORS.primary,
-                        '&.Mui-checked': {
-                          color: COLORS.secondary,
-                        },
-                        '&.Mui-disabled': {
-                          color: COLORS.grey[400],
-                        },
-                      }}
-                    />
-                  }
-                  label={
-                    <Typography sx={{ 
-                      fontSize: TEXT_SIZES.medium, 
-                      color: isDisabled ? COLORS.grey[500] : COLORS.black,
-                      fontWeight: isChecked ? 600 : 400,
-                      textDecoration: isDisabled ? 'line-through' : 'none',
-                    }}>
-                      {state}
-                      {isDisabled && (
-                        <Tooltip title="Already selected in another investment range">
-                          <InfoOutlinedIcon sx={{ fontSize: 14, ml: 0.5, color: COLORS.grey[500] }} />
-                        </Tooltip>
-                      )}
-                    </Typography>
-                  }
-                  sx={{ 
-                    display: "flex",
-                    flexDirection: "row",
-                    alignItems: "center",
-                    margin: 0,
-                    py: 0.5,
-                    px: 1,
-                    borderRadius: 1.5,
-                    transition: 'all 0.2s ease',
-                    backgroundColor: isChecked ? COLORS.lightGreen : 'transparent',
-                    width: '100%',
-                    opacity: isDisabled ? 0.6 : 1,
-                    '&:hover': {
-                      backgroundColor: !isDisabled && (isChecked ? COLORS.lightGreen : COLORS.lightOrange),
-                    },
-                    '& .MuiFormControlLabel-label': {
-                      width: 'calc(100% - 35px)',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                    }
-                  }}
-                />
-              );
-            })}
+
+{availableStates.map((state) => {
+  const isDisabled = alreadySelectedStates.has(state);
+  const isChecked = selectedStates.has(state);
+  
+  // Get tooltip message
+  let tooltipMessage = "";
+  if (isDisabled) {
+    tooltipMessage = "This state is already used in  investment range and cannot be selected again";
+  }
+  
+  return (
+    <Tooltip key={state} title={tooltipMessage} arrow placement="top">
+      <FormControlLabel
+        control={
+          <Checkbox 
+            checked={isChecked} 
+            onChange={() => {
+              if (!isDisabled) {
+                handleStateCheckboxChange(state);
+              } else {
+                openSnack(tooltipMessage, "warning");
+              }
+            }}
+            disabled={isDisabled}
+            sx={{
+              color: COLORS.primary,
+              '&.Mui-checked': {
+                color: COLORS.secondary,
+              },
+              '&.Mui-disabled': {
+                color: COLORS.grey[400],
+              },
+            }}
+          />
+        }
+        label={
+          <Typography sx={{ 
+            fontSize: TEXT_SIZES.medium, 
+            color: isDisabled ? COLORS.grey[500] : COLORS.black,
+            fontWeight: isChecked ? 600 : 400,
+            textDecoration: isDisabled ? 'line-through' : 'none',
+          }}>
+            {state}
+          </Typography>
+        }
+        sx={{ 
+          display: "flex",
+          flexDirection: "row",
+          alignItems: "center",
+          margin: 0,
+          py: 0.5,
+          px: 1,
+          borderRadius: 1.5,
+          transition: 'all 0.2s ease',
+          backgroundColor: isChecked ? COLORS.lightGreen : 'transparent',
+          width: '100%',
+          opacity: isDisabled ? 0.6 : 1,
+          '&:hover': {
+            backgroundColor: !isDisabled && (isChecked ? COLORS.lightGreen : COLORS.lightOrange),
+          },
+          '& .MuiFormControlLabel-label': {
+            width: 'calc(100% - 35px)',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+          }
+        }}
+      />
+    </Tooltip>
+  );
+})}
           </Box>
         </AccordionDetails>
       </Accordion>
@@ -1537,21 +1814,26 @@ const renderStatesByRegion = () => {
     <Box sx={{ 
       width: "100%", 
       minHeight: "100vh", 
-      backgroundColor: COLORS.grey[50],
+    
     }}>
    
 
-      {/* INVESTMENT RANGE PLANS SECTION */}
-      <Box sx={{ mb: 4 }}>
-        <Card
-          elevation={0}
-          sx={{
-            border: `1px solid ${COLORS.border}`,
-            borderRadius: 2,
-            overflow: "visible",
-            boxShadow: `0 2px 8px ${COLORS.shadow}`,
-          }}
-        >
+    {/* INVESTMENT RANGE PLANS SECTION */}
+<Box sx={{ 
+  mb: 4,
+  display: 'flex',
+  justifyContent: 'center',
+}}>
+  <Card
+    elevation={0}
+    sx={{
+      border: `1px solid ${COLORS.border}`,
+      borderRadius: 2,
+      overflow: "visible",
+      width: '100%',
+      maxWidth: '1300px',  // Add this to limit card width
+    }}
+  >
           {selectedGroup ? (
             <Box>
             {(() => {
@@ -1559,10 +1841,15 @@ const renderStatesByRegion = () => {
   
   if (!selectedPlan) return null;
 
-  // DEFINE availableLeads HERE - before using it
-  const firstPkg = selectedPlan.packages?.[0];
-  const leadsDataKey = `${selectedPlan._id}_${firstPkg?.investmentRangeLabel}`;
-  const availableLeads = leadsDropdownData[leadsDataKey] || [];
+const firstPkg = selectedPlan.packages?.[0];
+
+// Merge leads from ALL packages and deduplicate
+const availableLeads = [...new Set(
+  selectedPlan.packages?.flatMap((pkg) => {
+    const key = `${selectedPlan._id}_${pkg.investmentRangeLabel}`;
+    return leadsDropdownData[key] || [];
+  }) || []
+)].sort((a, b) => a - b);
 
   const allPackagesFromPlan = [];
   selectedPlan.packages?.forEach((pkg) => {
@@ -1575,8 +1862,8 @@ const renderStatesByRegion = () => {
     });
   });
 
-  const selectedLeads = selectedLeadsPerRange[`plan-${selectedPlan._id}`] || 
-                       (availableLeads.length > 0 ? availableLeads[0] : 0);
+  // const selectedLeads = selectedLeadsPerRange[`plan-${selectedPlan._id}`] || 
+  //                      (availableLeads.length > 0 ? availableLeads[0] : 0);
                 const uniqueValidityDays = [...new Set(
                   selectedPlan.packages?.map(pkg => pkg.validityDays).filter(Boolean)
                 )];
@@ -1635,6 +1922,34 @@ const renderStatesByRegion = () => {
 
                 return (
                   <>
+                  <Box sx={{ display: 'flex', justifyContent: 'flex-end', px: 2, py: 1.5, borderBottom: `1px solid ${COLORS.border}` }}>
+  <Button
+    variant="outlined"
+    size="small"
+    startIcon={<AddIcon />}
+    onClick={() => {
+      setPendingSelection(null); // clear any previous selection
+      setOpenConfirmDialog(true);
+    }}
+    sx={{
+      borderColor: COLORS.primary,
+      color: COLORS.primary,
+      fontWeight: 700,
+      fontSize: TEXT_SIZES.small,
+      borderWidth: 2,
+      borderRadius: 2,
+      textTransform: 'none',
+      px: 2,
+      '&:hover': {
+        backgroundColor: COLORS.lightOrange,
+        borderColor: COLORS.primaryDark,
+        borderWidth: 2,
+      },
+    }}
+  >
+    Add New Investment Range
+  </Button>
+</Box>
                     {/* Unified Table */}
                     <TableContainer
                       component={Paper}
@@ -1651,20 +1966,20 @@ const renderStatesByRegion = () => {
                             <TableCell
                               sx={{
                                 fontWeight: 700,
-                                fontSize: TEXT_SIZES.small,
+                                fontSize: TEXT_SIZES.medium,
                                 color: COLORS.white,
                                 background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryDark} 100%)`,
                                 px: 1.5,
                                 py: 1.5,
-                                width: '10%',
+                                width: '5%',
                                 textAlign: 'center',
                               }}
                             >
-                              Plans
+                              Select Plan
                             </TableCell>
                             
                             {/* Leads Per State Column */}
-                        <TableCell
+                        {/* <TableCell
   sx={{
     fontWeight: 700,
     fontSize: TEXT_SIZES.small,
@@ -1677,31 +1992,47 @@ const renderStatesByRegion = () => {
   }}
 >
   Leads per State
-</TableCell>
+</TableCell> */}
                             {/* Investment Group Column */}
-                            <TableCell
-                              sx={{
-                                fontWeight: 700,
-                                fontSize: TEXT_SIZES.small,
-                                color: COLORS.white,
-                                background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryDark} 100%)`,
-                                width: '6%',
-                                textAlign: 'center',
-                              }}
-                            >
-                              Investment Group
-                            </TableCell>
+                          <TableCell
+  sx={{
+    fontWeight: 700,
+    fontSize: TEXT_SIZES.medium,
+    color: COLORS.white,
+    background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryDark} 100%)`,
+    width: '4%',
+    textAlign: 'center',
+    lineHeight: 1.3,
+  }}
+>
+  Investment Group
+  {/* <br />
+  <Typography
+    component="span"
+    sx={{
+      fontWeight: 700,
+    fontSize: TEXT_SIZES.small,
+    color: COLORS.white,
+    background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryDark} 100%)`,
+    width: '6%',
+    textAlign: 'center',
+    lineHeight: 1.3,
+    }}
+  >
+    Lead Per State
+  </Typography> */}
+</TableCell>
                             
                             {/* Select Checkbox Column */}
                             <TableCell
                               sx={{
                                 fontWeight: 700,
-                                fontSize: TEXT_SIZES.small,
+                                fontSize: TEXT_SIZES.medium,
                                 color: COLORS.white,
                                 background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryDark} 100%)`,
                                 px: 1,
                                 py: 1.5,
-                                width: '1.5%',
+                                width: '1%',
                                 textAlign: 'center',
                               }}
                             >
@@ -1712,12 +2043,12 @@ const renderStatesByRegion = () => {
                             <TableCell
                               sx={{
                                 fontWeight: 700,
-                                fontSize: TEXT_SIZES.small,
+                                fontSize: TEXT_SIZES.medium,
                                 color: COLORS.white,
                                 background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryDark} 100%)`,
                                 px: 1.5,
                                 py: 1.5,
-                                width: '14%',
+                                width: '3%',
                                 textAlign: 'center',
                               }}
                             >
@@ -1728,12 +2059,12 @@ const renderStatesByRegion = () => {
                             <TableCell
                               sx={{
                                 fontWeight: 700,
-                                fontSize: TEXT_SIZES.small,
+                                fontSize: TEXT_SIZES.medium,
                                 color: COLORS.white,
                                 background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryDark} 100%)`,
                                 px: 1,
                                 py: 1.5,
-                                width: '4%',
+                                width: '1%',
                                 textAlign: 'center',
                               }}
                             >
@@ -1744,12 +2075,12 @@ const renderStatesByRegion = () => {
                             <TableCell
                               sx={{
                                 fontWeight: 700,
-                                fontSize: TEXT_SIZES.small,
+                                fontSize: TEXT_SIZES.medium,
                                 color: COLORS.white,
                                 background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryDark} 100%)`,
                                 px: 1,
                                 py: 1.5,
-                                width: '5%',
+                                width: '2.3%',
                                 textAlign: 'center',
                               }}
                             >
@@ -1760,12 +2091,12 @@ const renderStatesByRegion = () => {
                             <TableCell
                               sx={{
                                 fontWeight: 700,
-                                fontSize: TEXT_SIZES.small,
+                                fontSize: TEXT_SIZES.medium,
                                 color: COLORS.white,
                                 background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryDark} 100%)`,
                                 px: 1,
                                 py: 1.5,
-                                width: '4%',
+                                width: '1.8%',
                                 textAlign: 'center',
                               }}
                             >
@@ -1776,12 +2107,12 @@ const renderStatesByRegion = () => {
                             <TableCell
                               sx={{
                                 fontWeight: 700,
-                                fontSize: TEXT_SIZES.small,
+                                fontSize: TEXT_SIZES.medium,
                                 color: COLORS.white,
                                 background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryDark} 100%)`,
                                 px: 1,
                                 py: 1.5,
-                                width: '5%',
+                                width: '2%',
                                 textAlign: 'center',
                               }}
                             >
@@ -1792,7 +2123,7 @@ const renderStatesByRegion = () => {
                             <TableCell
                               sx={{
                                 fontWeight: 700,
-                                fontSize: TEXT_SIZES.small,
+                                fontSize: TEXT_SIZES.medium,
                                 color: COLORS.white,
                                 background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryDark} 100%)`,
                                 px: 1,
@@ -1808,24 +2139,28 @@ const renderStatesByRegion = () => {
 
                         <TableBody>
                           {(() => {
-                            const labelCounts = {};
-                            
-                            allPackagesFromPlan.forEach((item) => {
-                              labelCounts[item.investmentRangeLabel] = 
-                                (labelCounts[item.investmentRangeLabel] || 0) + 1;
-                            });
+                           // Filter to only show profile-matching ranges
+const profilePackages = ficoInvestmentRanges.length > 0
+  ? allPackagesFromPlan.filter(item => isFicoInvestmentRange(item.range))
+  : allPackagesFromPlan;
+const labelCounts = {};
+profilePackages.forEach((item) => {
+  labelCounts[item.investmentRangeLabel] = 
+    (labelCounts[item.investmentRangeLabel] || 0) + 1;
+});
 
-                            const totalRows = allPackagesFromPlan.length;
+                            const totalRows = profilePackages.length;
                             const renderedLabels = new Set();
                             let firstRow = true;
 
-                            return allPackagesFromPlan.map((item, idx) => {
+                        return profilePackages.map((item, idx) => {
                               const itemId = `${selectedPlan._id}-${item.investmentRangeLabel}-${item.range}`;
                               const isRecommended = isFicoInvestmentRange(item.range);
                               const stateCount = getStateCountForRange(
                                 item.investmentRangeLabel,
                                 item.range,
-                                 selectedLeads 
+                                 selectedPlan._id
+                                //  selectedLeads 
                               );
                               const inPayment = paymentSummary.some((group) =>
                                 group.items.some(
@@ -1846,9 +2181,11 @@ const renderStatesByRegion = () => {
                               const minLeads = availableLeads.length > 0 ? Math.min(...availableLeads) : 1;
                               const divisor = minLeads > 0 ? minLeads : 1;
 
-                              // Apply custom logic: PricePerState / minLeads * totalStates * selectedLeads
-                              const groupTotalLeads = selectedLeads * uniqueGroupStatesCount;
-                              const groupTotalAmount = (pricePerState / divisor) * uniqueGroupStatesCount * selectedLeads;
+const rangeSpecificKey = `plan-${selectedPlan._id}-${item.investmentRangeLabel}-${item.range}`;
+const groupSelectedLeads = selectedLeadsPerRange[rangeSpecificKey] ||
+  (availableLeads.length > 0 ? availableLeads[0] : 0);
+const groupTotalLeads = groupSelectedLeads * uniqueGroupStatesCount;
+const groupTotalAmount = (pricePerState / divisor) * uniqueGroupStatesCount * groupSelectedLeads;
 
                               const itemObject = {
                                 id: itemId,
@@ -1865,16 +2202,14 @@ const renderStatesByRegion = () => {
                               if (firstRow) firstRow = false;
 
                             return (
-  <TableRow
-    key={itemId}
-    sx={{
-      backgroundColor: getRowBackgroundColor(item.investmentRangeLabel, inPayment, idx),
-      transition: 'all 0.3s ease',
-      "&:hover": {
-        backgroundColor: inPayment ? COLORS.lightGreen : COLORS.lightOrange,
-      },
-    }}
-  >
+<TableRow
+  key={itemId}
+  sx={{
+    backgroundColor: getRowBackgroundColor(item.investmentRangeLabel, inPayment, idx),
+    transition: 'all 0.3s ease',
+    '& td': { borderBottom: 'none' },
+  }}
+>
                                   {/* Plan Selection - Show only in first row */}
                                    {isFirstRowOfTable && (
                                     <TableCell 
@@ -1884,8 +2219,9 @@ const renderStatesByRegion = () => {
                                         py: 1.5,
                                         borderRight: `2px solid ${COLORS.border}`,
                                         verticalAlign: 'middle',
-                                        backgroundColor: "#fff0c5",
+                                        backgroundColor: "#fff6de",
                                         height: '100%',
+                                         borderRight: 'none',
                                       }}
                                     >
                                       <Box sx={{ 
@@ -1896,7 +2232,7 @@ const renderStatesByRegion = () => {
                                         height: '100%',
                                         minHeight: `${totalRows * 50}px`,
                                       }}>
-                                        <Box sx={{ display: 'flex', flexDirection: 'column', gap:6, width: '100%' }}>
+                                        <Box sx={{ display: 'flex', flexDirection: 'column',gap:2, width: '75%' }}>
                                           {filteredPlans.map((plan) => {
                                             const uniqueValidityDays = [...new Set(
                                               plan.packages?.map(pkg => pkg.validityDays).filter(Boolean)
@@ -1925,24 +2261,25 @@ const renderStatesByRegion = () => {
                                                   "&:hover": {
                                                     backgroundColor: selectedGroup === plan._id ? COLORS.primaryDark : COLORS.lightOrange,
                                                     transform: 'translateX(2px)',
+                                                    
                                                   },
                                                 }}
                                               >
                                                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.3,  }}> 
-                                                  <Typography sx={{ fontSize: TEXT_SIZES.medium, fontWeight: 'inherit' }}>
+                                               <Typography
+  sx={{
+    fontSize: TEXT_SIZES.medium,
+    fontWeight: 600,
+    color: "black",
+  }}
+>
+  {uniqueValidityDays[0]} Days
+</Typography>
+                                                  <Typography sx={{ fontSize: TEXT_SIZES.xs, fontWeight: 'inherit' }}>
                                                     {plan.planName}
                                                   </Typography>
-                                                  <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-                                                    <Chip 
-                                                      label={`${uniqueValidityDays[0]}Days`} 
-                                                      size="small" 
-                                                      sx={{ 
-                                                        height: 16,
-                                                        fontSize: '0.75rem',
-                                                        '& .MuiChip-label': { px: 0.5 }
-                                                      }} 
-                                                    />
-                                                  </Box>
+
+                                                
                                                 </Box>
                                               </Box>
                                             );
@@ -1953,14 +2290,15 @@ const renderStatesByRegion = () => {
                                   )}
                                   
                                   {/* Leads Per State - Show only in first row if available */}
-                                {isFirstRowOfTable && (
+                                {/* {isFirstRowOfTable && (
   <TableCell 
     rowSpan={totalRows}
     sx={{ 
       py: 1.5,
       borderRight: `2px solid ${COLORS.border}`,
       verticalAlign: 'middle',
-      backgroundColor: "#fff0c5",
+      backgroundColor: "#fff6de",
+        borderRight: 'none',
     }}
   >
     <Box sx={{ 
@@ -1970,138 +2308,225 @@ const renderStatesByRegion = () => {
       justifyContent: 'center',
       height: '100%',
     }}>
-      <Box sx={{ display: 'flex', flexDirection: 'column', spacing: 1, justifyContent:"space-between", gap:4}}>
-        {availableLeads.length > 0 ? (
-          availableLeads.map((leadOption) => {
-            const isSelected = 
-              selectedLeadsPerRange[`plan-${selectedPlan._id}`] === leadOption ||
-              (!selectedLeadsPerRange[`plan-${selectedPlan._id}`] && leadOption === availableLeads[0]);
-
-            return (
-              <Box 
-                key={leadOption}
-                onClick={() => {
-                  handleLeadsChange(`plan-${selectedPlan._id}`, leadOption);
-                }}
-                sx={{
-                  py: 0.8,
-                  px: 1.5,
-                  borderRadius: 1.5,
-                  cursor: "pointer",
-                  transition: "all 0.2s ease",
-                  backgroundColor: isSelected ? COLORS.secondary : COLORS.white,
-                  color: isSelected ? COLORS.white : COLORS.black,
-                  fontWeight: isSelected ? 800 : 700,
-                  fontSize: TEXT_SIZES.medium,
-                  border: `1px solid ${isSelected ? COLORS.secondary : COLORS.border}`,
-                  boxShadow: isSelected ? `0 2px 6px ${COLORS.shadow}` : 'none',
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  "&:hover": {
-                    backgroundColor: isSelected ? COLORS.secondaryDark : COLORS.lightGreen,
-                    transform: 'translateX(2px)',
-                  },
-                 }}
-              >
-                <span>{leadOption}</span>
-              </Box>
-            );
-          })
-        ) : (
-          <Typography sx={{ color: COLORS.grey[500] }}>No leads available</Typography>
-        )}
+      <Box sx={{ display: 'flex', flexDirection: 'column', spacing: 1, justifyContent:"space-between", gap:5}}>
+     {availableLeads.length > 0 ? (
+  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+    {availableLeads.map((leadOption) => {
+      const isSelected = selectedLeadsPerRange[`plan-${selectedPlan._id}`] === leadOption ||
+                        (!selectedLeadsPerRange[`plan-${selectedPlan._id}`] && leadOption === availableLeads[0]);
+      
+      return (
+        <Box
+          key={leadOption}
+          onClick={() => handleLeadsChange(`plan-${selectedPlan._id}`, leadOption)}
+          sx={{
+            py: 1.2,
+            px: 1.5,
+            borderRadius: 1.5,
+            cursor: 'pointer',
+            textAlign: 'center',
+            transition: 'all 0.2s ease',
+            backgroundColor: isSelected ? COLORS.secondary : COLORS.white,
+            color: isSelected ? COLORS.white : COLORS.black,
+            fontWeight: isSelected ? 700 : 600,
+            fontSize: TEXT_SIZES.medium,
+            border: `1px solid ${isSelected ? COLORS.secondary : COLORS.border}`,
+            boxShadow: isSelected ? `0 2px 6px ${COLORS.shadow}` : 'none',
+            '&:hover': {
+              backgroundColor: isSelected ? COLORS.secondaryDark : COLORS.lightOrange,
+              transform: 'translateX(2px)',
+            },
+          }}
+        >
+          {leadOption}
+        </Box>
+      );
+    })}
+  </Box>
+) : (
+  <Typography sx={{ color: COLORS.grey[500], fontSize: TEXT_SIZES.small, textAlign: 'center' }}>
+    No leads available
+  </Typography>
+)}
       </Box>
     </Box>
   </TableCell>
-)}
+)} */}
 
 {/* Investment Group - Merged cell for same groups */}
 {isFirstInGroup && (() => {
-  // Calculate groupIdx here
   const groupIndices = {};
   let currentGroupIndex = 0;
-  
-  // First pass: calculate indices for each unique investment group
+
   allPackagesFromPlan.forEach((packageItem) => {
     if (!groupIndices.hasOwnProperty(packageItem.investmentRangeLabel)) {
       groupIndices[packageItem.investmentRangeLabel] = currentGroupIndex;
       currentGroupIndex++;
     }
   });
-  
+
   const groupIdx = groupIndices[item.investmentRangeLabel];
-  
+
   return (
     <TableCell
       rowSpan={rowSpan}
-      sx={{
-        borderRight: `2px solid ${COLORS.border}`,
-        verticalAlign: "middle",
-        px: 1,
-        backgroundColor: groupIdx % 2 === 0 ? "#fff0c5" : "#c8e6ac",
-      }}
+     sx={{ 
+  px: 0.5, py: 0.4, textAlign: 'center', height:"20%",backgroundColor:"#fff6de", width: '3%',
+  borderTop: isFirstInGroup && !isFirstRowOfTable ? `2px solid #b5d7b6` : 'none',
+}}
     >
-      <Typography
+      <Box
         sx={{
-          fontSize: TEXT_SIZES.small,
-          fontWeight: 700,
-          color: COLORS.black,
-          textAlign: "center",
-          lineHeight: 1.2,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          // gap: 1,
+          width: "100%",
+    
         }}
       >
-        {item.investmentRangeLabel}
-      </Typography>
+        {/* Investment Label */}
+        <Typography
+          sx={{
+            fontSize: TEXT_SIZES.medium,
+            fontWeight: 700,
+            color: COLORS.black,
+            lineHeight: 1.2,
+            textAlign: "center",
+          }}
+        >
+          {item.investmentRangeLabel}
+        </Typography>
+        <Typography sx={{
+          fontSize:TEXT_SIZES.xs,
+          mt:1,mb:1,
+        }}>Select Leads Per State</Typography>
+
+        {/* Leads Options */}
+        {availableLeads.length > 0 ? (
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 3,
+              flexWrap: "wrap",
+         
+            }}
+          >
+{availableLeads.map((leadOption) => {
+  const rangeSpecificKey = `plan-${selectedPlan._id}-${item.investmentRangeLabel}-${item.range}`;
+  const isSelected = selectedLeadsPerRange[rangeSpecificKey] === leadOption ||
+    (!selectedLeadsPerRange[rangeSpecificKey] && leadOption === availableLeads[0]);
+
+  return (
+    <Box
+      key={leadOption}
+      onClick={() => handleLeadsChange(rangeSpecificKey, leadOption)}
+      sx={{
+        px: 1.5,
+        py: 0.7,
+        borderRadius: 1.5,
+        cursor: "pointer",
+        textAlign: "center",
+        transition: "all 0.2s ease",
+        backgroundColor: isSelected ? COLORS.secondary : COLORS.white,
+        color: isSelected ? COLORS.white : COLORS.black,
+        fontWeight: isSelected ? 700 : 600,
+        fontSize: "0.95rem",
+        border: `1px solid ${isSelected ? COLORS.secondary : COLORS.border}`,
+        whiteSpace: "nowrap",
+        "&:hover": {
+          backgroundColor: isSelected ? COLORS.secondaryDark : COLORS.lightOrange,
+        },
+      }}
+    >
+      {leadOption}
+    </Box>
+  );
+})}
+          </Box>
+        ) : (
+          <Typography
+            sx={{
+              color: COLORS.grey[500],
+              fontSize: TEXT_SIZES.small,
+            }}
+          >
+            No leads
+          </Typography>
+        )}
+      </Box>
     </TableCell>
   );
 })()}
                                   
                                   {/* Select Checkbox */}
-                                  <TableCell sx={{ px: 1, py: 1.5, textAlign: 'center' }}>
-  <Checkbox
-checked={checkedItems[itemId] || false}
- onChange={(e) => {
-  if (e.target.checked) {
-   setCheckedItems((prev) => ({
-      ...prev,
-      [itemId]: true,
-    }));
-
-    openSnack(`${item.range} selected`, "success");
- } else {
-  setCheckedItems((prev) => ({
-    ...prev,
-    [itemId]: false,
-  }));
-
-  openSnack(`${item.range} deselected`, "info");
-}
-}}
-    disabled={!!selectedListingPlanId}
-    size="small"
-    sx={{
-      p: 0,
-      color: COLORS.primary,
-      "&.Mui-checked": {
-        color: COLORS.secondary,
-      },
-      "&.Mui-disabled": {
-        color: COLORS.grey[400],
-      },
-    }}
-  />
+<TableCell sx={{ 
+  px: 0.2, 
+  py: 0.2, 
+  textAlign: 'center', 
+  width: '10px',
+  
+  borderTop: isFirstInGroup && !isFirstRowOfTable ? `2px solid #b5d7b6` : 'none',
+}}>
+  <Tooltip 
+    title={inPayment ? "Already added to cart" : "Select to add to cart"}
+    arrow
+  >
+    <span>
+      <Checkbox
+        checked={checkedItems[itemId] || false}
+        onChange={(e) => {
+          if (inPayment) {
+            openSnack(`${item.range} is already in your cart`, "warning");
+            return;
+          }
+          if (e.target.checked) {
+            setCheckedItems((prev) => ({
+              ...prev,
+              [itemId]: true,
+            }));
+            openSnack(`${item.range} selected`, "success");
+          } else {
+            setCheckedItems((prev) => ({
+              ...prev,
+              [itemId]: false,
+            }));
+            openSnack(`${item.range} deselected`, "info");
+          }
+        }}
+        disabled={inPayment || !!selectedListingPlanId}
+        size="small"
+        sx={{
+          p: 0,
+          m: 0,
+          color: COLORS.primary,
+          "&.Mui-checked": {
+            color: COLORS.secondary,
+          },
+          "&.Mui-disabled": {
+            color: COLORS.grey[400],
+          },
+        }}
+      />
+    </span>
+  </Tooltip>
 </TableCell>
 
    {/* Investment Range */}
-<TableCell sx={{ px: 1.5, py: 1.5, verticalAlign: 'middle' }}>
-  <Box
+<TableCell sx={{
+  px: 0.5, py: 0.4, verticalAlign: 'middle', width: '3%',
+  borderTop: isFirstInGroup && !isFirstRowOfTable ? `2px solid #b5d7b6` : 'none',
+}}>  <Box
     sx={{
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
       gap: 0,
-      minHeight: 20,
+      height: 10,
+    
     }}
   >
     <Typography
@@ -2116,7 +2541,7 @@ checked={checkedItems[itemId] || false}
       {item.range}
     </Typography>
 
-    {isRecommended ? (
+    {/* {isRecommended ? (
       <Chip
         label="As Per Profile"
         size="small"
@@ -2146,13 +2571,16 @@ checked={checkedItems[itemId] || false}
     ) : (
       // Placeholder to maintain height consistency
       <Box sx={{ height: 16, width: 110 }} />
-    )}
+    )} */}
   </Box>
 </TableCell>
 
                                   {/* States */}
-                                  <TableCell sx={{ px: 1, py: 1.5,
- }}>
+                              {/* States */}
+<TableCell sx={{ 
+  px: 0.5, py: 0.4, height:"20%",
+  borderTop: isFirstInGroup && !isFirstRowOfTable ? `2px solid #b5d7b6` : 'none',
+}}>
                                     <Box
                                       sx={{
                                         display: "flex",
@@ -2163,7 +2591,7 @@ checked={checkedItems[itemId] || false}
                                     >
                                       <Typography
                                         sx={{
-                                          fontSize: TEXT_SIZES.xl,
+                                          fontSize: TEXT_SIZES.medium,
                                           color: COLORS.black,
                                           fontWeight: 600,
                                         }}
@@ -2177,7 +2605,7 @@ checked={checkedItems[itemId] || false}
     handleOpenStateModal(
       item.investmentRangeLabel,
       item.range,
-      selectedLeads  // Pass the current selected leads
+      selectedPlan._id 
     )
   }
   sx={{ 
@@ -2200,16 +2628,14 @@ checked={checkedItems[itemId] || false}
                                   </TableCell>
 
                                   {/* Price/State */}
-                                  {isFirstInGroup && (
-                                    <TableCell 
-                                      rowSpan={rowSpan}
-                                      sx={{ 
-                                        px: 1, 
-                                        py: 1.5, 
-                                        textAlign: 'center',
-                                        verticalAlign: 'middle',
-                                      }}
-                                    >
+                                {isFirstInGroup && (
+  <TableCell 
+    rowSpan={rowSpan}
+    sx={{ 
+      px: 0.5, py: 0.4, textAlign: 'center', verticalAlign: 'middle',
+      borderTop: !isFirstRowOfTable ? `2px solid #b5d7b6` : 'none',
+    }}
+  >
                                       <Typography
                                         sx={{
                                           fontSize: TEXT_SIZES.xl,
@@ -2224,15 +2650,13 @@ checked={checkedItems[itemId] || false}
 
                                   {/* Total Leads */}
                                   {isFirstInGroup && (
-                                    <TableCell 
-                                      rowSpan={rowSpan}
-                                      sx={{ 
-                                        px: 1, 
-                                        py: 1.5, 
-                                        textAlign: 'center',
-                                        verticalAlign: 'middle',
-                                      }}
-                                    >
+                                   <TableCell 
+    rowSpan={rowSpan}
+    sx={{ 
+      px: 0.5, py: 0.4, textAlign: 'center', verticalAlign: 'middle',width:"4%",
+      borderTop: !isFirstRowOfTable ? `2px solid #b5d7b6` : 'none',
+    }}
+  >
                                       <Typography
                                         sx={{
                                           fontSize: TEXT_SIZES.xl,
@@ -2247,16 +2671,13 @@ checked={checkedItems[itemId] || false}
 
                                   {/* Total Amount (Pro-Rata Calculations Adjusted) */}
                                   {isFirstInGroup && (
-                                    <TableCell 
-                                      rowSpan={rowSpan}
-                                      sx={{ 
-                                        px: 1, 
-                                        py: 1.5, 
-                                        textAlign: 'right',
-                                        verticalAlign: 'middle',
-                                        // backgroundColor: COLORS.lightOrange,
-                                      }}
-                                    >
+                                   <TableCell 
+    rowSpan={rowSpan}
+    sx={{ 
+      px: 0.5, py: 0.4, textAlign: 'center', verticalAlign: 'middle',width:"4%",
+      borderTop: !isFirstRowOfTable ? `2px solid #b5d7b6` : 'none',
+    }}
+  >
                                       <Typography
                                         sx={{
                                           fontSize: TEXT_SIZES.xl,
@@ -2272,148 +2693,120 @@ checked={checkedItems[itemId] || false}
 
 
 
-{/* Action Button - Unified once per Group */}
-{isFirstInGroup && (
+
+
+{/* Action Button - Single button for entire table */}
+{isFirstRowOfTable && (
   <TableCell 
-    rowSpan={rowSpan}
+    rowSpan={totalRows}  
     sx={{ 
-      px: 1, 
-      py: 1.5, 
+      px: 0.5, 
+      py: 0.4, 
       textAlign: 'center', 
       verticalAlign: 'middle',
     }}
   >
-    {(() => {
-      // Get all items in this group
-      const itemsInGroup = allPackagesFromPlan.filter(
-        (p) => p.investmentRangeLabel === item.investmentRangeLabel
-      );
+    <Button
+      variant="contained"
+      size="medium"
+      // disabled={!!selectedListingPlanId}
+      onClick={() => {
+        const allCheckedItems = profilePackages.filter((p) => {
+          const id = `${selectedPlan._id}-${p.investmentRangeLabel}-${p.range}`;
+          return checkedItems[id];
+        });
 
-      // Get selected items (where checkbox is checked)
-      const selectedItemsInGroup = itemsInGroup.filter((p) => {
-        const itemId = `${selectedPlan._id}-${p.investmentRangeLabel}-${p.range}`;
-        return checkedItems[itemId];
-      });
+        if (allCheckedItems.length === 0) {
+          openSnack("Please select at least one investment range to add", "warning");
+          return;
+        }
 
-      const hasSelectedItems = selectedItemsInGroup.length > 0;
-      
-      return (
-        <Button
-          variant="contained"
-          size="small"
-       onClick={() => {
-  // Add selected items to cart
-  if (!hasSelectedItems) {
-    openSnack("Please select at least one investment range to add", "warning");
-    return;
-  }
-  
-  // Get the CURRENT selected leads value for this plan
-  const currentSelectedLeads = selectedLeadsPerRange[`plan-${selectedPlan._id}`] || 
-                              (availableLeads.length > 0 ? availableLeads[0] : 0);
-  
-  // COLLECT ALL STATES from selected items before adding
-  const allNewStates = new Set();
-  const itemsWithStates = [];
+        // Check for duplicate items within the SAME PLAN ONLY
+        const existingItemsInSamePlan = paymentSummary
+          .filter(group => group.planId === selectedPlan._id)
+          .flatMap(group => group.items);
 
-  selectedItemsInGroup.forEach((selectedItem) => {
-    const key = getRangeKey(selectedItem.investmentRangeLabel, selectedItem.range, currentSelectedLeads);
-    let states = statesByInvestmentRange[key];
-    
-    if (!states || states.length === 0) {
-      if (!finalToken && detectedState) {
-        states = [detectedState];
-      } else if (finalToken) {
-        states = allStates;
-      } else {
-        states = [];
-      }
-    }
-    
-    states.forEach(state => allNewStates.add(state));
-    itemsWithStates.push({ selectedItem, states });
-  });
+        const newItemsToAdd = allCheckedItems.filter(selectedItem => {
+          // Only check within the SAME plan and SAME investment range label
+          return !existingItemsInSamePlan.some(existingItem =>
+            existingItem.range === selectedItem.range &&
+            existingItem.investmentRangeLabel === selectedItem.investmentRangeLabel
+          );
+        });
 
-  // CHECK FOR DUPLICATE STATES BEFORE ADDING
-  const newStatesArray = Array.from(allNewStates);
-const { hasDuplicate, duplicateStates } = hasDuplicateStates(newStatesArray, item.investmentRangeLabel);
-  
-  if (hasDuplicate) {
-    // Optionally show which states are duplicate and which items would be affected
-    openSnack(`Cannot add: State(s) "${duplicateStates.join(', ')}" already selected in another investment range.`, "warning");
-    return;
-  }
+        if (newItemsToAdd.length === 0) {
+          const allRangeNames = allCheckedItems.map(r => r.range).join(', ');
+          openSnack(`${allRangeNames} already in cart for this plan.`, "warning");
+          // Uncheck the items so user knows they're already added
+          setCheckedItems((prev) => {
+            const newState = { ...prev };
+            allCheckedItems.forEach(item => {
+              const id = `${selectedPlan._id}-${item.investmentRangeLabel}-${item.range}`;
+              delete newState[id];
+            });
+            return newState;
+          });
+          return;
+        }
 
-  // REMOVED: Duplicate state restrictions
-  // States can now be selected in multiple investment ranges (e.g., Below 50k and 50k-1L)
-  // The getUniqueStatesAcrossRanges function will handle deduplication for billing
+        // REMOVED: Cross-group conflict check - states can be reused across different ranges
+        // Different investment ranges can have the same states - they are separate purchases
 
-  // Check if selected items are recommended (only works after login)
-  const hasNonRecommendedSelected = finalToken && selectedItemsInGroup.some(
-    p => !isFicoInvestmentRange(p.range)
-  );
-  
-  if (hasNonRecommendedSelected) {
-    // Get the non-recommended items for the confirmation message
-    const nonRecommendedItems = selectedItemsInGroup.filter(p => !isFicoInvestmentRange(p.range));
-    const rangeNames = nonRecommendedItems.map(p => p.range).join(', ');
-    
-    setPendingSelection({
-      selectedItemsInGroup,
-      selectedPlan,
-      rangeNames
-    });
-    setOpenConfirmDialog(true);
-    return;
-  }
-  
-  // Add ALL selected items
-  selectedItemsInGroup.forEach((selectedItem) => {
-    const itemObject = {
-      id: `${selectedPlan._id}-${selectedItem.investmentRangeLabel}-${selectedItem.range}`,
-      investmentRangeLabel: selectedItem.investmentRangeLabel,
-      range: selectedItem.range,
-    };
-    
-    handleAddSingleToPayment(itemObject, selectedPlan, selectedItem.pkg);
-  });
-  
-  // After adding, uncheck the checkboxes for all items that were added
-  setCheckedItems((prev) => {
-    const newState = { ...prev };
-    selectedItemsInGroup.forEach(addedItem => {
-      const itemId = `${selectedPlan._id}-${addedItem.investmentRangeLabel}-${addedItem.range}`;
-      delete newState[itemId];
-    });
-    return newState;
-  });
-  
-  openSnack(
-    `${selectedItemsInGroup.length} selected range(s) added to cart`,
-    "success"
-  );
-}}
-     disabled={!!selectedListingPlanId}
-          sx={{
-            minWidth: 70,
-            height: 30,
-            fontSize: '0.85rem',
-            textTransform: "none",
-            fontWeight: 1000,
-            borderRadius: 1.5,
-            backgroundColor: COLORS.primary,
-            color: COLORS.white,
-            transition: 'all 0.3s ease',
-            "&:hover": {
-              backgroundColor: COLORS.primaryDark,
-              transform: 'scale(1.05)',
+        // Non-recommended check
+        const hasNonRecommended = finalToken && newItemsToAdd.some(p => !isFicoInvestmentRange(p.range));
+        if (hasNonRecommended) {
+          const rangeNames = newItemsToAdd
+            .filter(p => !isFicoInvestmentRange(p.range))
+            .map(p => p.range)
+            .join(', ');
+          setPendingSelection({ selectedItemsInGroup: newItemsToAdd, selectedPlan, rangeNames });
+          setOpenConfirmDialog(true);
+          return;
+        }
+
+        // Add all new items
+        newItemsToAdd.forEach((selectedItem) => {
+          handleAddSingleToPayment(
+            {
+              id: `${selectedPlan._id}-${selectedItem.investmentRangeLabel}-${selectedItem.range}`,
+              investmentRangeLabel: selectedItem.investmentRangeLabel,
+              range: selectedItem.range,
             },
-          }}
-        >
-          Add
-        </Button>
-      );
-    })()}
+            selectedPlan,
+            selectedItem.pkg
+          );
+        });
+
+        // Uncheck added items
+        setCheckedItems((prev) => {
+          const newState = { ...prev };
+          newItemsToAdd.forEach(addedItem => {
+            const id = `${selectedPlan._id}-${addedItem.investmentRangeLabel}-${addedItem.range}`;
+            delete newState[id];
+          });
+          return newState;
+        });
+
+        openSnack(`${newItemsToAdd.length} range(s) added to cart`, "success");
+      }}
+      sx={{
+        minWidth: 70,
+        height: 30,
+        fontSize: '0.85rem',
+        textTransform: "none",
+        fontWeight: 1000,
+        borderRadius: 1.5,
+        backgroundColor: COLORS.primary,
+        color: COLORS.white,
+        transition: 'all 0.3s ease',
+        "&:hover": {
+          backgroundColor: COLORS.primaryDark,
+          transform: 'scale(1.05)',
+        },
+      }}
+    >
+      Add
+    </Button>
   </TableCell>
 )}
                                 </TableRow>
@@ -2449,246 +2842,341 @@ const { hasDuplicate, duplicateStates } = hasDuplicateStates(newStatesArray, ite
         </Card>
       </Box>
          {/* LISTING PLANS SECTION */}
-      <Box sx={{ mb: 4 }}>
-        <Box sx={{ mb: 2 }}>
-          <Typography variant="h5" sx={{ 
-            fontWeight: 700, 
-            color: COLORS.black,
-            mb: 1,
-            fontSize: TEXT_SIZES.xl,
-          }}>
-           Listing Plans
-          </Typography>
-          <Divider sx={{ 
-            borderColor: COLORS.primary, 
-            borderWidth: 2,
-            width: 100,
-            mb: 2,
-          }} />
-        </Box>
+<Box sx={{ 
+  mb: 4,
+  display: 'flex',
+  justifyContent: 'center',
+  width: '100%',
+}}>
+  <Box sx={{ 
+    width: '100%',
+    maxWidth: '1100px',  // Same maxWidth as the investment table
+  }}>
 
-        {(() => {
-          const listingPlans = plans
-            .filter(
-              (plan) =>
-                plan.packages?.length === 1 &&
-                plan.planName?.toLowerCase() !== "free"
-            )
-            .sort(
-              (a, b) =>
-                (a.packages?.[0]?.amount || 0) - (b.packages?.[0]?.amount || 0)
-            );
 
-          // const hasInvestmentPlans = paymentSummary.some((g) => !g.isListingPlan);
+  {/* Plans */}
+  {(() => {
+    const listingPlans = plans
+      .filter(
+        (plan) =>
+          plan.packages?.length === 1 &&
+          plan.planName?.toLowerCase() !== "free"
+      )
+      .sort(
+        (a, b) =>
+          (a.packages?.[0]?.amount || 0) -
+          (b.packages?.[0]?.amount || 0)
+      );
 
-          return (
-            <TableContainer 
-              component={Paper} 
-              elevation={0}
-              sx={{ 
-                border: `1px solid ${COLORS.border}`,
-                borderRadius: 2,
-                boxShadow: `0 2px 8px ${COLORS.shadow}`,
-                overflow: 'visible',
-              }}
-            >
-              <Table>
-                <TableHead>
-                  <TableRow sx={{ 
-                    background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryDark} 100%)`,
-                  }}>
-                    <TableCell sx={{ 
-                      fontWeight: 700, 
-                      fontSize: TEXT_SIZES.medium,
-                      color: COLORS.white,
-                      py: 2,
-                    }}>
-                      Plan Name
-                    </TableCell>
-                    <TableCell sx={{ 
-                      fontWeight: 700, 
-                      fontSize: TEXT_SIZES.medium,
-                      color: COLORS.white,
-                      py: 2,
-                    }}>
-                      Validity
-                    </TableCell>
-                    <TableCell sx={{ 
-                      fontWeight: 700, 
-                      fontSize: TEXT_SIZES.medium,
-                      color: COLORS.white,
-                      py: 2,
-                    }}>
-                      Amount
-                    </TableCell>
-                    <TableCell align="center" sx={{ 
-                      fontWeight: 700, 
-                      fontSize: TEXT_SIZES.medium,
-                      color: COLORS.white,
-                      py: 2,
-                    }}>
-                      Action
-                    </TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {listingPlans.map((plan, index) => {
-                    const pkg = plan.packages?.[0] || {};
-                    const groupKey = `listing-${plan._id}`;
-                    const isAdded = paymentSummary.some((g) => g.groupKey === groupKey);
-                    const hasOtherListingPlan = paymentSummary.some(
-                      (g) => g.isListingPlan && g.groupKey !== groupKey
-                    );
-                    const disableAdd =  hasOtherListingPlan;
-const handleAddListingPlan = () => {
+    return (
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: {
+            xs: "1fr",
+            md: "1fr 1fr",
+          },
+          gap: 2.5,
+          mb:4
+        }}
+      >
+        {listingPlans.map((plan, index) => {
+          const pkg = plan.packages?.[0] || {};
+          const groupKey = `listing-${plan._id}`;
+
+          const isAdded = paymentSummary.some(
+            (g) => g.groupKey === groupKey
+          );
+
+       
+const handleAddListingPlan = (plan, pkg) => {
   const groupKey = `listing-${plan._id}`;
+  
+  // Check if any listing plan already exists in paymentSummary
+  const existingListingPlan = paymentSummary.some(
+    (g) => g.isListingPlan === true
+  );
+  
+  if (existingListingPlan) {
+    openSnack("You can select only one listing plan at a time.", "warning");
+    return;
+  }
+  
+  // Get all available states
+  const allAvailableStates = finalToken ? allStates : ALL_INDIA_STATES;
+  const stateCount = allAvailableStates.length;
+  
+  // Create a single item with "ALL INVESTMENT RANGE" text
+  const listingItem = {
+    id: `listing-${plan._id}-item`,
+    investmentRangeLabel: "ALL INVESTMENT RANGE",
+    range: "ALL INVESTMENT RANGE",
+    stateCount: stateCount,
+    states: ["ALL STATES"],
+    selectedLeads: "-",
+    totalLeads: "-",
+    totalAmount: pkg.amount || 0,
+    pricePerState: pkg.amount || 0,
+    isListingPlan: true
+  };
+
   setPaymentSummary((prev) => {
     if (prev.some((g) => g.groupKey === groupKey)) {
       openSnack("Already added", "info");
       return prev;
     }
+
     openSnack(`${plan.planName} added to cart`, "success");
     setTimeout(() => scrollToPaymentSummary(), 300);
+
     return [
       ...prev,
       {
         groupKey,
         planId: plan._id,
         planName: plan.planName,
-        investmentRangeLabel: pkg.investmentRangeLabel || "Paid Listing",
+        investmentRangeLabel: "ALL INVESTMENT RANGE",
         validityDays: pkg.validityDays,
         pricePerState: pkg.amount,
-        uniqueStates: [],
-        totalStates: 0,
         amount: pkg.amount,
-        totalLeads: pkg.totalLeads,
-        items: [],
+        totalLeads: "-",
+        items: [listingItem],
         isListingPlan: true,
+        uniqueStates: ["ALL STATES"],
+        totalStates: stateCount,
       },
     ];
   });
   
-  // Mark as moved to payment immediately
+  // ✅ IMPORTANT: Add the group key to movedGroupKeys
   setMovedGroupKeys((prev) => {
     if (!prev.includes(groupKey)) {
       return [...prev, groupKey];
     }
     return prev;
   });
-  
-  setSelected((prev) => ({ ...prev, [groupKey]: true }));
-  setSelectedListingPlanId(plan._id);
 };
 
-                    return (
-                      <TableRow
-                        key={plan._id}
+          return (
+            <Card
+              key={plan._id}
+              elevation={0}
+              sx={{
+                position: "relative",
+                borderRadius: 3,
+                border: `1.5px solid ${
+                  isAdded
+                    ? COLORS.primary
+                    : index === 1
+                    ? "#ff9800"
+                    : COLORS.border
+                }`,
+                backgroundColor: COLORS.white,
+                overflow: "hidden",
+                transition: "0.3s ease",
+
+                "&:hover": {
+                  transform: "translateY(-2px)",
+                  boxShadow: `0 8px 20px ${COLORS.shadow}`,
+                },
+              }}
+            >
+              {/* Most Popular */}
+              {index === 1 && (
+                <Box
+                  sx={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    background:
+                      "linear-gradient(135deg,#ff9800 0%,#ff6f00 100%)",
+                    color: "#fff",
+                    px: 2,
+                    py: 0.6,
+                    borderBottomRightRadius: 12,
+                    fontSize: 12,
+                    fontWeight: 700,
+                  }}
+                >
+                  🔥 Most Popular
+                </Box>
+              )}
+
+              <CardContent
+                sx={{
+                  p: 3,
+                  pt: index === 1 ? 5 : 3,
+                }}
+              >
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-around",
+                    gap: 2,
+                    flexWrap: "wrap",
+                  }}
+                >
+                  {/* Left Section */}
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 2,
+                    }}
+                  >
+                    {/* Icon */}
+                    <Box
+                      sx={{
+                        width: 62,
+                        height: 62,
+                        borderRadius: "50%",
+                        backgroundColor:
+                          index === 1
+                            ? "rgba(255,152,0,0.08)"
+                            : "rgba(25,118,210,0.08)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      {index === 1 ? (
+                        <WorkspacePremiumRoundedIcon
+                          sx={{
+                            color: "#ff9800",
+                            fontSize: 32,
+                          }}
+                        />
+                      ) : (
+                        <StarBorderRoundedIcon
+                          sx={{
+                            color: COLORS.primary,
+                            fontSize: 32,
+                          }}
+                        />
+                      )}
+                    </Box>
+
+                    {/* Details */}
+                    <Box>
+                      <Typography
                         sx={{
-                          backgroundColor: isAdded ? COLORS.lightGreen : (index % 2 === 0 ? COLORS.white : COLORS.grey[50]),
-                          borderLeft: `4px solid ${isAdded ? COLORS.secondary : 'transparent'}`,
-                          transition: 'all 0.3s ease',
-                          '&:hover': {
-                            backgroundColor: isAdded ? COLORS.lightGreen : COLORS.lightOrange,
-                            transform: 'translateX(4px)',
-                          },
+                          fontWeight: 700,
+                          fontSize: TEXT_SIZES.large,
+                          color: COLORS.black,
+                          mb: 0.5,
                         }}
                       >
-                        <TableCell sx={{ py: 2 }}>
-                          <Typography sx={{ 
-                            fontSize: TEXT_SIZES.medium, 
-                            fontWeight: 600,
-                            color: COLORS.black,
-                          }}>
-                            {plan.planName}
-                          </Typography>
-                        </TableCell>
-                        
-                        <TableCell sx={{ py: 2 }}>
-                          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                            <CalendarMonthRoundedIcon sx={{ 
-                              fontSize: TEXT_SIZES.large, 
-                              color: COLORS.primary,
-                            }} />
-                            <Typography sx={{ 
-                              fontSize: TEXT_SIZES.medium, 
-                              fontWeight: 500,
-                              color: COLORS.black,
-                            }}>
-                              {pkg.validityDays} Days
-                            </Typography>
-                          </Box>
-                        </TableCell>
-                        
-                        <TableCell sx={{ py: 2 }}>
-                          <Typography sx={{ 
-                            fontSize: TEXT_SIZES.large, 
-                            fontWeight: 700,
-                            color: COLORS.primary,
-                          }}>
-                            ₹{(pkg.amount || 0).toLocaleString('en-IN')}
-                          </Typography>
-                        </TableCell>
-                        
-                        <TableCell align="center" sx={{ py: 2 }}>
-                          <Button
-                            variant={isAdded ? "outlined" : "contained"}
-                            size="medium"
-                            endIcon={isAdded ? <RemoveIcon /> : <AddIcon />}
-                            disabled={!isAdded && disableAdd}
-                       onClick={isAdded ? () => handleRemoveListingPlan(plan._id) : handleAddListingPlan}
+                        {plan.planName}
+                      </Typography>
+
+                      <Typography
+                        sx={{
+                          color: COLORS.grey[600],
+                          fontSize: TEXT_SIZES.medium,
+                          mb: 1.5,
+                        }}
+                      >
+                        {index === 1
+                          ? "For maximum visibility & leads"
+                          : "Ideal for getting started"}
+                      </Typography>
+
+                      {/* Bottom Info */}
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 2,
+                          flexWrap: "wrap",
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 0.8,
+                          }}
+                        >
+                          <CalendarMonthRoundedIcon
                             sx={{
-                              minWidth: 110,
-                              height: 40,
-                              borderRadius: 2,
-                              textTransform: "none",
-                              fontWeight: 700,
-                              fontSize: TEXT_SIZES.medium,
-                              backgroundColor: isAdded ? 'transparent' : COLORS.primary,
-                              color: isAdded ? COLORS.primary : COLORS.white,
-                              borderColor: COLORS.primary,
-                              borderWidth: 2,
-                              transition: 'all 0.3s ease',
-                              '&:hover': {
-                                backgroundColor: isAdded ? COLORS.lightOrange : COLORS.primaryDark,
-                                borderColor: COLORS.primaryDark,
-                                transform: 'scale(1.05)',
-                              },
-                              '&:disabled': {
-                                opacity: 0.5,
-                              },
+                              fontSize: 18,
+                              color: COLORS.grey[600],
+                            }}
+                          />
+
+                          <Typography
+                            sx={{
+                              fontWeight: 500,
+                              color: COLORS.grey[700],
                             }}
                           >
-                            {isAdded ? "Remove" : "Add"}
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          );
-        })()}
+                            {pkg.validityDays} Days
+                          </Typography>
+                        </Box>
 
-        <Box sx={{ 
-          mt: 2, 
-          p: 2, 
-          backgroundColor: COLORS.lightOrange,
-          borderRadius: 2,
-          border: `1px solid ${COLORS.border}`,
-        }}>
-          <Typography sx={{ 
-            fontSize: TEXT_SIZES.small,
-            color: COLORS.black,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 1,
-          }}>
-            <InfoOutlinedIcon sx={{ fontSize: TEXT_SIZES.large, color: COLORS.primary }} />
-            Select recommended packages to proceed
-          </Typography>
-        </Box>
+                        <Typography
+                          sx={{
+                            fontWeight: 800,
+                            fontSize: TEXT_SIZES.large,
+                            color:
+                              index === 1
+                                ? "#ff9800"
+                                : COLORS.primary,
+                          }}
+                        >
+                          ₹
+                          {(pkg.amount || 0).toLocaleString(
+                            "en-IN"
+                          )}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </Box>
+
+                  {/* Button */}
+                  <Button
+                    variant="contained"
+                    endIcon={
+                      isAdded ? <RemoveIcon /> : <AddIcon />
+                    }
+                   onClick={
+    isAdded
+      ? () => handleRemoveListingPlan(plan._id)
+      : () => handleAddListingPlan(plan, pkg)  // ← Pass both plan and pkg
+  }
+                    sx={{
+                      minWidth: 145,
+                      height: 46,
+                      borderRadius: 2.5,
+                      textTransform: "none",
+                      fontWeight: 700,
+                      fontSize: TEXT_SIZES.medium,
+                      boxShadow: "none",
+                      background:
+                        index === 1
+                          ? "linear-gradient(135deg,#ff9800 0%,#ff6f00 100%)"
+                          : `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryDark} 100%)`,
+
+                      "&:hover": {
+                        boxShadow: "none",
+                        opacity: 0.95,
+                      },
+                    }}
+                  >
+                    {isAdded ? "Remove Plan" : "Add to Plan"}
+                  </Button>
+                </Box>
+              </CardContent>
+            </Card>
+          );
+        })}
       </Box>
+    );
+  })()}
+
+</Box>
+</Box>
 
       
 
@@ -2696,82 +3184,229 @@ const handleAddListingPlan = () => {
       {/* REACTIVE CHECKOUT & REDESIGNED TABLE PAYMENT SUMMARY SECTION */}
 {(paymentSummary.filter(g => movedGroupKeys.includes(g.groupKey)).length > 0 || paymentSummary.length > 0) && (
   <>
-    {/* Checkout Summary Strip */}
- <Box
+  
+
+
+{/* Checkout Summary Strip */}
+{(paymentSummary.filter(g => movedGroupKeys.includes(g.groupKey)).length > 0 || paymentSummary.length > 0) && (() => {
+  const movedGroups = paymentSummary.filter(g => movedGroupKeys.includes(g.groupKey));
+  const totalPlans = new Set(movedGroups.map(g => g.planId)).size;
+  const totalInvestmentGroups = new Set(
+    movedGroups.filter(g => !g.isListingPlan).map(g => g.investmentRangeLabel)
+  ).size;
+  const totalRanges = movedGroups.filter(g => !g.isListingPlan).reduce((acc, g) => acc + (g.items?.length || 0), 0);
+  const totalLeads = movedGroups.reduce((acc, g) => acc + (g.totalLeads || 0), 0);
+  const totalAmount = movedGroups.reduce((acc, g) => acc + (g.amount || 0), 0);
+  
+  // Collect all unique validity days
+  const validityDaysList = [...new Set(
+    movedGroups.map(g => g.validityDays).filter(Boolean)
+  )].sort((a, b) => a - b);
+  
+  // Format validity display - show single value or range
+  let validityDisplay = '';
+  if (validityDaysList.length === 0) {
+    validityDisplay = 'N/A';
+  } else if (validityDaysList.length === 1) {
+    validityDisplay = `${validityDaysList[0]} Day${validityDaysList[0] > 1 ? 's' : ''}`;
+  } else {
+    // Show as range: 30-365 Days
+    validityDisplay = `${Math.min(...validityDaysList)}-${Math.max(...validityDaysList)} Days`;
+  }
+
+  const statCards = [
+    { label: 'Plans', value: totalPlans, iconBg: '#FFF3E0', iconColor: '#E68A00', icon: <LayersIcon sx={{ fontSize: 17 }} /> },
+    { label: 'Investment Groups', value: totalInvestmentGroups, iconBg: '#E8F5E9', iconColor: '#3D8E40', icon: <GridViewIcon sx={{ fontSize: 17 }} /> },
+    { label: 'Investment Ranges', value: totalRanges, iconBg: '#E3F2FD', iconColor: '#185FA5', icon: <BarChartIcon sx={{ fontSize: 17 }} /> },
+    { label: 'Total Leads', value: totalLeads.toLocaleString('en-IN'), iconBg: '#EDE7F6', iconColor: '#534AB7', icon: <GroupIcon sx={{ fontSize: 17 }} /> },
+    { label: 'Validity', value: validityDisplay, iconBg: '#E1F5FE', iconColor: '#0F6E56', icon: <CalendarMonthRoundedIcon sx={{ fontSize: 17 }} /> },
+  ];
+
+  return (
+<Box
   sx={{
     position: 'fixed',
     bottom: 20,
     left: '50%',
     transform: 'translateX(-50%)',
-    
-    width: {
-      xs: '95%',
-      sm: '90%',
-      md: '80%',
-      lg: '70%',
-    },
-
+    width: { xs: '98%', md: '90%', lg: '80%' },
     zIndex: 1300,
-
-    p: 2.5,
     backgroundColor: COLORS.white,
     borderRadius: 3,
     border: `1px solid ${COLORS.border}`,
-
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    flexWrap: 'wrap',
-    gap: 2,
-
-    boxShadow: `0 10px 30px ${COLORS.shadow}`,
-    backdropFilter: 'blur(10px)',
-
+    overflow: 'hidden',
+    boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
     animation: `${bounceAnimation} 2s infinite`,
-    transition: 'all 0.3s ease',
+    display: 'flex',
+    flexDirection: 'column', // 👈 IMPORTANT
+    gap: 2,
+    px: 2,
+    py: 1.5,
 
     '&:hover': {
       animationPlayState: 'paused',
-      transform: 'translateX(-50%) scale(1.02)',
+      transform: 'translateX(-50%) scale(1.01)',
     },
+
+    transition: 'transform 0.3s ease',
   }}
-
 >
-      <Box>
-        <Typography sx={{ fontSize: TEXT_SIZES.small, color: COLORS.grey[600], fontWeight: 500 }}>
-          Total Payable (for added items)
-        </Typography>
-        <Typography sx={{ fontSize: TEXT_SIZES.xxl, fontWeight: 800, color: COLORS.secondaryDark }}>
-          ₹{paymentSummary
-            .filter(g => movedGroupKeys.includes(g.groupKey))
-            .reduce((acc, curr) => acc + curr.amount, 0)
-            .toLocaleString('en-IN')}
-        </Typography>
-      </Box>
+  {/* FIRST ROW */}
+  <Typography
+    sx={{
+      fontWeight: 700,
+      fontSize: '1.3rem',
+      textAlign: 'center',
+    }}
+  >
+    Proceed to Payment
+  </Typography>
 
-      <Box sx={{ display: 'flex', gap: 2 }}>
-        <Button
-          variant="contained"
-          size="large"
-          onClick={handleProceedToPayment}
+  {/* SECOND ROW */}
+  <Box
+    sx={{
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: 1,
+      flexWrap: 'wrap',
+    }}
+  >
+    {/* Left Side Stats */}
+    <Box
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 1,
+        flex: 1,
+        minWidth: 0,
+        overflowX: 'auto',
+        scrollbarWidth: 'none',
+        '&::-webkit-scrollbar': {
+          display: 'none',
+        },
+      }}
+    >
+      {statCards.map((stat) => (
+        <Box
+          key={stat.label}
           sx={{
-            backgroundColor: COLORS.primary,
-            color: COLORS.white,
-            fontSize: TEXT_SIZES.large,
-            fontWeight: 700,
-            px: 5,
-            py: 1.5,
+            width: 130,
+            backgroundColor: COLORS.grey[50],
             borderRadius: 2,
-            '&:hover': {
-              backgroundColor: COLORS.primaryDark,
-              transform: 'scale(1.02)',
-            },
+            px: 1.5,
+            py: 1,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1,
+            border: `1px solid ${COLORS.border}`,
+            flexShrink: 0,
           }}
         >
-          Proceed to Payment
-        </Button>
-      </Box>
+          <Box>
+            <Typography
+              sx={{
+                fontSize: '0.78rem',
+                color: COLORS.black,
+                fontWeight: 500,
+                lineHeight: 1,
+              }}
+            >
+              {stat.label}
+            </Typography>
+
+            <Typography
+              sx={{
+                fontSize: TEXT_SIZES.medium,
+                fontWeight: 700,
+                color: COLORS.black,
+                lineHeight: 1.2,
+              }}
+            >
+              {stat.value}
+            </Typography>
+          </Box>
+        </Box>
+      ))}
     </Box>
+
+    {/* Right Side */}
+    <Box
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 2,
+        flexShrink: 0,
+      }}
+    >
+      <Box>
+        <Typography
+          sx={{
+            fontSize: TEXT_SIZES.small,
+            color: COLORS.grey[600],
+            fontWeight: 500,
+            mb: 0.2,
+          }}
+        >
+          Total Payable
+        </Typography>
+
+        <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.5 }}>
+          <Typography
+            sx={{
+              fontSize: TEXT_SIZES.medium,
+              fontWeight: 700,
+              color: COLORS.secondaryDark,
+            }}
+          >
+            ₹
+          </Typography>
+
+          <Typography
+            sx={{
+              fontSize: '1.5rem',
+              fontWeight: 800,
+              color: COLORS.secondaryDark,
+              lineHeight: 1,
+            }}
+          >
+            {totalAmount.toLocaleString('en-IN')}
+          </Typography>
+        </Box>
+      </Box>
+
+  <Button
+  variant="contained"
+  size="large"
+  onClick={handleProceedToPayment}
+  disabled={loading}
+  endIcon={!loading && <ArrowForwardIcon />}
+  sx={{
+    backgroundColor: COLORS.primary,
+    color: COLORS.white,
+    fontSize: TEXT_SIZES.medium,
+    fontWeight: 700,
+    px: 4,
+    py: 1.2,
+    borderRadius: 2,
+    textTransform: 'none',
+    whiteSpace: 'nowrap',
+    '&:hover': {
+      backgroundColor: COLORS.primaryDark,
+      transform: 'scale(1.02)',
+    },
+    '&.Mui-disabled': {
+      backgroundColor: COLORS.grey[400],
+    },
+  }}
+>
+  {loading ? <CircularProgress size={24} color="inherit" /> : "PAY NOW"}
+</Button>
+    </Box>
+  </Box>
+</Box>
+  );
+})()}
     
 
 
@@ -2794,302 +3429,315 @@ const handleAddListingPlan = () => {
     }} />
   </Box>
 
-  <TableContainer 
-    component={Paper} 
-    elevation={0}
-    sx={{ 
-      border: `1px solid ${COLORS.border}`,
-      borderRadius: 2,
-      boxShadow: `0 4px 12px ${COLORS.shadow}`,
-      overflow: 'hidden',
-      mb: 3
-    }}
-  >
-    <Table>
-      <TableHead>
-        <TableRow sx={{ 
-          background: `linear-gradient(135deg, ${COLORS.secondary} 0%, ${COLORS.secondaryDark} 100%)`,
-        }}>
-          <TableCell sx={{ fontWeight: 700, fontSize: TEXT_SIZES.medium, color: COLORS.white, py: 2 }}>
-            Selected Plan
-          </TableCell>
-          <TableCell sx={{ fontWeight: 700, fontSize: TEXT_SIZES.medium, color: COLORS.white, py: 2 }}>
-            Investment Group
-          </TableCell>
-          <TableCell sx={{ fontWeight: 700, fontSize: TEXT_SIZES.medium, color: COLORS.white, py: 2 }}>
-            Investment Range
-          </TableCell>
-          <TableCell sx={{ fontWeight: 700, fontSize: TEXT_SIZES.medium, color: COLORS.white, py: 2 }}>
-            Validity
-          </TableCell>
-          <TableCell align="center" sx={{ fontWeight: 700, fontSize: TEXT_SIZES.medium, color: COLORS.white, py: 2 }}>
-            Total States
-          </TableCell>
-          <TableCell align="center" sx={{ fontWeight: 700, fontSize: TEXT_SIZES.medium, color: COLORS.white, py: 2 }}>
-            Total Leads
-          </TableCell>
-          <TableCell align="right" sx={{ fontWeight: 700, fontSize: TEXT_SIZES.medium, color: COLORS.white, py: 2 }}>
-            Subtotal
-          </TableCell>
-          <TableCell align="center" sx={{ fontWeight: 700, fontSize: TEXT_SIZES.medium, color: COLORS.white, py: 2 }}>
-            Actions
-          </TableCell>
-        </TableRow>
-      </TableHead>
-      <TableBody>
-        {paymentSummary && paymentSummary.length > 0 ? (
-          paymentSummary.map((group, groupIndex) => {
-            const isMoved = movedGroupKeys.includes(group.groupKey);
+<TableContainer 
+  component={Paper} 
+  elevation={0}
+  sx={{ 
+    border: `1px solid ${COLORS.border}`,
+    borderRadius: 2,
+    boxShadow: `0 4px 12px ${COLORS.shadow}`,
+    overflow: 'hidden',
+    mb: 3
+  }}
+>
+  <Table sx={{ borderCollapse: 'collapse' }}>
+    <TableHead>
+      <TableRow sx={{ 
+        background: `linear-gradient(135deg, ${COLORS.secondary} 0%, ${COLORS.secondaryDark} 100%)`,
+      }}>
+        <TableCell sx={{ fontWeight: 700, fontSize: TEXT_SIZES.small, color: COLORS.white, py: 1, width: '25%', borderBottom: 'none' }}>
+          Selected Plan
+        </TableCell>
+        <TableCell align="center" sx={{ fontWeight: 700, fontSize: TEXT_SIZES.small, color: COLORS.white, py: 1, width: '15%', borderBottom: 'none' }}>
+          Investment Range Label
+        </TableCell>
+        <TableCell sx={{ fontWeight: 700, fontSize: TEXT_SIZES.small, color: COLORS.white, py: 1, width: '20%', borderBottom: 'none' }}>
+          Investment Range
+        </TableCell>
+        <TableCell align="center" sx={{ fontWeight: 700, fontSize: TEXT_SIZES.small, color: COLORS.white, py: 1, width: '10%', borderBottom: 'none' }}>
+          States
+        </TableCell>
+        <TableCell align="center" sx={{ fontWeight: 700, fontSize: TEXT_SIZES.small, color: COLORS.white, py: 1, width: '15%', borderBottom: 'none' }}>
+          Leads
+        </TableCell>
+        <TableCell align="right" sx={{ fontWeight: 700, fontSize: TEXT_SIZES.small, color: COLORS.white, py: 1, width: '20%', borderBottom: 'none' }}>
+          Subtotal (₹)
+        </TableCell>
+        <TableCell align="center" sx={{ fontWeight: 700, fontSize: TEXT_SIZES.small, color: COLORS.white, py: 1, width: '10%', borderBottom: 'none' }}>
+          Actions
+        </TableCell>
+      </TableRow>
+    </TableHead>
+    <TableBody>
+      {paymentSummary && paymentSummary.length > 0 ? (
+        (() => {
+          // Group by planId
+          const groupedByPlan = {};
+          paymentSummary.forEach((group) => {
+            if (!group.items || group.items.length === 0) return;
             
-            // Get price per state from the group
-            const pricePerState = group.pricePerState || 0;
+            if (!groupedByPlan[group.planId]) {
+              groupedByPlan[group.planId] = {
+                planName: group.planName,
+                validityDays: group.validityDays,
+                items: [],
+                totalPlanAmount: 0,
+                totalPlanLeads: 0,
+                totalPlanStates: 0
+              };
+            }
             
-            // Calculate total states from uniqueStates or items
-            const totalStates = group.uniqueStates?.length || 
-                              group.totalStates || 
-                              (group.items ? group.items.reduce((sum, item) => sum + (item.stateCount || 0), 0) : 0) || 0;
+            group.items.forEach(item => {
+              groupedByPlan[group.planId].items.push({
+                ...item,
+                pricePerState: group.pricePerState,
+                validityDays: group.validityDays
+              });
+              groupedByPlan[group.planId].totalPlanAmount += (group.pricePerState * (item.stateCount || 0)) || 0;
+              groupedByPlan[group.planId].totalPlanLeads += (item.selectedLeads * (item.stateCount || 0)) || 0;
+              groupedByPlan[group.planId].totalPlanStates += item.stateCount || 0;
+            });
+          });
+          
+          let rowIndex = 0;
+          
+     return Object.entries(groupedByPlan).map(([planId, planData]) => {
+  // Group items within the plan by investment range - MAKE UNIQUE PER PLAN
+  const groupedByRange = planData.items.reduce((acc, item) => {
+    // Create a unique key that includes planId AND range
+    const rangeKey = `${planId}_${item.range}`;
+    
+    if (!acc[rangeKey]) {
+      acc[rangeKey] = {
+        range: item.range,
+        investmentRangeLabel: item.investmentRangeLabel,
+        planId: planId,
+        items: [],
+        totalStates: 0,
+        totalLeads: 0,
+        totalAmount: 0,
+        selectedLeads: item.selectedLeads,
+        pricePerState: item.pricePerState,
+        validityDays: item.validityDays
+      };
+    }
+    acc[rangeKey].items.push(item);
+    acc[rangeKey].totalStates += item.stateCount || 0;
+    acc[rangeKey].totalLeads += (item.stateCount || 0) * (item.selectedLeads || 0);
+    acc[rangeKey].totalAmount += item.totalAmount || (item.pricePerState * (item.stateCount || 0)) || 0;
+    return acc;
+  }, {});
+  
+  const sortedRanges = Object.values(groupedByRange).sort((a, b) => {
+    const order = ['Upto 5 Lakhs', 'Rs. 50k - 2 Lakhs', 'Rs. 2 Lakhs - 5 Lakhs', 'Rs. 5 Lakhs - 10 Lakhs', 'Rs. 10 Lakhs - 20 Lakhs', 'Below 50k'];
+    return order.indexOf(a.range) - order.indexOf(b.range);
+  });
             
-            // Calculate total leads
-            const totalLeads = group.totalLeads || 
-                              (group.items ? group.items.reduce((sum, item) => sum + ((item.stateCount || 0) * (item.selectedLeads || 0)), 0) : 0) || 0;
+            const rangeRows = [];
             
-            // Calculate total amount
-            const totalAmount = group.amount || 
-                              (pricePerState * totalStates) || 
-                              (group.items ? group.items.reduce((sum, item) => sum + (item.totalAmount || 0), 0) : 0) || 0;
-            
-            const validityDays = group.validityDays || (group.items && group.items[0] ? group.items[0].validityDays : 0);
-            
-            // Skip rendering if no items in group
-            if (!group.items || group.items.length === 0) return null;
-            
-            return (
-              <TableRow
-                key={group.groupKey || groupIndex}
-                sx={{
-                  backgroundColor: groupIndex % 2 === 0 ? COLORS.white : COLORS.grey[50],
-                  transition: "all 0.3s ease",
-                  "&:hover": {
-                    backgroundColor: COLORS.lightGreen,
-                  },
-                }}
-              >
-                {/* Selected Plan */}
-                <TableCell sx={{ verticalAlign: "top", py: 2 }}>
-                  <Typography
-                    sx={{
-                      fontSize: TEXT_SIZES.medium,
-                      fontWeight: 700,
-                      color: COLORS.black,
-                    }}
-                  >
-                    {group.planName || (group.items[0] ? group.items[0].planName : 'Plan Name')}
-                  </Typography>
-                </TableCell>
-
-                {/* Investment Group */}
-                <TableCell sx={{ verticalAlign: "top", py: 2 }}>
-                  <Chip
-                    label={group.investmentRangeLabel || (group.items[0] ? group.items[0].investmentRangeLabel : 'Group')}
-                    size="small"
-                    sx={{
-                      fontSize: "0.7rem",
-                      height: 24,
-                      backgroundColor: (() => {
-                        // Get all unique investment groups for this specific plan
-                        const planData = plans.find(p => p._id === group.planId);
-                        if (planData) {
-                          const allGroups = [];
-                          planData.packages?.forEach((pkg) => {
-                            if (pkg.investmentRangeLabel && !allGroups.includes(pkg.investmentRangeLabel)) {
-                              allGroups.push(pkg.investmentRangeLabel);
-                            }
-                          });
-                          
-                          const groupIndices = {};
-                          let currentGroupIndex = 0;
-                          allGroups.forEach((label) => {
-                            if (!groupIndices.hasOwnProperty(label)) {
-                              groupIndices[label] = currentGroupIndex;
-                              currentGroupIndex++;
-                            }
-                          });
-                          
-                          const currentLabel = group.investmentRangeLabel || (group.items[0] ? group.items[0].investmentRangeLabel : '');
-                          const groupIdx = groupIndices[currentLabel] || 0;
-                          return groupIdx % 2 === 0 ? "#fff0c5" : "#c8e6ac";
-                        }
-                        return "#c8e6ac";
-                      })(),
-                      color: COLORS.black,
-                      fontWeight: 600,
-                    }}
-                  />
-                </TableCell>
-
-                {/* Investment Range Multiple Rows */}
-                <TableCell sx={{ p: 0 }}>
-                  {group.items.map((item, idx) => (
-                    <Box
-                      key={idx}
-                      sx={{
-                        px: 2,
-                        py: 2,
-                        borderBottom: idx !== group.items.length - 1 ? `1px solid ${COLORS.border}` : "none",
+            // First range row with plan name
+            sortedRanges.forEach((rangeGroup, idx) => {
+              rangeRows.push(
+                <TableRow
+                  key={`${planId}-${rangeGroup.range}`}
+                  sx={{
+                    backgroundColor: rowIndex % 2 === 0 ? COLORS.white : COLORS.grey[50],
+                    '&:hover': {
+                      backgroundColor: COLORS.lightGreen,
+                    },
+                    '& td': {
+                      borderBottom: 'none',
+                      py: 0.75,  // Reduced vertical padding
+                    },
+                  }}
+                >
+                  {/* Plan Name Cell - Only for first range */}
+                  {idx === 0 && (
+                    <TableCell 
+                      rowSpan={sortedRanges.length}
+                      sx={{ 
+                        verticalAlign: "top",
+                        py: 0.75,
+                        borderRight: `2px solid ${COLORS.border}`,
+                        backgroundColor: rowIndex % 2 === 0 ? COLORS.white : COLORS.grey[50],
+                        borderBottom: 'none',
                       }}
                     >
-                      <Chip
-                        label={item.range}
-                        size="small"
-                        sx={{
-                          fontSize: "0.72rem",
-                          height: 26,
-                          backgroundColor: COLORS.lightOrange,
-                          color: COLORS.black,
-                          fontWeight: 600,
-                        }}
-                      />
-                    </Box>
-                  ))}
-                </TableCell>
-
-                {/* Validity */}
-                <TableCell sx={{ verticalAlign: "top", py: 2 }}>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                    <CalendarMonthRoundedIcon
+                      <Box>
+                        <Typography
+                          sx={{
+                            fontSize: TEXT_SIZES.small,
+                            fontWeight: 700,
+                            color: COLORS.black,
+                            mb: 0.3,
+                          }}
+                        >
+                          {planData.planName}
+                        </Typography>
+                        <Chip
+                          icon={<CalendarMonthRoundedIcon sx={{ fontSize: '0.65rem' }} />}
+                          label={`${planData.validityDays} Days`}
+                          size="small"
+                          sx={{
+                            height: 20,
+                            fontSize: '0.6rem',
+                            backgroundColor: COLORS.lightOrange,
+                            color: COLORS.black,
+                            fontWeight: 500,
+                          }}
+                        />
+                      </Box>
+                    </TableCell>
+                  )}
+                  <TableCell sx={{ py: 0.75, borderBottom: 'none' }}>
+  <Chip
+    label={rangeGroup.investmentRangeLabel || '—'}
+    size="small"
+    sx={{
+      fontSize: "0.68rem",
+      height: 24,
+      backgroundColor: COLORS.lightGreen,
+      color: COLORS.black,
+      fontWeight: 600,
+    }}
+  />
+</TableCell>
+                  
+                  {/* Investment Range */}
+                  <TableCell sx={{ py: 0.75, borderBottom: 'none' }}>
+                    <Chip
+                      label={rangeGroup.range}
+                      size="small"
                       sx={{
-                        fontSize: TEXT_SIZES.large,
-                        color: COLORS.grey[600],
-                      }}
-                    />
-                    <Typography
-                      sx={{
-                        fontSize: TEXT_SIZES.medium,
+                        fontSize: "0.68rem",
+                        height: 24,
+                        backgroundColor: COLORS.lightOrange,
+                        color: COLORS.black,
                         fontWeight: 600,
                       }}
-                    >
-                      {validityDays} Days
+                    />
+                  </TableCell>
+                  
+                  
+         {/* Total States */}
+<TableCell align="center" sx={{ py: 0.75, borderBottom: 'none' }}>
+  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.3 }}>
+    {rangeGroup.items[0]?.isListingPlan ? (
+      <Typography sx={{ fontSize: TEXT_SIZES.small, fontWeight: 700 }}>
+        ALL STATES
+      </Typography>
+    ) : (
+      <>
+        <Typography sx={{ fontSize: TEXT_SIZES.small, fontWeight: 700 }}>
+          {rangeGroup.totalStates}
+        </Typography>
+        <Tooltip title="View states" arrow>
+          <IconButton
+            size="small"
+            onClick={(e) => {
+              const allStatesList = [...new Set(
+                rangeGroup.items.flatMap(item => item.states || [])
+              )];
+              handleShowStates(e, allStatesList);
+            }}
+            sx={{ p: 0.2 }}
+          >
+            <VisibilityIcon sx={{ fontSize: '0.8rem', color: COLORS.primary }} />
+          </IconButton>
+        </Tooltip>
+      </>
+    )}
+  </Box>
+  {rangeGroup.items.length > 1 && !rangeGroup.items[0]?.isListingPlan && (
+    <Typography sx={{ fontSize: "0.55rem", color: COLORS.grey[500], mt: 0.2 }}>
+      ({rangeGroup.items.map(item => `${item.stateCount}`).join(' + ')})
+    </Typography>
+  )}
+</TableCell>
+{/* Total Leads */}
+<TableCell align="center" sx={{ py: 0.75, borderBottom: 'none' }}>
+  {rangeGroup.items[0]?.isListingPlan ? (
+    <Typography sx={{ fontSize: TEXT_SIZES.small, fontWeight: 700 }}>
+      -
+    </Typography>
+  ) : (
+    <>
+      <Typography sx={{ fontSize: TEXT_SIZES.small, fontWeight: 700 }}>
+        {typeof rangeGroup.totalLeads === 'number' ? rangeGroup.totalLeads.toLocaleString("en-IN") : rangeGroup.totalLeads}
+      </Typography>
+      <Typography sx={{ fontSize: "0.55rem", color: COLORS.grey[600], mt: 0.2 }}>
+        {rangeGroup.selectedLeads} × {rangeGroup.totalStates}
+      </Typography>
+    </>
+  )}
+</TableCell>
+                  
+                  {/* Subtotal */}
+                  <TableCell align="right" sx={{ py: 0.75, borderBottom: 'none' }}>
+                    <Typography sx={{ fontSize: TEXT_SIZES.small, fontWeight: 700, color: COLORS.secondaryDark }}>
+                      ₹{rangeGroup.totalAmount.toLocaleString("en-IN")}
                     </Typography>
-                  </Box>
-                </TableCell>
-
-                {/* Total States */}
-                <TableCell align="center" sx={{ verticalAlign: "top", py: 2 }}>
-                  <Typography
-                    sx={{
-                      fontSize: TEXT_SIZES.medium,
-                      fontWeight: 700,
-                    }}
-                  >
-                    {totalStates}
-                  </Typography>
-                </TableCell>
-
-                {/* Total Leads */}
-                <TableCell align="center" sx={{ verticalAlign: "top", py: 2 }}>
-                  <Typography
-                    sx={{
-                      fontSize: TEXT_SIZES.medium,
-                      fontWeight: 700,
-                    }}
-                  >
-                    {totalLeads.toLocaleString("en-IN")}
-                  </Typography>
-                </TableCell>
-
-                {/* Total Amount / Subtotal */}
-                <TableCell align="right" sx={{ verticalAlign: "top", py: 2 }}>
-                  <Typography
-                    sx={{
-                      fontSize: TEXT_SIZES.large,
-                      fontWeight: 700,
-                      color: COLORS.secondaryDark,
-                    }}
-                  >
-                    ₹{totalAmount.toLocaleString("en-IN")}
-                  </Typography>
-                  {pricePerState > 0 && totalStates > 0 && (
-                    <Typography
-                      sx={{
-                        fontSize: "0.65rem",
-                        color: COLORS.grey[600],
-                        mt: 0.5,
-                      }}
-                    >
-                      (₹{pricePerState.toLocaleString("en-IN")} × {totalStates} states)
-                    </Typography>
-                  )}
-                </TableCell>
-
-                {/* Actions */}
-                <TableCell align="center" sx={{ verticalAlign: "top", py: 2 }}>
-                  {!isMoved ? (
-                    <Button
-                      variant="contained"
-                      size="small"
-                      onClick={() => handleMoveToPayment(group.groupKey)}
-                      sx={{
-                        minWidth: 120,
-                        height: 34,
-                        textTransform: "none",
-                        fontWeight: 700,
-                        borderRadius: 2,
-                        backgroundColor: COLORS.primary,
-                        "&:hover": {
-                          backgroundColor: COLORS.primaryDark,
-                        },
-                      }}
-                    >
-                      Add to Payment
-                    </Button>
-                  ) : (
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      onClick={() =>
-                        setMovedGroupKeys((prev) =>
-                          prev.filter((key) => key !== group.groupKey)
-                        )
-                      }
-                      sx={{
-                        minWidth: 120,
-                        height: 34,
-                        textTransform: "none",
-                        fontWeight: 700,
-                        borderRadius: 2,
-                        borderColor: COLORS.primary,
-                        color: COLORS.primary,
-                        "&:hover": {
-                          borderColor: COLORS.primaryDark,
-                          color: COLORS.primaryDark,
-                          backgroundColor: COLORS.lightOrange,
-                        },
-                      }}
-                    >
-                      Remove from Payment
-                    </Button>
-                  )}
-                </TableCell>
+                    {rangeGroup.pricePerState > 0 && (
+                      <Typography sx={{ fontSize: "0.55rem", color: COLORS.grey[600], mt: 0.2 }}>
+                        ₹{rangeGroup.pricePerState.toLocaleString("en-IN")} × {rangeGroup.totalStates}
+                      </Typography>
+                    )}
+                  </TableCell>
+                  
+               {/* Actions */}
+<TableCell align="center" sx={{ py: 0.75, borderBottom: 'none' }}>
+  <Tooltip title="Remove from summary" arrow>
+    <IconButton
+      onClick={() => {
+        setItemToRemove({
+          planName: planData.planName,
+          range: rangeGroup.range,
+          investmentRangeLabel: rangeGroup.investmentRangeLabel,
+          items: rangeGroup.items
+        });
+        setOpenRemoveConfirmDialog(true);
+      }}
+      sx={{
+        color: COLORS.grey[600],
+        p: 0.3,
+        '&:hover': {
+          color: COLORS.primary,
+          backgroundColor: COLORS.lightOrange,
+        },
+      }}
+    >
+      <DeleteIcon sx={{ fontSize: 18 }} />
+    </IconButton>
+  </Tooltip>
+</TableCell>
+                </TableRow>
+              );
+              rowIndex++;
+            });
+            
+            // Add a subtle separator between different plans
+            rangeRows.push(
+              <TableRow key={`${planId}-spacer`} sx={{ height: 4 }}>
+                <TableCell colSpan={6} sx={{ p: 0, border: 'none', backgroundColor: 'transparent' }} />
               </TableRow>
             );
-          })
-        ) : null}
-        
-        {/* Show empty state if no items */}
-        {(!paymentSummary || paymentSummary.length === 0) && (
-          <TableRow>
-            <TableCell colSpan={8} align="center" sx={{ py: 8 }}>
-              <Typography sx={{ color: COLORS.grey[500], fontSize: TEXT_SIZES.medium }}>
-                No items added yet. Select investment ranges and click "Add" to proceed.
-              </Typography>
-            </TableCell>
-          </TableRow>
-        )}
-      </TableBody>
-    </Table>
-  </TableContainer>
+            
+            return rangeRows;
+          });
+        })()
+      ) : (
+        <TableRow>
+          <TableCell colSpan={6} align="center" sx={{ py: 4, borderBottom: 'none' }}>
+            <Typography sx={{ color: COLORS.grey[500], fontSize: TEXT_SIZES.small }}>
+              No items added yet. Select investment ranges and click "Add" to proceed.
+            </Typography>
+          </TableCell>
+        </TableRow>
+      )}
+    </TableBody>
+  </Table>
+</TableContainer>
 </Box>
-
 
   </>
 )}
@@ -3107,19 +3755,23 @@ const handleAddListingPlan = () => {
           }
         }}
       >
-        <DialogTitle sx={{ 
-          background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryDark} 100%)`,
-          fontSize: TEXT_SIZES.large,
-          fontWeight: 700,
-          color: COLORS.white,
-          py: 2.5,
-        }}>
-          {!finalToken ? (
-  <>Select States ({selectedStates.size} of {ALL_INDIA_STATES.length})</>
-) : (
-  <>Select States ({selectedStates.size} of {allStates.length})</>
-)}
-        </DialogTitle>
+      <DialogTitle sx={{ 
+  background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryDark} 100%)`,
+  fontSize: TEXT_SIZES.large,
+  fontWeight: 700,
+  color: COLORS.white,
+  py: 2.5,
+}}>
+  {(() => {
+    const blocked = getAlreadySelectedStatesInOtherRanges();
+    // Count only states selected for THIS range (not blocked ones from other ranges)
+    const currentRangeSelectedCount = [...selectedStates].filter(s => !blocked.has(s)).length;
+    const totalAvailable = !finalToken 
+      ? ALL_INDIA_STATES.filter(s => !blocked.has(s)).length
+      : allStates.filter(s => !blocked.has(s)).length;
+    return <>Select States ({currentRangeSelectedCount} of {totalAvailable})</>;
+  })()}
+</DialogTitle>
   <DialogContent dividers sx={{ 
   maxHeight: 500, 
   overflow: "auto",
@@ -3139,10 +3791,15 @@ const handleAddListingPlan = () => {
         {/* Global Actions */}
         <Box sx={{ display: "flex", gap: 1.5, mb: 2.5, justifyContent: "flex-end" }}>
           <Button 
-            variant="outlined" 
-            size="small" 
-            onClick={handleSelectAll} 
-            disabled={selectedStates.size === statesToDisplay.length}
+  variant="outlined" 
+  size="small" 
+  onClick={handleSelectAll} 
+  disabled={(() => {
+    const blocked = getAlreadySelectedStatesInOtherRanges();
+    const selectableStates = getStatesToDisplay().filter(s => !blocked.has(s));
+    // Disabled when all selectable (non-blocked) states are already selected
+    return selectableStates.every(s => selectedStates.has(s));
+  })()}
             sx={{
               borderColor: COLORS.primary,
               color: COLORS.primary,
@@ -3158,13 +3815,21 @@ const handleAddListingPlan = () => {
               },
             }}
           >
-            Select All ({statesToDisplay.length})
-          </Button>
-          <Button 
-            variant="outlined" 
-            size="small" 
-            onClick={handleClearAll} 
-            disabled={selectedStates.size === 0}
+           {(() => {
+    const blocked = getAlreadySelectedStatesInOtherRanges();
+    const selectableCount = getStatesToDisplay().filter(s => !blocked.has(s)).length;
+    return `Select All (${selectableCount})`;
+  })()}
+</Button>
+         <Button 
+  variant="outlined" 
+  size="small" 
+  onClick={handleClearAll} 
+  disabled={(() => {
+    const blocked = getAlreadySelectedStatesInOtherRanges();
+    // Disabled when no non-blocked states are selected (nothing to clear)
+    return [...selectedStates].every(s => blocked.has(s));
+  })()}
             sx={{
               borderColor: COLORS.primary,
               color: COLORS.primary,
@@ -3242,10 +3907,9 @@ const handleAddListingPlan = () => {
           >
             Cancel
           </Button>
-          <Button 
-            onClick={handleSaveStates} 
-            variant="contained" 
-            disabled={selectedStates.size === 0}
+    <Button 
+  onClick={handleSaveStates} 
+  variant="contained" 
             sx={{
               backgroundColor: COLORS.primary,
               color: COLORS.white,
@@ -3265,6 +3929,99 @@ const handleAddListingPlan = () => {
           </Button>
         </DialogActions>
       </Dialog>
+      {/* States List Dialog */}
+<Dialog
+  open={openStatesTooltip}
+  onClose={handleCloseStatesTooltip}
+  maxWidth="sm"
+  fullWidth
+  PaperProps={{
+    sx: {
+      borderRadius: 2,
+      border: `1px solid ${COLORS.primary}`,
+      maxHeight: '80vh',
+    }
+  }}
+>
+  <DialogTitle sx={{
+    background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryDark} 100%)`,
+    fontSize: TEXT_SIZES.medium,
+    fontWeight: 700,
+    color: COLORS.white,
+    py: 1.5,
+    pr: 5,
+    position: 'relative',
+  }}>
+    Selected States ({tooltipStates.length})
+    <IconButton
+      onClick={handleCloseStatesTooltip}
+      aria-label="close"
+      sx={{
+        position: 'absolute',
+        right: 8,
+        top: '50%',
+        transform: 'translateY(-50%)',
+        color: COLORS.white,
+        '&:hover': {
+          backgroundColor: 'rgba(255,255,255,0.1)',
+        },
+      }}
+    >
+      <CloseIcon />
+    </IconButton>
+  </DialogTitle>
+  <DialogContent dividers sx={{ p: 2 }}>
+    {tooltipStates.length > 0 ? (
+      <Box>
+        {/* Group states by region */}
+        {Object.entries(INDIA_STATES).map(([region, regionStates]) => {
+          const matchedStates = tooltipStates.filter(state => 
+            regionStates.includes(state)
+          );
+          
+          if (matchedStates.length === 0) return null;
+          
+          return (
+            <Box key={region} sx={{ mb: 2 }}>
+              <Typography
+                sx={{
+                  fontSize: TEXT_SIZES.small,
+                  fontWeight: 700,
+                  color: COLORS.primary,
+                  mb: 1,
+                  pb: 0.5,
+                  borderBottom: `1px solid ${COLORS.border}`,
+                }}
+              >
+                {region} ({matchedStates.length})
+              </Typography>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.8, pl: 1 }}>
+                {matchedStates.map((state, idx) => (
+                  <Chip
+                    key={idx}
+                    label={state}
+                    size="small"
+                    sx={{
+                      backgroundColor: COLORS.lightOrange,
+                      color: COLORS.black,
+                      fontWeight: 500,
+                      fontSize: '0.7rem',
+                      height: 24,
+                    }}
+                  />
+                ))}
+              </Box>
+            </Box>
+          );
+        })}
+      </Box>
+    ) : (
+      <Typography sx={{ color: COLORS.grey[500], textAlign: 'center', py: 4 }}>
+        No states selected
+      </Typography>
+    )}
+  </DialogContent>
+</Dialog>
 
       <Snackbar 
         open={snack.open} 
@@ -3299,6 +4056,135 @@ const handleAddListingPlan = () => {
   fullWidth
   PaperProps={{
     sx: {
+      // borderRadius: 3,
+      border: `2px solid ${COLORS.primary}`,
+      boxShadow: `0 8px 32px ${COLORS.shadow}`,
+      overflow: "visible",
+      position: "relative",
+    },
+  }}
+>
+  {/* Top Floating Close Icon */}
+  <IconButton
+    onClick={() => {
+      setOpenConfirmDialog(false);
+      setPendingSelection(null);
+    }}
+    sx={{
+      position: "absolute",
+      top: -16,
+      right: -16,
+      backgroundColor: COLORS.white,
+      color: COLORS.primary,
+      boxShadow: `0 4px 12px ${COLORS.shadow}`,
+      border: `1px solid ${COLORS.border}`,
+      zIndex: 10,
+
+      "&:hover": {
+        backgroundColor: COLORS.grey[100],
+        transform: "scale(1.05)",
+      },
+    }}
+  >
+    <CloseIcon />
+  </IconButton>
+
+  <DialogTitle
+    sx={{
+      background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryDark} 100%)`,
+      fontSize: TEXT_SIZES.large,
+      fontWeight: 700,
+      color: COLORS.white,
+    }}
+  >
+    Add "Investment Range" to Brand Profile?
+  </DialogTitle>
+
+  <DialogContent sx={{ pt: 3, pb: 2 }}>
+    <Typography
+      sx={{
+        fontSize: TEXT_SIZES.medium,
+        color: COLORS.black,
+        mb: 1,
+        mt: 2,
+      }}
+    >
+      Would you like to add New Investment Range to your Brand profile?
+    </Typography>
+
+    <Typography
+      sx={{
+        fontSize: TEXT_SIZES.small,
+        color: COLORS.grey[600],
+        mt: 1,
+      }}
+    >
+      Adding new investment range will allow you to select these ranges
+      for your franchise plans.
+    </Typography>
+  </DialogContent>
+
+  <DialogActions
+    sx={{
+      justifyContent: "flex-end",
+      px: 3,
+      py: 2,
+      backgroundColor: COLORS.grey[50],
+    }}
+  >
+    <Button
+     onClick={() => {
+  if (pendingSelection) {
+    // Came from a row's Add button — use the pending non-recommended range
+    const firstNonRecommended = pendingSelection.selectedItemsInGroup?.find(
+      (p) => !isFicoInvestmentRange(p.range)
+    );
+    if (firstNonRecommended) {
+      handleAddInvestmentRange(
+        firstNonRecommended.range,
+        firstNonRecommended.investmentRangeLabel
+      );
+    }
+  } else {
+    // Came from "Add New Investment Range" button — no specific range pre-selected
+    // Call with empty args so parent opens the PaymentBrandUpdate dialog fresh
+    if (!finalToken) {
+      setShowLogin(true);
+      openSnack("Please log in to add investment ranges", "warning");
+    } else {
+      onAddInvestmentRange(null, null); // parent handles opening dialog with empty form
+    }
+  }
+
+  setOpenConfirmDialog(false);
+  setPendingSelection(null);
+}}
+      variant="contained"
+      sx={{
+        backgroundColor: COLORS.primary,
+        color: COLORS.white,
+        fontSize: TEXT_SIZES.medium,
+        fontWeight: 600,
+        px: 3,
+        // borderRadius: 2,
+
+        "&:hover": {
+          backgroundColor: COLORS.primaryDark,
+        },
+      }}
+    >
+      Yes
+    </Button>
+  </DialogActions>
+</Dialog>
+{/* Remove Confirmation Dialog */}
+<Dialog
+  open={openRemoveConfirmDialog}
+  onClose={() => setOpenRemoveConfirmDialog(false)}
+  maxWidth="xs"
+  fullWidth
+  PaperProps={{
+    sx: {
       borderRadius: 3,
       border: `2px solid ${COLORS.primary}`,
       boxShadow: `0 8px 32px ${COLORS.shadow}`,
@@ -3310,89 +4196,61 @@ const handleAddListingPlan = () => {
     fontSize: TEXT_SIZES.large,
     fontWeight: 700,
     color: COLORS.white,
-    // py: 2.5,
-  }}>
-    Investment Range Not in Profile
-  </DialogTitle>
-  
-  <DialogContent sx={{ pt: 3, pb: 2 }}>
-    <Typography sx={{ fontSize: TEXT_SIZES.medium, color: COLORS.black, mb: 2,mt:2 }}>
-      Your business profile doesn't include this investment range       <Typography sx={{ 
-        fontSize: TEXT_SIZES.medium, 
-        textAlign : 'center',
-        fontWeight: 600, 
-        color: COLORS.primaryDark,
-      }}>
-        {pendingSelection?.rangeNames}
-      </Typography>
- 
-
-    </Typography>
-    
-   
-      
-    
-    <Typography sx={{ fontSize: TEXT_SIZES.medium, color: COLORS.black, mb: 1 }}>
-      Would you like to add this/these investment range to your business profile?
-    </Typography>
-    
-    <Typography sx={{ fontSize: TEXT_SIZES.small, color: COLORS.grey[600], mt: 1 }}>
-      Adding will allow you to select these ranges for your franchise plans.
-    </Typography>
-  </DialogContent>
-  
-  <DialogActions sx={{ 
-    justifyContent: "space-between", 
-    px: 3, 
     py: 2,
-    backgroundColor: COLORS.grey[50],
   }}>
+    Confirm Removal
+  </DialogTitle>
+  <DialogContent sx={{ pt: 3, pb: 2 }}>
+    <Typography sx={{ fontSize: TEXT_SIZES.medium, color: COLORS.black, mb: 1 }}>
+      Are you sure you want to remove this investment range?
+    </Typography>
+    {itemToRemove && (
+      <Box sx={{ mt: 2, p: 2, bgcolor: COLORS.lightOrange, borderRadius: 2 }}>
+        <Typography sx={{ fontSize: TEXT_SIZES.small, color: COLORS.black }}>
+          <strong>Plan:</strong> {itemToRemove.planName}
+        </Typography>
+        <Typography sx={{ fontSize: TEXT_SIZES.small, color: COLORS.black, mt: 0.5 }}>
+          <strong>Investment Range:</strong> {itemToRemove.range}
+        </Typography>
+        <Typography sx={{ fontSize: TEXT_SIZES.small, color: COLORS.black, mt: 0.5 }}>
+          <strong>Investment Group:</strong> {itemToRemove.investmentRangeLabel}
+        </Typography>
+      </Box>
+    )}
+  </DialogContent>
+  <DialogActions sx={{ justifyContent: "space-between", px: 3, py: 2, bgcolor: COLORS.grey[50] }}>
     <Button 
-      onClick={() => {
-        setOpenConfirmDialog(false);
-        setPendingSelection(null);
-        openSnack("You can add this investment range to your business profile later", "info");
-      }}
+      onClick={() => setOpenRemoveConfirmDialog(false)}
       sx={{
         color: COLORS.grey[700],
         fontSize: TEXT_SIZES.medium,
         fontWeight: 600,
-        '&:hover': {
-          backgroundColor: COLORS.grey[200],
-        },
+        '&:hover': { bgcolor: COLORS.grey[200] }
       }}
     >
-      No, Cancel
+      Cancel
     </Button>
-    
     <Button 
       onClick={() => {
-        // Open the add to profile dialog for the first non-recommended range
-        const firstNonRecommended = pendingSelection?.selectedItemsInGroup?.find(
-          p => !isFicoInvestmentRange(p.range)
-        );
-        
-        if (firstNonRecommended) {
-          handleAddInvestmentRange(firstNonRecommended.range, firstNonRecommended.investmentRangeLabel);
+        if (itemToRemove) {
+          itemToRemove.items.forEach((item) => {
+            handleRemoveSingleFromPayment(item);
+          });
         }
-        
-        setOpenConfirmDialog(false);
-        setPendingSelection(null);
+        setOpenRemoveConfirmDialog(false);
+        setItemToRemove(null);
       }}
       variant="contained"
       sx={{
-        backgroundColor: COLORS.primary,
+        bgcolor: COLORS.primary,
         color: COLORS.white,
         fontSize: TEXT_SIZES.medium,
         fontWeight: 600,
         px: 3,
-        borderRadius: 2,
-        '&:hover': {
-          backgroundColor: COLORS.primaryDark,
-        },
+        '&:hover': { bgcolor: COLORS.primaryDark }
       }}
     >
-      Yes, Add to Profile
+      Yes, Remove
     </Button>
   </DialogActions>
 </Dialog>
