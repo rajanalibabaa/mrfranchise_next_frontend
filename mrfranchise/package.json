@@ -12,7 +12,7 @@
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
-    "@mui/icons-material": "^7.3.7",
+    "@mui/icons-material": "^7.3.11",
     "@mui/material": "^7.3.7",
     "@next/bundle-analyzer": "^16.2.2",
     "@reduxjs/toolkit": "^2.11.2",
@@ -32,6 +32,7 @@
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-hook-form": "^7.71.1",
+    "react-hot-toast": "^2.6.0",
     "react-icons": "^5.5.0",
     "react-intersection-observer": "^10.0.2",
     "react-redux": "^9.2.0",

@@ -39,6 +39,8 @@ import {
 import { keyframes } from '@mui/system';
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import EditIcon from "@mui/icons-material/Edit";
+import AddIcon from "@mui/icons-material/Add";
+
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 
 import { useSelector } from "react-redux";
@@ -2353,7 +2355,7 @@ if (duplicateStates.length > 0) {
         </Card>
       </Box>
          {/* LISTING PLANS SECTION */}
-      {/* <Box sx={{ mb: 4 }}>
+    {/* <Box sx={{ mb: 4 }}>
         <Box sx={{ mb: 2 }}>
           <Typography variant="h5" sx={{ 
             fontWeight: 700, 
@@ -2537,7 +2539,7 @@ const handleAddListingPlan = () => {
                           <Button
                             variant={isAdded ? "outlined" : "contained"}
                             size="medium"
-                            endIcon={isAdded ? <RemoveIcon /> : <AddIcon />}
+                            endIcon={isAdded ? <Remove /> : <AddIcon />}
                             disabled={!isAdded && disableAdd}
                             onClick={isAdded ? handleRemoveListingPlan : handleAddListingPlan}
                             sx={{
