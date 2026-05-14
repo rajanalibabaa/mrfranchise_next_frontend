@@ -2682,163 +2682,175 @@ const handleSaveStates = useCallback(() => {
                                   )}
 
                                   {/* Action Button - Single button for entire table */}
-                                  {isFirstRowOfTable && (
-                                    <TableCell
-                                      rowSpan={totalRows}
-                                      sx={{
-                                        px: 0.5,
-                                        py: 0.4,
-                                        textAlign: "center",
-                                        verticalAlign: "middle",
-                                      }}
-                                    >
-                                      <Button
-                                        variant="contained"
-                                        size="medium"
-                                        // disabled={!!selectedListingPlanId}
-                                        onClick={() => {
-                                          const allCheckedItems =
-                                            profilePackages.filter((p) => {
-                                              const id = `${selectedPlan._id}-${p.investmentRangeLabel}-${p.range}`;
-                                              return checkedItems[id];
-                                            });
+                                {isFirstRowOfTable && (
+  <TableCell
+    rowSpan={totalRows}
+    sx={{
+      px: 0.5,
+      py: 0.4,
+      textAlign: "center",
+      verticalAlign: "middle",
+      width: "100px", // Add fixed width if needed
+    }}
+    align="center" // Add this prop
+  >
+       <Button
+  variant="contained"
 
-                                          if (allCheckedItems.length === 0) {
-                                            openSnack(
-                                              "Please select at least one investment range to add",
-                                              "warning",
-                                            );
-                                            return;
-                                          }
+  // disabled={!!selectedListingPlanId}
+  onClick={() => {
+    const allCheckedItems =
+      profilePackages.filter((p) => {
+        const id = `${selectedPlan._id}-${p.investmentRangeLabel}-${p.range}`;
+        return checkedItems[id];
+      });
 
-                                          // Check for duplicate items within the SAME PLAN ONLY
-                                          const existingItemsInSamePlan =
-                                            paymentSummary
-                                              .filter(
-                                                (group) =>
-                                                  group.planId ===
-                                                  selectedPlan._id,
-                                              )
-                                              .flatMap((group) => group.items);
+    if (allCheckedItems.length === 0) {
+      openSnack(
+        "Please select at least one investment range to add",
+        "warning",
+      );
+      return;
+    }
 
-                                          const newItemsToAdd =
-                                            allCheckedItems.filter(
-                                              (selectedItem) => {
-                                                // Only check within the SAME plan and SAME investment range label
-                                                return !existingItemsInSamePlan.some(
-                                                  (existingItem) =>
-                                                    existingItem.range ===
-                                                      selectedItem.range &&
-                                                    existingItem.investmentRangeLabel ===
-                                                      selectedItem.investmentRangeLabel,
-                                                );
-                                              },
-                                            );
+    // Check for duplicate items within the SAME PLAN ONLY
+    const existingItemsInSamePlan =
+      paymentSummary
+        .filter(
+          (group) =>
+            group.planId ===
+            selectedPlan._id,
+        )
+        .flatMap((group) => group.items);
 
-                                          if (newItemsToAdd.length === 0) {
-                                            const allRangeNames =
-                                              allCheckedItems
-                                                .map((r) => r.range)
-                                                .join(", ");
-                                            openSnack(
-                                              `${allRangeNames} already in cart for this plan.`,
-                                              "warning",
-                                            );
-                                            // Uncheck the items so user knows they're already added
-                                            setCheckedItems((prev) => {
-                                              const newState = { ...prev };
-                                              allCheckedItems.forEach(
-                                                (item) => {
-                                                  const id = `${selectedPlan._id}-${item.investmentRangeLabel}-${item.range}`;
-                                                  delete newState[id];
-                                                },
-                                              );
-                                              return newState;
-                                            });
-                                            return;
-                                          }
+    const newItemsToAdd =
+      allCheckedItems.filter(
+        (selectedItem) => {
+          // Only check within the SAME plan and SAME investment range label
+          return !existingItemsInSamePlan.some(
+            (existingItem) =>
+              existingItem.range ===
+                selectedItem.range &&
+              existingItem.investmentRangeLabel ===
+                selectedItem.investmentRangeLabel,
+          );
+        },
+      );
 
-                                          // REMOVED: Cross-group conflict check - states can be reused across different ranges
-                                          // Different investment ranges can have the same states - they are separate purchases
+    if (newItemsToAdd.length === 0) {
+      const allRangeNames =
+        allCheckedItems
+          .map((r) => r.range)
+          .join(", ");
+      openSnack(
+        `${allRangeNames} already in cart for this plan.`,
+        "warning",
+      );
+      // Uncheck the items so user knows they're already added
+      setCheckedItems((prev) => {
+        const newState = { ...prev };
+        allCheckedItems.forEach(
+          (item) => {
+            const id = `${selectedPlan._id}-${item.investmentRangeLabel}-${item.range}`;
+            delete newState[id];
+          },
+        );
+        return newState;
+      });
+      return;
+    }
 
-                                          // Non-recommended check
-                                          const hasNonRecommended =
-                                            finalToken &&
-                                            newItemsToAdd.some(
-                                              (p) =>
-                                                !isFicoInvestmentRange(p.range),
-                                            );
-                                          if (hasNonRecommended) {
-                                            const rangeNames = newItemsToAdd
-                                              .filter(
-                                                (p) =>
-                                                  !isFicoInvestmentRange(
-                                                    p.range,
-                                                  ),
-                                              )
-                                              .map((p) => p.range)
-                                              .join(", ");
-                                            setPendingSelection({
-                                              selectedItemsInGroup:
-                                                newItemsToAdd,
-                                              selectedPlan,
-                                              rangeNames,
-                                            });
-                                            setOpenConfirmDialog(true);
-                                            return;
-                                          }
+    // REMOVED: Cross-group conflict check - states can be reused across different ranges
+    // Different investment ranges can have the same states - they are separate purchases
 
-                                          // Add all new items
-                                          newItemsToAdd.forEach(
-                                            (selectedItem) => {
-                                              handleAddSingleToPayment(
-                                                {
-                                                  id: `${selectedPlan._id}-${selectedItem.investmentRangeLabel}-${selectedItem.range}`,
-                                                  investmentRangeLabel:
-                                                    selectedItem.investmentRangeLabel,
-                                                  range: selectedItem.range,
-                                                },
-                                                selectedPlan,
-                                                selectedItem.pkg,
-                                              );
-                                            },
-                                          );
+    // Non-recommended check
+    const hasNonRecommended =
+      finalToken &&
+      newItemsToAdd.some(
+        (p) =>
+          !isFicoInvestmentRange(p.range),
+      );
+    if (hasNonRecommended) {
+      const rangeNames = newItemsToAdd
+        .filter(
+          (p) =>
+            !isFicoInvestmentRange(
+              p.range,
+            ),
+        )
+        .map((p) => p.range)
+        .join(", ");
+      setPendingSelection({
+        selectedItemsInGroup:
+          newItemsToAdd,
+        selectedPlan,
+        rangeNames,
+      });
+      setOpenConfirmDialog(true);
+      return;
+    }
 
-                                          // Uncheck added items
-                                          setCheckedItems((prev) => {
-                                            const newState = { ...prev };
-                                            newItemsToAdd.forEach(
-                                              (addedItem) => {
-                                                const id = `${selectedPlan._id}-${addedItem.investmentRangeLabel}-${addedItem.range}`;
-                                                delete newState[id];
-                                              },
-                                            );
-                                            return newState;
-                                          });
+    // Add all new items
+    newItemsToAdd.forEach(
+      (selectedItem) => {
+        handleAddSingleToPayment(
+          {
+            id: `${selectedPlan._id}-${selectedItem.investmentRangeLabel}-${selectedItem.range}`,
+            investmentRangeLabel:
+              selectedItem.investmentRangeLabel,
+            range: selectedItem.range,
+          },
+          selectedPlan,
+          selectedItem.pkg,
+        );
+      },
+    );
 
-                                          openSnack(
-                                            `${newItemsToAdd.length} range(s) added to cart`,
-                                            "success",
-                                          );
-                                        }}
-                                        sx={{
-                                          minWidth: 70,
-                                          height: 30,
-                                          fontSize: "0.85rem",
-                                          textTransform: "none",
-                                          fontWeight: 1000,
-                                          borderRadius: 1.5,
-                                          backgroundColor: COLORS.primary,
-                                          color: COLORS.white,
-                                          transition: "all 0.3s ease",
-                                          "&:hover": {
-                                            backgroundColor: COLORS.primaryDark,
-                                            transform: "scale(1.05)",
-                                          },
-                                        }}
-                                      >
-                                        Add to summary
-                                      </Button>
+    // Uncheck added items
+    setCheckedItems((prev) => {
+      const newState = { ...prev };
+      newItemsToAdd.forEach(
+        (addedItem) => {
+          const id = `${selectedPlan._id}-${addedItem.investmentRangeLabel}-${addedItem.range}`;
+          delete newState[id];
+        },
+      );
+      return newState;
+    });
+
+    openSnack(
+      `${newItemsToAdd.length} range(s) added to cart`,
+      "success",
+    );
+  }}
+ sx={{
+  width: 100,
+  height: 100,
+  fontSize: "0.95rem",
+  textTransform: "none",
+  fontWeight: 700,
+  borderRadius: 1.5,
+  backgroundColor: COLORS.primary,
+  color: COLORS.white,
+  transition: "all 0.3s ease",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  justifyContent: "center",
+  lineHeight: 1.3,
+  padding: "6px 4px",
+  textAlign: "center",
+  margin: "0 auto", 
+  "&:hover": {
+    backgroundColor: COLORS.primaryDark,
+    transform: "scale(1.05)",
+  },
+}}
+>
+  <span >Add</span>
+  <span >to</span>
+  <span >summary</span>
+</Button>
                                     </TableCell>
                                   )}
                                 </TableRow>
