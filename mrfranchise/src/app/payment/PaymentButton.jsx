@@ -123,6 +123,7 @@ const payload = {
   // =========================
   investmentRangeLabel: firstPackage?.investmentRangeLabel,
    range: firstItem?.range,
+   selectedLeadCount: firstItem?.selectedLeads,
   totalStates:
     firstPackage?.totalStates,
 
@@ -233,6 +234,7 @@ console.log("PAYLOAD:", payload);
 
     } catch (err) {
       console.error("Payment Error:", err);
+      alert(err?.response?.data?.message);
   console.log(
     "BACKEND RESPONSE:",
     err?.response?.data

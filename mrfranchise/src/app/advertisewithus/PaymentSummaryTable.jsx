@@ -411,31 +411,28 @@ paymentSummary.forEach((group) => {
         </TableCell>
       )}
 
-      {/* Actions - only on first range row, spans all ranges */}
-      {idx === 0 && (
-        <TableCell
-          align="center"
-          rowSpan={sortedRanges.length}
-          sx={{ verticalAlign: "middle" }}
-        >
-          <Tooltip title="Remove from summary" arrow>
-            <IconButton
-              onClick={() => {
-                setItemToRemove({
-                  planName: planData.planName,
-                  range: rangeGroup.range,
-                  investmentRangeLabel: rangeGroup.investmentRangeLabel,
-                  items: rangeGroup.items,
-                });
-                setOpenRemoveConfirmDialog(true);
-              }}
-              sx={{ color: COLORS.grey[600], p: 0.3, "&:hover": { color: COLORS.primary, backgroundColor: COLORS.lightOrange } }}
-            >
-              <DeleteIcon sx={{ fontSize: 18 }} />
-            </IconButton>
-          </Tooltip>
-        </TableCell>
-      )}
+    {/* Actions - for each investment range */}
+<TableCell
+  align="center"
+  sx={{ verticalAlign: "middle" }}
+>
+  <Tooltip title="Remove from summary" arrow>
+    <IconButton
+      onClick={() => {
+        setItemToRemove({
+          planName: planData.planName,
+          range: rangeGroup.range,
+          investmentRangeLabel: rangeGroup.investmentRangeLabel,
+          items: rangeGroup.items,
+        });
+        setOpenRemoveConfirmDialog(true);
+      }}
+      sx={{ color: COLORS.grey[600], p: 0.3, "&:hover": { color: COLORS.primary, backgroundColor: COLORS.lightOrange } }}
+    >
+      <DeleteIcon sx={{ fontSize: 18 }} />
+    </IconButton>
+  </Tooltip>
+</TableCell>
     </TableRow>
   );
 
