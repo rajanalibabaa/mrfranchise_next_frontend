@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Typography,
@@ -17,24 +17,55 @@ const PaymentBottomBar = ({
   loading = false,
   handleProceedToPayment,
 }) => {
+  const [isNearFooter, setIsNearFooter] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const footer = document.getElementById("footer");
+
+      if (!footer) return;
+
+      const footerRect = footer.getBoundingClientRect();
+
+      // Adjust 120 based on your bar height
+      if (footerRect.top <= window.innerHeight - 120) {
+        setIsNearFooter(true);
+      } else {
+        setIsNearFooter(false);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+
+    handleScroll();
+
+    return () =>
+      window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
     <Box
       sx={{
-        position: "fixed",
-        bottom: 20,
+        position: isNearFooter ? "absolute" : "fixed",
+
+        bottom: isNearFooter ? 120 : 20,
+
         left: "50%",
         transform: "translateX(-50%)",
+
         width: {
           xs: "98%",
           md: "90%",
           lg: "80%",
         },
+
         zIndex: 1300,
         backgroundColor: COLORS.white,
         borderRadius: 3,
         border: `1px solid ${COLORS.border}`,
         overflow: "hidden",
         boxShadow: "0 8px 32px rgba(0,0,0,0.12)",
+
         animation: `${bounceAnimation} 2s infinite`,
 
         display: "flex",
@@ -49,7 +80,7 @@ const PaymentBottomBar = ({
           transform: "translateX(-50%) scale(1.01)",
         },
 
-        transition: "transform 0.3s ease",
+        transition: "all 0.3s ease",
       }}
     >
       {/* Top Title */}

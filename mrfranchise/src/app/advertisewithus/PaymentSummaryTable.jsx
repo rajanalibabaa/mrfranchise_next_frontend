@@ -54,27 +54,37 @@ paymentSummary.forEach((group) => {
   });
 
   // Collect ALL unique states across ALL items in this plan
-  const uniqueStatesSet = new Set();
+  const allUniqueStatesSet = new Set();
   groupedByPlan[group.planId].items.forEach((item) => {
     if (item.states && Array.isArray(item.states)) {
-      item.states.forEach(state => uniqueStatesSet.add(state));
+      item.states.forEach(state => allUniqueStatesSet.add(state));
     }
   });
-
-  const uniqueStatesCount = uniqueStatesSet.size;
-
-  // Calculate totals using unique states count (avoiding duplicates)
+  
+  const totalUniqueStates = allUniqueStatesSet.size;
+  
+  // Find the MAXIMUM selectedLeads across all ranges
+  let maxSelectedLeads = 0;
   groupedByPlan[group.planId].items.forEach((item) => {
-    const divisor = item.selectedLeads || 1;
-    
-    groupedByPlan[group.planId].totalPlanAmount +=
-      (group.pricePerState / divisor) * uniqueStatesCount * (item.selectedLeads || 0);
-    
-    groupedByPlan[group.planId].totalPlanLeads +=
-      (item.selectedLeads * uniqueStatesCount) || 0;
+    if ((item.selectedLeads || 0) > maxSelectedLeads) {
+      maxSelectedLeads = item.selectedLeads || 0;
+    }
   });
-
-  groupedByPlan[group.planId].totalPlanStates = uniqueStatesCount;
+  
+  // Total leads = max selected leads × total unique states
+  const totalLeads = maxSelectedLeads * totalUniqueStates;
+  
+  // Calculate total amount using max selected leads
+  let totalAmount = 0;
+  groupedByPlan[group.planId].items.forEach((item) => {
+    const divisor = maxSelectedLeads || 1;
+    totalAmount += (item.pricePerState / divisor) * totalUniqueStates * maxSelectedLeads;
+  });
+  
+  groupedByPlan[group.planId].totalPlanLeads = totalLeads;
+  groupedByPlan[group.planId].totalPlanAmount = totalAmount;
+  groupedByPlan[group.planId].totalPlanStates = totalUniqueStates;
+  groupedByPlan[group.planId].maxSelectedLeads = maxSelectedLeads;
 });
 
   let rowIndex = 0;
@@ -91,7 +101,7 @@ paymentSummary.forEach((group) => {
         ref={paymentSummaryRef}
         sx={{
           mb: 4,
-          width: "1200px",
+          width: "1350px",
           maxWidth: "90%",
         }}
       >
@@ -380,24 +390,30 @@ paymentSummary.forEach((group) => {
         </Box>
       </TableCell>
 
-      {/* Leads */}
-      <TableCell align="center">
-        {rangeGroup.items[0]?.isListingPlan ? (
-          <Typography sx={{ fontSize: TEXT_SIZES.small, fontWeight: 700 }}>-</Typography>
-        ) : (
-          <>
-            <Typography sx={{ fontSize: TEXT_SIZES.small, fontWeight: 700 }}>
-              {typeof rangeGroup.totalLeads === "number"
-                ? rangeGroup.totalLeads.toLocaleString("en-IN")
-                : rangeGroup.totalLeads}
-            </Typography>
-            <Typography sx={{ fontSize: "0.55rem", color: COLORS.grey[600], mt: 0.2 }}>
-              {rangeGroup.selectedLeads} × {rangeGroup.totalStates}
-            </Typography>
-          </>
-        )}
-      </TableCell>
-
+{/* Leads - only on first range row, spans all ranges */}
+{idx === 0 && (
+  <TableCell
+    align="center"
+    rowSpan={sortedRanges.length}
+    sx={{ verticalAlign: "middle" }}
+  >
+    {rangeGroup.items[0]?.isListingPlan ? (
+      <Typography sx={{ fontSize: TEXT_SIZES.small, fontWeight: 700 }}>-</Typography>
+    ) : (
+      <>
+        <Typography sx={{ fontSize: TEXT_SIZES.small, fontWeight: 700 }}>
+          {typeof planData.totalPlanLeads === "number"
+            ? planData.totalPlanLeads.toLocaleString("en-IN")
+            : planData.totalPlanLeads}
+        </Typography>
+        {/* Show calculation breakdown */}
+        <Typography sx={{ fontSize: "0.55rem", color: COLORS.grey[600], mt: 0.5 }}>
+          {`Max(${sortedRanges.map(r => r.selectedLeads).join(", ")}) × ${planData.totalPlanStates} = ${planData.totalPlanLeads.toLocaleString("en-IN")}`}
+        </Typography>
+      </>
+    )}
+  </TableCell>
+)}
       {/* Subtotal - only on first range row, spans all ranges */}
       {idx === 0 && (
         <TableCell
