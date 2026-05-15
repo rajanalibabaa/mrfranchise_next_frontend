@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from 'react';
-import Box from '@mui/material/Box';
-import Navbar from '@/Components/Navbar/NavBar';
-import Footer from '@/Components/Footers/Footer';
-import PaymentBrandUpdate from './PaymentBrandUpdate';
-import PackageSelection from './PackageSelection';
-import useUserLocation  from '@/config/useUserLocations';
+import { useState } from "react";
+import Box from "@mui/material/Box";
+import Navbar from "@/Components/Navbar/NavBar";
+import Footer from "@/Components/Footers/Footer";
+import PaymentBrandUpdate from "./PaymentBrandUpdate";
+import PackageSelection from "./PackageSelection";
+import ExistingPackageDisplay from "./ExistingPackageDisplay";
+import useUserLocation from "@/config/useUserLocations";
 import {
   Dialog,
   DialogTitle,
@@ -15,8 +16,8 @@ import {
   Button,
   IconButton,
   Typography,
-} from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
+} from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
 
 const AdvertisingPage = () => {
   const [openModal, setOpenModal] = useState(false);
@@ -37,8 +38,8 @@ const AdvertisingPage = () => {
       <Navbar />
 
       <Box sx={{ p: 3 }}>
+        <ExistingPackageDisplay />
         <PackageSelection onAddInvestmentRange={handleAddInvestmentRange} />
-        
       </Box>
 
       <Dialog
@@ -48,15 +49,17 @@ const AdvertisingPage = () => {
         fullWidth
         scroll="paper"
       >
-        <DialogTitle sx={{ backgroundColor: '#f8f9fa', m: 0, p: 2, pr: 6 }}>
-          You Are Adding a New Franchise Business Model For This Investment Range — {investmentRangeData?.range}
+        <DialogTitle sx={{ backgroundColor: "#f8f9fa", m: 0, p: 2, pr: 6 }}>
+          You Are Adding a New Franchise Business Model For This Investment
+          Range — {investmentRangeData?.range}
           <Typography variant="subtitle2" color="textSecondary">
-          (By adding Franchise Business Model, Your brand view page will display this Investment Range to all Franchise Investors.)
+            (By adding Franchise Business Model, Your brand view page will
+            display this Investment Range to all Franchise Investors.)
           </Typography>
           <IconButton
             onClick={handleCloseModal}
             sx={{
-              position: 'absolute',
+              position: "absolute",
               right: 8,
               top: 8,
             }}
@@ -66,16 +69,14 @@ const AdvertisingPage = () => {
         </DialogTitle>
 
         <DialogContent dividers sx={{ p: 2 }}>
-         <PaymentBrandUpdate
-  isEditing={true}
-  investmentRangeData={investmentRangeData}
-  onDataLoaded={() => {
-   
-  }}
-  onSaveSuccess={() => {
-    handleCloseModal();
-  }}
-/>
+          <PaymentBrandUpdate
+            isEditing={true}
+            investmentRangeData={investmentRangeData}
+            onDataLoaded={() => {}}
+            onSaveSuccess={() => {
+              handleCloseModal();
+            }}
+          />
         </DialogContent>
 
         <DialogActions sx={{ px: 3, py: 2 }}>
@@ -86,8 +87,6 @@ const AdvertisingPage = () => {
       </Dialog>
 
       <Footer />
-      
-
     </Box>
   );
 };
