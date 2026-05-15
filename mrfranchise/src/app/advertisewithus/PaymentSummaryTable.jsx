@@ -63,28 +63,39 @@ paymentSummary.forEach((group) => {
   
   const totalUniqueStates = allUniqueStatesSet.size;
   
-  // Find the MAXIMUM selectedLeads across all ranges
-  let maxSelectedLeads = 0;
-  groupedByPlan[group.planId].items.forEach((item) => {
-    if ((item.selectedLeads || 0) > maxSelectedLeads) {
-      maxSelectedLeads = item.selectedLeads || 0;
-    }
-  });
-  
-  // Total leads = max selected leads × total unique states
-  const totalLeads = maxSelectedLeads * totalUniqueStates;
-  
-  // Calculate total amount using max selected leads
-  let totalAmount = 0;
-  groupedByPlan[group.planId].items.forEach((item) => {
-    const divisor = maxSelectedLeads || 1;
-    totalAmount += (item.pricePerState / divisor) * totalUniqueStates * maxSelectedLeads;
-  });
-  
-  groupedByPlan[group.planId].totalPlanLeads = totalLeads;
-  groupedByPlan[group.planId].totalPlanAmount = totalAmount;
-  groupedByPlan[group.planId].totalPlanStates = totalUniqueStates;
-  groupedByPlan[group.planId].maxSelectedLeads = maxSelectedLeads;
+// Build per-range data
+const byRange = {};
+groupedByPlan[group.planId].items.forEach((item) => {
+  if (!byRange[item.range]) {
+    byRange[item.range] = {
+      selectedLeads: item.selectedLeads || 0,
+      states: new Set(),
+      pricePerState: item.pricePerState,
+    };
+  }
+  (item.states || []).forEach((s) => byRange[item.range].states.add(s));
+});
+
+// Collect ALL unique states across ALL ranges (no duplicates)
+const globalUniqueStates = new Set();
+Object.values(byRange).forEach(({ states }) => {
+  states.forEach((s) => globalUniqueStates.add(s));
+});
+const uniqueStateCount = globalUniqueStates.size;
+
+// Take ONLY the LAST selected lead count (not sum of all ranges)
+const lastRange = Object.values(byRange)[Object.values(byRange).length - 1];
+const lastSelectedLeads = lastRange ? lastRange.selectedLeads : 0;
+
+const totalLeads = lastSelectedLeads * uniqueStateCount;
+const totalAmount = Object.values(byRange).reduce(
+  (sum, { pricePerState }) => sum + pricePerState, 0
+) * uniqueStateCount;
+
+groupedByPlan[group.planId].totalPlanLeads = totalLeads;
+groupedByPlan[group.planId].totalPlanAmount = totalAmount;
+groupedByPlan[group.planId].totalPlanStates = uniqueStateCount;
+groupedByPlan[group.planId].byRange = byRange;
 });
 
   let rowIndex = 0;
@@ -282,10 +293,9 @@ paymentSummary.forEach((group) => {
     });
     
     const uniqueRangeStatesCount = uniqueStatesForRange.size;
-    acc[rangeKey].totalStates = uniqueRangeStatesCount;
-    acc[rangeKey].totalLeads = (item.selectedLeads || 0) * uniqueRangeStatesCount;
-    acc[rangeKey].totalAmount = (item.pricePerState || 0) * uniqueRangeStatesCount;
-
+acc[rangeKey].totalStates = uniqueRangeStatesCount; // kept for display in States column
+acc[rangeKey].totalLeads = (item.selectedLeads || 0) * uniqueRangeStatesCount;
+acc[rangeKey].totalAmount = (item.pricePerState || 0) * uniqueRangeStatesCount;
     return acc;
   },
   {}
@@ -321,7 +331,7 @@ paymentSummary.forEach((group) => {
         "& td": { borderBottom: "none", py: 0.75 },
       }}
     >
-      {/* Plan Name - only on first range */}
+   {/* Plan Name - only on first range */}
       {idx === 0 && (
         <TableCell
           rowSpan={sortedRanges.length}
@@ -390,7 +400,7 @@ paymentSummary.forEach((group) => {
         </Box>
       </TableCell>
 
-{/* Leads - only on first range row, spans all ranges */}
+   {/* Leads - only on first range row, spans all ranges */}
 {idx === 0 && (
   <TableCell
     align="center"
@@ -406,14 +416,14 @@ paymentSummary.forEach((group) => {
             ? planData.totalPlanLeads.toLocaleString("en-IN")
             : planData.totalPlanLeads}
         </Typography>
-        {/* Show calculation breakdown */}
-        <Typography sx={{ fontSize: "0.55rem", color: COLORS.grey[600], mt: 0.5 }}>
-          {`Max(${sortedRanges.map(r => r.selectedLeads).join(", ")}) × ${planData.totalPlanStates} = ${planData.totalPlanLeads.toLocaleString("en-IN")}`}
-        </Typography>
+    <Typography sx={{ fontSize: "0.55rem", color: COLORS.grey[600], mt: 0.5 }}>
+  {lastSelectedLeads} × {planData.totalPlanStates} = {planData.totalPlanLeads.toLocaleString("en-IN")}
+</Typography>
       </>
     )}
   </TableCell>
 )}
+
       {/* Subtotal - only on first range row, spans all ranges */}
       {idx === 0 && (
         <TableCell
