@@ -46,7 +46,6 @@ import BrandExpansionLocationDetails from "./BrandExpansionLocationDetails";
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import { useDispatch } from "react-redux";
 import FranchiseDetails from "./FranchiseDetails";
-import MembershipPayments from "@/app/advertisewithus/MembershipPayment";
 
 const FORM_DATA_KEY = "brandRegistrationFormData";
 const FORM_STEP_KEY = "brandRegistrationActiveStep";
