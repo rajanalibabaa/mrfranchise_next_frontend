@@ -523,6 +523,8 @@ const FranchiseDetails = ({ data = {}, errors = {}, onChange = () => {} }) => {
     "KIOSK",
     "SHOP IN SHOP",
     "CLOUD KITCHEN",
+    "DEALERS & DISTRIBUTORS",
+    "CHANNEL PARTNERS",
   ];
   // Service tag groups will be populated from API data
   const [serviceTagGroups, setServiceTagGroups] = useState({});

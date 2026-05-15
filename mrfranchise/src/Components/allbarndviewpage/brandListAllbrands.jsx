@@ -38,11 +38,11 @@ import {
 } from "@/Redux/Slices/FilterBrandSlice";
 import { fetchFilterOptions } from "@/Redux/Slices/filterDropdownData";
 import { getLocalStorageData } from "@/Utils/localStorage";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import BrandTags from "./brandTags";
 
 // ============================================
-// FILTER KEYS (Only actual filters)
+// FILTER KEYS
 // ============================================
 const ACTUAL_FILTER_KEYS = [
   "maincat",
@@ -56,6 +56,57 @@ const ACTUAL_FILTER_KEYS = [
   "searchTerm",
   "areaRequired",
 ];
+
+// ============================================
+// SLUG HELPERS
+// ============================================
+function slugifyForUrl(text) {
+  if (!text) return "";
+  return text
+    .toLowerCase()
+    .replace(/&/g, "and")
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9-]/g, "")
+    .replace(/-+/g, "-")
+    .trim();
+}
+
+function deslugifyMain(slug) {
+  if (!slug) return "";
+  return slug
+    .replace(/-franchise-opportunities$/, "")
+    .replace(/-/g, " ")
+    .replace(/\band\b/g, "&")
+    .replace(/\b\w/g, (c) => c.toUpperCase())
+    .trim();
+}
+
+function deslugifySub(slug) {
+  if (!slug) return "";
+  return slug
+    .replace(/-franchise-opportunities$/, "")
+    .replace(/-franchise$/, "")
+    .replace(/-/g, " ")
+    .replace(/\band\b/g, "&")
+    .replace(/\b\w/g, (c) => c.toUpperCase())
+    .trim();
+}
+
+// ============================================
+// 🔥 BUILD CLEAN SLUG URL for sub category
+// /food-and-beverages-franchise-opportunities/bakery-franchise-opportunities
+// ============================================
+function buildSubCategoryUrl(maincat, subcat) {
+  if (!maincat || !subcat) return null;
+
+  const mainSlug =
+    slugifyForUrl(maincat) + "-franchise-opportunities";
+
+  const subSlug =
+    slugifyForUrl(subcat) + "-franchise-opportunities";
+
+  return `/${mainSlug}/${subSlug}`;
+}
 
 // ============================================
 // SKELETON COMPONENTS
@@ -91,7 +142,13 @@ const FilterPanelSkeleton = React.memo(() => (
   <Box sx={{ p: 2, bgcolor: "rgba(255, 255, 255, 0.59)", borderRadius: 2 }}>
     {[...Array(6)].map((_, i) => (
       <Box key={i} sx={{ mb: 3 }}>
-        <Skeleton variant="text" width="60%" height={24} sx={{ mb: 1 }} animation="wave" />
+        <Skeleton
+          variant="text"
+          width="60%"
+          height={24}
+          sx={{ mb: 1 }}
+          animation="wave"
+        />
         <Skeleton variant="rounded" height={40} animation="wave" />
       </Box>
     ))}
@@ -100,37 +157,39 @@ const FilterPanelSkeleton = React.memo(() => (
 FilterPanelSkeleton.displayName = "FilterPanelSkeleton";
 
 // ============================================
-// DYNAMIC IMPORTS WITH ERROR HANDLING
+// DYNAMIC IMPORTS
 // ============================================
 const BrandCard = dynamic(
-  () => import("./brandCard").catch((err) => {
-    console.error("Failed to load BrandCard:", err);
-    return { default: () => <BrandCardSkeleton /> };
-  }),
-  {
-    loading: () => <BrandCardSkeleton />,
-    ssr: false,
-  }
+  () =>
+    import("./brandCard").catch((err) => {
+      console.error("Failed to load BrandCard:", err);
+      return { default: () => <BrandCardSkeleton /> };
+    }),
+  { loading: () => <BrandCardSkeleton />, ssr: false }
 );
 
 const FilterPanel = dynamic(
-  () => import("./FillterPannel").catch((err) => {
-    console.error("Failed to load FilterPanel:", err);
-    return { default: () => <FilterPanelSkeleton /> };
-  }),
-  {
-    loading: () => <FilterPanelSkeleton />,
-    ssr: false,
-  }
+  () =>
+    import("./FillterPannel").catch((err) => {
+      console.error("Failed to load FilterPanel:", err);
+      return { default: () => <FilterPanelSkeleton /> };
+    }),
+  { loading: () => <FilterPanelSkeleton />, ssr: false }
 );
 
 const BrandComparison = dynamic(
-  () => import("@/Components/HomePages/brandCompariosn").catch(() => ({ default: () => null })),
+  () =>
+    import("@/Components/HomePages/brandCompariosn").catch(() => ({
+      default: () => null,
+    })),
   { ssr: false }
 );
 
 const LoginPage = dynamic(
-  () => import("@/Components/LoginPage/LoginPage").catch(() => ({ default: () => null })),
+  () =>
+    import("@/Components/LoginPage/LoginPage").catch(() => ({
+      default: () => null,
+    })),
   { ssr: false }
 );
 
@@ -163,7 +222,7 @@ const useIntersectionObserver = () => {
 };
 
 // ============================================
-// LAZY BRAND CARD WRAPPER
+// LAZY BRAND CARD
 // ============================================
 const LazyBrandCard = React.memo(({ brand, ...props }) => {
   const [ref, isVisible] = useIntersectionObserver();
@@ -187,19 +246,36 @@ LazyBrandCard.displayName = "LazyBrandCard";
 // ============================================
 // MAIN COMPONENT
 // ============================================
-function BrandList({ maincat }) {
+function BrandList({ maincat, subcat, slug, subslug }) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const dispatch = useDispatch();
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
 
   // ============================================
-  // REFS - Critical for preventing issues
+  // 🔥 RESOLVE VALUES SYNCHRONOUSLY
+  // ============================================
+  const resolvedMaincat = maincat || (slug ? deslugifyMain(slug) : "");
+  const resolvedSubcat = subcat || (subslug ? deslugifySub(subslug) : "");
+
+  console.log("🔥 RESOLVED MAINCAT:", resolvedMaincat);
+  console.log("🔥 RESOLVED SUBCAT:", resolvedSubcat);
+
+  // ============================================
+  // REFS
   // ============================================
   const isInitializedRef = useRef(false);
   const lastFetchKeyRef = useRef("");
   const abortControllerRef = useRef(null);
   const isMountedRef = useRef(true);
+
+  // 🔥 Always-fresh refs
+  const resolvedMaincatRef = useRef(resolvedMaincat);
+  const resolvedSubcatRef = useRef(resolvedSubcat);
+  resolvedMaincatRef.current = resolvedMaincat;
+  resolvedSubcatRef.current = resolvedSubcat;
 
   // ============================================
   // LOCAL STATE
@@ -240,7 +316,7 @@ function BrandList({ maincat }) {
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
 
   // ============================================
-  // MEMOIZED VALUES
+  // ACTIVE FILTER COUNT
   // ============================================
   const activeFilterCount = useMemo(() => {
     return ACTUAL_FILTER_KEYS.reduce((count, key) => {
@@ -281,7 +357,7 @@ function BrandList({ maincat }) {
   );
 
   // ============================================
-  // SINGLE FETCH FUNCTION
+  // FETCH FUNCTION
   // ============================================
   const fetchBrands = useCallback(
     (filtersToFetch, forceRefresh = false) => {
@@ -289,158 +365,190 @@ function BrandList({ maincat }) {
 
       const fetchKey = JSON.stringify(filtersToFetch);
 
-      // Skip if same filters already fetched
       if (!forceRefresh && lastFetchKeyRef.current === fetchKey) {
-        console.log("Skipping duplicate fetch");
+        // console.log("⏭️ Skipping duplicate fetch");
         return;
       }
 
-      // Cancel previous request
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
-      abortControllerRef.current = new AbortController();
 
+      abortControllerRef.current = new AbortController();
       lastFetchKeyRef.current = fetchKey;
 
+      // console.log("🚀 Fetching brands with filters:", filtersToFetch);
       dispatch(fetchFilteredBrands(filtersToFetch));
 
-      if (isFirstLoad) {
-        setIsFirstLoad(false);
-      }
+      if (isFirstLoad) setIsFirstLoad(false);
     },
     [dispatch, isFirstLoad]
   );
 
   // ============================================
-  // INITIALIZATION - Read URL params and apply filters
+  // 🔥 INITIALIZATION
   // ============================================
   useEffect(() => {
     if (isInitializedRef.current) return;
     isInitializedRef.current = true;
     isMountedRef.current = true;
 
-
-    // Get filters from multiple sources
     const urlMaincat = searchParams?.get("maincat");
+    const urlSubcat = searchParams?.get("subcat");
     const urlState = searchParams?.get("state");
     const urlInvestmentRange = searchParams?.get("investmentRange");
-    const propMaincat = maincat;
+
     const stored = getLocalStorageData();
 
-    // Build initial filters
+    const currentMaincat = resolvedMaincatRef.current;
+    const currentSubcat = resolvedSubcatRef.current;
+
+    console.log("🔥 INIT currentMaincat:", currentMaincat);
+    console.log("🔥 INIT currentSubcat:", currentSubcat);
+
     const initialFilters = {};
 
-    // Priority: URL params > Props > localStorage
-    if (urlMaincat) {
-      initialFilters.maincat = urlMaincat;
-    } else if (propMaincat) {
-      initialFilters.maincat = propMaincat;
+    const resolvedMainParam = urlMaincat || currentMaincat;
+    const resolvedSubParam = urlSubcat || currentSubcat;
+
+    if (resolvedMainParam) {
+      initialFilters.maincat = resolvedMainParam;
+    }
+    if (resolvedSubParam) {
+      initialFilters.subcat = resolvedSubParam;
     }
 
-    if (urlState) {
-      initialFilters.state = urlState;
-    }
-
-    if (urlInvestmentRange) {
-      initialFilters.investmentRange = urlInvestmentRange;
-    }
+    if (urlState) initialFilters.state = urlState;
+    if (urlInvestmentRange) initialFilters.investmentRange = urlInvestmentRange;
 
     if (stored?.searchTerm) {
       initialFilters.searchTerm = stored.searchTerm;
       localStorage.removeItem("franchiseFilters");
     }
 
-    // Check comparison mode
     if (stored?.enableComparison === "true") {
       setEnableComparison(true);
       localStorage.removeItem("enableComparison");
     }
 
+    // console.log("🔥 FINAL INITIAL FILTERS:", initialFilters);
 
-    // Apply filters to Redux
     Object.entries(initialFilters).forEach(([key, value]) => {
-      if (value) {
-        dispatch(setFilter({ filterName: key, value }));
-      }
+      if (value) dispatch(setFilter({ filterName: key, value }));
     });
 
-    // Fetch dropdown options
-    if (initialFilters.maincat) {
+    if (initialFilters.subcat && initialFilters.maincat) {
+      dispatch(
+        fetchFilterOptions({
+          main: initialFilters.maincat,
+          sub: initialFilters.subcat,
+        })
+      );
+    } else if (initialFilters.maincat) {
       dispatch(fetchFilterOptions({ main: initialFilters.maincat }));
     } else {
       dispatch(fetchFilterOptions());
     }
 
-    // Fetch brands with initial filters
-    // Small delay to ensure Redux state is updated
+    // ─── If route slugs exist but query params are missing, inject them automatically.
+    if (typeof window !== "undefined") {
+      const hasMainParam = !!searchParams?.get("maincat");
+      const hasSubParam = !!searchParams?.get("subcat");
+      if ((!hasMainParam || !hasSubParam) && (currentMaincat || currentSubcat)) {
+        const url = new URL(window.location.href);
+        if (currentMaincat) url.searchParams.set("maincat", currentMaincat);
+        if (currentSubcat) url.searchParams.set("subcat", currentSubcat);
+
+        const nextUrl = `${url.pathname}${url.search}`;
+        if (nextUrl !== window.location.pathname + window.location.search) {
+          router.replace(nextUrl, { scroll: false });
+        }
+      }
+    }
+
     setTimeout(() => {
       if (isMountedRef.current) {
         fetchBrands(initialFilters, true);
         setInitialFiltersApplied(true);
       }
-    }, 50);
+    }, 100);
 
-    // Preload background
     const img = new Image();
     img.src = "/bg25.jpeg";
 
     return () => {
       isMountedRef.current = false;
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
+      if (abortControllerRef.current) abortControllerRef.current.abort();
     };
-  }, []); // Empty deps - runs once
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ============================================
-  // FILTER CHANGE EFFECT (After initialization)
+  // FILTER CHANGE EFFECT
   // ============================================
   useEffect(() => {
-    // Skip if not initialized or initial filters not applied
     if (!initialFiltersApplied) return;
 
-    // Skip the initial render
     const filterKey = JSON.stringify(filters);
     if (lastFetchKeyRef.current === filterKey) return;
 
-    // Debounce filter changes
     const timer = setTimeout(() => {
-      if (isMountedRef.current) {
-        fetchBrands(filters);
-      }
+      if (isMountedRef.current) fetchBrands(filters);
     }, 150);
 
     return () => clearTimeout(timer);
   }, [filters, initialFiltersApplied, fetchBrands]);
 
   // ============================================
-  // CALLBACKS
+  // 🔥 HANDLE FILTER CHANGE — Navigate to clean URL
   // ============================================
   const handleFilterChange = useCallback(
     (name, value) => {
-      
+      // console.log("🔧 Filter changed:", name, "=", value);
+
       dispatch(setFilter({ filterName: name, value }));
 
-      // Fetch dependent data
-      const dependentFetches = {
-        maincat: { main: value },
-        subcat: { sub: value },
-        state: { state: value },
-        district: { district: value },
-      };
+      // ─── Fetch dependent dropdowns ───
+      if (name === "maincat" && value) {
+        dispatch(fetchFilterOptions({ main: value }));
+      } else if (name === "subcat" && value) {
+        dispatch(fetchFilterOptions({ sub: value }));
+      } else if (name === "state" && value) {
+        dispatch(fetchFilterOptions({ state: value }));
+      } else if (name === "district" && value) {
+        dispatch(fetchFilterOptions({ district: value }));
+      }
 
-      if (dependentFetches[name] && value) {
-        dispatch(fetchFilterOptions(dependentFetches[name]));
+      // ─── 🔥 Navigate to clean slug URL when subcat selected ───
+      if (name === "subcat" && value) {
+        const currentMaincat = filters.maincat || resolvedMaincatRef.current;
+
+        // Build clean slug URL
+        const newUrl = buildSubCategoryUrl(currentMaincat, value);
+
+        if (newUrl && newUrl !== pathname) {
+          // console.log("🔀 Navigating to:", newUrl);
+          router.push(newUrl);
+          return; // navigation will handle the rest
+        }
+      }
+
+      // ─── 🔥 Navigate to main category URL when maincat changes ───
+      if (name === "maincat" && value) {
+        const mainSlug = slugifyForUrl(value) + "-franchise-opportunities";
+        const newUrl = `/${mainSlug}`;
+
+        if (newUrl !== pathname) {
+          // console.log("🔀 Navigating to main:", newUrl);
+          router.push(newUrl);
+          return;
+        }
       }
     },
-    [dispatch]
+    [dispatch, filters, pathname, router]
   );
 
   const handleMobileFilterChange = useCallback(
-    (name, value) => {
-      handleFilterChange(name, value);
-    },
+    (name, value) => handleFilterChange(name, value),
     [handleFilterChange]
   );
 
@@ -449,14 +557,14 @@ function BrandList({ maincat }) {
   }, []);
 
   const handleClearFilters = useCallback(() => {
-    lastFetchKeyRef.current = ""; // Force refresh
+    lastFetchKeyRef.current = "";
     dispatch(resetFilters());
-    dispatch(fetchFilterOptions()); // Reset to initial options
+    dispatch(fetchFilterOptions());
   }, [dispatch]);
 
   const handlePageChange = useCallback(
     (_, page) => {
-      lastFetchKeyRef.current = ""; // Force refresh
+      lastFetchKeyRef.current = "";
       dispatch(setPage(page));
       window.scrollTo({ top: 0, behavior: "smooth" });
     },
@@ -466,16 +574,13 @@ function BrandList({ maincat }) {
   const handleLikeClick = useCallback(
     async (brandId) => {
       if (likeProcessing[brandId]) return;
-
       if (!isAuthenticated) {
         setShowLogin(true);
         return;
       }
 
       setLikeProcessing((prev) => ({ ...prev, [brandId]: true }));
-
       try {
-        // Handle like logic here
         await new Promise((resolve) => setTimeout(resolve, 500));
         fetchBrands(filters, true);
       } catch (error) {
@@ -490,16 +595,10 @@ function BrandList({ maincat }) {
   const toggleBrandComparison = useCallback((brand) => {
     setSelectedForComparison((prev) => {
       const isSelected = prev.some((b) => b.uuid === brand.uuid);
-
-      if (isSelected) {
-        return prev.filter((b) => b.uuid !== brand.uuid);
-      }
-
+      if (isSelected) return prev.filter((b) => b.uuid !== brand.uuid);
       if (prev.length >= 3) return prev;
-
       const updated = [...prev, brand];
       if (updated.length === 3) setComparisonOpen(true);
-
       return updated;
     });
   }, []);
@@ -519,7 +618,6 @@ function BrandList({ maincat }) {
   // RENDER CONTENT
   // ============================================
   const renderContent = () => {
-    // First load - show skeleton grid
     if (isFirstLoad || (loading && brands.length === 0)) {
       return (
         <Box sx={gridStyles}>
@@ -530,7 +628,6 @@ function BrandList({ maincat }) {
       );
     }
 
-    // Loading with existing data - show overlay
     if (loading && brands.length > 0) {
       return (
         <Box sx={{ position: "relative" }}>
@@ -554,7 +651,6 @@ function BrandList({ maincat }) {
       );
     }
 
-    // Error state
     if (error) {
       return (
         <Box
@@ -579,7 +675,6 @@ function BrandList({ maincat }) {
       );
     }
 
-    // No results
     if (!brands || brands.length === 0) {
       return (
         <Box
@@ -607,7 +702,6 @@ function BrandList({ maincat }) {
       );
     }
 
-    // Brand grid
     return (
       <>
         <Box sx={gridStyles}>
@@ -632,7 +726,6 @@ function BrandList({ maincat }) {
           ))}
         </Box>
 
-        {/* Pagination */}
         {pagination.totalPages > 1 && (
           <Box
             display="flex"
@@ -696,7 +789,7 @@ function BrandList({ maincat }) {
       </Box>
 
       <Box display="flex" flexDirection={{ xs: "column", md: "row" }}>
-        {/* Desktop Filters */}
+        {/* Desktop Filter */}
         {!isMobile && (
           <Box
             sx={{
@@ -791,25 +884,39 @@ function BrandList({ maincat }) {
         </Box>
       </Box>
 
-      {/* Mobile Filter Drawer */}
+      {/* Mobile Drawer */}
       <Drawer
         anchor="left"
         open={mobileFiltersOpen}
         onClose={() => setMobileFiltersOpen(false)}
         sx={{
-  "& .MuiDrawer-paper": {
-    width: "85vw", // Mobile first
-    maxWidth: "300px", // Won't go over 300px
-  },
-}}
-
+          "& .MuiDrawer-paper": {
+            width: "85vw",
+            maxWidth: "300px",
+          },
+        }}
       >
-        <Box sx={{ p: 2, height: "100%", display: "flex", flexDirection: "column" }}>
-          <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+        <Box
+          sx={{
+            p: 2,
+            height: "100%",
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          <Box
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+            mb={2}
+          >
             <Typography variant="h6" fontWeight="bold">
               Filters {activeFilterCount > 0 && `(${activeFilterCount})`}
             </Typography>
-            <IconButton aria-label="close" onClick={() => setMobileFiltersOpen(false)}>
+            <IconButton
+              aria-label="close"
+              onClick={() => setMobileFiltersOpen(false)}
+            >
               <Close />
             </IconButton>
           </Box>
@@ -848,7 +955,11 @@ function BrandList({ maincat }) {
             variant="contained"
             fullWidth
             onClick={handleApplyMobileFilters}
-            sx={{ mt: 2, bgcolor: "#ff9800", "&:hover": { bgcolor: "#fb8c00" } }}
+            sx={{
+              mt: 2,
+              bgcolor: "#ff9800",
+              "&:hover": { bgcolor: "#fb8c00" },
+            }}
           >
             Apply Filters
           </Button>
@@ -863,7 +974,9 @@ function BrandList({ maincat }) {
             onClose={handleCloseComparison}
             selectedBrands={selectedForComparison}
             onRemoveFromComparison={(uuid) =>
-              setSelectedForComparison((prev) => prev.filter((b) => b.uuid !== uuid))
+              setSelectedForComparison((prev) =>
+                prev.filter((b) => b.uuid !== uuid)
+              )
             }
           />
         </Suspense>

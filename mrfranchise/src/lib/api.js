@@ -1,5 +1,5 @@
 const API =
-  "https://mrfranchisebackend.mrfranchise.in/api/v1/filter/getAllBrandsAndFilter";
+  "http://localhost:5000/api/v1/filter/getAllBrandsAndFilter";
 
 export async function getAllBrands() {
   let page = 1;

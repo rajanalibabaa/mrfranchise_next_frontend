@@ -22,7 +22,6 @@ import ArrowForward from "@mui/icons-material/ArrowForward";
 import ArrowRight from "@mui/icons-material/ArrowRight";
 import { useSelector, useDispatch } from "react-redux";
 import LoginPage from "@/Components/LoginPage/LoginPage.jsx";
-import { motion } from "framer-motion";
 import HomePageBrandCard from "./HomePageBrandCard.jsx";
 import { homeSection1   } from '@/Redux/Slices/TopCardFetchingSlice.jsx';
 
@@ -212,7 +211,6 @@ const handlePrevClick = () => {
     trim: true,
   });
 
-  const subcat = encodeURIComponent(brandCategoriesName); // encode spaces/special chars
   const url = `${slug}-franchise-opportunities`;
 
   // Open in new tab
