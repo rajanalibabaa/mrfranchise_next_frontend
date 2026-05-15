@@ -98,6 +98,7 @@ const totalAmount = Object.values(byRange).reduce(
 groupedByPlan[group.planId].totalPlanLeads = totalLeads;
 groupedByPlan[group.planId].totalPlanAmount = totalAmount;
 groupedByPlan[group.planId].totalPlanStates = uniqueStateCount;
+groupedByPlan[group.planId].lastSelectedLeads = lastSelectedLeads; // ✅ ADD THIS LINE
 groupedByPlan[group.planId].byRange = byRange;
 });
 
@@ -420,7 +421,7 @@ acc[rangeKey].totalAmount = (item.pricePerState || 0) * uniqueRangeStatesCount;
             : planData.totalPlanLeads}
         </Typography>
     <Typography sx={{ fontSize: "0.55rem", color: COLORS.grey[600], mt: 0.5 }}>
-  {lastSelectedLeads} × {planData.totalPlanStates} = {planData.totalPlanLeads.toLocaleString("en-IN")}
+{planData.lastSelectedLeads} × {planData.totalPlanStates} = {planData.totalPlanLeads.toLocaleString("en-IN")}
 </Typography>
       </>
     )}

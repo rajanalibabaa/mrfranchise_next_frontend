@@ -2964,7 +2964,6 @@ const handleSaveStates = useCallback(() => {
           return newState;
         });
 
-<<<<<<< HEAD
         openSnack(`${newItemsToAdd.length} range(s) added to cart`, "success");
       }}
       sx={{
@@ -2988,59 +2987,6 @@ const handleSaveStates = useCallback(() => {
         "&:hover": {
           backgroundColor: COLORS.primaryDark,
           transform: "scale(1.05)",
-=======
-    // REMOVED: Cross-group conflict check - states can be reused across different ranges
-    // Different investment ranges can have the same states - they are separate purchases
-
-                                          // Add all new items
-                                          newItemsToAdd.forEach(
-                                            (selectedItem) => {
-                                             const rangeSpecificKey = `plan-${selectedPlan._id}-${selectedItem.investmentRangeLabel}`;
-
-const selectedLeads =
-  selectedLeadsPerRange[rangeSpecificKey] ||
-  (availableLeads.length > 0
-    ? availableLeads[0]
-    : 0);
-
-handleAddSingleToPayment(
-  {
-    id: `${selectedPlan._id}-${selectedItem.investmentRangeLabel}-${selectedItem.range}`,
-    investmentRangeLabel:
-      selectedItem.investmentRangeLabel,
-    range: selectedItem.range,
-    selectedLeads, // ✅ IMPORTANT
-  },
-  selectedPlan,
-  selectedItem.pkg,
-);
-                                            },
-                                          );
-
-    // Add all new items
-    newItemsToAdd.forEach(
-      (selectedItem) => {
-        handleAddSingleToPayment(
-          {
-            id: `${selectedPlan._id}-${selectedItem.investmentRangeLabel}-${selectedItem.range}`,
-            investmentRangeLabel:
-              selectedItem.investmentRangeLabel,
-            range: selectedItem.range,
-          },
-          selectedPlan,
-          selectedItem.pkg,
-        );
-      },
-    );
-
-    // Uncheck added items
-    setCheckedItems((prev) => {
-      const newState = { ...prev };
-      newItemsToAdd.forEach(
-        (addedItem) => {
-          const id = `${selectedPlan._id}-${addedItem.investmentRangeLabel}-${addedItem.range}`;
-          delete newState[id];
->>>>>>> eb243c1b0b1ddcbca0c78d8c7210bd2e92f9bceb
         },
       }}
     >
