@@ -255,13 +255,21 @@ const packagePayload = {
 
           // ✅ TOTAL LEADS
           TotalLeads:
-            pkgGroup?.totalLeads ||
-            0,
+          pkgGroup?.packagesType ===
+          "LISTING"
+            ? 0
+            : Number(
+                pkgGroup?.totalLeads || 0
+              ),
 
           // ✅ REMAINING LEADS
-          remainingLeads:
-            pkgGroup?.selectedLeads ||
-            0,
+         remainingLeads:
+          pkgGroup?.packagesType ===
+          "LISTING"
+            ? 0
+            : Number(
+                pkgGroup?.selectedLeads || 0
+              ),
 
           // ✅ AMOUNT
           TotalAmount:
