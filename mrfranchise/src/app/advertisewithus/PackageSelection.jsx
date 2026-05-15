@@ -58,7 +58,7 @@ import RemoveInvestmentRangeDialog from "./RemoveInvestmentRangeDialog";
 import PaymentSummaryTable from "./PaymentSummaryTable";
 import PaymentBottomBar from "./PaymentBottomBar";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 // Enhanced Color Palette
 const COLORS = {
