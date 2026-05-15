@@ -78,7 +78,7 @@ export default function PaymentPage() {
     // Redirect to success page
     toast.success("Payment completed successfully!");
     setTimeout(() => {
-      window.location.href = "/dashboard/payments/success";
+      window.location.href = "/brandDashboard";
     }, 2000);
   };
 

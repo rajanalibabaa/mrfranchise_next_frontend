@@ -100,6 +100,7 @@ export default function PaymentButton({ amount, packageName, packageData, onSucc
 
       const firstPackage = packageData?.[0];
 const firstItem = firstPackage?.items?.[0];
+
 const payload = {
   // =========================
   // USER
@@ -210,13 +211,168 @@ console.log("PAYLOAD:", payload);
               { timeout: 10000 }
             );
 
-            if (verifyResponse.data.success) {
-              toast.success("Payment Successful! 🎉");
-              onSuccess?.(verifyResponse.data.data); // Callback to parent
-              
-              // Redirect or update UI
-              // window.location.href = "/dashboard/payments/success";
-            }
+           if (verifyResponse.data.success) {
+
+  // =========================
+  // CREATE BRAND PACKAGE
+  // =========================
+
+const packagePayload = {
+  brandOwnerId: uuid,
+
+  packages: packageData.map(
+    (pkgGroup) => ({
+      packagesType:
+        pkgGroup?.packagesType,
+
+      packagesName:
+        pkgGroup?.planName,
+
+      planUniqueId:
+        pkgGroup?.planUniqueId,
+
+      InvestmetPackages: [
+        {
+          // ✅ LABEL
+          InvestmetRageLabel:
+            pkgGroup?.investmentRangeLabel,
+
+          // ✅ RANGE + STATES
+          investmentranges:
+            pkgGroup?.items.map(
+              (item) => ({
+                selectedPlanInvestmetrange:
+                  item?.range || "",
+
+                selectedPlanState:
+                  Array.isArray(
+                    item?.states
+                  )
+                    ? item.states
+                    : [],
+              })
+            ) || [],
+
+          // ✅ TOTAL LEADS
+          TotalLeads:
+            pkgGroup?.totalLeads ||
+            0,
+
+          // ✅ REMAINING LEADS
+          remainingLeads:
+            pkgGroup?.selectedLeads ||
+            0,
+
+          // ✅ AMOUNT
+          TotalAmount:
+            pkgGroup?.amount || 0,
+
+          // ✅ VALIDITY
+          Validity:
+            pkgGroup?.validityDays ||
+            30,
+
+          // ✅ DATES
+          PackageStartDate:
+            new Date(),
+
+          PackageEndDate:
+            new Date(
+              Date.now() +
+                Number(
+                  pkgGroup?.validityDays ||
+                    30
+                ) *
+                  24 *
+                  60 *
+                  60 *
+                  1000
+            ),
+
+          CurrentDate:
+            new Date(),
+
+          RenewalEndDate:
+            new Date(
+              Date.now() +
+                Number(
+                  pkgGroup?.validityDays ||
+                    30
+                ) *
+                  24 *
+                  60 *
+                  60 *
+                  1000
+            ),
+
+          // ✅ STATUS
+          isPaused: false,
+
+          pauseHistory: [],
+
+          isExperied: false,
+
+          isActive: false,
+
+          isPending: false,
+
+          // ✅ PAYMENT
+          paymentId:
+            verifyResponse.data.data
+              .paymentId,
+
+          orderId:
+            verifyResponse.data.data
+              .orderId,
+        },
+      ],
+    })
+  ),
+};
+
+console.log(
+  "PACKAGE PAYLOAD:",
+  packagePayload
+);
+
+  
+  // =========================
+  // CREATE PACKAGE API
+  // =========================
+
+  const packageResponse =
+    await axios.patch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/brand-packages-plans/create`,
+      packagePayload,
+      {
+        headers: {
+          "Content-Type":
+            "application/json",
+        },
+      }
+    );
+
+  console.log(
+    "PACKAGE RESPONSE:",
+    packageResponse.data
+  );
+
+  // =========================
+  // SUCCESS
+  // =========================
+
+  toast.success(
+    "Payment Successful! 🎉"
+  );
+
+  onSuccess?.({
+    payment:
+      verifyResponse.data.data,
+
+    package:
+      packageResponse.data,
+  });
+}
           } catch (verifyErr) {
             toast.error("Payment verification failed. Please contact support.");
             console.error("Verification Error:", verifyErr);

@@ -1165,6 +1165,8 @@ const handleSaveStates = useCallback(() => {
             groupKey,
 
             planId: selectedPlan._id,
+            packagesType:
+              selectedPlan.packageType,
 
             planName:
               selectedPlan.planName,
@@ -1329,7 +1331,7 @@ const handleSaveStates = useCallback(() => {
     paymentGroups.forEach((group) => {
       if (!plansMap.has(group.planId)) {
         plansMap.set(group.planId, {
-          packagesType: group.isListingPlan ? "listing" : "investment",
+          packagesType: group.packagesType,
           packagesName: group.planName,
           planUniqueId: group.planId,
           planPackageId: group.planPackageId,
@@ -3173,6 +3175,7 @@ const handleSaveStates = useCallback(() => {
                         {
                           groupKey,
                           planId: plan._id,
+                          packagesType: plan.packageType,
                           planName: plan.planName,
                           planUniqueId: plan.planUniqueId,
                           planpackageId:pkg._id,
