@@ -28,6 +28,9 @@ const PaymentSummaryTable = ({
   setItemToRemove,
   setOpenRemoveConfirmDialog,
 }) => {
+ console.log("payment summary data",paymentSummary);
+ 
+
   const groupedByPlan = {};
 
 paymentSummary.forEach((group) => {
@@ -406,7 +409,7 @@ paymentSummary.forEach((group) => {
           sx={{ verticalAlign: "middle" }}
         >
           <Typography sx={{ fontSize: TEXT_SIZES.small, fontWeight: 700, color: COLORS.secondaryDark }}>
-            ₹{planData.totalPlanAmount.toLocaleString("en-IN")}
+            ₹{planData.items[0]?.totalAmount?.toLocaleString("en-IN") || "0"}
           </Typography>
         </TableCell>
       )}
