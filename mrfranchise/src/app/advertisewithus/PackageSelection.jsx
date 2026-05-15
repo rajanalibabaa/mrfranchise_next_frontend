@@ -874,7 +874,7 @@ const handleSaveStates = useCallback(() => {
       );
     },
     [ficoInvestmentRanges, normalizeRange],
-  );
+  );  
 
   const getUniqueStatesAcrossRanges = useCallback((items) => {
     const allStatesSet = new Set();
@@ -884,184 +884,377 @@ const handleSaveStates = useCallback(() => {
     return Array.from(allStatesSet);
   }, []);
 
-  const handleAddSingleToPayment = useCallback(
-    (item, selectedPlan, selectedPkg) => {
-      const { id, investmentRangeLabel, range } = item;
-      const pricePerState = selectedPkg?.amount || 0;
+ const handleAddSingleToPayment = useCallback(
+  (item, selectedPlan, selectedPkg) => {
 
-      const leadsDataKey = `${selectedPlan._id}_${investmentRangeLabel}`;
-      const availableLeads = leadsDropdownData[leadsDataKey] || [];
+    const {
+      id,
+      investmentRangeLabel,
+      range,
+    } = item;
 
-      let selectedLeads =
-        selectedLeadsPerRange[
-          `plan-${selectedPlan._id}-${investmentRangeLabel}`
-        ];
-      if (!selectedLeads && availableLeads.length > 0) {
-        selectedLeads = availableLeads[0];
-      } else if (!selectedLeads) {
-        selectedLeads = 0;
+    const pricePerState =
+      Number(selectedPkg?.amount || 0);
+
+    // ✅ GROUP LEVEL KEY
+    const leadSelectionKey =
+      `plan-${selectedPlan._id}-${investmentRangeLabel}`;
+
+    // ✅ Leads Dropdown
+    const leadsDataKey =
+      `${selectedPlan._id}_${investmentRangeLabel}`;
+
+    const availableLeads =
+      leadsDropdownData[leadsDataKey] || [];
+
+    // ✅ GET SELECTED LEADS
+    let selectedLeads =
+      item.selectedLeads ||
+      selectedLeadsPerRange[leadSelectionKey] ||
+      0;
+
+    // ✅ FALLBACK
+    if (
+      (!selectedLeads || selectedLeads <= 0) &&
+      availableLeads.length > 0
+    ) {
+      selectedLeads = availableLeads[0];
+    }
+
+    selectedLeads = Number(selectedLeads);
+
+    // =========================
+    // STATES
+    // =========================
+
+    const key = getRangeKey(
+      investmentRangeLabel,
+      range,
+      selectedPlan._id
+    );
+
+    let states =
+      statesByInvestmentRange[key];
+
+    if (!states || states.length === 0) {
+
+      if (!finalToken && detectedState) {
+
+        states = [detectedState];
+
+      } else if (finalToken) {
+
+        states = allStates;
+
+      } else {
+
+        states = [];
       }
-      const key = getRangeKey(investmentRangeLabel, range, selectedPlan._id);
-      let states = statesByInvestmentRange[key];
-      if (!states || states.length === 0) {
-        if (!finalToken && detectedState) {
-          states = [detectedState];
-        } else if (finalToken) {
-          states = allStates;
-        } else {
-          states = [];
-        }
-      }
+    }
 
-      if (states.length === 0) {
-        openSnack("Please select at least one state", "warning");
-        return;
-      }
+    if (states.length === 0) {
 
-      // ✅ REMOVED: hasDuplicateStates check — no longer block here
-      // State overlap within same investment group is allowed
+      openSnack(
+        "Please select at least one state",
+        "warning"
+      );
 
-      const minLeads =
-        availableLeads.length > 0 ? Math.min(...availableLeads) : 1;
-      const divisor = minLeads > 0 ? minLeads : 1;
+      return;
+    }
 
-      const newItem = {
-        id,
-        investmentRangeLabel,
-        range,
-        stateCount: states.length,
-        states,
-        selectedLeads,
-        totalLeads: selectedLeads * states.length,
-        totalAmount: pricePerState * states.length,
-      };
+    // =========================
+    // CALCULATIONS
+    // =========================
 
-      const groupKey = `${selectedPlan._id}__${selectedPkg?.validityDays}__${pricePerState}__${investmentRangeLabel}__${range}`;
-      setPaymentSummary((prev) => {
-        const existingGroup = prev.find((g) => g.groupKey === groupKey);
-        let newSummary;
+    const minLeads =
+      availableLeads.length > 0
+        ? Math.min(...availableLeads)
+        : 1;
 
-        if (existingGroup) {
-          const existingItemIndex = existingGroup.items.findIndex(
-            (ex) => ex.id === newItem.id,
+    const divisor =
+      minLeads > 0
+        ? minLeads
+        : 1;
+
+    const totalLeads =
+      selectedLeads * states.length;
+
+    // ✅ IMPORTANT FIX
+    const totalAmount =
+      (pricePerState / divisor) *
+      states.length *
+      selectedLeads;
+
+    // =========================
+    // NEW ITEM
+    // =========================
+
+    const newItem = {
+
+      id,
+
+      investmentRangeLabel,
+
+      range,
+
+      stateCount: states.length,
+
+      states,
+
+      selectedLeads,
+
+      totalLeads,
+
+      totalAmount,
+    };
+
+    // ✅ GROUP KEY
+    const groupKey =
+      `${selectedPlan._id}__${investmentRangeLabel}`;
+
+    setPaymentSummary((prev) => {
+
+      const existingGroup =
+        prev.find(
+          (g) => g.groupKey === groupKey
+        );
+
+      let newSummary = [];
+
+      // =========================
+      // UPDATE EXISTING GROUP
+      // =========================
+
+      if (existingGroup) {
+
+        const existingItemIndex =
+          existingGroup.items.findIndex(
+            (ex) => ex.id === newItem.id
           );
 
-          if (existingItemIndex !== -1) {
-            const updatedItems = existingGroup.items.map((it) => ({
-              ...it,
-              selectedLeads: newItem.selectedLeads,
-              totalLeads: newItem.selectedLeads * it.stateCount,
-              totalAmount: pricePerState * it.stateCount,
-              ...(it.id === newItem.id
-                ? {
-                    states: newItem.states,
-                    stateCount: newItem.stateCount,
-                  }
-                : {}),
-            }));
+        let updatedItems = [];
 
-            const uniqueStates = getUniqueStatesAcrossRanges(updatedItems);
-            const totalUniqueStates = uniqueStates.length;
-            const newAmount =
-              (pricePerState / divisor) *
-              totalUniqueStates *
-              newItem.selectedLeads;
+        // =========================
+        // UPDATE EXISTING ITEM
+        // =========================
 
-            newSummary = prev.map((g) =>
-              g.groupKey === groupKey
-                ? {
-                    ...g,
-                    items: updatedItems,
-                    uniqueStates,
-                    totalStates: totalUniqueStates,
-                    amount: newAmount,
-                    totalLeads: totalUniqueStates * newItem.selectedLeads,
-                  }
-                : g,
-            );
-          } else {
-            const updatedItems = [...existingGroup.items, newItem].map(
-              (it) => ({
+        if (existingItemIndex !== -1) {
+
+          updatedItems =
+            existingGroup.items.map((it) => {
+
+              const itemAmount =
+                (pricePerState / divisor) *
+                it.stateCount *
+                selectedLeads;
+
+              return {
+
                 ...it,
-                selectedLeads: newItem.selectedLeads,
-                totalLeads: newItem.selectedLeads * it.stateCount,
-              }),
-            );
 
-            const uniqueStates = getUniqueStatesAcrossRanges(updatedItems);
-            const totalUniqueStates = uniqueStates.length;
-            const newAmount =
-              (pricePerState / divisor) *
-              totalUniqueStates *
-              newItem.selectedLeads;
+                selectedLeads,
 
-            newSummary = prev.map((g) =>
-              g.groupKey === groupKey
-                ? {
-                    ...g,
-                    items: updatedItems,
-                    uniqueStates,
-                    totalStates: totalUniqueStates,
-                    amount: newAmount,
-                    totalLeads: totalUniqueStates * newItem.selectedLeads,
-                  }
-                : g,
-            );
-          }
+                totalLeads:
+                  selectedLeads *
+                  it.stateCount,
+
+                totalAmount: itemAmount,
+
+                ...(it.id === newItem.id
+                  ? {
+                      states: newItem.states,
+                      stateCount:
+                        newItem.stateCount,
+                    }
+                  : {}),
+              };
+            });
+
         } else {
-          const uniqueStates = getUniqueStatesAcrossRanges([newItem]);
-          const totalUniqueStates = uniqueStates.length;
-          const dynamicAmount =
-            (pricePerState / divisor) * totalUniqueStates * selectedLeads;
 
-          newSummary = [
-            ...prev,
-            {
-              groupKey,
-              planId: selectedPlan._id,
-              planName: selectedPlan.planName,
-              investmentRangeLabel,
-              validityDays: selectedPkg?.validityDays,
-              pricePerState,
-              uniqueStates,
-              totalStates: totalUniqueStates,
-              amount: dynamicAmount,
-              totalLeads: totalUniqueStates * selectedLeads,
-              items: [newItem],
-            },
+          updatedItems = [
+            ...existingGroup.items,
+            newItem,
+          ].map((it) => {
+
+            const itemAmount =
+              (pricePerState / divisor) *
+              it.stateCount *
+              selectedLeads;
+
+            return {
+
+              ...it,
+
+              selectedLeads,
+
+              totalLeads:
+                selectedLeads *
+                it.stateCount,
+
+              totalAmount: itemAmount,
+            };
+          });
+        }
+
+        // =========================
+        // GROUP TOTALS
+        // =========================
+
+        const uniqueStates =
+          getUniqueStatesAcrossRanges(
+            updatedItems
+          );
+
+        const totalUniqueStates =
+          uniqueStates.length;
+
+        const newAmount =
+          (pricePerState / divisor) *
+          totalUniqueStates *
+          selectedLeads;
+
+        newSummary = prev.map((g) =>
+
+          g.groupKey === groupKey
+
+            ? {
+                ...g,
+
+                items: updatedItems,
+
+                uniqueStates,
+
+                totalStates:
+                  totalUniqueStates,
+
+                amount: newAmount,
+
+                totalLeads:
+                  totalUniqueStates *
+                  selectedLeads,
+              }
+
+            : g
+        );
+
+      } else {
+
+        // =========================
+        // CREATE NEW GROUP
+        // =========================
+
+        const uniqueStates =
+          getUniqueStatesAcrossRanges(
+            [newItem]
+          );
+
+        const totalUniqueStates =
+          uniqueStates.length;
+
+        const dynamicAmount =
+          (pricePerState / divisor) *
+          totalUniqueStates *
+          selectedLeads;
+
+        newSummary = [
+
+          ...prev,
+
+          {
+            groupKey,
+
+            planId: selectedPlan._id,
+
+            planName:
+              selectedPlan.planName,
+
+            planUniqueId:
+              selectedPlan.planUniqueId,
+
+            planPackageId:
+              selectedPkg._id,
+
+            investmentRangeLabel,
+
+            validityDays:
+              selectedPkg?.validityDays,
+
+            pricePerState,
+
+            uniqueStates,
+
+            totalStates:
+              totalUniqueStates,
+
+            amount: dynamicAmount,
+
+            totalLeads:
+              totalUniqueStates *
+              selectedLeads,
+
+            selectedLeads,
+
+            items: [newItem],
+          },
+        ];
+      }
+
+      // =========================
+      // ANIMATION
+      // =========================
+
+      setMovedGroupKeys((prevKeys) => {
+
+        if (
+          !prevKeys.includes(groupKey)
+        ) {
+          return [
+            ...prevKeys,
+            groupKey,
           ];
         }
 
-        setMovedGroupKeys((prevKeys) => {
-          if (!prevKeys.includes(groupKey)) return [...prevKeys, groupKey];
-          return prevKeys;
-        });
-
-        openSnack(
-          `Added ${range} with ${selectedLeads} leads to cart`,
-          "success",
-        );
-        setTimeout(() => scrollToPaymentSummary(), 100);
-
-        return newSummary;
+        return prevKeys;
       });
 
-      setSelected((prev) => ({ ...prev, [id]: true }));
-      setCheckedItems((prev) => ({ ...prev, [id]: true }));
-    },
-    [
-      getRangeKey,
-      statesByInvestmentRange,
-      finalToken,
-      detectedState,
-      allStates,
-      getUniqueStatesAcrossRanges,
-      openSnack,
-      leadsDropdownData,
-      selectedLeadsPerRange,
-      scrollToPaymentSummary,
-    ],
-  );
+      openSnack(
+        `Added ${range} with ${selectedLeads} leads to cart`,
+        "success"
+      );
+
+      setTimeout(
+        () => scrollToPaymentSummary(),
+        100
+      );
+
+      return newSummary;
+    });
+
+    setSelected((prev) => ({
+      ...prev,
+      [id]: true,
+    }));
+
+    setCheckedItems((prev) => ({
+      ...prev,
+      [id]: true,
+    }));
+  },
+
+  [
+    getRangeKey,
+    statesByInvestmentRange,
+    finalToken,
+    detectedState,
+    allStates,
+    getUniqueStatesAcrossRanges,
+    openSnack,
+    leadsDropdownData,
+    selectedLeadsPerRange,
+    scrollToPaymentSummary,
+  ]
+);
 
   const handleRemoveSingleFromPayment = useCallback(
     (item) => {
@@ -1139,6 +1332,8 @@ const handleSaveStates = useCallback(() => {
           packagesType: group.isListingPlan ? "listing" : "investment",
           packagesName: group.planName,
           planUniqueId: group.planId,
+          planPackageId: group.planPackageId,
+          
           InvestmetPackages: [],
         });
       }
@@ -2110,7 +2305,7 @@ const handleSaveStates = useCallback(() => {
                                   : 1;
                               const divisor = minLeads > 0 ? minLeads : 1;
 
-                              const rangeSpecificKey = `plan-${selectedPlan._id}-${item.investmentRangeLabel}-${item.range}`;
+                              const rangeSpecificKey = `plan-${selectedPlan._id}-${item.investmentRangeLabel}`;
                               const groupSelectedLeads =
                                 selectedLeadsPerRange[rangeSpecificKey] ||
                                 (availableLeads.length > 0
@@ -2358,7 +2553,7 @@ const handleSaveStates = useCallback(() => {
                                               >
                                                 {availableLeads.map(
                                                   (leadOption) => {
-                                                    const rangeSpecificKey = `plan-${selectedPlan._id}-${item.investmentRangeLabel}-${item.range}`;
+                                                    const rangeSpecificKey = `plan-${selectedPlan._id}-${item.investmentRangeLabel}`;
                                                     const isSelected =
                                                       selectedLeadsPerRange[
                                                         rangeSpecificKey
@@ -2769,6 +2964,7 @@ const handleSaveStates = useCallback(() => {
           return newState;
         });
 
+<<<<<<< HEAD
         openSnack(`${newItemsToAdd.length} range(s) added to cart`, "success");
       }}
       sx={{
@@ -2792,6 +2988,59 @@ const handleSaveStates = useCallback(() => {
         "&:hover": {
           backgroundColor: COLORS.primaryDark,
           transform: "scale(1.05)",
+=======
+    // REMOVED: Cross-group conflict check - states can be reused across different ranges
+    // Different investment ranges can have the same states - they are separate purchases
+
+                                          // Add all new items
+                                          newItemsToAdd.forEach(
+                                            (selectedItem) => {
+                                             const rangeSpecificKey = `plan-${selectedPlan._id}-${selectedItem.investmentRangeLabel}`;
+
+const selectedLeads =
+  selectedLeadsPerRange[rangeSpecificKey] ||
+  (availableLeads.length > 0
+    ? availableLeads[0]
+    : 0);
+
+handleAddSingleToPayment(
+  {
+    id: `${selectedPlan._id}-${selectedItem.investmentRangeLabel}-${selectedItem.range}`,
+    investmentRangeLabel:
+      selectedItem.investmentRangeLabel,
+    range: selectedItem.range,
+    selectedLeads, // ✅ IMPORTANT
+  },
+  selectedPlan,
+  selectedItem.pkg,
+);
+                                            },
+                                          );
+
+    // Add all new items
+    newItemsToAdd.forEach(
+      (selectedItem) => {
+        handleAddSingleToPayment(
+          {
+            id: `${selectedPlan._id}-${selectedItem.investmentRangeLabel}-${selectedItem.range}`,
+            investmentRangeLabel:
+              selectedItem.investmentRangeLabel,
+            range: selectedItem.range,
+          },
+          selectedPlan,
+          selectedItem.pkg,
+        );
+      },
+    );
+
+    // Uncheck added items
+    setCheckedItems((prev) => {
+      const newState = { ...prev };
+      newItemsToAdd.forEach(
+        (addedItem) => {
+          const id = `${selectedPlan._id}-${addedItem.investmentRangeLabel}-${addedItem.range}`;
+          delete newState[id];
+>>>>>>> eb243c1b0b1ddcbca0c78d8c7210bd2e92f9bceb
         },
       }}
     >
@@ -2877,6 +3126,8 @@ const handleSaveStates = useCallback(() => {
           )}
         </Card>
       </Box>
+
+      
       {/* LISTING PLANS SECTION */}
       <Box
         sx={{
@@ -2977,6 +3228,8 @@ const handleSaveStates = useCallback(() => {
                           groupKey,
                           planId: plan._id,
                           planName: plan.planName,
+                          planUniqueId: plan.planUniqueId,
+                          planpackageId:pkg._id,
                           investmentRangeLabel: "ALL INVESTMENT RANGE",
                           validityDays: pkg.validityDays,
                           pricePerState: pkg.amount,
