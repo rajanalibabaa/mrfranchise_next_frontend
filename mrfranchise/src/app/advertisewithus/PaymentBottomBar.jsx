@@ -4,9 +4,11 @@ import {
   Typography,
   Button,
   CircularProgress,
+  Divider,
 } from "@mui/material";
 
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import LockIcon from "@mui/icons-material/Lock";
 
 const PaymentBottomBar = ({
   COLORS,
@@ -17,251 +19,339 @@ const PaymentBottomBar = ({
   loading = false,
   handleProceedToPayment,
 }) => {
-  const [isNearFooter, setIsNearFooter] = useState(false);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      const footer = document.getElementById("footer");
+  const [hideBar, setHideBar] =
+useState(false);
+useEffect(() => {
+  const handleScroll = () => {
+    const footer =
+      document.getElementById("footer");
 
-      if (!footer) return;
+    if (!footer) return;
 
-      const footerRect = footer.getBoundingClientRect();
+    const footerRect =
+      footer.getBoundingClientRect();
 
-      // Adjust 120 based on your bar height
-      if (footerRect.top <= window.innerHeight - 120) {
-        setIsNearFooter(true);
-      } else {
-        setIsNearFooter(false);
-      }
-    };
+    // Hide bar when footer enters screen
+    if (footerRect.top <= window.innerHeight) {
+      setHideBar(true);
+    } else {
+      setHideBar(false);
+    }
+  };
 
-    window.addEventListener("scroll", handleScroll);
+  window.addEventListener(
+    "scroll",
+    handleScroll
+  );
 
-    handleScroll();
+  handleScroll();
 
-    return () =>
-      window.removeEventListener("scroll", handleScroll);
-  }, []);
+  return () =>
+    window.removeEventListener(
+      "scroll",
+      handleScroll
+    );
+}, []);
 
   return (
     <Box
+  sx={{
+  position: "fixed",
+bottom: 20,
+    left: "50%",
+    transform: "translateX(-50%)",
+
+    width: {
+      xs: "95%",
+      sm: "92%",
+      md: "80%",
+      lg: "45%",
+    },
+
+    zIndex: 1400,
+
+    background: "rgba(255,255,255,0.92)",
+
+    backdropFilter: "blur(20px)",
+
+    border: "1px solid rgba(255,255,255,0.4)",
+
+    borderRadius: "24px",
+
+    px: {
+      xs: 2,
+      sm: 2.5,
+      md: 3,
+    },
+
+    py: {
+      xs: 1.8,
+      md: 2,
+    },
+
+    boxShadow:
+      "0 20px 60px rgba(0,0,0,0.12)",
+opacity: hideBar ? 0 : 1,
+
+pointerEvents: hideBar
+  ? "none"
+  : "auto",
+
+transition:
+  "opacity 0.25s ease, transform 0.3s ease",
+
+    overflow: "hidden",
+
+    "&::before": {
+      content: '""',
+      position: "absolute",
+      top: 0,
+      left: 0,
+      width: "100%",
+      height: "4px",
+
+     
+    },
+
+    "&:hover": {
+      transform:
+        "translateX(-50%) translateY(-3px)",
+
+      boxShadow:
+        "0 25px 70px rgba(0,0,0,0.16)",
+    },
+  }}
+>
+  <Box
+    sx={{
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+
+      flexWrap: {
+        xs: "wrap",
+        md: "nowrap",
+      },
+
+      gap: 2,
+    }}
+  >
+    {/* LEFT SECTION */}
+    <Box
       sx={{
-        position: isNearFooter ? "absolute" : "fixed",
-
-        bottom: isNearFooter ? 120 : 20,
-
-        left: "50%",
-        transform: "translateX(-50%)",
-
-        width: {
-          xs: "98%",
-          md: "90%",
-          lg: "80%",
-        },
-
-        zIndex: 1300,
-        backgroundColor: COLORS.white,
-        borderRadius: 3,
-        border: `1px solid ${COLORS.border}`,
-        overflow: "hidden",
-        boxShadow: "0 8px 32px rgba(0,0,0,0.12)",
-
-        animation: `${bounceAnimation} 2s infinite`,
-
         display: "flex",
-        flexDirection: "column",
-        gap: 2,
+        alignItems: "center",
+        gap: 1.5,
 
-        px: 2,
-        py: 1.5,
-
-        "&:hover": {
-          animationPlayState: "paused",
-          transform: "translateX(-50%) scale(1.01)",
-        },
-
-        transition: "all 0.3s ease",
+        flexWrap: "wrap",
       }}
     >
-      {/* Top Title */}
-      <Typography
-        sx={{
-          fontWeight: 700,
-          fontSize: "1.3rem",
-          textAlign: "center",
-        }}
-      >
-        Proceed to Payment
-      </Typography>
-
-      {/* Bottom Content */}
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 1,
-          flexWrap: "wrap",
-        }}
-      >
-        {/* Left Stats */}
+      {statCards.map((stat) => (
         <Box
+          key={stat.label}
           sx={{
-            display: "flex",
-            alignItems: "center",
-            gap: 1,
-            flex: 1,
-            minWidth: 0,
-            overflowX: "auto",
+            minWidth: 110,
 
-            scrollbarWidth: "none",
+            background:
+              "linear-gradient(180deg,#ffffff,#f8f8f8)",
 
-            "&::-webkit-scrollbar": {
-              display: "none",
+            border: "1px solid #ececec",
+
+            borderRadius: "18px",
+
+            px: 2,
+            py: 1.3,
+
+            transition: "0.3s ease",
+
+            "&:hover": {
+              transform: "translateY(-2px)",
+              boxShadow:
+                "0 10px 25px rgba(0,0,0,0.08)",
             },
           }}
         >
-          {statCards.map((stat) => (
-            <Box
-              key={stat.label}
-              sx={{
-                width: 130,
-                backgroundColor: COLORS.grey[50],
-                borderRadius: 2,
-                px: 1.5,
-                py: 1,
-
-                display: "flex",
-                alignItems: "center",
-                gap: 1,
-
-                border: `1px solid ${COLORS.border}`,
-                flexShrink: 0,
-              }}
-            >
-              <Box>
-                <Typography
-                  sx={{
-                    fontSize: "0.78rem",
-                    color: COLORS.black,
-                    fontWeight: 500,
-                    lineHeight: 1,
-                  }}
-                >
-                  {stat.label}
-                </Typography>
-
-                <Typography
-                  sx={{
-                    fontSize: TEXT_SIZES.medium,
-                    fontWeight: 700,
-                    color: COLORS.black,
-                    lineHeight: 1.2,
-                  }}
-                >
-                  {stat.value}
-                </Typography>
-              </Box>
-            </Box>
-          ))}
-        </Box>
-
-        {/* Right Section */}
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            gap: 2,
-            flexShrink: 0,
-          }}
-        >
-          {/* Amount */}
-          <Box>
-            <Typography
-              sx={{
-                fontSize: TEXT_SIZES.small,
-                color: COLORS.grey[600],
-                fontWeight: 500,
-                mb: 0.2,
-              }}
-            >
-              Total Payable
-            </Typography>
-
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "baseline",
-                gap: 0.5,
-              }}
-            >
-              <Typography
-                sx={{
-                  fontSize: TEXT_SIZES.medium,
-                  fontWeight: 700,
-                  color: COLORS.secondaryDark,
-                }}
-              >
-                ₹
-              </Typography>
-
-              <Typography
-                sx={{
-                  fontSize: "1.5rem",
-                  fontWeight: 800,
-                  color: COLORS.secondaryDark,
-                  lineHeight: 1,
-                }}
-              >
-                {totalAmount.toLocaleString("en-IN")}
-              </Typography>
-            </Box>
-          </Box>
-
-          {/* Button */}
-          <Button
-            variant="contained"
-            size="large"
-            onClick={handleProceedToPayment}
-            disabled={loading}
-            endIcon={
-              !loading && <ArrowForwardIcon />
-            }
+          <Typography
             sx={{
-              backgroundColor: COLORS.primary,
-              color: COLORS.white,
-              fontSize: TEXT_SIZES.medium,
-              fontWeight: 700,
-
-              px: 4,
-              py: 1.2,
-
-              borderRadius: 2,
-              textTransform: "none",
-              whiteSpace: "nowrap",
-
-              "&:hover": {
-                backgroundColor: COLORS.primaryDark,
-                transform: "scale(1.02)",
-              },
-
-              "&.Mui-disabled": {
-                backgroundColor: COLORS.grey[400],
-              },
+              fontSize: "0.72rem",
+              color: "#777",
+              fontWeight: 600,
+              mb: 0.3,
+              textTransform: "uppercase",
+              letterSpacing: "0.04em",
             }}
           >
-            {loading ? (
-              <CircularProgress
-                size={24}
-                color="inherit"
-              />
-            ) : (
-              "PAY NOW"
-            )}
-          </Button>
+            {stat.label}
+          </Typography>
+
+          <Typography
+            sx={{
+              fontSize: "1.5rem",
+              fontWeight: 800,
+              color: "#111",
+              lineHeight: 1,
+            }}
+          >
+            {stat.value}
+          </Typography>
         </Box>
-      </Box>
+      ))}
     </Box>
+
+    {/* RIGHT SECTION */}
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "center",
+
+        justifyContent: "space-between",
+
+        gap: {
+          xs: 1.5,
+          sm: 2,
+        },
+
+        width: {
+          xs: "100%",
+          md: "auto",
+        },
+      }}
+    >
+      {/* PRICE */}
+      <Box>
+        <Typography
+          sx={{
+            fontSize: "0.78rem",
+            color: "#777",
+            fontWeight: 600,
+            mb: 0.3,
+            letterSpacing: "0.03em",
+          }}
+        >
+          TOTAL PAYABLE
+        </Typography>
+
+        <Typography
+          sx={{
+            fontSize: {
+              xs: "2rem",
+              md: "2.4rem",
+            },
+
+            fontWeight: 900,
+
+            color: "#2e7d32",
+
+            lineHeight: 1,
+
+            letterSpacing: "-0.04em",
+          }}
+        >
+          ₹
+          {totalAmount.toLocaleString("en-IN")}
+        </Typography>
+
+        {/* <Typography
+          sx={{
+            fontSize: "0.72rem",
+            color: "#888",
+            mt: 0.3,
+            fontWeight: 500,
+          }}
+        >
+          Secure Checkout
+        </Typography> */}
+      </Box>
+
+      {/* BUTTON */}
+      <Button
+        variant="contained"
+        onClick={handleProceedToPayment}
+        disabled={loading}
+        endIcon={
+          !loading && <ArrowForwardIcon />
+        }
+        sx={{
+          position: "relative",
+
+          overflow: "hidden",
+
+          minWidth: {
+            xs: 160,
+            md: 210,
+          },
+
+          height: 64,
+
+          borderRadius: "18px",
+
+          px: 4,
+
+          background:
+            "linear-gradient(135deg,#ff9800 0%,#ff6f00 100%)",
+
+          color: "#fff",
+
+          fontSize: "1rem",
+
+          fontWeight: 800,
+
+          textTransform: "none",
+
+          letterSpacing: "0.03em",
+
+          boxShadow:
+            "0 12px 30px rgba(255,152,0,0.35)",
+
+          transition: "all 0.3s ease",
+
+          "&::before": {
+            content: '""',
+            position: "absolute",
+            top: 0,
+            left: "-120%",
+            width: "100%",
+            height: "100%",
+
+            background:
+              "linear-gradient(90deg,transparent,rgba(255,255,255,0.35),transparent)",
+
+            transition: "0.7s",
+          },
+
+          "&:hover": {
+            transform: "translateY(-3px) scale(1.02)",
+
+            boxShadow:
+              "0 18px 40px rgba(255,152,0,0.45)",
+
+            background:
+              "linear-gradient(135deg,#ffb300 0%,#ff6f00 100%)",
+
+            "&::before": {
+              left: "120%",
+            },
+          },
+
+          "&.Mui-disabled": {
+            background: "#bdbdbd",
+            color: "#fff",
+          },
+        }}
+      >
+        {loading ? (
+          <CircularProgress
+            size={24}
+            color="inherit"
+          />
+        ) : (
+          "PAY NOW"
+        )}
+      </Button>
+    </Box>
+  </Box>
+</Box>
   );
 };
 

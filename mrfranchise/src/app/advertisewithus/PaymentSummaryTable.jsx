@@ -348,27 +348,32 @@ acc[rangeKey].totalAmount = (item.pricePerState || 0) * uniqueRangeStatesCount;
           }}
         >
           <Box>
-            <Typography sx={{ fontSize: TEXT_SIZES.small, fontWeight: 700, color: COLORS.black, mb: 0.3 }}>
-              {planData.planName}
-            </Typography>
-            <Chip
+              <Chip
               icon={<CalendarMonthRoundedIcon sx={{ fontSize: "0.65rem" }} />}
               label={`${planData.validityDays} Days`}
               size="small"
-              sx={{ height: 20, fontSize: "0.6rem", backgroundColor: COLORS.lightOrange, color: COLORS.black, fontWeight: 500 }}
+              sx={{ height: 20, fontSize: "0.9rem", backgroundColor: COLORS.lightOrange, color: COLORS.black, fontWeight: 500 }}
             />
+            <Typography sx={{ fontSize: TEXT_SIZES.small, fontWeight: 700, color: COLORS.black, mb: 0.3 }}>
+              {planData.planName}
+            </Typography>
+          
           </Box>
         </TableCell>
       )}
 
-      {/* Investment Label */}
-      <TableCell sx={{ py: 0.75, borderBottom: "none" }}>
-        <Chip
-          label={rangeGroup.investmentRangeLabel || "—"}
-          size="small"
-          sx={{ fontSize: "0.68rem", height: 24, backgroundColor: COLORS.lightGreen, color: COLORS.black, fontWeight: 600 }}
-        />
-      </TableCell>
+      {idx === 0 && (
+        <TableCell
+          rowSpan={sortedRanges.length}
+          sx={{ py: 0.75, borderBottom: "none", verticalAlign: "top" }}
+        >
+          <Chip
+            label={rangeGroup.investmentRangeLabel || "—"}
+            size="small"
+            sx={{ fontSize: "0.68rem", height: 24, color: COLORS.black, fontWeight: 600 }}
+          />
+        </TableCell>
+      )}
 
       {/* Investment Range */}
       <TableCell>

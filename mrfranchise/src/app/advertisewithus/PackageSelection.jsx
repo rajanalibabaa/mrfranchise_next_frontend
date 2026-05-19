@@ -8,6 +8,7 @@ import React, {
   memo,
   useRef,
 } from "react";
+import axios from "axios";
 import { useRouter } from "next/navigation";
 import {
   Box,
@@ -57,6 +58,7 @@ import InvestmentRangeConfirmDialog from "./InvestmentRangeConfirmDialog";
 import RemoveInvestmentRangeDialog from "./RemoveInvestmentRangeDialog";
 import PaymentSummaryTable from "./PaymentSummaryTable";
 import PaymentBottomBar from "./PaymentBottomBar";
+import ExistingPackageDisplay from "./ExistingPackageDisplay";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
@@ -257,6 +259,42 @@ const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
 
   const [localBrandUUID, setLocalBrandUUID] = useState(null);
   const [localAccessToken, setLocalAccessToken] = useState(null);
+
+    const [data, setData] = useState(null);
+  const [loadings, setLoadings] = useState(true);
+  const [errors, setErrors] = useState("");
+ 
+  const brandOwnerId = localStorage.getItem("brandUUID")
+  console.log("Brand Owner ID:", brandOwnerId);
+ 
+  // ================= FETCH API =================
+  const fetchPackages = async () => {
+    try {
+      setLoading(true);
+ 
+      const response = await axios.get(
+        `http://localhost:5000/api/v1/brand-packages-plans/get/${brandOwnerId}`,
+
+    
+      );
+      console.log("vanakam",response.data)
+ 
+      setData(response.data.data || response.data);
+    } catch (err) {
+      console.error(err);
+ 
+      setErrors(
+        err?.response?.data?.message ||
+          "Failed to fetch package data"
+      );
+    } finally {
+      setLoadings(false);
+    }
+  };
+ 
+  useEffect(() => {
+    fetchPackages();
+  }, []);
 
   // Scroll to payment summary function
   const scrollToPaymentSummary = useCallback(() => {
@@ -1926,6 +1964,346 @@ const handleSaveStates = useCallback(() => {
         minHeight: "100vh",
       }}
     >
+<ExistingPackageDisplay data={data} error={errors} loading={loadings}/>
+          {/* LISTING PLANS SECTION */}
+      <Box
+        sx={{
+          mb: 4,
+          display: "flex",
+          justifyContent: "center",
+          width: "100%",
+        }}
+      >
+        <Box
+          sx={{
+            width: "100%",
+            maxWidth: "1100px", // Same maxWidth as the investment table
+          }}
+        >
+          {/* Plans */}
+          {(() => {
+            const listingPlans = plans
+              .filter(
+                (plan) =>
+                  plan.packages?.length === 1 &&
+                  plan.planName?.toLowerCase() !== "free",
+              )
+              .sort(
+                (a, b) =>
+                  (a.packages?.[0]?.amount || 0) -
+                  (b.packages?.[0]?.amount || 0),
+              );
+
+            return (
+              <Box
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: {
+                    xs: "1fr",
+                    md: "1fr 1fr",
+                  },
+                  gap: 2.5,
+                }}
+              >
+                {listingPlans.map((plan, index) => {
+                  const pkg = plan.packages?.[0] || {};
+                  const groupKey = `listing-${plan._id}`;
+
+                  const isAdded = paymentSummary.some(
+                    (g) => g.groupKey === groupKey,
+                  );
+
+                  const handleAddListingPlan = (plan, pkg) => {
+                    const groupKey = `listing-${plan._id}`;
+
+                    // Check if any listing plan already exists in paymentSummary
+                    const existingListingPlan = paymentSummary.some(
+                      (g) => g.isListingPlan === true,
+                    );
+
+                    if (existingListingPlan) {
+                      openSnack(
+                        "You can select only one listing plan at a time.",
+                        "warning",
+                      );
+                      return;
+                    }
+
+                    // Get all available states
+                    const allAvailableStates = finalToken
+                      ? allStates
+                      : ALL_INDIA_STATES;
+                    const stateCount = allAvailableStates.length;
+
+                    // Create a single item with "ALL INVESTMENT RANGE" text
+                    const listingItem = {
+                      id: `listing-${plan._id}-item`,
+                      investmentRangeLabel: "ALL INVESTMENT RANGE",
+                      range: "ALL INVESTMENT RANGE",
+                      stateCount: stateCount,
+                      states: ["ALL STATES"],
+                      selectedLeads: "-",
+                      totalLeads: "-",
+                      totalAmount: pkg.amount || 0,
+                      pricePerState: pkg.amount || 0,
+                      isListingPlan: true,
+                    };
+
+                    setPaymentSummary((prev) => {
+                      if (prev.some((g) => g.groupKey === groupKey)) {
+                        openSnack("Already added", "info");
+                        return prev;
+                      }
+
+                      openSnack(`${plan.planName} added to cart`, "success");
+                      setTimeout(() => scrollToPaymentSummary(), 300);
+
+                      return [
+                        ...prev,
+                        {
+                          groupKey,
+                          planId: plan._id,
+                          packagesType: plan.packageType,
+                          planName: plan.planName,
+                          planUniqueId: plan.planUniqueId,
+                          planpackageId:pkg._id,
+                          investmentRangeLabel: "ALL INVESTMENT RANGE",
+                          validityDays: pkg.validityDays,
+                          pricePerState: pkg.amount,
+                          amount: pkg.amount,
+                          totalLeads: "-",
+                          items: [listingItem],
+                          isListingPlan: true,
+                          uniqueStates: ["ALL STATES"],
+                          totalStates: stateCount,
+                        },
+                      ];
+                    });
+
+                    // ✅ IMPORTANT: Add the group key to movedGroupKeys
+                    setMovedGroupKeys((prev) => {
+                      if (!prev.includes(groupKey)) {
+                        return [...prev, groupKey];
+                      }
+                      return prev;
+                    });
+                  };
+
+                  return (
+                    <Card
+                      key={plan._id}
+                      elevation={0}
+                      sx={{
+                        position: "relative",
+                        borderRadius: 3,
+                        border: `1.5px solid ${
+                          isAdded
+                            ? COLORS.primary
+                            : index === 1
+                              ? "#ff9800"
+                              : COLORS.border
+                        }`,
+                        backgroundColor: COLORS.white,
+                        overflow: "hidden",
+                        transition: "0.3s ease",
+
+                        "&:hover": {
+                          transform: "translateY(-2px)",
+                          boxShadow: `0 8px 20px ${COLORS.shadow}`,
+                        },
+                      }}
+                    >
+                      {/* Most Popular */}
+                      {index === 1 && (
+                        <Box
+                          sx={{
+                            position: "absolute",
+                            top: 0,
+                            left: 0,
+                            background:
+                              "linear-gradient(135deg,#ff9800 0%,#ff6f00 100%)",
+                            color: "#fff",
+                            px: 2,
+                            py: 0.6,
+                            borderBottomRightRadius: 12,
+                            fontSize: 12,
+                            fontWeight: 700,
+                          }}
+                        >
+                          🔥 Most Popular
+                        </Box>
+                      )}
+
+                      <CardContent
+                        sx={{
+                          p: 2,
+                          pt: index === 1 ? 5 : 3,
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-around",
+                            gap: 2,
+                            flexWrap: "wrap",
+                          }}
+                        >
+                          {/* Left Section */}
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 2,
+                            }}
+                          >
+                            {/* Icon */}
+                            <Box
+                              sx={{
+                                width: 62,
+                                height: 62,
+                                borderRadius: "50%",
+                                backgroundColor:
+                                  index === 1
+                                    ? "rgba(255,152,0,0.08)"
+                                    : "rgba(25,118,210,0.08)",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                              }}
+                            >
+                              {index === 1 ? (
+                                <WorkspacePremiumRoundedIcon
+                                  sx={{
+                                    color: "#ff9800",
+                                    fontSize: 32,
+                                  }}
+                                />
+                              ) : (
+                                <StarBorderRoundedIcon
+                                  sx={{
+                                    color: COLORS.primary,
+                                    fontSize: 32,
+                                  }}
+                                />
+                              )}
+                            </Box>
+
+                            {/* Details */}
+                            <Box>
+                              <Typography
+                                sx={{
+                                  fontWeight: 700,
+                                  fontSize: TEXT_SIZES.large,
+                                  color: COLORS.black,
+                                  mb: 0.5,
+                                }}
+                              >
+                                {plan.planName}
+                              </Typography>
+
+                              <Typography
+                                sx={{
+                                  color: COLORS.grey[600],
+                                  fontSize: TEXT_SIZES.medium,
+                                  mb: 1.5,
+                                }}
+                              >
+                                {index === 1
+                                  ? "For maximum visibility & leads"
+                                  : "Ideal for getting started"}
+                              </Typography>
+                                 {/* Button */}
+                          <Button
+                            variant="contained"
+                            endIcon={isAdded ? <RemoveIcon /> : <AddIcon />}
+                            onClick={
+                              isAdded
+                                ? () => handleRemoveListingPlan(plan._id)
+                                : () => handleAddListingPlan(plan, pkg) // ← Pass both plan and pkg
+                            }
+                            sx={{
+                              minWidth: 145,
+                              height: 46,
+                              borderRadius: 2.5,
+                              textTransform: "none",
+                              fontWeight: 700,
+                              fontSize: TEXT_SIZES.medium,
+                              boxShadow: "none",
+                              background:
+                                index === 1
+                                  ? "linear-gradient(135deg,#ff9800 0%,#ff6f00 100%)"
+                                  : `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryDark} 100%)`,
+
+                              "&:hover": {
+                                boxShadow: "none",
+                                opacity: 0.95,
+                              },
+                            }}
+                          >
+                            {isAdded ? "Remove Plan" : "Add to Plan"}
+                          </Button>
+
+                           
+                            </Box>
+                          </Box>
+
+                          {/* Bottom Info */}
+                              <Box
+                                sx={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                                                      flexDirection:"column",
+
+                                  gap: 2,
+                                  flexWrap: "wrap",
+                                }}
+                              >
+                                <Box
+                                  sx={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 0.8,
+                                  }}
+                                >
+                                  <CalendarMonthRoundedIcon
+                                    sx={{
+                                      fontSize: 18,
+                                      color: COLORS.grey[600],
+                                    }}
+                                  />
+
+                                  <Typography
+                                    sx={{
+                                      fontWeight: 500,
+                                      color: COLORS.grey[700],
+                                    }}
+                                  >
+                                    {pkg.validityDays} Days
+                                  </Typography>
+                                </Box>
+
+                                <Typography
+                                  sx={{
+                                    fontWeight: 800,
+                                    fontSize: TEXT_SIZES.large,
+                                    color:
+                                      index === 1 ? "#ff9800" : COLORS.primary,
+                                  }}
+                                >
+                                  ₹{(pkg.amount || 0).toLocaleString("en-IN")}
+                                </Typography>
+                              </Box>
+                        </Box>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </Box>
+            );
+          })()}
+        </Box>
+      </Box>
       {/* INVESTMENT RANGE PLANS SECTION */}
       <Box
         sx={{
@@ -2055,6 +2433,8 @@ const handleSaveStates = useCallback(() => {
 
                 return (
                   <>
+
+                  
                     <Box
                       sx={{
                         display: "flex",
@@ -2134,7 +2514,7 @@ const handleSaveStates = useCallback(() => {
                                 lineHeight: 1.3,
                               }}
                             >
-                              Investment Group
+                             Select Lead Per State
                             </TableCell>
 
                             {/* Select Checkbox Column */}
@@ -3007,7 +3387,7 @@ const handleSaveStates = useCallback(() => {
       >
         <span>Add</span>
         <span>to</span>
-        <span>summary</span>
+        <span>Plan</span>
       </Button>
 
       {/* View Summary Button */}
@@ -3088,343 +3468,7 @@ const handleSaveStates = useCallback(() => {
       </Box>
 
       
-      {/* LISTING PLANS SECTION */}
-      <Box
-        sx={{
-          mb: 4,
-          display: "flex",
-          justifyContent: "center",
-          width: "100%",
-        }}
-      >
-        <Box
-          sx={{
-            width: "100%",
-            maxWidth: "1100px", // Same maxWidth as the investment table
-          }}
-        >
-          {/* Plans */}
-          {(() => {
-            const listingPlans = plans
-              .filter(
-                (plan) =>
-                  plan.packages?.length === 1 &&
-                  plan.planName?.toLowerCase() !== "free",
-              )
-              .sort(
-                (a, b) =>
-                  (a.packages?.[0]?.amount || 0) -
-                  (b.packages?.[0]?.amount || 0),
-              );
-
-            return (
-              <Box
-                sx={{
-                  display: "grid",
-                  gridTemplateColumns: {
-                    xs: "1fr",
-                    md: "1fr 1fr",
-                  },
-                  gap: 2.5,
-                  mb: 4,
-                }}
-              >
-                {listingPlans.map((plan, index) => {
-                  const pkg = plan.packages?.[0] || {};
-                  const groupKey = `listing-${plan._id}`;
-
-                  const isAdded = paymentSummary.some(
-                    (g) => g.groupKey === groupKey,
-                  );
-
-                  const handleAddListingPlan = (plan, pkg) => {
-                    const groupKey = `listing-${plan._id}`;
-
-                    // Check if any listing plan already exists in paymentSummary
-                    const existingListingPlan = paymentSummary.some(
-                      (g) => g.isListingPlan === true,
-                    );
-
-                    if (existingListingPlan) {
-                      openSnack(
-                        "You can select only one listing plan at a time.",
-                        "warning",
-                      );
-                      return;
-                    }
-
-                    // Get all available states
-                    const allAvailableStates = finalToken
-                      ? allStates
-                      : ALL_INDIA_STATES;
-                    const stateCount = allAvailableStates.length;
-
-                    // Create a single item with "ALL INVESTMENT RANGE" text
-                    const listingItem = {
-                      id: `listing-${plan._id}-item`,
-                      investmentRangeLabel: "ALL INVESTMENT RANGE",
-                      range: "ALL INVESTMENT RANGE",
-                      stateCount: stateCount,
-                      states: ["ALL STATES"],
-                      selectedLeads: "-",
-                      totalLeads: "-",
-                      totalAmount: pkg.amount || 0,
-                      pricePerState: pkg.amount || 0,
-                      isListingPlan: true,
-                    };
-
-                    setPaymentSummary((prev) => {
-                      if (prev.some((g) => g.groupKey === groupKey)) {
-                        openSnack("Already added", "info");
-                        return prev;
-                      }
-
-                      openSnack(`${plan.planName} added to cart`, "success");
-                      setTimeout(() => scrollToPaymentSummary(), 300);
-
-                      return [
-                        ...prev,
-                        {
-                          groupKey,
-                          planId: plan._id,
-                          packagesType: plan.packageType,
-                          planName: plan.planName,
-                          planUniqueId: plan.planUniqueId,
-                          planpackageId:pkg._id,
-                          investmentRangeLabel: "ALL INVESTMENT RANGE",
-                          validityDays: pkg.validityDays,
-                          pricePerState: pkg.amount,
-                          amount: pkg.amount,
-                          totalLeads: "-",
-                          items: [listingItem],
-                          isListingPlan: true,
-                          uniqueStates: ["ALL STATES"],
-                          totalStates: stateCount,
-                        },
-                      ];
-                    });
-
-                    // ✅ IMPORTANT: Add the group key to movedGroupKeys
-                    setMovedGroupKeys((prev) => {
-                      if (!prev.includes(groupKey)) {
-                        return [...prev, groupKey];
-                      }
-                      return prev;
-                    });
-                  };
-
-                  return (
-                    <Card
-                      key={plan._id}
-                      elevation={0}
-                      sx={{
-                        position: "relative",
-                        borderRadius: 3,
-                        border: `1.5px solid ${
-                          isAdded
-                            ? COLORS.primary
-                            : index === 1
-                              ? "#ff9800"
-                              : COLORS.border
-                        }`,
-                        backgroundColor: COLORS.white,
-                        overflow: "hidden",
-                        transition: "0.3s ease",
-
-                        "&:hover": {
-                          transform: "translateY(-2px)",
-                          boxShadow: `0 8px 20px ${COLORS.shadow}`,
-                        },
-                      }}
-                    >
-                      {/* Most Popular */}
-                      {index === 1 && (
-                        <Box
-                          sx={{
-                            position: "absolute",
-                            top: 0,
-                            left: 0,
-                            background:
-                              "linear-gradient(135deg,#ff9800 0%,#ff6f00 100%)",
-                            color: "#fff",
-                            px: 2,
-                            py: 0.6,
-                            borderBottomRightRadius: 12,
-                            fontSize: 12,
-                            fontWeight: 700,
-                          }}
-                        >
-                          🔥 Most Popular
-                        </Box>
-                      )}
-
-                      <CardContent
-                        sx={{
-                          p: 3,
-                          pt: index === 1 ? 5 : 3,
-                        }}
-                      >
-                        <Box
-                          sx={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "space-around",
-                            gap: 2,
-                            flexWrap: "wrap",
-                          }}
-                        >
-                          {/* Left Section */}
-                          <Box
-                            sx={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 2,
-                            }}
-                          >
-                            {/* Icon */}
-                            <Box
-                              sx={{
-                                width: 62,
-                                height: 62,
-                                borderRadius: "50%",
-                                backgroundColor:
-                                  index === 1
-                                    ? "rgba(255,152,0,0.08)"
-                                    : "rgba(25,118,210,0.08)",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                              }}
-                            >
-                              {index === 1 ? (
-                                <WorkspacePremiumRoundedIcon
-                                  sx={{
-                                    color: "#ff9800",
-                                    fontSize: 32,
-                                  }}
-                                />
-                              ) : (
-                                <StarBorderRoundedIcon
-                                  sx={{
-                                    color: COLORS.primary,
-                                    fontSize: 32,
-                                  }}
-                                />
-                              )}
-                            </Box>
-
-                            {/* Details */}
-                            <Box>
-                              <Typography
-                                sx={{
-                                  fontWeight: 700,
-                                  fontSize: TEXT_SIZES.large,
-                                  color: COLORS.black,
-                                  mb: 0.5,
-                                }}
-                              >
-                                {plan.planName}
-                              </Typography>
-
-                              <Typography
-                                sx={{
-                                  color: COLORS.grey[600],
-                                  fontSize: TEXT_SIZES.medium,
-                                  mb: 1.5,
-                                }}
-                              >
-                                {index === 1
-                                  ? "For maximum visibility & leads"
-                                  : "Ideal for getting started"}
-                              </Typography>
-
-                              {/* Bottom Info */}
-                              <Box
-                                sx={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  gap: 2,
-                                  flexWrap: "wrap",
-                                }}
-                              >
-                                <Box
-                                  sx={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    gap: 0.8,
-                                  }}
-                                >
-                                  <CalendarMonthRoundedIcon
-                                    sx={{
-                                      fontSize: 18,
-                                      color: COLORS.grey[600],
-                                    }}
-                                  />
-
-                                  <Typography
-                                    sx={{
-                                      fontWeight: 500,
-                                      color: COLORS.grey[700],
-                                    }}
-                                  >
-                                    {pkg.validityDays} Days
-                                  </Typography>
-                                </Box>
-
-                                <Typography
-                                  sx={{
-                                    fontWeight: 800,
-                                    fontSize: TEXT_SIZES.large,
-                                    color:
-                                      index === 1 ? "#ff9800" : COLORS.primary,
-                                  }}
-                                >
-                                  ₹{(pkg.amount || 0).toLocaleString("en-IN")}
-                                </Typography>
-                              </Box>
-                            </Box>
-                          </Box>
-
-                          {/* Button */}
-                          <Button
-                            variant="contained"
-                            endIcon={isAdded ? <RemoveIcon /> : <AddIcon />}
-                            onClick={
-                              isAdded
-                                ? () => handleRemoveListingPlan(plan._id)
-                                : () => handleAddListingPlan(plan, pkg) // ← Pass both plan and pkg
-                            }
-                            sx={{
-                              minWidth: 145,
-                              height: 46,
-                              borderRadius: 2.5,
-                              textTransform: "none",
-                              fontWeight: 700,
-                              fontSize: TEXT_SIZES.medium,
-                              boxShadow: "none",
-                              background:
-                                index === 1
-                                  ? "linear-gradient(135deg,#ff9800 0%,#ff6f00 100%)"
-                                  : `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryDark} 100%)`,
-
-                              "&:hover": {
-                                boxShadow: "none",
-                                opacity: 0.95,
-                              },
-                            }}
-                          >
-                            {isAdded ? "Remove Plan" : "Add to Plan"}
-                          </Button>
-                        </Box>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </Box>
-            );
-          })()}
-        </Box>
-      </Box>
+  
 
       {/* REACTIVE CHECKOUT & REDESIGNED TABLE PAYMENT SUMMARY SECTION */}
       {(paymentSummary.filter((g) => movedGroupKeys.includes(g.groupKey))
@@ -3483,34 +3527,34 @@ const handleSaveStates = useCallback(() => {
                   iconColor: "#E68A00",
                   icon: <LayersIcon sx={{ fontSize: 17 }} />,
                 },
-                {
-                  label: "Investment Groups",
-                  value: totalInvestmentGroups,
-                  iconBg: "#E8F5E9",
-                  iconColor: "#3D8E40",
-                  icon: <GridViewIcon sx={{ fontSize: 17 }} />,
-                },
-                {
-                  label: "Investment Ranges",
-                  value: totalRanges,
-                  iconBg: "#E3F2FD",
-                  iconColor: "#185FA5",
-                  icon: <BarChartIcon sx={{ fontSize: 17 }} />,
-                },
-                {
-                  label: "Total Leads",
-                  value: totalLeads.toLocaleString("en-IN"),
-                  iconBg: "#EDE7F6",
-                  iconColor: "#534AB7",
-                  icon: <GroupIcon sx={{ fontSize: 17 }} />,
-                },
-                {
-                  label: "Validity",
-                  value: validityDisplay,
-                  iconBg: "#E1F5FE",
-                  iconColor: "#0F6E56",
-                  icon: <CalendarMonthRoundedIcon sx={{ fontSize: 17 }} />,
-                },
+                // {
+                //   label: "Investment Groups",
+                //   value: totalInvestmentGroups,
+                //   iconBg: "#E8F5E9",
+                //   iconColor: "#3D8E40",
+                //   icon: <GridViewIcon sx={{ fontSize: 17 }} />,
+                // },
+                // {
+                //   label: "Investment Ranges",
+                //   value: totalRanges,
+                //   iconBg: "#E3F2FD",
+                //   iconColor: "#185FA5",
+                //   icon: <BarChartIcon sx={{ fontSize: 17 }} />,
+                // },
+                // {
+                //   label: "Total Leads",
+                //   value: totalLeads.toLocaleString("en-IN"),
+                //   iconBg: "#EDE7F6",
+                //   iconColor: "#534AB7",
+                //   icon: <GroupIcon sx={{ fontSize: 17 }} />,
+                // },
+                // {
+                //   label: "Validity",
+                //   value: validityDisplay,
+                //   iconBg: "#E1F5FE",
+                //   iconColor: "#0F6E56",
+                //   icon: <CalendarMonthRoundedIcon sx={{ fontSize: 17 }} />,
+                // },
               ];
 
               return (
