@@ -1,4 +1,4 @@
-
+// "use client";
 
 import { Suspense } from "react";
 import { Box } from "@mui/material";
@@ -16,20 +16,14 @@ import FreeFranchise from "@/Components/about_mrfranchise/freefranchise";
 import FranchiseJourney from "@/Components/about_mrfranchise/franchisejourney";
 
 // Dynamic import for better code splitting
-const BrandListNew = dynamic(
-  () => import("@/Components/allbarndviewpage/brandListAllbrands"),
-  {
-    loading: () => <Loading />,
-    ssr: true,
-  }
-);
+import BrandListNew from "@/Components/allbarndviewpage/brandListAllbrands";
 
 
 
 
 
 
-export default async function BrandCategoryViewPage() {
+export default  function BrandCategoryViewPage() {
  
 
   

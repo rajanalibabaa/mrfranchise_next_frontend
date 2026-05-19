@@ -33,7 +33,7 @@ import { useDispatch } from "react-redux";
 import { openBrandDialog } from "@/Redux/Slices/OpenBrandNewPageSlice";
 // Create axios instance with base config
 const api = axios.create({
-  baseURL: "https://mrfranchisebackend.mrfranchise.in/api/v1/",
+  baseURL: "http://localhost:5000/api/v1/",
   headers: {
     "Content-Type": "application/json",
   },
@@ -313,7 +313,8 @@ const SideViewContent = ({ hoverCategory, onHoverLeave, onBrandClick }) => {
 
   // Fetch brands for subcategory - UPDATED to match the correct API format
   const fetchBrands = useCallback(async (filters) => {
-    if (!filters.subcat) return { 
+    if (!filters.industry && !filters.subcat)
+  return {
       brands: [], 
       pagination: { 
         currentPage: 1, 
@@ -412,35 +413,62 @@ const SideViewContent = ({ hoverCategory, onHoverLeave, onBrandClick }) => {
   }, []);
 
   // Handle industry hover - fetch subcategories
-  const handleIndustryHover = useCallback(
-    async (index, industryName) => {
-      if (activeIndustry !== index) {
-        setIsTransitioning(true);
-        setActiveIndustry(index);
-        setActiveSubCategory(null);
-        setBrands([]);
-        setError(null);
-        setPagination({ 
-          currentPage: 1, 
-          limit: 30, 
-          hasNext: false, 
-          total: 0, 
-          totalPages: 0, 
-          hasPrevious: false 
+const handleIndustryHover = useCallback(
+  async (index, industryName) => {
+    if (activeIndustry !== index) {
+      setIsTransitioning(true);
+
+      setActiveIndustry(index);
+      setActiveSubCategory(null);
+
+      setBrands([]);
+      setError(null);
+
+      setPagination({
+        currentPage: 1,
+        limit: 30,
+        hasNext: false,
+        total: 0,
+        totalPages: 0,
+        hasPrevious: false,
+      });
+
+      try {
+        // Fetch subcategories
+        const subcats = await fetchSubCategories(industryName);
+        setAvailableSubCategories(subcats);
+
+        // ALSO FETCH INDUSTRY BRANDS
+        const result = await fetchBrands({
+          industry: industryName,
+          page: 1,
+          limit: 30,
         });
-        try {
-          const subcats = await fetchSubCategories(industryName);
-          setAvailableSubCategories(subcats);
-        } catch (err) {
-          console.error("Failed to fetch subcategories:", err);
-          setAvailableSubCategories([]);
-        } finally {
-          setIsTransitioning(false);
-        }
+
+        setBrands(result.brands || []);
+
+        setPagination(
+          result.pagination || {
+            currentPage: 1,
+            limit: 30,
+            hasNext: false,
+            total: 0,
+            totalPages: 0,
+            hasPrevious: false,
+          }
+        );
+      } catch (err) {
+        console.error("Failed to fetch industry data:", err);
+
+        setAvailableSubCategories([]);
+        setBrands([]);
+      } finally {
+        setIsTransitioning(false);
       }
-    },
-    [activeIndustry, fetchSubCategories]
-  );
+    }
+  },
+  [activeIndustry, fetchSubCategories, fetchBrands]
+);
 
   // Handle subcategory hover - fetch brands
   const handleSubCategoryHover = useCallback(
@@ -837,8 +865,8 @@ const SideViewContent = ({ hoverCategory, onHoverLeave, onBrandClick }) => {
                 WebkitTextFillColor: "transparent",
               }}
             >
-              {industries[activeIndustry] || "Industry"} - {activeSubCategory}
-            </Typography>
+{industries[activeIndustry] || "Industry"}
+{activeSubCategory ? ` - ${activeSubCategory}` : ""}            </Typography>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
               <Chip
                 label={` ${brands.length} brands`}
@@ -952,11 +980,9 @@ const SideViewContent = ({ hoverCategory, onHoverLeave, onBrandClick }) => {
 
   // Determine what to render in the brands section
   const renderMainContent = useMemo(() => {
-    if (activeSubCategory) {
-      return renderBrandsContent;
-    } else if (activeIndustry !== null) {
-      return renderIndustryContent;
-    } else {
+   if (activeIndustry !== null) {
+  return renderBrandsContent;
+} else {
       return (
         <Fade in={true}>
           <Box

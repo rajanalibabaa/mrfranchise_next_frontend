@@ -52,7 +52,7 @@ const ACTUAL_FILTER_KEYS = [
   "district",
   "city",
   "investmentRange",
-  "franchiseModel",
+  "modelType",
   "searchTerm",
   "areaRequired",
 ];
@@ -277,6 +277,8 @@ function BrandList({ maincat, subcat, slug, subslug }) {
   resolvedMaincatRef.current = resolvedMaincat;
   resolvedSubcatRef.current = resolvedSubcat;
 
+  const filtersRef = useRef(null);
+
   // ============================================
   // LOCAL STATE
   // ============================================
@@ -297,12 +299,17 @@ function BrandList({ maincat, subcat, slug, subslug }) {
     shallowEqual
   );
 
+  useEffect(() => {
+    filtersRef.current = filters;
+  }, [filters]);
+
   const {
     mainCategories,
     subCategories,
     childCategories,
     investmentRanges,
     franchiseModels,
+    areaRequired,
     states,
     districts,
     cities,
@@ -450,28 +457,10 @@ function BrandList({ maincat, subcat, slug, subslug }) {
       dispatch(fetchFilterOptions());
     }
 
-    // ─── If route slugs exist but query params are missing, inject them automatically.
-    if (typeof window !== "undefined") {
-      const hasMainParam = !!searchParams?.get("maincat");
-      const hasSubParam = !!searchParams?.get("subcat");
-      if ((!hasMainParam || !hasSubParam) && (currentMaincat || currentSubcat)) {
-        const url = new URL(window.location.href);
-        if (currentMaincat) url.searchParams.set("maincat", currentMaincat);
-        if (currentSubcat) url.searchParams.set("subcat", currentSubcat);
-
-        const nextUrl = `${url.pathname}${url.search}`;
-        if (nextUrl !== window.location.pathname + window.location.search) {
-          router.replace(nextUrl, { scroll: false });
-        }
-      }
+    if (isMountedRef.current) {
+      fetchBrands(initialFilters, true);
+      setInitialFiltersApplied(true);
     }
-
-    setTimeout(() => {
-      if (isMountedRef.current) {
-        fetchBrands(initialFilters, true);
-        setInitialFiltersApplied(true);
-      }
-    }, 100);
 
     const img = new Image();
     img.src = "/bg25.jpeg";
@@ -520,7 +509,7 @@ function BrandList({ maincat, subcat, slug, subslug }) {
 
       // ─── 🔥 Navigate to clean slug URL when subcat selected ───
       if (name === "subcat" && value) {
-        const currentMaincat = filters.maincat || resolvedMaincatRef.current;
+        const currentMaincat = filtersRef.current?.maincat || resolvedMaincatRef.current;
 
         // Build clean slug URL
         const newUrl = buildSubCategoryUrl(currentMaincat, value);
@@ -544,7 +533,7 @@ function BrandList({ maincat, subcat, slug, subslug }) {
         }
       }
     },
-    [dispatch, filters, pathname, router]
+    [dispatch, pathname, router]
   );
 
   const handleMobileFilterChange = useCallback(
@@ -560,7 +549,12 @@ function BrandList({ maincat, subcat, slug, subslug }) {
     lastFetchKeyRef.current = "";
     dispatch(resetFilters());
     dispatch(fetchFilterOptions());
-  }, [dispatch]);
+      router.replace("/all-franchise-brands", { scroll: false });
+
+  // Fetch all brands again
+  fetchBrands({}, true);
+
+  }, [dispatch, router, fetchBrands]);
 
   const handlePageChange = useCallback(
     (_, page) => {
@@ -813,6 +807,7 @@ function BrandList({ maincat, subcat, slug, subslug }) {
                 subCategories={subCategories}
                 childCategories={childCategories}
                 franchiseModels={franchiseModels}
+                areaRequired={areaRequired}
                 investmentRanges={investmentRanges}
                 states={states}
                 districts={districts}
@@ -935,6 +930,7 @@ function BrandList({ maincat, subcat, slug, subslug }) {
                 subCategories={subCategories}
                 childCategories={childCategories}
                 franchiseModels={franchiseModels}
+                areaRequired={areaRequired}
                 investmentRanges={investmentRanges}
                 states={states}
                 districts={districts}

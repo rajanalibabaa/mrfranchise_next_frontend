@@ -112,11 +112,15 @@ const filterDropdownSlice = createSlice({
           state.loadingChildCategories = false;
         } else if (params.state) {
           // Districts response
-          state.districts = action.payload || [];
+          state.districts = Array.isArray(action.payload)
+            ? action.payload
+            : action.payload?.districts || [];
           state.loadingDistricts = false;
         } else if (params.district) {
           // Cities response
-          state.cities = action.payload || [];
+          state.cities = Array.isArray(action.payload)
+            ? action.payload
+            : action.payload?.cities || [];
           state.loadingCities = false;
         } else if (params.areaRequired) {
           // Area required filter results
