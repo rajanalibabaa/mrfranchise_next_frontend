@@ -134,8 +134,12 @@ const BrandComparison = ({
   };
 
   const handleApply = (brand) => {
+
+    console.log(brand,"brnad data");
+    
     postView(brand?.uuid);
-    dispatch(openBrandDialog(brand));
+    // dispatch(openBrandDialog(brand));
+      window.open(`/franchise-brands/${brand?.uuid}`, "_blank");
   };
 
   const loadImages = (element) => {
