@@ -172,20 +172,12 @@ const handleFindBrands = useCallback(() => {
   }
 
   // Generate URL
-  let url;
-  if (!selectedMainCategory && !selectedState && !selectedInvestmentRange) {
-    url = "/all-franchise-brands";
-  } else {
-    const slugParts = [];
-    if (selectedMainCategory) slugParts.push(toSlug(selectedMainCategory));
-    if (selectedState) slugParts.push(toSlug(selectedState));
-    
-    const slug = slugParts.length > 0 
-      ? `${slugParts.join("-")}-franchise-opportunities`
-      : "all-franchise-brands";
-    
-    url = `/${slug}?${queryParams.toString()}`;
-  }
+  const hasAnyFilter =
+    selectedMainCategory || selectedState || selectedInvestmentRange;
+
+  const url = hasAnyFilter
+    ? `/all-franchise-brands?${queryParams.toString()}`
+    : "/all-franchise-brands";
 
   console.log("Navigating to:", url);
   
