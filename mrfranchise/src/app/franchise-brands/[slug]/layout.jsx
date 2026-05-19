@@ -198,7 +198,7 @@ export async function generateStaticParams() {
 
     while (hasMore) {
       const res = await fetch(
-        `http://localhost:5000/api/v1/overAllPlatformOnlyMainCategory?page=${page}&limit=20`,
+        `https://mrfranchisebackend.mrfranchise.in/api/v1/overAllPlatformOnlyMainCategory?page=${page}&limit=20`,
         { next: { revalidate: 3600 } }
       );
 
