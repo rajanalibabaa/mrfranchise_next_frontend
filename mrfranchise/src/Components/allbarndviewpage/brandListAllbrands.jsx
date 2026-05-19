@@ -404,6 +404,7 @@ function BrandList({ maincat, subcat, slug, subslug }) {
     const urlSubcat = searchParams?.get("subcat");
     const urlState = searchParams?.get("state");
     const urlInvestmentRange = searchParams?.get("investmentRange");
+    const urlAreaRequired = searchParams?.get("areaRequired");
 
     const stored = getLocalStorageData();
 
@@ -411,7 +412,7 @@ function BrandList({ maincat, subcat, slug, subslug }) {
     const currentSubcat = resolvedSubcatRef.current;
 
     console.log("🔥 INIT currentMaincat:", currentMaincat);
-    console.log("🔥 INIT currentSubcat:", currentSubcat);
+    console.log("🔥 INIT currentSubcat:", resolvedSubcatRef.current);
 
     const initialFilters = {};
 
@@ -427,6 +428,7 @@ function BrandList({ maincat, subcat, slug, subslug }) {
 
     if (urlState) initialFilters.state = urlState;
     if (urlInvestmentRange) initialFilters.investmentRange = urlInvestmentRange;
+    if (urlAreaRequired) initialFilters.areaRequired = urlAreaRequired;
 
     if (stored?.searchTerm) {
       initialFilters.searchTerm = stored.searchTerm;
@@ -497,14 +499,26 @@ function BrandList({ maincat, subcat, slug, subslug }) {
       dispatch(setFilter({ filterName: name, value }));
 
       // ─── Fetch dependent dropdowns ───
-      if (name === "maincat" && value) {
-        dispatch(fetchFilterOptions({ main: value }));
-      } else if (name === "subcat" && value) {
-        dispatch(fetchFilterOptions({ sub: value }));
-      } else if (name === "state" && value) {
-        dispatch(fetchFilterOptions({ state: value }));
-      } else if (name === "district" && value) {
-        dispatch(fetchFilterOptions({ district: value }));
+      if (name === "maincat") {
+        if (value) {
+          dispatch(fetchFilterOptions({ main: value }));
+        } else {
+          dispatch(fetchFilterOptions());
+        }
+      } else if (name === "subcat") {
+        if (value) {
+          dispatch(fetchFilterOptions({ sub: value, main: filtersRef.current?.maincat }));
+        }
+      } else if (name === "state") {
+        if (value) {
+          dispatch(fetchFilterOptions({ state: value }));
+        } else {
+          dispatch(fetchFilterOptions());
+        }
+      } else if (name === "district") {
+        if (value) {
+          dispatch(fetchFilterOptions({ district: value, state: filtersRef.current?.state }));
+        }
       }
 
       // ─── 🔥 Navigate to clean slug URL when subcat selected ───
