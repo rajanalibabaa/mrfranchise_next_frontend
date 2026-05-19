@@ -435,9 +435,13 @@ function BrandList({ maincat, subcat, slug, subslug }) {
       localStorage.removeItem("franchiseFilters");
     }
 
-    if (stored?.enableComparison === "true") {
+    const comparisonFlag =
+      stored?.enableComparison === "true" ||
+      window.localStorage.getItem("enableComparison") === "true";
+
+    if (comparisonFlag) {
       setEnableComparison(true);
-      localStorage.removeItem("enableComparison");
+      window.localStorage.removeItem("enableComparison");
     }
 
     // console.log("🔥 FINAL INITIAL FILTERS:", initialFilters);
