@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState,  } from "react";
 import {
   Box, Typography, CircularProgress, Alert, Chip,
   Paper, Button, Dialog, DialogTitle, DialogContent,
@@ -31,9 +31,9 @@ const TABLE_CONFIGS = {
   },
 };
 
-const ExistingPackageDisplay = ({ data, loading, error }) => {
-  const [dialog, setDialog] = useState({ open: false, states: [], label: "" });
-
+const ExistingPackageDisplay = ({ data, loading, error, category, industry }) => {
+    const [dialog, setDialog] = useState({ open: false, states: [], label: "" });
+  
   const getStatus = (item) => {
     if (item.isActive && !item.isPending) return { label: "ACTIVE",               color: "#15803d", bg: "#dcfce7" };
     if (item.isPending)                   return { label: "PENDING FOR APPROVAL",  color: "#b45309", bg: "#fef3c7" };
@@ -80,11 +80,9 @@ data?.packages?.forEach((pkg) => {
     const sent  = (item.TotalLeads || 0) - (item.remainingLeads || 0);
     const name  = <Typography fontWeight={700} fontSize="12px" noWrap>{pkg.packagesName}</Typography>;
 
-    const statesArr = Array.isArray(item.states)
-      ? item.states
-      : (item.states || "").split(",").map((s) => s.trim()).filter(Boolean);
-    const stateCount = statesArr.length;
-
+ // States are nested inside investmentranges
+const statesArr = item.investmentranges?.flatMap(r => r.selectedPlanState || []) || [];
+const stateCount = statesArr.length;
     if (type === "FREE") return [
       name,
     //   <Typography fontSize="11px">{start}</Typography>,
@@ -114,17 +112,21 @@ data?.packages?.forEach((pkg) => {
 
       // ── States cell: count + eye icon ──────────────────────────────────────
       <Box
-        onClick={() => openStatesDialog(item.states, item.InvestmetRageLabel)}
+onClick={() => openStatesDialog(
+  item.investmentranges?.flatMap(r => r.selectedPlanState || []) || [],
+  item.InvestmetRageLabel
+)}
         sx={{
           display: "inline-flex", alignItems: "center", gap: "4px",
           cursor: "pointer", color: "#1d4ed8",
           "&:hover": { textDecoration: "underline" },
         }}
       >
-        <VisibilityOutlinedIcon sx={{ fontSize: 15 }} />
         <Typography fontSize="12px" color="#1d4ed8" fontWeight={500}>
           {stateCount} state{stateCount !== 1 ? "s" : ""}
         </Typography>
+                <VisibilityOutlinedIcon sx={{ fontSize: 15 }} />
+
       </Box>,
       // ──────────────────────────────────────────────────────────────────────
 
@@ -157,11 +159,58 @@ data?.packages?.forEach((pkg) => {
   });
 
   return (
+    <>
+  {(category || industry) && (
+  <Box
+    sx={{
+      display: "flex",
+      justifyContent:"right",
+      gap: 2,
+      px: 3,
+      py: 1.5,
+      mb: 2,
+      // background: "linear-gradient(135deg, #fff7e6 0%, #fff0cc 100%)",
+      // border: "1px solid #FF990022",
+      borderRadius: 2,
+      flexWrap: "wrap",
+    }}
+  >
+    {/* <Typography sx={{ fontWeight: 700, fontSize: "0.980rem", color: "#000" }}>
+      Brand Info:
+    </Typography> */}
+
+    {category && (
+      <Box sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
+        <Typography sx={{ fontSize: "0.80rem", color: "#757575" }}>Category:</Typography>
+        <Chip
+          label={category}
+          size="small"
+          sx={{ backgroundColor: "#fff0cc", color: "#E68A00", fontWeight: 700, fontSize: "0.80rem", border: "1px solid #FF9900" }}
+        />
+      </Box>
+    )}
+
+    {industry && (
+      <Box sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
+        <Typography sx={{ fontSize: "0.80rem", color: "#757575" }}>Industry:</Typography>
+        <Chip
+          label={industry}
+          size="small"
+          sx={{ backgroundColor: "#e8f5e9", color: "#3D8E40", fontWeight: 700, fontSize: "0.80rem", border: "1px solid #4CB04F" }}
+        />
+      </Box>
+    )}
+  </Box>
+)}
     <Box sx={{ display: "flex", flexDirection: "column", gap: 4, p: 2 }}>
       <Typography variant="h6" fontWeight="bold" color="#111827">Brand Packages Summary</Typography>
 
-      {Object.entries(TABLE_CONFIGS).map(([type, config]) => (
-        <Box key={type}>
+  {Object.entries(TABLE_CONFIGS).map(([type, config]) => {
+  const hasPaidPackages = grouped.LISTING.length > 0 || grouped.LEAD.length > 0;
+  // if (type === "FREE" && hasPaidPackages) return null;
+  // if (grouped[type].length === 0) return null;  // ← ADD THIS LINE
+  return (
+    <Box key={type}>
           <Typography fontWeight={600} fontSize="14px" mb={1} color={config.headerColor}>
             {config.label} Packages
           </Typography>
@@ -184,7 +233,8 @@ data?.packages?.forEach((pkg) => {
             )}
           </Paper>
         </Box>
-      ))}
+     );
+})}
 
       {/* ── States Dialog ─────────────────────────────────────────────────── */}
       <Dialog
@@ -219,6 +269,7 @@ data?.packages?.forEach((pkg) => {
         </DialogContent>
       </Dialog>
     </Box>
+    </>
   );
 };
 

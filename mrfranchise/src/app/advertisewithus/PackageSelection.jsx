@@ -264,8 +264,12 @@ const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
   const [loadings, setLoadings] = useState(true);
   const [errors, setErrors] = useState("");
  
-  const brandOwnerId = localStorage.getItem("brandUUID")
-  console.log("Brand Owner ID:", brandOwnerId);
+const [brandOwnerId, setBrandOwnerId] = useState(null);
+
+useEffect(() => {
+  const id = localStorage.getItem("brandOwnerId") || localStorage.getItem("brandUUID");
+  if (id) setBrandOwnerId(id);
+}, []);
  
   // ================= FETCH API =================
   const fetchPackages = async () => {
@@ -292,10 +296,11 @@ const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
     }
   };
  
-  useEffect(() => {
+useEffect(() => {
+  if (brandOwnerId) {
     fetchPackages();
-  }, []);
-
+  }
+}, [brandOwnerId]);
   // Scroll to payment summary function
   const scrollToPaymentSummary = useCallback(() => {
     if (paymentSummaryRef.current) {
@@ -774,8 +779,10 @@ const handleSaveStates = useCallback(() => {
       // Store brandOwnerId
       if (brandData.brandOwnerId) {
         localStorage.setItem("brandOwnerId", brandData.brandOwnerId);
+         setBrandOwnerId(brandData.brandOwnerId);
       } else if (brandData._id) {
         localStorage.setItem("brandOwnerId", brandData._id);
+         setBrandOwnerId(brandData._id); 
       }
       const ficoData = Array.isArray(brandData?.franchiseDetails?.fico)
         ? brandData.franchiseDetails.fico
@@ -1971,7 +1978,9 @@ const handleSaveStates = useCallback(() => {
           mb: 4,
           display: "flex",
           justifyContent: "center",
-          width: "100%",
+       width: "100%",
+    flexDirection: "column",
+    alignItems: "center",
         }}
       >
         <Box
@@ -1980,6 +1989,31 @@ const handleSaveStates = useCallback(() => {
             maxWidth: "1100px", // Same maxWidth as the investment table
           }}
         >
+              {/* Heading and Description */}
+    <Box sx={{ mb: 3, textAlign: "center" }}>
+      <Typography
+        variant="h4"
+        sx={{
+          fontWeight: 700,
+          color: COLORS.black,
+          mb: 0.5,
+          fontSize: { xs: "1rem", md: "1.6rem" },
+        }}
+      >
+        Brand Listing Plans
+      </Typography>
+      <Typography
+        variant="body3"
+        sx={{
+          color: COLORS.grey[600],
+          fontSize: TEXT_SIZES.medium,
+          maxWidth: "600px",
+          mx: "auto",
+        }}
+      >
+      List your Brand to increase its Digital Visibility
+      </Typography>
+    </Box>
           {/* Plans */}
           {(() => {
             const listingPlans = plans
@@ -2308,10 +2342,45 @@ const handleSaveStates = useCallback(() => {
       <Box
         sx={{
           mb: 4,
-          display: "flex",
-          justifyContent: "center",
+           display: "flex",
+    justifyContent: "center",
+    flexDirection: "column",
+    alignItems: "center",
         }}
       >
+        {/* Heading and Description */}
+  <Box
+    sx={{
+      width: "100%",
+      maxWidth: "1300px",
+      mb: 3,
+      textAlign: "center",
+    }}
+  >
+    <Typography
+      variant="h4"
+      sx={{
+        fontWeight: 700,
+        color: COLORS.black,
+        mb: 1,
+        fontSize: { xs: "1rem", md: "1.6rem" },
+      }}
+    >
+      Investor Lead Plans
+    </Typography>
+    <Typography
+      variant="body3"
+      sx={{
+        color: COLORS.grey[600],
+        fontSize: TEXT_SIZES.medium,
+        maxWidth: "600px",
+        mx: "auto",
+      }}
+    >
+      Franchise | Dealer and Distributor | Channel Partner | Agent and Association
+    </Typography>
+  </Box>
+
         <Card
           elevation={0}
           sx={{
