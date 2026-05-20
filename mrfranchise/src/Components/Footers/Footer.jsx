@@ -89,6 +89,7 @@ const supportLinks = [
 
   return (
     <Box
+    id="footer"
       component="footer"
       sx={{
         background:"url(/footer_Mrfranchise.jpg) no-repeat center center/cover",
