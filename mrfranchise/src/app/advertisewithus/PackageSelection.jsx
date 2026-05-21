@@ -213,7 +213,7 @@ const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
   const router = useRouter();
   const paymentSummaryRef = useRef(null);
   const hasDraftChecked = useRef(false);
-
+const upgradeSectionRef = useRef(null);
   const [paymentSummary, setPaymentSummary] = useState([]);
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -2072,9 +2072,10 @@ const getIndustry = useCallback(() => {
     )}
   </Box>
 )}
-<ExistingPackageDisplay data={data} error={errors} loading={loadings} isLoggedIn={!!finalToken}/>
+<ExistingPackageDisplay data={data} error={errors} loading={loadings} isLoggedIn={!!finalToken} upgradeSectionRef={upgradeSectionRef}/>
           {/* LISTING PLANS SECTION */}
       <Box
+       ref={upgradeSectionRef}
         sx={{
           mb: 4,
           display: "flex",
