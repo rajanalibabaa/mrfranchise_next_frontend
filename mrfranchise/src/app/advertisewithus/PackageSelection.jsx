@@ -60,7 +60,7 @@ import PaymentSummaryTable from "./PaymentSummaryTable";
 import PaymentBottomBar from "./PaymentBottomBar";
 import ExistingPackageDisplay from "./ExistingPackageDisplay";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 // Enhanced Color Palette
 const COLORS = {
@@ -928,6 +928,18 @@ const handleSaveStates = useCallback(() => {
     });
     return Array.from(allStatesSet);
   }, []);
+
+  const getBrandName = useCallback(() => {
+  return data?.brandDetails?.brandName || data?.brandName || "";
+}, [data]);
+
+const getCategory = useCallback(() => {
+  return data?.brandDetails?.category || data?.category || "";
+}, [data]);
+
+const getIndustry = useCallback(() => {
+  return data?.brandDetails?.industry || data?.industry || "";
+}, [data]);
 
  const handleAddSingleToPayment = useCallback(
   (item, selectedPlan, selectedPkg) => {
@@ -1971,7 +1983,96 @@ const handleSaveStates = useCallback(() => {
         minHeight: "100vh",
       }}
     >
-<ExistingPackageDisplay data={data} error={errors} loading={loadings}/>
+      
+{/* Top Header Bar with Brand Name, Category & Industry - All on Right Side */}
+{(data?.brandDetails?.brandName || data?.brandName || getBrandName() ||
+  data?.brandDetails?.category || data?.category ||
+  data?.brandDetails?.industry || data?.industry) && (
+  <Box
+    sx={{
+      display: "flex",
+      justifyContent: "flex-end",
+      alignItems: "center",
+      gap: 1,
+      mb: 3,
+      pb: 2,
+      borderBottom: `1px solid ${COLORS.border}`,
+      px: { xs: 2, md: 4 },
+      flexWrap: "wrap",
+    }}
+  >
+    {/* Brand Name */}
+    {(data?.brandDetails?.brandName || data?.brandName || getBrandName()) && (
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+        <Typography sx={{ fontSize: TEXT_SIZES.small, color: COLORS.black }}>
+          Brand Name:
+        </Typography>
+        <Typography
+          sx={{
+            fontSize: TEXT_SIZES.small,
+            fontWeight: 700,
+            color: COLORS.primaryDark,
+          }}
+        >
+          {data?.brandDetails?.brandName || data?.brandName || getBrandName()}
+        </Typography>
+      </Box>
+    )}
+
+    {/* Separator between Brand and Category */}
+    {/* {(data?.brandDetails?.brandName || data?.brandName || getBrandName()) && 
+     (data?.brandDetails?.category || data?.category) && (
+      <Box sx={{ width: 4, height: 4, borderRadius: "50%", backgroundColor: COLORS.grey[400] }} />
+    )} */}
+
+    {/* Category Chip */}
+    {(data?.brandDetails?.category || data?.category) && (
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+        <Typography sx={{ fontSize: TEXT_SIZES.small, color: COLORS.black }}>
+          Category:
+        </Typography>
+        <Chip
+          label={data?.brandDetails?.category || data?.category}
+          size="small"
+          sx={{
+            backgroundColor: COLORS.white,
+            color: COLORS.primaryDark,
+            fontWeight: 600,
+            fontSize: TEXT_SIZES.small,
+            borderRadius: 1.5,
+          }}
+        />
+      </Box>
+    )}
+
+    {/* Separator between Category and Industry */}
+    {/* {(data?.brandDetails?.category || data?.category) && 
+     (data?.brandDetails?.industry || data?.industry) && (
+      <Box sx={{ width: 4, height: 4, borderRadius: "50%", backgroundColor: COLORS.grey[400] }} />
+    )} */}
+
+    {/* Industry Chip */}
+    {(data?.brandDetails?.industry || data?.industry) && (
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+        <Typography sx={{ fontSize: TEXT_SIZES.small, color: COLORS.black }}>
+          Industry:
+        </Typography>
+        <Chip
+          label={data?.brandDetails?.industry || data?.industry}
+          size="small"
+          sx={{
+            backgroundColor: COLORS.white,
+            color: COLORS.primaryDark,
+            fontWeight: 600,
+            fontSize: TEXT_SIZES.small,
+            borderRadius: 1.5,
+          }}
+        />
+      </Box>
+    )}
+  </Box>
+)}
+<ExistingPackageDisplay data={data} error={errors} loading={loadings} isLoggedIn={!!finalToken}/>
           {/* LISTING PLANS SECTION */}
       <Box
         sx={{
@@ -2000,7 +2101,7 @@ const handleSaveStates = useCallback(() => {
           fontSize: { xs: "1rem", md: "1.9rem" },
         }}
       >
-        Brand Listing Plans
+        BRAND LISTING PLANS
       </Typography>
       <Typography
         variant="body3"
@@ -2367,7 +2468,7 @@ const handleSaveStates = useCallback(() => {
         fontSize: { xs: "1rem", md: "1.9rem" },
       }}
     >
-      Investor Lead Plans
+     INVESTOR LEAD PLANS
     </Typography>
     <Typography
       variant="body3"
@@ -2523,21 +2624,22 @@ const handleSaveStates = useCallback(() => {
                           setOpenConfirmDialog(true);
                         }}
                         sx={{
-                          borderColor: COLORS.primary,
-                          color: COLORS.primary,
+                          // borderColor: COLORS.primary,
+                          color: COLORS.white,
                           fontWeight: 700,
                           fontSize: TEXT_SIZES.small,
-                          borderWidth: 2,
+                          // borderWidth: 2,
                           borderRadius: 2,
                           textTransform: "none",
                           px: 2,
+                          backgroundColor:"#4cb04f",
                           "&:hover": {
-                            backgroundColor: COLORS.lightOrange,
-                            borderColor: COLORS.primaryDark,
-                            borderWidth: 2,
+                            backgroundColor: "#517b52",
+                            borderColor: "none",
+                           
                           },
                         }}
-                      >
+                      > 
                         Add New Investment Range
                       </Button>
                     </Box>

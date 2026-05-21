@@ -1,43 +1,107 @@
-import React, { useState,  } from "react";
+import React, { useState } from "react";
 import {
   Box, Typography, CircularProgress, Alert, Chip,
   Paper, Button, Dialog, DialogTitle, DialogContent,
-  IconButton,
+  IconButton, Table, TableBody, TableCell, TableContainer,
+  TableHead, TableRow, Tooltip, Divider
 } from "@mui/material";
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import CloseIcon from "@mui/icons-material/Close";
+import UpgradeIcon from "@mui/icons-material/Upgrade";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import PendingIcon from "@mui/icons-material/Pending";
+import CancelIcon from "@mui/icons-material/Cancel";
+import LocationOnIcon from "@mui/icons-material/LocationOn";
+import LocalOfferIcon from "@mui/icons-material/LocalOffer";
+import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
+
+// Colors from parent component
+const COLORS = {
+  primary: "#FF9900",
+  primaryDark: "#E68A00",
+  primaryLight: "#FFB84D",
+  secondary: "#4CB04F",
+  secondaryDark: "#3D8E40",
+  secondaryLight: "#71FF05",
+  black: "#000000",
+  white: "#ffffff",
+  grey: {
+    50: "#FAFAFA",
+    100: "#F5F5F5",
+    200: "#EEEEEE",
+    300: "#E0E0E0",
+    400: "#BDBDBD",
+    500: "#9E9E9E",
+    600: "#757575",
+    700: "#616161",
+  },
+  lightOrange: "rgba(255, 153, 0, 0.08)",
+  lightGreen: "rgba(76, 176, 79, 0.08)",
+  border: "#E0E0E0",
+  shadow: "rgba(0, 0, 0, 0.08)",
+};
+
+const TEXT_SIZES = {
+  xs: "0.725rem",
+  small: "0.80rem",
+  medium: "0.980rem",
+  large: "1rem",
+  xl: "1.125rem",
+  xxl: "1.25rem",
+};
 
 const TABLE_CONFIGS = {
   FREE: {
     label: "Free",
-    headerBg: "#dcfce7",
-    headerColor: "#15803d",
-    columns: ["Package",  "Status", "Action"],
-    gridCols: "2fr 1.2fr 1.2fr 1.4fr",
+    headerBg: COLORS.lightGreen,
+    headerColor: COLORS.secondaryDark,
+    columns: ["Package", "Validity", "Status", "Action"],
   },
   LISTING: {
     label: "Listing",
     headerBg: "#ede9fe",
     headerColor: "#7c3aed",
-    columns: ["Package", "Tenure", "Start", "End", "Status", "Action"],
-    gridCols: "2fr 1fr 1.2fr 1.2fr 1.5fr 0.8fr",
+    columns: ["Package", "Tenure", "Start Date", "End Date", "Status", "Action"],
   },
   LEAD: {
     label: "Lead",
     headerBg: "#dbeafe",
     headerColor: "#1d4ed8",
-    columns: ["Package", "Investment Range", "States", "Total Leads", "Sent","Remaining", "Status", "Start", "End", "Action"],
-    gridCols: "1.1fr 1.3fr 0.9fr 0.8fr 0.6fr 1.5fr 1fr 1fr 0.8fr 0.8fr",
+    columns: ["Package", "Investment Range", "States", "Total Leads", "Sent", "Remaining", "Status", "Start Date", "End Date", "Action"],
   },
 };
 
-const ExistingPackageDisplay = ({ data, loading, error, category, industry }) => {
-    const [dialog, setDialog] = useState({ open: false, states: [], label: "" });
-  
+const ExistingPackageDisplay = ({ data, loading, error, category, industry, brandName, isLoggedIn }) => {
+  const [dialog, setDialog] = useState({ open: false, states: [], label: "" });
+
+  // If not logged in, don't render anything
+  if (!isLoggedIn) {
+    return null;
+  }
+
   const getStatus = (item) => {
-    if (item.isActive && !item.isPending) return { label: "ACTIVE",               color: "#15803d", bg: "#dcfce7" };
-    if (item.isPending)                   return { label: "PENDING FOR APPROVAL",  color: "#b45309", bg: "#fef3c7" };
-    return                                       { label: "INACTIVE",              color: "#6b7280", bg: "#f3f4f6" };
+    if (item.isActive && !item.isPending) {
+      return { 
+        label: "ACTIVE", 
+        color: COLORS.secondaryDark, 
+        bg: COLORS.lightGreen,
+        icon: <CheckCircleIcon sx={{ fontSize: 14 }} />
+      };
+    }
+    if (item.isPending) {
+      return { 
+        label: "PENDING", 
+        color: "#b45309", 
+        bg: "#fef3c7",
+        icon: <PendingIcon sx={{ fontSize: 14 }} />
+      };
+    }
+    return { 
+      label: "INACTIVE", 
+      color: COLORS.grey[600], 
+      bg: COLORS.grey[100],
+      icon: <CancelIcon sx={{ fontSize: 14 }} />
+    };
   };
 
   const formatDate = (date) => {
@@ -56,88 +120,243 @@ const ExistingPackageDisplay = ({ data, loading, error, category, industry }) =>
     setDialog({ open: true, states: arr, label: rangeLabel });
   };
 
-  if (loading) return <Box display="flex" justifyContent="center" alignItems="center" minHeight="80vh"><CircularProgress /></Box>;
-  if (error)   return <Box p={3}><Alert severity="error">{error}</Alert></Box>;
-
-
-const grouped = { FREE: [], LISTING: [], LEAD: [] };
-data?.packages?.forEach((pkg) => {
-  const type = (pkg.packagesType || pkg.PackagesType || "").toUpperCase(); // ← .toUpperCase() handles case mismatch
-  if (grouped[type]) {
-    (pkg.InvestmetPackages || pkg.InvestmentPackages || [])
-      .forEach((item) => grouped[type].push({ pkg, item }));
+  if (loading) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
+        <CircularProgress sx={{ color: COLORS.primary }} size={50} thickness={4} />
+      </Box>
+    );
   }
-});
+
+  if (error) {
+    return (
+      <Box p={3}>
+        <Alert severity="error" sx={{ borderRadius: 2, borderLeft: `4px solid ${COLORS.primary}` }}>
+          {error}
+        </Alert>
+      </Box>
+    );
+  }
+
+  const grouped = { FREE: [], LISTING: [], LEAD: [] };
+  data?.packages?.forEach((pkg) => {
+    const type = (pkg.packagesType || pkg.PackagesType || "").toUpperCase();
+    if (grouped[type]) {
+      const packagesArray = pkg.investmetPackages || 
+                            pkg.InvestmetPackages ||   
+                            pkg.InvestmentPackages ||  
+                            pkg.packages ||            
+                            [];
+      
+      packagesArray.forEach((item) => grouped[type].push({ pkg, item }));
+    }
+  });
+
+  const hasAnyPackages = grouped.FREE.length > 0 || grouped.LISTING.length > 0 || grouped.LEAD.length > 0;
 
   const StatusChip = ({ item }) => {
     const s = getStatus(item);
-    return <Chip label={s.label} size="small" sx={{ height: 24, fontSize: "10px", fontWeight: "bold", background: s.bg, color: s.color }} />;
+    return (
+      <Tooltip title={s.label === "PENDING" ? "Waiting for approval" : s.label === "ACTIVE" ? "Package is active" : "Package is inactive"} arrow>
+        <Chip
+          icon={s.icon}
+          label={s.label}
+          size="small"
+          sx={{
+            height: 28,
+            fontSize: TEXT_SIZES.xs,
+            fontWeight: 700,
+            background: s.bg,
+            color: s.color,
+            borderRadius: 2,
+            '& .MuiChip-icon': { fontSize: 14, color: s.color }
+          }}
+        />
+      </Tooltip>
+    );
   };
 
   const renderCell = (type, pkg, item) => {
     const start = item.isPending ? "—" : formatDate(item.PackageStartDate);
-    const end   = item.isPending ? "—" : formatDate(item.PackageEndDate);
-    const sent  = (item.TotalLeads || 0) - (item.remainingLeads || 0);
-    const name  = <Typography fontWeight={700} fontSize="12px" noWrap>{pkg.packagesName}</Typography>;
+    const end = item.isPending ? "—" : formatDate(item.PackageEndDate);
+    const sent = (item.TotalLeads || 0) - (item.remainingLeads || 0);
+    const remaining = item.remainingLeads || 0;
+    const totalLeads = item.TotalLeads || 0;
+    const progress = totalLeads > 0 ? (sent / totalLeads) * 100 : 0;
 
- // States are nested inside investmentranges
-const statesArr = item.investmentranges?.flatMap(r => r.selectedPlanState || []) || [];
-const stateCount = statesArr.length;
-    if (type === "FREE") return [
-      name,
-    //   <Typography fontSize="11px">{start}</Typography>,
-    //   <Typography fontSize="11px">{end}</Typography>,
-      <StatusChip item={item} />,
-       <Button variant="outlined" size="small" onClick={() => handleUpgrade(pkg, item)}
-        sx={{ minWidth: 70, height: 26, fontSize: "11px", textTransform: "none", borderRadius: "6px", fontWeight: 600 }}>
-        Upgrade
-      </Button>,
-    ];
+    const name = (
+      <Box>
+        <Typography fontWeight={700} fontSize={TEXT_SIZES.small} color={COLORS.black} noWrap>
+          {pkg.packagesName}
+        </Typography>
+        <Typography fontSize={TEXT_SIZES.xs} color={COLORS.grey[500]}>
+          {pkg.packagesType}
+        </Typography>
+      </Box>
+    );
+
+    const statesArr = item.investmentranges?.flatMap(r => r.selectedPlanState || []) || 
+                      item.selectedPlanState || 
+                      [];
+    const stateCount = statesArr.length;
+
+if (type === "FREE") return [
+  <>
+    <Typography
+      component="span"
+      sx={{
+        color: COLORS.black,
+        fontWeight: 700,
+        fontSize: TEXT_SIZES.sm,
+      }}
+    >
+      {name}
+    </Typography>{" "}
+
+    <Typography
+      component="span"
+      sx={{
+        fontSize: TEXT_SIZES.xs,
+        fontWeight: 600,
+        color: COLORS.primary,
+      }}
+    >
+      Package
+    </Typography>
+  </>,
+
+  <Chip
+    label={`${item.validity || item.tenure || "—"} Days`}
+    size="small"
+    sx={{
+      backgroundColor: COLORS.lightOrange,
+      color: COLORS.primaryDark,
+      fontWeight: 600,
+      fontSize: TEXT_SIZES.xs,
+    }}
+  />,
+
+  <StatusChip item={item} />,
+
+  <Button
+    variant="outlined"
+    size="small"
+    onClick={() => handleUpgrade(pkg, item)}
+    startIcon={<UpgradeIcon />}
+    sx={{
+      minWidth: 90,
+      height: 32,
+      fontSize: TEXT_SIZES.xs,
+      textTransform: "none",
+      borderRadius: 2,
+      fontWeight: 600,
+      borderColor: COLORS.primary,
+      color: COLORS.primary,
+      "&:hover": {
+        borderColor: COLORS.primaryDark,
+        backgroundColor: COLORS.lightOrange,
+      },
+    }}
+  >
+    Upgrade
+  </Button>,
+];
 
     if (type === "LISTING") return [
       name,
-      <Typography fontSize="12px">{item.tenure || "—"}</Typography>,
-      <Typography fontSize="11px">{start}</Typography>,
-      <Typography fontSize="11px">{end}</Typography>,
+      <Chip
+        label={`${item.tenure || "—"} Days`}
+        size="small"
+        sx={{ backgroundColor: COLORS.lightOrange, color: COLORS.primaryDark, fontWeight: 600, fontSize: TEXT_SIZES.xs }}
+      />,
+      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 0.5 }}>
+        <CalendarTodayIcon sx={{ fontSize: 12, color: COLORS.grey[500] }} />
+        <Typography fontSize={TEXT_SIZES.xs} color={COLORS.grey[600]}>{start}</Typography>
+      </Box>,
+      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 0.5 }}>
+        <CalendarTodayIcon sx={{ fontSize: 12, color: COLORS.grey[500] }} />
+        <Typography fontSize={TEXT_SIZES.xs} color={COLORS.grey[600]}>{end}</Typography>
+      </Box>,
       <StatusChip item={item} />,
-       <Button variant="outlined" size="small" onClick={() => handleUpgrade(pkg, item)}
-        sx={{ minWidth: 70, height: 26, fontSize: "11px", textTransform: "none", borderRadius: "6px", fontWeight: 600 }}>
+      <Button
+        variant="contained"
+        size="small"
+        onClick={() => handleUpgrade(pkg, item)}
+        startIcon={<UpgradeIcon />}
+        sx={{
+          minWidth: 90,
+          height: 32,
+          fontSize: TEXT_SIZES.xs,
+          textTransform: "none",
+          borderRadius: 2,
+          fontWeight: 600,
+          backgroundColor: COLORS.primary,
+          '&:hover': { backgroundColor: COLORS.primaryDark }
+        }}
+      >
         Upgrade
       </Button>,
     ];
 
     if (type === "LEAD") return [
       name,
-      <Typography fontSize="12px">{item.InvestmetRageLabel || "—"}</Typography>,
-
-      // ── States cell: count + eye icon ──────────────────────────────────────
+      <Chip
+        label={item.investmetRageLabel || item.InvestmetRageLabel || item.investmentRangeLabel || "—"}
+        size="small"
+        sx={{ backgroundColor: COLORS.lightOrange, color: COLORS.primaryDark, fontWeight: 600, fontSize: TEXT_SIZES.xs, maxWidth: 120 }}
+      />,
       <Box
-onClick={() => openStatesDialog(
-  item.investmentranges?.flatMap(r => r.selectedPlanState || []) || [],
-  item.InvestmetRageLabel
-)}
+        onClick={() => openStatesDialog(statesArr, item.investmetRageLabel || item.InvestmetRageLabel)}
         sx={{
-          display: "inline-flex", alignItems: "center", gap: "4px",
-          cursor: "pointer", color: "#1d4ed8",
-          "&:hover": { textDecoration: "underline" },
+          display: "inline-flex", alignItems: "center", gap: 0.5,
+          cursor: "pointer", color: COLORS.primary,
+          '&:hover': { textDecoration: "underline" }
         }}
       >
-        <Typography fontSize="12px" color="#1d4ed8" fontWeight={500}>
-          {stateCount} state{stateCount !== 1 ? "s" : ""}
+        <Typography fontSize={TEXT_SIZES.small} color={COLORS.primary} fontWeight={600}>
+          {stateCount}
         </Typography>
-                <VisibilityOutlinedIcon sx={{ fontSize: 15 }} />
-
+        <VisibilityOutlinedIcon sx={{ fontSize: 16, color: COLORS.primary }} />
       </Box>,
-      // ──────────────────────────────────────────────────────────────────────
-
-      <Typography fontSize="12px">{item.TotalLeads || 0}</Typography>,
-      <Typography fontSize="12px" fontWeight={600}>{sent}</Typography>,
-      <Typography fontSize="12px" fontWeight={600} color={sent > 0 ? "#dc2626" : "inherit"}>{sent}</Typography>,
+      <Box>
+        <Typography fontWeight={700} fontSize={TEXT_SIZES.small} color={COLORS.black}>
+          {item.totalLeads || item.TotalLeads || totalLeads}
+        </Typography>
+      </Box>,
+      <Box>
+        <Typography fontWeight={600} fontSize={TEXT_SIZES.small} color={COLORS.secondaryDark}>
+          {sent}
+        </Typography>
+        <Box sx={{ width: 40, height: 2, bgcolor: COLORS.grey[200], borderRadius: 1, mt: 0.5 }}>
+          <Box sx={{ width: `${progress}%`, height: 2, bgcolor: COLORS.secondary, borderRadius: 1 }} />
+        </Box>
+      </Box>,
+      <Typography fontWeight={600} fontSize={TEXT_SIZES.small} color={remaining > 0 ? COLORS.primary : COLORS.grey[400]}>
+        {remaining}
+      </Typography>,
       <StatusChip item={item} />,
-      <Typography fontSize="11px">{start}</Typography>,
-      <Typography fontSize="11px">{end}</Typography>,
-      <Button variant="outlined" size="small" onClick={() => handleUpgrade(pkg, item)}
-        sx={{ minWidth: 70, height: 26, fontSize: "11px", textTransform: "none", borderRadius: "6px", fontWeight: 600 }}>
+      <Typography fontSize={TEXT_SIZES.xs} color={COLORS.grey[600]}>{start}</Typography>,
+      <Typography fontSize={TEXT_SIZES.xs} color={COLORS.grey[600]}>{end}</Typography>,
+      <Button
+        variant="outlined"
+        size="small"
+        onClick={() => handleUpgrade(pkg, item)}
+        startIcon={<UpgradeIcon />}
+        sx={{
+          minWidth: 90,
+          height: 32,
+          fontSize: TEXT_SIZES.xs,
+          textTransform: "none",
+          borderRadius: 2,
+          fontWeight: 600,
+          borderColor: COLORS.primary,
+          color: COLORS.primary,
+          '&:hover': {
+            borderColor: COLORS.primaryDark,
+            backgroundColor: COLORS.lightOrange,
+          }
+        }}
+      >
         Upgrade
       </Button>,
     ];
@@ -145,130 +364,206 @@ onClick={() => openStatesDialog(
     return [];
   };
 
-  const headerRowSx = (config) => ({
-    display: "grid", gridTemplateColumns: config.gridCols,
-    background: config.headerBg, color: config.headerColor,
-    px: 2, py: 1.5, gap: 1, alignItems: "center",
-  });
-
-  const dataRowSx = (config) => ({
-    display: "grid", gridTemplateColumns: config.gridCols,
-    px: 1.5, py: 1.3, gap: 1, alignItems: "center",
-    borderBottom: "1px solid #f1f5f9",
-    "&:hover": { background: "#f9fafb" },
-  });
+  const TableHeader = ({ config }) => (
+    <TableHead>
+      <TableRow sx={{ backgroundColor: config.headerBg }}>
+        {config.columns.map((col) => (
+          <TableCell
+            key={col}
+            sx={{
+              fontWeight: 700,
+              fontSize: TEXT_SIZES.xs,
+              color: config.headerColor,
+              py: 1.5,
+              borderBottom: `2px solid ${COLORS.border}`,
+              whiteSpace: "nowrap",
+              textAlign: "center"
+            }}
+          >
+            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 0.5 }}>
+              {col}
+            </Box>
+          </TableCell>
+        ))}
+      </TableRow>
+    </TableHead>
+  );
 
   return (
     <>
-  {(category || industry) && (
-  <Box
-    sx={{
-      display: "flex",
-      justifyContent:"right",
-      gap: 2,
-      px: 3,
-      py: 1.5,
-      mb: 2,
-      // background: "linear-gradient(135deg, #fff7e6 0%, #fff0cc 100%)",
-      // border: "1px solid #FF990022",
-      borderRadius: 2,
-      flexWrap: "wrap",
-    }}
-  >
-    {/* <Typography sx={{ fontWeight: 700, fontSize: "0.980rem", color: "#000" }}>
-      Brand Info:
-    </Typography> */}
+      {/* Packages Summary */}
+      <Box sx={{ 
+        display: "flex", 
+        flexDirection: "column", 
+        alignItems: "center",
+        width: "100%",
+        mb:5,
+      }}>
+        <Typography
+          variant="h6"
+          fontWeight={700}
+          fontSize={TEXT_SIZES.xl}
+          color={COLORS.black}
+          sx={{ mb: 3, display: "flex", alignItems: "center", gap: 1, justifyContent: "center" }}
+        >
+          <LocalOfferIcon sx={{ color: COLORS.primary }} />
+          Brand Packages Summary
+        </Typography>
 
-    {category && (
-      <Box sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
-        <Typography sx={{ fontSize: "0.80rem", color: "#757575" }}>Category:</Typography>
-        <Chip
-          label={category}
-          size="small"
-          sx={{ backgroundColor: "#fff0cc", color: "#E68A00", fontWeight: 700, fontSize: "0.80rem", border: "1px solid #FF9900" }}
-        />
-      </Box>
-    )}
-
-    {industry && (
-      <Box sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
-        <Typography sx={{ fontSize: "0.80rem", color: "#757575" }}>Industry:</Typography>
-        <Chip
-          label={industry}
-          size="small"
-          sx={{ backgroundColor: "#e8f5e9", color: "#3D8E40", fontWeight: 700, fontSize: "0.80rem", border: "1px solid #4CB04F" }}
-        />
-      </Box>
-    )}
-  </Box>
-)}
-    <Box sx={{ display: "flex", flexDirection: "column", gap: 4, p: 2 }}>
-      <Typography variant="h6" fontWeight="bold" color="#111827">Brand Packages Summary</Typography>
-
-  {Object.entries(TABLE_CONFIGS).map(([type, config]) => {
-  const hasPaidPackages = grouped.LISTING.length > 0 || grouped.LEAD.length > 0;
-  // if (type === "FREE" && hasPaidPackages) return null;
-  // if (grouped[type].length === 0) return null;  // ← ADD THIS LINE
-  return (
-    <Box key={type}>
-          <Typography fontWeight={600} fontSize="14px" mb={1} color={config.headerColor}>
-            {config.label} Packages
-          </Typography>
-          <Paper elevation={0} sx={{ borderRadius: "12px", overflow: "hidden", border: "1px solid #e5e7eb" }}>
-            <Box sx={headerRowSx(config)}>
-              {config.columns.map((col) => (
-                <Typography key={col} fontWeight="bold" fontSize="12px">{col}</Typography>
-              ))}
-            </Box>
-            {grouped[type].length === 0 ? (
-              <Box px={2} py={2}><Typography fontSize="12px" color="#6b7280">No {config.label.toLowerCase()} packages found.</Typography></Box>
-            ) : (
-              grouped[type].map(({ pkg, item }, idx) => (
-                <Box key={idx} sx={dataRowSx(config)}>
-                  {renderCell(type, pkg, item).map((cell, i) => (
-                    <Box key={i} sx={{ minWidth: 0, overflow: "hidden" }}>{cell}</Box>
-                  ))}
-                </Box>
-              ))
-            )}
+        {!hasAnyPackages ? (
+          <Paper
+            elevation={0}
+            sx={{
+              p: 6,
+              textAlign: "center",
+              borderRadius: 3,
+              border: `1px dashed ${COLORS.border}`,
+              backgroundColor: COLORS.grey[50]
+            }}
+          >
+            <Typography fontSize={TEXT_SIZES.medium} color={COLORS.grey[500]}>
+              No packages found
+            </Typography>
           </Paper>
-        </Box>
-     );
-})}
+        ) : (
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 4, alignItems: "center", width: "100%" }}>
+            {Object.entries(TABLE_CONFIGS).map(([type, config]) => {
+              if (grouped[type].length === 0) return null;
 
-      {/* ── States Dialog ─────────────────────────────────────────────────── */}
+              return (
+                <Paper
+                  key={type}
+                  elevation={0}
+                  sx={{
+                    borderRadius: 3,
+                    // overflow: "auto",
+                    border: `1px solid ${COLORS.border}`,
+                    transition: "all 0.3s ease",
+                    width: "auto",
+                    maxWidth: "100%",
+                    '&:hover': { boxShadow: `0 4px 12px ${COLORS.shadow}` }
+                  }}
+                >
+                  {/* Table Header */}
+                  <Box
+                    sx={{
+                      px: 2,
+                      py: 1.5,
+                      backgroundColor: config.headerBg,
+                      borderBottom: `1px solid ${COLORS.border}`,
+                      textAlign: "center"
+                    }}
+                  >
+                    <Typography fontWeight={700} fontSize={TEXT_SIZES.medium} color={config.headerColor}>
+                      {config.label} Packages
+                    </Typography>
+                  </Box>
+
+                  {/* Table Content */}
+                <TableContainer sx={{ width: "100%", overflow: "visible" }}>
+                    <Table size="small" sx={{ width: "100%", tableLayout: "auto" }}>
+                      <TableHeader config={config} />
+                      <TableBody>
+                        {grouped[type].map(({ pkg, item }, idx) => (
+                          <TableRow
+                            key={idx}
+                            sx={{
+                              '&:hover': { backgroundColor: COLORS.grey[50] },
+                              '&:last-child td, &:last-child th': { border: 0 }
+                            }}
+                          >
+                            {renderCell(type, pkg, item).map((cell, i) => (
+                              <TableCell
+                                key={i}
+                                sx={{
+                                  py: 1.5,
+                                  px: 1.5,
+                                  fontSize: TEXT_SIZES.xs,
+                                  borderBottom: `1px solid ${COLORS.border}`,
+                                  verticalAlign: "middle",
+                                  textAlign: "center"
+                                }}
+                              >
+                                {cell}
+                              </TableCell>
+                            ))}
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                </Paper>
+              );
+            })}
+          </Box>
+        )}
+      </Box>
+
+      {/* States Dialog */}
       <Dialog
         open={dialog.open}
         onClose={() => setDialog({ ...dialog, open: false })}
-        PaperProps={{ sx: { borderRadius: "12px", minWidth: 340, p: 0 } }}
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            minWidth: 380,
+            maxWidth: 500,
+            p: 0,
+            overflow: "hidden"
+          }
+        }}
       >
-        <DialogTitle sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", pb: 0 }}>
+        <DialogTitle sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          pb: 1,
+          backgroundColor: COLORS.grey[50],
+          borderBottom: `1px solid ${COLORS.border}`
+        }}>
           <Box>
-            <Typography fontWeight={700} fontSize="15px">Selected States</Typography>
+            <Typography fontWeight={700} fontSize={TEXT_SIZES.medium} color={COLORS.black}>
+              Selected States
+            </Typography>
             {dialog.label && (
-              <Typography fontSize="12px" color="text.secondary">{dialog.label}</Typography>
+              <Typography fontSize={TEXT_SIZES.xs} color={COLORS.grey[500]}>
+                {dialog.label}
+              </Typography>
             )}
           </Box>
           <IconButton size="small" onClick={() => setDialog({ ...dialog, open: false })}>
-            <CloseIcon fontSize="small" />
+            <CloseIcon fontSize="small" sx={{ color: COLORS.grey[500] }} />
           </IconButton>
         </DialogTitle>
 
-        <DialogContent>
-          <Typography fontSize="12px" color="text.secondary" mb={1.5}>
-            {dialog.states.length} state{dialog.states.length !== 1 ? "s" : ""} selected
-          </Typography>
-          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-            {dialog.states.map((s) => (
+        <Divider />
+
+        <DialogContent sx={{ pt: 2 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
+            <LocationOnIcon sx={{ fontSize: 16, color: COLORS.primary }} />
+            <Typography fontSize={TEXT_SIZES.small} color={COLORS.grey[600]}>
+              {dialog.states.length} state{dialog.states.length !== 1 ? "s" : ""} selected
+            </Typography>
+          </Box>
+
+          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, maxHeight: 300, overflow: "auto" }}>
+            {dialog.states.map((state) => (
               <Chip
-                key={s} label={s} size="small"
-                sx={{ background: "#dbeafe", color: "#1d4ed8", fontWeight: 600, fontSize: "12px" }}
+                key={state}
+                label={state}
+                size="small"
+                sx={{
+                  backgroundColor: COLORS.lightOrange,
+                  color: COLORS.primaryDark,
+                  fontWeight: 600,
+                  fontSize: TEXT_SIZES.xs,
+                  borderRadius: 1.5,
+                }}
               />
             ))}
           </Box>
         </DialogContent>
       </Dialog>
-    </Box>
     </>
   );
 };
