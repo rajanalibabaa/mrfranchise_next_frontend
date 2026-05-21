@@ -1997,7 +1997,7 @@ const handleSaveStates = useCallback(() => {
           fontWeight: 700,
           color: COLORS.black,
           mb: 0.5,
-          fontSize: { xs: "1rem", md: "1.6rem" },
+          fontSize: { xs: "1rem", md: "1.9rem" },
         }}
       >
         Brand Listing Plans
@@ -2005,7 +2005,7 @@ const handleSaveStates = useCallback(() => {
       <Typography
         variant="body3"
         sx={{
-          color: COLORS.grey[600],
+          color: COLORS.black,
           fontSize: TEXT_SIZES.medium,
           maxWidth: "600px",
           mx: "auto",
@@ -2130,6 +2130,7 @@ const handleSaveStates = useCallback(() => {
                       sx={{
                         position: "relative",
                         borderRadius: 3,
+
                         border: `1.5px solid ${
                           isAdded
                             ? COLORS.primary
@@ -2137,7 +2138,7 @@ const handleSaveStates = useCallback(() => {
                               ? "#ff9800"
                               : COLORS.border
                         }`,
-                        backgroundColor: COLORS.white,
+                        backgroundColor: "#fff0c5",
                         overflow: "hidden",
                         transition: "0.3s ease",
 
@@ -2363,7 +2364,7 @@ const handleSaveStates = useCallback(() => {
         fontWeight: 700,
         color: COLORS.black,
         mb: 1,
-        fontSize: { xs: "1rem", md: "1.6rem" },
+        fontSize: { xs: "1rem", md: "1.9rem" },
       }}
     >
       Investor Lead Plans
@@ -2371,7 +2372,7 @@ const handleSaveStates = useCallback(() => {
     <Typography
       variant="body3"
       sx={{
-        color: COLORS.grey[600],
+        color: COLORS.black,
         fontSize: TEXT_SIZES.medium,
         maxWidth: "600px",
         mx: "auto",
