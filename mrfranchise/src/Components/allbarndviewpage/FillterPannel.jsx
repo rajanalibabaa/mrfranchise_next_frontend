@@ -16,7 +16,6 @@ import ClearIcon from "@mui/icons-material/Clear";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
 import {
-  fetchFilterOptions,
   resetChildCategories,
   resetDistricts,
   resetCities,
@@ -87,51 +86,6 @@ const FilterPanel = React.memo(
       location: false,
       investment: false,
     });
-
-    // Fetch initial filter data
-    useEffect(() => {
-      dispatch(fetchFilterOptions());
-    }, [dispatch]);
-
-    // Fetch subcategories and child categories when main category changes
-    useEffect(() => {
-      if (filters.maincat) {
-        dispatch(fetchFilterOptions({ main: filters.maincat }));
-        dispatch(resetChildCategories()); // Reset child categories when main category changes
-      } else {
-        dispatch(fetchFilterOptions()); // Fetch all filters if main category is cleared
-      }
-    }, [dispatch, filters.maincat]);
-
-    // Fetch child categories (productTags) when subcategory changes
-    useEffect(() => {
-      if (filters.subcat && filters.maincat) {
-        dispatch(fetchFilterOptions({ 
-          sub: filters.subcat,
-          main: filters.maincat 
-        }));
-      }
-    }, [dispatch, filters.subcat, filters.maincat]);
-
-    // Fetch districts when state changes
-    useEffect(() => {
-      if (filters.state) {
-        dispatch(fetchFilterOptions({ state: filters.state }));
-        dispatch(resetCities()); // Reset cities when state changes
-      } else {
-        dispatch(resetDistricts()); // Reset districts when state is cleared
-      }
-    }, [dispatch, filters.state]);
-
-    // Fetch cities when district changes
-    useEffect(() => {
-      if (filters.district && filters.state) {
-        dispatch(fetchFilterOptions({ 
-          district: filters.district,
-          state: filters.state 
-        }));
-      }
-    }, [dispatch, filters.district, filters.state]);
 
     // Read URL parameters on mount
     useEffect(() => {
@@ -358,7 +312,6 @@ const FilterPanel = React.memo(
                   onFilterChange("childcat", ""); // Reset child category
                   if (!e.target.value) {
                     dispatch(resetChildCategories());
-                    dispatch(fetchFilterOptions());
                   }
                 }}
               >
