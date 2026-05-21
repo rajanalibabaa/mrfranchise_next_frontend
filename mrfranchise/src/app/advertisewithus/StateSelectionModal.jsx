@@ -53,7 +53,8 @@ const StateSelectionModal = ({
       open={open}
       onClose={onClose}
       maxWidth="sm"
-      fullWidth
+   
+            fullWidth
       PaperProps={{
         sx: {
           borderRadius: 3,
@@ -79,7 +80,7 @@ const StateSelectionModal = ({
       <DialogContent
         dividers
         sx={{
-          maxHeight: 500,
+          maxHeight: 300,
           overflow: "auto",
           p: 2,
           "&::-webkit-scrollbar": {
