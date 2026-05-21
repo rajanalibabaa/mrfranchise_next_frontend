@@ -441,7 +441,7 @@ acc[rangeKey].totalAmount = (item.pricePerState || 0) * uniqueRangeStatesCount;
           sx={{ verticalAlign: "middle" }}
         >
           <Typography sx={{ fontSize: TEXT_SIZES.small, fontWeight: 700, color: COLORS.secondaryDark }}>
-            ₹{planData.items[0]?.totalAmount?.toLocaleString("en-IN") || "0"}
+          
           </Typography>
         </TableCell>
       )}

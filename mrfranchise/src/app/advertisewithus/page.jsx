@@ -40,6 +40,7 @@ const AdvertisingPage = () => {
         {/* PackageSelection renders the plan cards + Selected Plan Summary table */}
         <PackageSelection
           onAddInvestmentRange={handleAddInvestmentRange}
+          
           onSummaryChange={(cards, amount) => {   // ← PackageSelection calls this when selection changes
             setStatCards(cards);
             setTotalAmount(amount);

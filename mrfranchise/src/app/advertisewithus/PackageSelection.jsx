@@ -3745,6 +3745,7 @@ const getIndustry = useCallback(() => {
           <PaymentSummaryTable
             paymentSummary={paymentSummary}
             paymentSummaryRef={paymentSummaryRef}
+            
             COLORS={COLORS}
             TEXT_SIZES={TEXT_SIZES}
             handleShowStates={handleShowStates}
