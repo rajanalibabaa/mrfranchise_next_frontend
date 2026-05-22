@@ -547,6 +547,7 @@ useEffect(() => {
   if (paymentSummary.length > 0) {
     setPaymentSummary((prev) => {
       return prev.map((group) => {
+         if (group.isListingPlan) return group;
         const updatedItems = group.items.map((item) => {
           const key = getRangeKey(
             item.investmentRangeLabel,
@@ -868,7 +869,7 @@ const handleSaveStates = useCallback(() => {
       });
 
       if (!groupHasRange) return group;
-// Collect ALL unique states across items — no duplicates
+// In handleLeadsChange, replace the return block:
 const allStatesSet = new Set();
 updatedItems.forEach((item) => {
   (item.states || []).forEach((state) => allStatesSet.add(state));
@@ -876,18 +877,13 @@ updatedItems.forEach((item) => {
 const uniqueStates = Array.from(allStatesSet);
 const totalUniqueStates = uniqueStates.length;
 
-// Divisor from leadsDropdownData
 const leadsDataKey = `${group.planId}_${group.investmentRangeLabel}`;
 const availableLeads = leadsDropdownData[leadsDataKey] || [];
 const minLeads = availableLeads.length > 0 ? Math.min(...availableLeads) : 1;
 const divisor = minLeads > 0 ? minLeads : 1;
 
-// All items in a group share the same selectedLeads value
-const selectedLeads = updatedItems[0]?.selectedLeads || 0;
-
-// Calculate ONCE — not a sum of per-item amounts
-const totalAmount = (group.pricePerState / divisor) * totalUniqueStates * selectedLeads;
-const totalLeads = selectedLeads * totalUniqueStates;
+const totalAmount = (group.pricePerState / divisor) * totalUniqueStates * (updatedItems[0]?.selectedLeads || 0);
+const totalLeads = (updatedItems[0]?.selectedLeads || 0) * totalUniqueStates;
 
 return {
   ...group,
@@ -895,7 +891,7 @@ return {
   uniqueStates,
   totalStates: totalUniqueStates,
   amount: totalAmount,
-  totalLeads: totalLeads,
+  totalLeads: totalLeads,  // ✅ Fixed
 };
     }),
   );
@@ -1690,6 +1686,7 @@ const getStateCountForRange = useCallback(
 
       setPaymentSummary((prev) =>
         prev.map((group) => {
+          if (group.isListingPlan) return group;
           // Match by checking if the group contains this specific range
           const hasRange = group.items.some(
             (item) => item.range === specificRange,
