@@ -270,44 +270,40 @@ if (type === "FREE") return [
   </Button>,
 ];
 
-    if (type === "LISTING")
-      console.log("LISTING item:", JSON.stringify(item, null, 2));
-       return [
-     
-      name,
-      <Chip
-        label={`${item.tenure || "—"} Days`}
-        size="small"
-        sx={{ backgroundColor: COLORS.lightOrange, color: COLORS.primaryDark, fontWeight: 600, fontSize: TEXT_SIZES.xs }}
-      />,
-      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 0.5 }}>
-        <CalendarTodayIcon sx={{ fontSize: 12, color: COLORS.grey[500] }} />
-        <Typography fontSize={TEXT_SIZES.xs} color={COLORS.grey[600]}>{start}</Typography>
-      </Box>,
-      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 0.5 }}>
-        <CalendarTodayIcon sx={{ fontSize: 12, color: COLORS.grey[500] }} />
-        <Typography fontSize={TEXT_SIZES.xs} color={COLORS.grey[600]}>{end}</Typography>
-      </Box>,
-      <StatusChip item={item} />,
-      <Button
-        variant="contained"
-        size="small"
-        onClick={() => handleUpgrade(pkg, item)}
-        startIcon={<UpgradeIcon />}
-        sx={{
-          minWidth: 90,
-          height: 32,
-          fontSize: TEXT_SIZES.xs,
-          textTransform: "none",
-          borderRadius: 2,
-          fontWeight: 600,
-          backgroundColor: COLORS.primary,
-          '&:hover': { backgroundColor: COLORS.primaryDark }
-        }}
-      >
-        Upgrade
-      </Button>,
-    ];
+   if (type === "LISTING") {
+  console.log("LISTING item:", JSON.stringify(item, null, 2));
+  return [
+    name,
+    <Chip
+      label={`${item.validity || item.tenure || "—"} Days`}
+      size="small"
+      sx={{ backgroundColor: COLORS.lightOrange, color: COLORS.primaryDark, fontWeight: 600, fontSize: TEXT_SIZES.xs }}
+    />,
+    <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 0.5 }}>
+      <CalendarTodayIcon sx={{ fontSize: 12, color: COLORS.grey[500] }} />
+      <Typography fontSize={TEXT_SIZES.xs} color={COLORS.grey[600]}>{start}</Typography>
+    </Box>,
+    <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 0.5 }}>
+      <CalendarTodayIcon sx={{ fontSize: 12, color: COLORS.grey[500] }} />
+      <Typography fontSize={TEXT_SIZES.xs} color={COLORS.grey[600]}>{end}</Typography>
+    </Box>,
+    <StatusChip item={item} />,
+    <Button
+      variant="contained"
+      size="small"
+      onClick={() => handleUpgrade(pkg, item)}
+      startIcon={<UpgradeIcon />}
+      sx={{
+        minWidth: 90, height: 32, fontSize: TEXT_SIZES.xs,
+        textTransform: "none", borderRadius: 2, fontWeight: 600,
+        backgroundColor: COLORS.primary,
+        '&:hover': { backgroundColor: COLORS.primaryDark }
+      }}
+    >
+      Upgrade
+    </Button>,
+  ];
+}
 
   if (type === "LEAD") {
   const statesArr =
