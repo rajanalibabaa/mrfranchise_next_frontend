@@ -327,7 +327,7 @@ useEffect(() => {
         }
       }
 
-      const savedSummary = localStorage.getItem("paymentSummaryDraft");
+      const savedSummary = localStorage.getItem("paymentSummary");
       if (savedSummary) {
         try {
           const parsed = JSON.parse(savedSummary);
@@ -400,7 +400,7 @@ useEffect(() => {
   useEffect(() => {
     if (typeof window !== "undefined") {
       localStorage.setItem(
-        "paymentSummaryDraft",
+        "paymentSummary",
         JSON.stringify(paymentSummary),
       );
     }

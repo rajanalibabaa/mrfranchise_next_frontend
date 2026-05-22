@@ -200,13 +200,14 @@ const ExistingPackageDisplay = ({ data, loading, error, category, industry, bran
                       [];
     const stateCount = statesArr.length;
 
-if (type === "FREE") return [
+  if (type === "FREE") return [
   <>
     <Typography
       component="span"
       sx={{
         color: COLORS.black,
         fontWeight: 700,
+        
         fontSize: TEXT_SIZES.sm,
       }}
     >

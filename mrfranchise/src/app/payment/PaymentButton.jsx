@@ -102,9 +102,6 @@ export default function PaymentButton({ amount, packageName, packageData, onSucc
 const firstItem = firstPackage?.items?.[0];
 
 const payload = {
-  // =========================
-  // USER
-  // =========================
   brandOwnerId: uuid,
 
   email: brandData.email,
@@ -113,28 +110,80 @@ const payload = {
   brandID: brandData.brandID,
 
   // =========================
-  // PLAN
+  // TOTALS
   // =========================
-  packageName: firstPackage?.planName,
-  planId: firstPackage?.planId,
-  planUniqueId: firstPackage?.planUniqueId,
+  totalAmount: packageData.reduce(
+    (sum, pkg) => sum + Number(pkg.amount || 0),
+    0
+  ),
+
+  totalLeads: packageData.reduce(
+    (sum, pkg) => sum + Number(pkg.totalLeads || 0),
+    0
+  ),
 
   // =========================
-  // PACKAGE
+  // ALL PACKAGES
   // =========================
-  investmentRangeLabel: firstPackage?.investmentRangeLabel,
-   range: firstItem?.range,
-   selectedLeadCount: firstItem?.selectedLeads,
-  totalStates:
-    firstPackage?.totalStates,
+  packages: packageData.map((pkg) => ({
+    groupKey: pkg.groupKey,
 
-  uniqueStates:
-    firstPackage?.uniqueStates || [],
+    packagesType: pkg.packagesType,
 
-  // =========================
-  // AMOUNT
-  // =========================
-  baseAmount: firstPackage?.amount,
+    packageName: pkg.planName,
+
+    planId: pkg.planId,
+
+    planPackageId: pkg.planPackageId,
+
+    planUniqueId: pkg.planUniqueId,
+
+    investmentRangeLabel:
+      pkg.investmentRangeLabel,
+
+    amount: Number(pkg.amount || 0),
+
+    totalLeads: Number(pkg.totalLeads || 0),
+
+    selectedLeads: Number(
+      pkg.selectedLeads || 0
+    ),
+
+    totalStates: Number(
+      pkg.totalStates || 0
+    ),
+
+    uniqueStates: pkg.uniqueStates || [],
+
+    validityDays:
+      Number(pkg.validityDays || 30),
+
+    pricePerState:
+      Number(pkg.pricePerState || 0),
+
+    // =========================
+    // ALL ITEMS
+    // =========================
+    items:
+      pkg.items?.map((item) => ({
+        id: item.id,
+
+        investmentRangeLabel:
+          item.investmentRangeLabel,
+
+        range: item.range,
+
+        selectedLeads: Number(
+          item.selectedLeads || 0
+        ),
+
+        states: Array.isArray(item.states)
+          ? item.states
+          : [],
+
+        amount: Number(item.amount || 0),
+      })) || [],
+  })),
 
   // =========================
   // GST
@@ -142,9 +191,6 @@ const payload = {
   billingState: "TN",
   companyState: "TN",
 
-  // =========================
-  // OPTIONAL
-  // =========================
   gstNumber: "",
   pan: "",
 };
@@ -182,7 +228,7 @@ console.log("PAYLOAD:", payload);
         amount: orderAmount, // Always in paise from backend
         currency,
         name: "Mr Franchise",
-        description: `Purchase: ${packageName}`,
+description: `Purchase: ${packageData.length} Package(s)`,
         order_id: orderId,
         image: "/logo.png", // Your logo
         prefill: {
