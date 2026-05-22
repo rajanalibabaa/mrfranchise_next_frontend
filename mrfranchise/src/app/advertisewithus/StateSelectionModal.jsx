@@ -7,7 +7,9 @@ import {
   Box,
   Button,
   Typography,
+  IconButton
 } from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
 
 const StateSelectionModal = ({
   open,
@@ -60,20 +62,37 @@ const StateSelectionModal = ({
           borderRadius: 3,
           border: `3px solid ${COLORS.primary}`,
           boxShadow: `0 8px 32px ${COLORS.shadow}`,
+          margin: 6,           // Add this
+      position: "absolute", // Add this
+      top: 0, 
         },
       }}
     >
       {/* Header */}
       <DialogTitle
         sx={{
-          background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryDark} 100%)`,
-          fontSize: TEXT_SIZES.large,
-          fontWeight: 700,
-          color: COLORS.white,
-          py: 2.5,
+        background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryDark} 100%)`,
+    fontSize: TEXT_SIZES.large,
+    fontWeight: 700,
+    color: COLORS.white,
+    py: 2.5,
+    display: "flex",           // Add this
+    justifyContent: "space-between",  // Add this
+    alignItems: "center",   
         }}
       >
         Select States ({currentRangeSelectedCount} of {totalAvailable})
+        <IconButton
+    onClick={onClose}
+    sx={{
+      color: COLORS.white,
+      "&:hover": {
+        backgroundColor: "rgba(255, 255, 255, 0.2)",
+      },
+    }}
+  >
+    <CloseIcon />
+  </IconButton>
       </DialogTitle>
 
       {/* Content */}
@@ -193,13 +212,13 @@ const StateSelectionModal = ({
       {/* Footer */}
       <DialogActions
         sx={{
-          justifyContent: "space-between",
+          justifyContent: "flex-end",
           px: 3,
           py: 2,
           backgroundColor: COLORS.grey[50],
         }}
       >
-        <Button
+        {/* <Button
           onClick={onClose}
           sx={{
             color: COLORS.grey[700],
@@ -211,7 +230,7 @@ const StateSelectionModal = ({
           }}
         >
           Cancel
-        </Button>
+        </Button> */}
 
         <Button
           onClick={handleSaveStates}

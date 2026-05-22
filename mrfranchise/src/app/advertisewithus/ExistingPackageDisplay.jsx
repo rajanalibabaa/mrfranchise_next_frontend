@@ -55,7 +55,7 @@ const TABLE_CONFIGS = {
     label: "Free",
     headerBg: COLORS.lightGreen,
     headerColor: COLORS.secondaryDark,
-    columns: ["Package", "Validity", "Status", "Action"],
+    columns: ["Package",  "Status", "Action"],
   },
   LISTING: {
     label: "Listing",
@@ -67,12 +67,12 @@ const TABLE_CONFIGS = {
     label: "Lead",
     headerBg: "#dbeafe",
     headerColor: "#1d4ed8",
-    columns: ["Package", "Investment Range", "States", "Total Leads", "Sent", "Remaining", "Status", "Start Date", "End Date", "Action"],
+    columns: ["Package", "Investment Group", "Investment Range","States", "Total Leads", "Sent", "Remaining", "Status", "Start Date", "End Date", "Action"],
   },
 };
 
-const ExistingPackageDisplay = ({ data, loading, error, category, industry, brandName, isLoggedIn }) => {
-  const [dialog, setDialog] = useState({ open: false, states: [], label: "" });
+const ExistingPackageDisplay = ({ data, loading, error, category, industry, brandName, isLoggedIn, upgradeSectionRef }) => {
+    const [dialog, setDialog] = useState({ open: false, states: [], label: "" });
 
   // If not logged in, don't render anything
   if (!isLoggedIn) {
@@ -109,9 +109,12 @@ const ExistingPackageDisplay = ({ data, loading, error, category, industry, bran
     return new Date(date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
   };
 
-  const handleUpgrade = (pkg, item) => {
-    console.log("Upgrade:", { packageType: pkg.packagesType, packageName: pkg.packagesName, item });
-  };
+ const handleUpgrade = (pkg, item) => {
+  console.log("Upgrade:", { packageType: pkg.packagesType, packageName: pkg.packagesName, item });
+  if (upgradeSectionRef?.current) {
+    upgradeSectionRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+};
 
   const openStatesDialog = (states, rangeLabel) => {
     const arr = Array.isArray(states)
@@ -177,8 +180,8 @@ const ExistingPackageDisplay = ({ data, loading, error, category, industry, bran
   };
 
   const renderCell = (type, pkg, item) => {
-    const start = item.isPending ? "—" : formatDate(item.PackageStartDate);
-    const end = item.isPending ? "—" : formatDate(item.PackageEndDate);
+   const start = item.isPending ? "—" : formatDate(item.packageStartDate || item.PackageStartDate);
+const end = item.isPending ? "—" : formatDate(item.packageEndDate || item.PackageEndDate);
     const sent = (item.TotalLeads || 0) - (item.remainingLeads || 0);
     const remaining = item.remainingLeads || 0;
     const totalLeads = item.TotalLeads || 0;
@@ -200,45 +203,49 @@ const ExistingPackageDisplay = ({ data, loading, error, category, industry, bran
                       [];
     const stateCount = statesArr.length;
 
-  if (type === "FREE") return [
-  <>
-    <Typography
-      component="span"
+if (type === "FREE") return [
+<Box
+  sx={{
+    display: "flex",
+    alignItems: "center",
+    gap: 1,
+    whiteSpace: "nowrap",
+  }}
+>
+  <Box>
+    {/* <Typography
       sx={{
         color: COLORS.black,
-        fontWeight: 700,
-        
-        fontSize: TEXT_SIZES.sm,
+        fontWeight: 800,
+        fontSize: TEXT_SIZES.medium,
       }}
     >
-      {name}
-    </Typography>{" "}
-
-    <Typography
-      component="span"
+      {pkg.packagesName}
+    </Typography> */}
+  {/* PACKAGE DAYS BELOW */}
+    {/* <Typography
       sx={{
         fontSize: TEXT_SIZES.xs,
         fontWeight: 600,
-        color: COLORS.primary,
+        color: COLORS.black,
+        mt: 0.3,
       }}
     >
-      Package
+     {`${item.validity || item.tenure || "—"} Days`}
+    </Typography> */}
+    <Typography
+      fontSize={TEXT_SIZES.xs}
+      fontWeight={400}
+      color={COLORS.black}
+    >
+      {pkg.packagesType}
     </Typography>
-  </>,
 
-  <Chip
-    label={`${item.validity || item.tenure || "—"} Days`}
-    size="small"
-    sx={{
-      backgroundColor: COLORS.lightOrange,
-      color: COLORS.primaryDark,
-      fontWeight: 600,
-      fontSize: TEXT_SIZES.xs,
-    }}
-  />,
+  
+  </Box>
+</Box>,
 
   <StatusChip item={item} />,
-
   <Button
     variant="outlined"
     size="small"
@@ -263,7 +270,10 @@ const ExistingPackageDisplay = ({ data, loading, error, category, industry, bran
   </Button>,
 ];
 
-    if (type === "LISTING") return [
+    if (type === "LISTING")
+      console.log("LISTING item:", JSON.stringify(item, null, 2));
+       return [
+     
       name,
       <Chip
         label={`${item.tenure || "—"} Days`}
@@ -299,68 +309,107 @@ const ExistingPackageDisplay = ({ data, loading, error, category, industry, bran
       </Button>,
     ];
 
-    if (type === "LEAD") return [
-      name,
-      <Chip
-        label={item.investmetRageLabel || item.InvestmetRageLabel || item.investmentRangeLabel || "—"}
-        size="small"
-        sx={{ backgroundColor: COLORS.lightOrange, color: COLORS.primaryDark, fontWeight: 600, fontSize: TEXT_SIZES.xs, maxWidth: 120 }}
-      />,
-      <Box
-        onClick={() => openStatesDialog(statesArr, item.investmetRageLabel || item.InvestmetRageLabel)}
-        sx={{
-          display: "inline-flex", alignItems: "center", gap: 0.5,
-          cursor: "pointer", color: COLORS.primary,
-          '&:hover': { textDecoration: "underline" }
-        }}
-      >
-        <Typography fontSize={TEXT_SIZES.small} color={COLORS.primary} fontWeight={600}>
-          {stateCount}
-        </Typography>
-        <VisibilityOutlinedIcon sx={{ fontSize: 16, color: COLORS.primary }} />
-      </Box>,
-      <Box>
-        <Typography fontWeight={700} fontSize={TEXT_SIZES.small} color={COLORS.black}>
-          {item.totalLeads || item.TotalLeads || totalLeads}
-        </Typography>
-      </Box>,
-      <Box>
-        <Typography fontWeight={600} fontSize={TEXT_SIZES.small} color={COLORS.secondaryDark}>
-          {sent}
-        </Typography>
-        <Box sx={{ width: 40, height: 2, bgcolor: COLORS.grey[200], borderRadius: 1, mt: 0.5 }}>
-          <Box sx={{ width: `${progress}%`, height: 2, bgcolor: COLORS.secondary, borderRadius: 1 }} />
-        </Box>
-      </Box>,
-      <Typography fontWeight={600} fontSize={TEXT_SIZES.small} color={remaining > 0 ? COLORS.primary : COLORS.grey[400]}>
-        {remaining}
-      </Typography>,
-      <StatusChip item={item} />,
-      <Typography fontSize={TEXT_SIZES.xs} color={COLORS.grey[600]}>{start}</Typography>,
-      <Typography fontSize={TEXT_SIZES.xs} color={COLORS.grey[600]}>{end}</Typography>,
-      <Button
-        variant="outlined"
-        size="small"
-        onClick={() => handleUpgrade(pkg, item)}
-        startIcon={<UpgradeIcon />}
-        sx={{
-          minWidth: 90,
-          height: 32,
-          fontSize: TEXT_SIZES.xs,
-          textTransform: "none",
-          borderRadius: 2,
-          fontWeight: 600,
-          borderColor: COLORS.primary,
-          color: COLORS.primary,
-          '&:hover': {
-            borderColor: COLORS.primaryDark,
-            backgroundColor: COLORS.lightOrange,
-          }
-        }}
-      >
-        Upgrade
-      </Button>,
-    ];
+  if (type === "LEAD") {
+  const statesArr =
+    item.investmentranges?.flatMap((r) =>
+      (r.selectedPlanStateAndDistrict || []).map((s) => s.state)
+    ) || [];
+  const stateCount = statesArr.length;
+
+  const start = item.isPending ? "—" : formatDate(item.packageStartDate);
+  const end = item.isPending ? "—" : formatDate(item.packageEndDate);
+
+  const sent = item.sendingLeads || 0;
+  const remaining = item.remainingLeads || 0;
+  const totalLeads = item.totalLeads || 0;
+  const progress = totalLeads > 0 ? (sent / totalLeads) * 100 : 0;
+
+  const investmentRange =
+    item.investmentranges?.map((r) => r.selectedPlanInvestmetrange).join(", ") || "—";
+
+  return [
+    // Package name cell
+    <Box>
+       <Typography fontWeight={700} fontSize={TEXT_SIZES.xs} color={COLORS.black[700]}>
+  {item.validity ? `${item.validity} Days` : "—"}
+</Typography>
+      <Typography fontWeight={300} fontSize={TEXT_SIZES.small} color={COLORS.black} noWrap>
+        {item.packagesName || pkg.packagesName}
+      </Typography>
+    
+    </Box>,
+
+    // Investment Group
+    <Chip
+      label={item.investmetRageLabel || "—"}
+      size="small"
+      sx={{ backgroundColor: COLORS.lightOrange, color: COLORS.primaryDark, fontWeight: 600, fontSize: TEXT_SIZES.xs, maxWidth: 120 }}
+    />,
+
+    // Investment Range(s)
+    <Chip
+      label={investmentRange}
+      size="small"
+      sx={{ backgroundColor: COLORS.lightOrange, color: COLORS.primaryDark, fontWeight: 600, fontSize: TEXT_SIZES.xs, maxWidth: 150 }}
+    />,
+
+    // States count + view
+    <Box
+      onClick={() => openStatesDialog(statesArr, investmentRange)}
+      sx={{ display: "inline-flex", alignItems: "center", gap: 0.5, cursor: "pointer" }}
+    >
+      <Typography fontSize={TEXT_SIZES.small} color={COLORS.primary} fontWeight={600}>
+        {stateCount}
+      </Typography>
+      <VisibilityOutlinedIcon sx={{ fontSize: 16, color: COLORS.primary }} />
+    </Box>,
+
+    // Total Leads
+    <Typography fontWeight={700} fontSize={TEXT_SIZES.small} color={COLORS.black}>
+      {totalLeads}
+    </Typography>,
+
+    // Sent
+    <Box>
+      <Typography fontWeight={600} fontSize={TEXT_SIZES.small} color={COLORS.secondaryDark}>
+        {sent}
+      </Typography>
+      <Box sx={{ width: 40, height: 2, bgcolor: COLORS.grey[200], borderRadius: 1, mt: 0.5 }}>
+        <Box sx={{ width: `${progress}%`, height: 2, bgcolor: COLORS.secondary, borderRadius: 1 }} />
+      </Box>
+    </Box>,
+
+    // Remaining
+    <Typography fontWeight={600} fontSize={TEXT_SIZES.small} color={remaining > 0 ? COLORS.primary : COLORS.grey[400]}>
+      {remaining}
+    </Typography>,
+
+    // Status
+    <StatusChip item={item} />,
+
+    // Start Date
+    <Typography fontSize={TEXT_SIZES.xs} color={COLORS.grey[600]}>{start}</Typography>,
+
+    // End Date
+    <Typography fontSize={TEXT_SIZES.xs} color={COLORS.grey[600]}>{end}</Typography>,
+
+    // Upgrade button
+    <Button
+      variant="outlined"
+      size="small"
+      onClick={() => handleUpgrade(pkg, item)}
+      startIcon={<UpgradeIcon />}
+      sx={{
+        minWidth: 90, height: 32, fontSize: TEXT_SIZES.xs,
+        textTransform: "none", borderRadius: 2, fontWeight: 600,
+        borderColor: COLORS.primary, color: COLORS.primary,
+        "&:hover": { borderColor: COLORS.primaryDark, backgroundColor: COLORS.lightOrange },
+      }}
+    >
+      Upgrade
+    </Button>,
+  ];
+}
 
     return [];
   };
@@ -401,14 +450,15 @@ const ExistingPackageDisplay = ({ data, loading, error, category, industry, bran
         mb:5,
       }}>
         <Typography
-          variant="h6"
-          fontWeight={700}
-          fontSize={TEXT_SIZES.xl}
-          color={COLORS.black}
-          sx={{ mb: 3, display: "flex", alignItems: "center", gap: 1, justifyContent: "center" }}
+          variant="h4"
+        sx={{
+          fontWeight: 700,
+          color: COLORS.black,
+          mb: 0.5,
+          fontSize: { xs: "1rem", md: "1.9rem" },
+        }}
         >
-          <LocalOfferIcon sx={{ color: COLORS.primary }} />
-          Brand Packages Summary
+          CURRENT ACTIVE PLAN
         </Typography>
 
         {!hasAnyPackages ? (
@@ -446,7 +496,7 @@ const ExistingPackageDisplay = ({ data, loading, error, category, industry, bran
                   }}
                 >
                   {/* Table Header */}
-                  <Box
+                  {/* <Box
                     sx={{
                       px: 2,
                       py: 1.5,
@@ -458,7 +508,7 @@ const ExistingPackageDisplay = ({ data, loading, error, category, industry, bran
                     <Typography fontWeight={700} fontSize={TEXT_SIZES.medium} color={config.headerColor}>
                       {config.label} Packages
                     </Typography>
-                  </Box>
+                  </Box> */}
 
                   {/* Table Content */}
                 <TableContainer sx={{ width: "100%", overflow: "visible" }}>
