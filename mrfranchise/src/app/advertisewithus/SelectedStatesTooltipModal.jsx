@@ -19,21 +19,22 @@ const SelectedStatesTooltipModal = ({
   TEXT_SIZES,
 }) => {
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      maxWidth="sm"
-      fullWidth
-      PaperProps={{
-        sx: {
-          borderRadius: 2,
-          border: `1px solid ${COLORS.primary}`,
-          maxHeight: "80vh",
-          margin:5,
-          top:0
-        },
-      }}
-    >
+   <Dialog
+  open={open}
+  onClose={onClose}
+  maxWidth="sm"
+  fullWidth
+  PaperProps={{
+    sx: {
+      borderRadius: 2,
+      border: `1px solid ${COLORS.primary}`,
+      maxHeight: "80vh",
+      position: "absolute",
+      top: 50,
+      margin: 0,
+    },
+  }}
+>
       {/* Header */}
       <DialogTitle
         sx={{
@@ -84,7 +85,7 @@ const SelectedStatesTooltipModal = ({
                     {/* Region Title */}
                     <Typography
                       sx={{
-                        fontSize: TEXT_SIZES.small,
+                        fontSize: TEXT_SIZES.medium,
                         fontWeight: 700,
                         color: COLORS.primary,
                         mb: 1,
@@ -113,7 +114,7 @@ const SelectedStatesTooltipModal = ({
                             backgroundColor: COLORS.lightOrange,
                             color: COLORS.black,
                             fontWeight: 500,
-                            fontSize: "0.7rem",
+                            fontSize: "0.8rem",
                             height: 24,
                           }}
                         />

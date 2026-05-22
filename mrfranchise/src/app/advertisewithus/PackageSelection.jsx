@@ -3510,7 +3510,7 @@ background: "linear-gradient(135deg, #4cb04f 0%, #2e7d32 100%)",
                                     >
                                       <Typography
                                         sx={{
-                                          fontSize: TEXT_SIZES.medium,
+                                          fontSize: TEXT_SIZES.xl,
                                           color: COLORS.black,
                                           fontWeight: 600,
                                         }}
