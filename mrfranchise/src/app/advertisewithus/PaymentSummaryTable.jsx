@@ -115,7 +115,7 @@ groupedByPlan[group.planId].byRange = byRange;
       <Box
         ref={paymentSummaryRef}
         sx={{
-          mb: 4,
+          mb: 9,
           width: "1350px",
           maxWidth: "90%",
         }}
@@ -156,111 +156,46 @@ groupedByPlan[group.planId].byRange = byRange;
             mb: 3,
           }}
         >
-          <Table sx={{ borderCollapse: "collapse" }}>
-            {/* Table Head */}
-            <TableHead>
-              <TableRow
-                sx={{
-                  background: `linear-gradient(135deg, ${COLORS.secondary} 0%, ${COLORS.secondaryDark} 100%)`,
-                }}
-              >
-                <TableCell
-                  sx={{
-                    fontWeight: 700,
-                    fontSize: TEXT_SIZES.small,
-                    color: COLORS.white,
-                    py: 1,
-                    width: "25%",
-                    borderBottom: "none",
-                  }}
-                >
-                  Selected Plan
-                </TableCell>
+         <Table sx={{ borderCollapse: "collapse", tableLayout: "fixed", width: "100%" }}>
 
-                <TableCell
-                  align="center"
-                  sx={{
-                    fontWeight: 700,
-                    fontSize: TEXT_SIZES.small,
-                    color: COLORS.white,
-                    py: 1,
-                    width: "15%",
-                    borderBottom: "none",
-                  }}
-                >
-                  Investment Range Label
-                </TableCell>
+  {/* ADD THIS */}
+<colgroup>
+  <col style={{ width: "14.28%" }} />
+  <col style={{ width: "14.28%" }} />
+  <col style={{ width: "14.28%" }} />
+  <col style={{ width: "14.28%" }} />
+  <col style={{ width: "14.28%" }} />
+  <col style={{ width: "14.28%" }} />
+  <col style={{ width: "14.32%" }} />
+</colgroup>
+  <TableHead>
+    <TableRow sx={{ background: `linear-gradient(135deg, ${COLORS.secondary} 0%, ${COLORS.secondaryDark} 100%)` }}>
+      
+      {/* Remove width from all these - colgroup handles it */}
+      <TableCell sx={{ fontWeight: 700, fontSize: TEXT_SIZES.small, color: COLORS.white, py: 1, borderBottom: "none" }}>
+        Selected Plan
+      </TableCell>
+      <TableCell align="center" sx={{ fontWeight: 700, fontSize: TEXT_SIZES.small, color: COLORS.white, py: 1, borderBottom: "none" }}>
+        Investment Range Label
+      </TableCell>
+      <TableCell sx={{ fontWeight: 700, fontSize: TEXT_SIZES.small, color: COLORS.white, py: 1, borderBottom: "none" }}>
+        Investment Range
+      </TableCell>
+      <TableCell align="center" sx={{ fontWeight: 700, fontSize: TEXT_SIZES.small, color: COLORS.white, py: 1, borderBottom: "none" }}>
+        States
+      </TableCell>
+      <TableCell align="center" sx={{ fontWeight: 700, fontSize: TEXT_SIZES.small, color: COLORS.white, py: 1, borderBottom: "none" }}>
+        Leads
+      </TableCell>
+      <TableCell align="right" sx={{ fontWeight: 700, fontSize: TEXT_SIZES.small, color: COLORS.white, py: 1, borderBottom: "none" }}>
+        Subtotal (₹)
+      </TableCell>
+      <TableCell align="center" sx={{ fontWeight: 700, fontSize: TEXT_SIZES.small, color: COLORS.white, py: 1, borderBottom: "none" }}>
+        Actions
+      </TableCell>
 
-                <TableCell
-                  sx={{
-                    fontWeight: 700,
-                    fontSize: TEXT_SIZES.small,
-                    color: COLORS.white,
-                    py: 1,
-                    width: "20%",
-                    borderBottom: "none",
-                  }}
-                >
-                  Investment Range
-                </TableCell>
-
-                <TableCell
-                  align="center"
-                  sx={{
-                    fontWeight: 700,
-                    fontSize: TEXT_SIZES.small,
-                    color: COLORS.white,
-                    py: 1,
-                    width: "10%",
-                    borderBottom: "none",
-                  }}
-                >
-                  States
-                </TableCell>
-
-                <TableCell
-                  align="center"
-                  sx={{
-                    fontWeight: 700,
-                    fontSize: TEXT_SIZES.small,
-                    color: COLORS.white,
-                    py: 1,
-                    width: "15%",
-                    borderBottom: "none",
-                  }}
-                >
-                  Leads
-                </TableCell>
-
-                <TableCell
-                  align="right"
-                  sx={{
-                    fontWeight: 700,
-                    fontSize: TEXT_SIZES.small,
-                    color: COLORS.white,
-                    py: 1,
-                    width: "20%",
-                    borderBottom: "none",
-                  }}
-                >
-                  Subtotal (₹)
-                </TableCell>
-
-                <TableCell
-                  align="center"
-                  sx={{
-                    fontWeight: 700,
-                    fontSize: TEXT_SIZES.small,
-                    color: COLORS.white,
-                    py: 1,
-                    width: "10%",
-                    borderBottom: "none",
-                  }}
-                >
-                  Actions
-                </TableCell>
-              </TableRow>
-            </TableHead>
+    </TableRow>
+  </TableHead>
 
             {/* Table Body */}
             <TableBody>
@@ -269,8 +204,7 @@ groupedByPlan[group.planId].byRange = byRange;
                   ([planId, planData]) => {
  const groupedByRange = planData.items.reduce(
   (acc, item) => {
-    const rangeKey = `${planId}_${item.range}`;
-
+const rangeKey = `${planId}_${item.investmentRangeLabel}_${item.range}`;
     if (!acc[rangeKey]) {
       acc[rangeKey] = {
         range: item.range,
@@ -305,16 +239,7 @@ acc[rangeKey].totalAmount = (item.pricePerState || 0) * uniqueRangeStatesCount;
   {}
 );
 
-                 const RANGE_ORDER = [
-  "Below 50k",
-  "Rs. 50k - 2 Lakhs",
-  "Rs. 2 Lakhs - 5 Lakhs",
-  "Rs. 5 Lakhs - 10 Lakhs",
-  "Rs. 10 Lakhs - 20 Lakhs",
-  "Above 20 Lakhs",
-];
 
-// Step 1: Group ranges by their label (keeps label groups contiguous)
 const labelGroupMap = {};
 Object.values(groupedByRange).forEach((rg) => {
   const lbl = rg.investmentRangeLabel || "—";
@@ -322,12 +247,7 @@ Object.values(groupedByRange).forEach((rg) => {
   labelGroupMap[lbl].push(rg);
 });
 
-// Step 2: Sort ranges WITHIN each label group
-Object.values(labelGroupMap).forEach((ranges) => {
-  ranges.sort((a, b) => RANGE_ORDER.indexOf(a.range) - RANGE_ORDER.indexOf(b.range));
-});
-
-// Step 3: Flatten — all ranges of label A, then all of label B, etc.
+// Step 2 & 3: No sorting needed - just flatten in API order
 const sortedRanges = Object.values(labelGroupMap).flat();
 
 // Count how many rows each label occupies
@@ -379,8 +299,8 @@ const rangeRows = [];
     <TableRow
       key={`${planId}-${rangeGroup.range}`}
       sx={{
-        backgroundColor: rowIndex % 2 === 0 ? COLORS.white : COLORS.grey[50],
-        "&:hover": { backgroundColor: COLORS.lightGreen },
+        // backgroundColor: rowIndex % 2 === 0 ? COLORS.white : COLORS.grey[50],
+        // "&:hover": { backgroundColor: COLORS.lightGreen },
         "& td": { borderBottom: "none", py: 0.75 },
       }}
     >
@@ -392,7 +312,7 @@ const rangeRows = [];
             verticalAlign: "top",
             py: 0.75,
             borderRight: `2px solid ${COLORS.border}`,
-            backgroundColor: rowIndex % 2 === 0 ? COLORS.white : COLORS.grey[50],
+            // backgroundColor: rowIndex % 2 === 0 ? COLORS.white : COLORS.grey[50],
             borderBottom: "none",
           }}
         >
@@ -415,7 +335,7 @@ const rangeRows = [];
   const lbl = rangeGroup.investmentRangeLabel || "—";
   renderedLabels.add(lbl);
   return (
-    <TableCell
+    <TableCell  
       rowSpan={labelRowSpanMap[lbl]}
       sx={{ py: 0.75, borderBottom: "none", verticalAlign: "middle" }}
     >

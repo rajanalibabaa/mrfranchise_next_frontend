@@ -1996,7 +1996,6 @@ const getIndustry = useCallback(() => {
       gap: 1,
       mb: 3,
       pb: 2,
-      borderBottom: `1px solid ${COLORS.border}`,
       px: { xs: 2, md: 4 },
       flexWrap: "wrap",
     }}
@@ -2665,14 +2664,14 @@ const getIndustry = useCallback(() => {
                                 fontWeight: 700,
                                 fontSize: TEXT_SIZES.medium,
                                 color: COLORS.white,
-                                background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryDark} 100%)`,
-                                px: 1.5,
+background: "linear-gradient(135deg, #fb8c00 0%, #ef6c00 100%)",                
                                 py: 1.5,
                                 width: "5%",
                                 textAlign: "center",
+                                lineHeight:1.5
                               }}
                             >
-                              Select Plan
+                              Select<br/> Plan
                             </TableCell>
 
                             {/* Investment Group Column */}
@@ -2681,30 +2680,29 @@ const getIndustry = useCallback(() => {
                                 fontWeight: 700,
                                 fontSize: TEXT_SIZES.medium,
                                 color: COLORS.white,
-                                background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryDark} 100%)`,
-                                width: "4%",
+background: "linear-gradient(135deg, #fb8c00 0%, #ef6c00 100%)",                
+                width: "4%",
                                 textAlign: "center",
-                                lineHeight: 1.3,
+                                lineHeight: 1.5,
                               }}
                             >
-                             Select Lead Per State
+                             Select <br/> Lead Per State
                             </TableCell>
 
                             {/* Select Checkbox Column */}
-                            <TableCell
+                            {/* <TableCell
                               sx={{
                                 fontWeight: 700,
                                 fontSize: TEXT_SIZES.medium,
                                 color: COLORS.white,
-                                background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryDark} 100%)`,
-                                px: 1,
+background: "linear-gradient(135deg, #fb8c00 0%, #ef6c00 100%)",                                px: 1,
                                 py: 1.5,
-                                width: "1%",
+                                width: "0",
                                 textAlign: "center",
                               }}
                             >
-                              Select
-                            </TableCell>
+                            Select
+                            </TableCell> */}
 
                             {/* Investment Range Column */}
                             <TableCell
@@ -2712,30 +2710,30 @@ const getIndustry = useCallback(() => {
                                 fontWeight: 700,
                                 fontSize: TEXT_SIZES.medium,
                                 color: COLORS.white,
-                                background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryDark} 100%)`,
+background: "linear-gradient(135deg, #fb8c00 0%, #ef6c00 100%)",
                                 px: 1.5,
                                 py: 1.5,
                                 width: "3%",
                                 textAlign: "center",
                               }}
                             >
-                              Investment Range
+                             Select Investment Range
                             </TableCell>
 
                             {/* States Column */}
                             <TableCell
                               sx={{
                                 fontWeight: 700,
-                                fontSize: TEXT_SIZES.medium,
+                                fontSize: TEXT_SIZES.xl,
                                 color: COLORS.white,
-                                background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryDark} 100%)`,
+background: "linear-gradient(135deg, #fb8c00 0%, #ef6c00 100%)",
                                 px: 1,
                                 py: 1.5,
                                 width: "1%",
                                 textAlign: "center",
                               }}
                             >
-                              States
+                              Select States
                             </TableCell>
 
                             {/* Price/State Column */}
@@ -2744,7 +2742,7 @@ const getIndustry = useCallback(() => {
                                 fontWeight: 700,
                                 fontSize: TEXT_SIZES.medium,
                                 color: COLORS.white,
-                                background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryDark} 100%)`,
+background: "linear-gradient(135deg, #4cb04f 0%, #2e7d32 100%)",
                                 px: 1,
                                 py: 1.5,
                                 width: "2.3%",
@@ -2760,7 +2758,7 @@ const getIndustry = useCallback(() => {
                                 fontWeight: 700,
                                 fontSize: TEXT_SIZES.medium,
                                 color: COLORS.white,
-                                background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryDark} 100%)`,
+background: "linear-gradient(135deg, #4cb04f 0%, #2e7d32 100%)",
                                 px: 1,
                                 py: 1.5,
                                 width: "1.8%",
@@ -2776,7 +2774,7 @@ const getIndustry = useCallback(() => {
                                 fontWeight: 700,
                                 fontSize: TEXT_SIZES.medium,
                                 color: COLORS.white,
-                                background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryDark} 100%)`,
+background: "linear-gradient(135deg, #4cb04f 0%, #2e7d32 100%)",
                                 px: 1,
                                 py: 1.5,
                                 width: "2%",
@@ -2792,8 +2790,9 @@ const getIndustry = useCallback(() => {
                                 fontWeight: 700,
                                 fontSize: TEXT_SIZES.medium,
                                 color: COLORS.white,
-                                background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryDark} 100%)`,
-                                px: 1,
+background: "linear-gradient(135deg, #4cb04f 0%, #2e7d32 100%)",    
+                            px: 1,
+
                                 py: 1.5,
                                 width: "4%",
                                 textAlign: "center",
@@ -2912,7 +2911,7 @@ const getIndustry = useCallback(() => {
                                         py: 1.5,
                                         borderRight: `2px solid ${COLORS.border}`,
                                         verticalAlign: "middle",
-                                        backgroundColor: "#fff6de",
+                                        backgroundColor: "#ffe0b2 ",
                                         height: "100%",
                                         borderRight: "none",
                                       }}
@@ -3023,172 +3022,161 @@ const getIndustry = useCallback(() => {
                                   )}
 
                                   {/* Investment Group - Merged cell for same groups */}
-                                  {isFirstInGroup &&
-                                    (() => {
-                                      const groupIndices = {};
-                                      let currentGroupIndex = 0;
+                                 {isFirstInGroup &&
+  (() => {
+    const groupIndices = {};
+    let currentGroupIndex = 0;
 
-                                      allPackagesFromPlan.forEach(
-                                        (packageItem) => {
-                                          if (
-                                            !groupIndices.hasOwnProperty(
-                                              packageItem.investmentRangeLabel,
-                                            )
-                                          ) {
-                                            groupIndices[
-                                              packageItem.investmentRangeLabel
-                                            ] = currentGroupIndex;
-                                            currentGroupIndex++;
-                                          }
-                                        },
-                                      );
+    allPackagesFromPlan.forEach((packageItem) => {
+      if (
+        !groupIndices.hasOwnProperty(
+          packageItem.investmentRangeLabel,
+        )
+      ) {
+        groupIndices[
+          packageItem.investmentRangeLabel
+        ] = currentGroupIndex;
+        currentGroupIndex++;
+      }
+    });
 
-                                      const groupIdx =
-                                        groupIndices[item.investmentRangeLabel];
+    const groupIdx =
+      groupIndices[item.investmentRangeLabel];
 
-                                      return (
-                                        <TableCell
-                                          rowSpan={rowSpan}
-                                          sx={{
-                                            px: 0.5,
-                                            py: 0.4,
-                                            textAlign: "center",
-                                            height: "20%",
-                                            backgroundColor: "#fff6de",
-                                            width: "3%",
-                                            borderTop:
-                                              isFirstInGroup &&
-                                              !isFirstRowOfTable
-                                                ? `2px solid #b5d7b6`
-                                                : "none",
-                                          }}
-                                        >
-                                          <Box
-                                            sx={{
-                                              display: "flex",
-                                              flexDirection: "column",
-                                              alignItems: "center",
-                                              justifyContent: "center",
-                                              // gap: 1,
-                                              width: "100%",
-                                            }}
-                                          >
-                                            {/* Investment Label */}
-                                            <Typography
-                                              sx={{
-                                                fontSize: TEXT_SIZES.medium,
-                                                fontWeight: 700,
-                                                color: COLORS.black,
-                                                lineHeight: 1.2,
-                                                textAlign: "center",
-                                                mt:1,
-                                              
-                                              }}
-                                            >
-                                              {item.investmentRangeLabel}
-                                            </Typography>
-                                            <Typography
-                                              sx={{
-                                                fontSize: TEXT_SIZES.xs,
-                                                mt: 1,
-                                                mb: 1,
-                                              }}
-                                            >
-                                              Select Leads Per State
-                                            </Typography>
+    return (
+      <TableCell
+        rowSpan={rowSpan}
+        sx={{
+          px: 0.5,
+          py: 0.4,
+          textAlign: "center",
+          height: "20%",
+          backgroundColor: "#ffe0b2 ",
+          width: "3%",
+          borderTop:
+            isFirstInGroup &&
+            !isFirstRowOfTable
+              ? `2px solid #b5d7b6`
+              : "none",
+        }}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            width: "100%",
+            gap: 3,
+          }}
+        >
+          {/* Leads Options FIRST */}
+          {availableLeads.length > 0 ? (
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 3,
+                flexWrap: "wrap",
+                mt: 1,
+              }}
+            >
+              {availableLeads.map((leadOption) => {
+                const rangeSpecificKey = `plan-${selectedPlan._id}-${item.investmentRangeLabel}`;
 
-                                            {/* Leads Options */}
-                                            {availableLeads.length > 0 ? (
-                                              <Box
-                                                sx={{
-                                                  display: "flex",
-                                                  alignItems: "center",
-                                                  justifyContent: "center",
-                                                  gap: 3,
-                                                  flexWrap: "wrap",
-                                                    mb:1 
-                                                }}
-                                              >
-                                                {availableLeads.map(
-                                                  (leadOption) => {
-                                                    const rangeSpecificKey = `plan-${selectedPlan._id}-${item.investmentRangeLabel}`;
-                                                    const isSelected =
-                                                      selectedLeadsPerRange[
-                                                        rangeSpecificKey
-                                                      ] === leadOption ||
-                                                      (!selectedLeadsPerRange[
-                                                        rangeSpecificKey
-                                                      ] &&
-                                                        leadOption ===
-                                                          availableLeads[0]);
+                const isSelected =
+                  selectedLeadsPerRange[
+                    rangeSpecificKey
+                  ] === leadOption ||
+                  (!selectedLeadsPerRange[
+                    rangeSpecificKey
+                  ] &&
+                    leadOption ===
+                      availableLeads[0]);
 
-                                                    return (
-                                                      <Box
-                                                        key={leadOption}
-                                                        onClick={() =>
-                                                          handleLeadsChange(
-                                                            rangeSpecificKey,
-                                                            leadOption,
-                                                          )
-                                                        }
-                                                        sx={{
-                                                          px: 1.5,
-                                                          py: 0.7,
-                                                          borderRadius: 1.5,
-                                                          cursor: "pointer",
-                                                          textAlign: "center",
-                                                          transition:
-                                                            "all 0.2s ease",
-                                                          backgroundColor:
-                                                            isSelected
-                                                              ? COLORS.secondary
-                                                              : COLORS.white,
-                                                          color: isSelected
-                                                            ? COLORS.white
-                                                            : COLORS.black,
-                                                          fontWeight: isSelected
-                                                            ? 700
-                                                            : 600,
-                                                          fontSize: "0.95rem",
-                                                          border: `1px solid ${isSelected ? COLORS.secondary : COLORS.border}`,
-                                                          whiteSpace: "nowrap",
-                                                          "&:hover": {
-                                                            backgroundColor:
-                                                              isSelected
-                                                                ? COLORS.secondaryDark
-                                                                : COLORS.lightOrange,
-                                                          },
-                                                        }}
-                                                      >
-                                                        {leadOption}
-                                                      </Box>
-                                                    );
-                                                  },
-                                                )}
-                                              </Box>
-                                            ) : (
-                                              <Typography
-                                                sx={{
-                                                  color: COLORS.grey[500],
-                                                  fontSize: TEXT_SIZES.small,
-                                                }}
-                                              >
-                                                No leads
-                                              </Typography>
-                                            )}
-                                          </Box>
-                                        </TableCell>
-                                      );
-                                    })()}
+                return (
+                  <Box
+                    key={leadOption}
+                    onClick={() =>
+                      handleLeadsChange(
+                        rangeSpecificKey,
+                        leadOption,
+                      )
+                    }
+                    sx={{
+                      px: 1.5,
+                      py: 0.7,
+                      borderRadius: 1.5,
+                      cursor: "pointer",
+                      textAlign: "center",
+                      transition:
+                        "all 0.2s ease",
+                      backgroundColor: isSelected
+                        ? COLORS.secondary
+                        : COLORS.white,
+                      color: isSelected
+                        ? COLORS.white
+                        : COLORS.black,
+                      fontWeight: isSelected
+                        ? 700
+                        : 600,
+                      fontSize: "0.95rem",
+                      border: `1px solid ${
+                        isSelected
+                          ? COLORS.secondary
+                          : COLORS.border
+                      }`,
+                      whiteSpace: "nowrap",
+                      "&:hover": {
+                        backgroundColor: isSelected
+                          ? COLORS.secondaryDark
+                          : COLORS.lightOrange,
+                      },
+                    }}
+                  >
+                    {leadOption}
+                  </Box>
+                );
+              })}
+            </Box>
+          ) : (
+            <Typography
+              sx={{
+                color: COLORS.grey[500],
+                fontSize: TEXT_SIZES.small,
+              }}
+            >
+              No leads
+            </Typography>
+          )}
+
+          {/* Investment Label BELOW */}
+          <Typography
+            sx={{
+              fontSize: TEXT_SIZES.medium,
+              fontWeight: 700,
+              color: COLORS.black,
+              lineHeight: 1.2,
+              textAlign: "center",
+              mb: 1,
+            }}
+          >
+            {item.investmentRangeLabel}
+          </Typography>
+        </Box>
+      </TableCell>
+    );
+  })()}
 
                                   {/* Select Checkbox */}
-                                  <TableCell
+                                  {/* <TableCell
                                     sx={{
                                       px: 0.2,
                                       py: 0.2,
                                       textAlign: "center",
                                       width: "10px",
-
+                                      backgroundColor:"#fff6de",
                                       borderTop:
                                         isFirstInGroup && !isFirstRowOfTable
                                           ? `2px solid #b5d7b6`
@@ -3254,52 +3242,97 @@ const getIndustry = useCallback(() => {
                                         />
                                       </span>
                                     </Tooltip>
-                                  </TableCell>
+                                  </TableCell> */}
 
-                                  {/* Investment Range */}
-                                  <TableCell
-                                    sx={{
-                                      px: 0.5,
-                                      py: 0.4,
-                                      verticalAlign: "middle",
-                                      width: "3%",
-                                      borderTop:
-                                        isFirstInGroup && !isFirstRowOfTable
-                                          ? `2px solid #b5d7b6`
-                                          : "none",
-                                    }}
-                                  >
-                                    {" "}
-                                    <Box
-                                      sx={{
-                                        display: "flex",
-                                        alignItems: "center",
-                                        justifyContent: "space-between",
-                                        gap: 0,
-                                        height: 10,
-                                      }}
-                                    >
-                                      <Typography
-                                        sx={{
-                                          fontSize: TEXT_SIZES.small,
-                                          fontWeight: 600,
-                                          color: COLORS.black,
-                                          lineHeight: 1.3,
-                                          whiteSpace: "nowrap",
-                                        }}
-                                      >
-                                        {item.range}
-                                      </Typography>
-                                    </Box>
-                                  </TableCell>
+                                
+                                {/* Investment Range - now includes checkbox */}
+<TableCell
+  sx={{
+    px: 0.5,
+    py: 0.4,
+    verticalAlign: "middle",
+    backgroundColor: "#ffe0b2",
+    width: "3%",
+    borderTop:
+      isFirstInGroup && !isFirstRowOfTable
+        ? `2px solid #b5d7b6`
+        : "none",
+  }}
+>
+  <Box
+    sx={{
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "flex-start",
+      gap: 1,
+    }}
+  >
+    <Tooltip
+      title={
+        inPayment
+          ? "Already added to cart"
+          : "Select to add to cart"
+      }
+      arrow
+    >
+      <span>
+        <Checkbox
+          checked={checkedItems[itemId] || false}
+          onChange={(e) => {
+            if (inPayment) {
+              openSnack(
+                `${item.range} is already in your cart`,
+                "warning",
+              );
+              return;
+            }
+            if (e.target.checked) {
+              setCheckedItems((prev) => ({
+                ...prev,
+                [itemId]: true,
+              }));
+              openSnack(`${item.range} selected`, "success");
+            } else {
+              setCheckedItems((prev) => ({
+                ...prev,
+                [itemId]: false,
+              }));
+              openSnack(`${item.range} deselected`, "info");
+            }
+          }}
+          disabled={inPayment || !!selectedListingPlanId}
+          size="small"
+          sx={{
+            p: 0,
+            m: 0,
+            color: COLORS.primary,
+            "&.Mui-checked": { color: COLORS.secondary },
+            "&.Mui-disabled": { color: COLORS.secondary },
+          }}
+        />
+      </span>
+    </Tooltip>
+    <Typography
+      sx={{
+        fontSize: TEXT_SIZES.small,
+        fontWeight: 600,
+        color: COLORS.black,
+        lineHeight: 1.3,
+        whiteSpace: "nowrap",
+      }}
+    >
+      {item.range}
+    </Typography>
+  </Box>
+</TableCell>
 
-                                  {/* States */}
                                   {/* States */}
                                   <TableCell
                                     sx={{
                                       px: 0.5,
                                       py: 0.4,
                                       height: "20%",
+                                      backgroundColor:"#ffe0b2 ",
                                       borderTop:
                                         isFirstInGroup && !isFirstRowOfTable
                                           ? `2px solid #b5d7b6`
@@ -3359,6 +3392,7 @@ const getIndustry = useCallback(() => {
                                       sx={{
                                         px: 0.5,
                                         py: 0.4,
+                                        backgroundColor:"#bfe5c1 ",
                                         textAlign: "center",
                                         verticalAlign: "middle",
                                         borderTop: !isFirstRowOfTable
@@ -3387,6 +3421,7 @@ const getIndustry = useCallback(() => {
                                         py: 0.4,
                                         textAlign: "center",
                                         verticalAlign: "middle",
+                                                                                backgroundColor:"#bfe5c1 ",
                                         width: "4%",
                                         borderTop: !isFirstRowOfTable
                                           ? `2px solid #b5d7b6`
@@ -3414,6 +3449,7 @@ const getIndustry = useCallback(() => {
                                         py: 0.4,
                                         textAlign: "center",
                                         verticalAlign: "middle",
+                                                                                backgroundColor:"#bfe5c1 ",
                                         width: "4%",
                                         borderTop: !isFirstRowOfTable
                                           ? `2px solid #b5d7b6`
@@ -3441,6 +3477,7 @@ const getIndustry = useCallback(() => {
     sx={{
       px: 0.5,
       py: 0.4,
+                                              backgroundColor:"#bfe5c1 ",
       textAlign: "center",
       verticalAlign: "middle",  // ← Keep this for vertical centering
       width: "100px",

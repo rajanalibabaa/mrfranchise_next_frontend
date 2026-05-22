@@ -213,7 +213,7 @@ if (type === "FREE") return [
   }}
 >
   <Box>
-    <Typography
+    {/* <Typography
       sx={{
         color: COLORS.black,
         fontWeight: 800,
@@ -221,9 +221,9 @@ if (type === "FREE") return [
       }}
     >
       {pkg.packagesName}
-    </Typography>
+    </Typography> */}
   {/* PACKAGE DAYS BELOW */}
-    <Typography
+    {/* <Typography
       sx={{
         fontSize: TEXT_SIZES.xs,
         fontWeight: 600,
@@ -232,7 +232,7 @@ if (type === "FREE") return [
       }}
     >
      {`${item.validity || item.tenure || "—"} Days`}
-    </Typography>
+    </Typography> */}
     <Typography
       fontSize={TEXT_SIZES.xs}
       fontWeight={400}
@@ -450,14 +450,15 @@ if (type === "FREE") return [
         mb:5,
       }}>
         <Typography
-          variant="h6"
-          fontWeight={700}
-          fontSize={TEXT_SIZES.xl}
-          color={COLORS.black}
-          sx={{ mb: 3, display: "flex", alignItems: "center", gap: 1, justifyContent: "center" }}
+          variant="h4"
+        sx={{
+          fontWeight: 700,
+          color: COLORS.black,
+          mb: 0.5,
+          fontSize: { xs: "1rem", md: "1.9rem" },
+        }}
         >
-          <LocalOfferIcon sx={{ color: COLORS.primary }} />
-          Brand Packages Summary
+          CURRENT ACTIVE PLAN
         </Typography>
 
         {!hasAnyPackages ? (
@@ -495,7 +496,7 @@ if (type === "FREE") return [
                   }}
                 >
                   {/* Table Header */}
-                  <Box
+                  {/* <Box
                     sx={{
                       px: 2,
                       py: 1.5,
@@ -507,7 +508,7 @@ if (type === "FREE") return [
                     <Typography fontWeight={700} fontSize={TEXT_SIZES.medium} color={config.headerColor}>
                       {config.label} Packages
                     </Typography>
-                  </Box>
+                  </Box> */}
 
                   {/* Table Content */}
                 <TableContainer sx={{ width: "100%", overflow: "visible" }}>
