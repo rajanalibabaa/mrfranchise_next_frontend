@@ -40,11 +40,17 @@ const RemoveInvestmentRangeDialog = ({
       onClose={handleDialogClose}
       maxWidth="xs"
       fullWidth
+      sx={{
+    '& .MuiDialog-container': {
+      alignItems: 'flex-start', // Aligns dialog to the top
+    },
+  }}
       PaperProps={{
         sx: {
           borderRadius: 3,
           border: `2px solid ${COLORS.primary}`,
           boxShadow: `0 8px 32px ${COLORS.shadow}`,
+           marginTop: '10vh',
         },
       }}
     >

@@ -29,6 +29,8 @@ const SelectedStatesTooltipModal = ({
           borderRadius: 2,
           border: `1px solid ${COLORS.primary}`,
           maxHeight: "80vh",
+          margin:5,
+          top:0
         },
       }}
     >

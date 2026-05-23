@@ -115,7 +115,7 @@ groupedByPlan[group.planId].byRange = byRange;
       <Box
         ref={paymentSummaryRef}
         sx={{
-          mb: 4,
+          mb: 9,
           width: "1350px",
           maxWidth: "90%",
         }}
@@ -156,111 +156,46 @@ groupedByPlan[group.planId].byRange = byRange;
             mb: 3,
           }}
         >
-          <Table sx={{ borderCollapse: "collapse" }}>
-            {/* Table Head */}
-            <TableHead>
-              <TableRow
-                sx={{
-                  background: `linear-gradient(135deg, ${COLORS.secondary} 0%, ${COLORS.secondaryDark} 100%)`,
-                }}
-              >
-                <TableCell
-                  sx={{
-                    fontWeight: 700,
-                    fontSize: TEXT_SIZES.small,
-                    color: COLORS.white,
-                    py: 1,
-                    width: "25%",
-                    borderBottom: "none",
-                  }}
-                >
-                  Selected Plan
-                </TableCell>
+         <Table sx={{ borderCollapse: "collapse", tableLayout: "fixed", width: "100%" }}>
 
-                <TableCell
-                  align="center"
-                  sx={{
-                    fontWeight: 700,
-                    fontSize: TEXT_SIZES.small,
-                    color: COLORS.white,
-                    py: 1,
-                    width: "15%",
-                    borderBottom: "none",
-                  }}
-                >
-                  Investment Range Label
-                </TableCell>
+  {/* ADD THIS */}
+<colgroup>
+  <col style={{ width: "14.28%" }} />
+  <col style={{ width: "14.28%" }} />
+  <col style={{ width: "14.28%" }} />
+  <col style={{ width: "14.28%" }} />
+  <col style={{ width: "14.28%" }} />
+  <col style={{ width: "14.28%" }} />
+  <col style={{ width: "14.32%" }} />
+</colgroup>
+  <TableHead>
+    <TableRow sx={{ background: `linear-gradient(135deg, ${COLORS.secondary} 0%, ${COLORS.secondaryDark} 100%)` }}>
+      
+      {/* Remove width from all these - colgroup handles it */}
+      <TableCell sx={{ fontWeight: 700, fontSize: TEXT_SIZES.small, color: COLORS.white, py: 1, borderBottom: "none" }}>
+        Selected Plan
+      </TableCell>
+      <TableCell align="center" sx={{ fontWeight: 700, fontSize: TEXT_SIZES.small, color: COLORS.white, py: 1, borderBottom: "none" }}>
+        Investment Range Label
+      </TableCell>
+      <TableCell sx={{ fontWeight: 700, fontSize: TEXT_SIZES.small, color: COLORS.white, py: 1, borderBottom: "none" }}>
+        Investment Range
+      </TableCell>
+      <TableCell align="center" sx={{ fontWeight: 700, fontSize: TEXT_SIZES.small, color: COLORS.white, py: 1, borderBottom: "none" }}>
+        States
+      </TableCell>
+      <TableCell align="center" sx={{ fontWeight: 700, fontSize: TEXT_SIZES.small, color: COLORS.white, py: 1, borderBottom: "none" }}>
+        Leads
+      </TableCell>
+      <TableCell align="right" sx={{ fontWeight: 700, fontSize: TEXT_SIZES.small, color: COLORS.white, py: 1, borderBottom: "none" }}>
+        Subtotal (₹)
+      </TableCell>
+      <TableCell align="center" sx={{ fontWeight: 700, fontSize: TEXT_SIZES.small, color: COLORS.white, py: 1, borderBottom: "none" }}>
+        Actions
+      </TableCell>
 
-                <TableCell
-                  sx={{
-                    fontWeight: 700,
-                    fontSize: TEXT_SIZES.small,
-                    color: COLORS.white,
-                    py: 1,
-                    width: "20%",
-                    borderBottom: "none",
-                  }}
-                >
-                  Investment Range
-                </TableCell>
-
-                <TableCell
-                  align="center"
-                  sx={{
-                    fontWeight: 700,
-                    fontSize: TEXT_SIZES.small,
-                    color: COLORS.white,
-                    py: 1,
-                    width: "10%",
-                    borderBottom: "none",
-                  }}
-                >
-                  States
-                </TableCell>
-
-                <TableCell
-                  align="center"
-                  sx={{
-                    fontWeight: 700,
-                    fontSize: TEXT_SIZES.small,
-                    color: COLORS.white,
-                    py: 1,
-                    width: "15%",
-                    borderBottom: "none",
-                  }}
-                >
-                  Leads
-                </TableCell>
-
-                <TableCell
-                  align="right"
-                  sx={{
-                    fontWeight: 700,
-                    fontSize: TEXT_SIZES.small,
-                    color: COLORS.white,
-                    py: 1,
-                    width: "20%",
-                    borderBottom: "none",
-                  }}
-                >
-                  Subtotal (₹)
-                </TableCell>
-
-                <TableCell
-                  align="center"
-                  sx={{
-                    fontWeight: 700,
-                    fontSize: TEXT_SIZES.small,
-                    color: COLORS.white,
-                    py: 1,
-                    width: "10%",
-                    borderBottom: "none",
-                  }}
-                >
-                  Actions
-                </TableCell>
-              </TableRow>
-            </TableHead>
+    </TableRow>
+  </TableHead>
 
             {/* Table Body */}
             <TableBody>
@@ -269,8 +204,7 @@ groupedByPlan[group.planId].byRange = byRange;
                   ([planId, planData]) => {
  const groupedByRange = planData.items.reduce(
   (acc, item) => {
-    const rangeKey = `${planId}_${item.range}`;
-
+const rangeKey = `${planId}_${item.investmentRangeLabel}_${item.range}`;
     if (!acc[rangeKey]) {
       acc[rangeKey] = {
         range: item.range,
@@ -305,33 +239,68 @@ acc[rangeKey].totalAmount = (item.pricePerState || 0) * uniqueRangeStatesCount;
   {}
 );
 
-                    const sortedRanges = Object.values(
-                      groupedByRange
-                    ).sort((a, b) => {
-                      const order = [
-                        "Upto 5 Lakhs",
-                        "Rs. 50k - 2 Lakhs",
-                        "Rs. 2 Lakhs - 5 Lakhs",
-                        "Rs. 5 Lakhs - 10 Lakhs",
-                        "Rs. 10 Lakhs - 20 Lakhs",
-                        "Below 50k",
-                      ];
 
-                      return (
-                        order.indexOf(a.range) -
-                        order.indexOf(b.range)
-                      );
-                    });
+const labelGroupMap = {};
+Object.values(groupedByRange).forEach((rg) => {
+  const lbl = rg.investmentRangeLabel || "—";
+  if (!labelGroupMap[lbl]) labelGroupMap[lbl] = [];
+  labelGroupMap[lbl].push(rg);
+});
 
-                    const rangeRows = [];
+// Step 2 & 3: No sorting needed - just flatten in API order
+const sortedRanges = Object.values(labelGroupMap).flat();
 
+// Count how many rows each label occupies
+const labelRowSpanMap = {};
+sortedRanges.forEach((rg) => {
+  const lbl = rg.investmentRangeLabel || "—";
+  labelRowSpanMap[lbl] = (labelRowSpanMap[lbl] || 0) + 1;
+});
+
+// Track which labels have already been rendered
+const renderedLabels = new Set();
+const renderedSubtotals = new Set()
+
+// Calculate subtotal per label using unique states across all ranges in that label
+const labelSubtotalMap = {};
+Object.entries(labelGroupMap).forEach(([lbl, ranges]) => {
+  // Collect unique states across ALL ranges in this label (no double counting)
+  const uniqueStatesForLabel = new Set();
+  ranges.forEach((rg) => {
+    rg.items.forEach((item) => {
+      (item.states || []).forEach((s) => uniqueStatesForLabel.add(s));
+    });
+  });
+
+  // Sum pricePerState across ranges (each range has its own price)
+  // but multiply each range's price by only the unique states in THAT range
+  // that haven't been counted in a previous range of the same label
+  const countedStates = new Set();
+  let labelTotal = 0;
+  ranges.forEach((rg) => {
+    const rangeUniqueStates = new Set();
+    rg.items.forEach((item) => {
+      (item.states || []).forEach((s) => {
+        if (!countedStates.has(s)) {
+          rangeUniqueStates.add(s);
+        }
+      });
+    });
+    rangeUniqueStates.forEach((s) => countedStates.add(s));
+    labelTotal += (rg.pricePerState || 0) * rangeUniqueStates.size;
+  });
+
+  labelSubtotalMap[lbl] = labelTotal;
+});
+
+const rangeRows = [];
                   sortedRanges.forEach((rangeGroup, idx) => {
   rangeRows.push(
     <TableRow
       key={`${planId}-${rangeGroup.range}`}
       sx={{
-        backgroundColor: rowIndex % 2 === 0 ? COLORS.white : COLORS.grey[50],
-        "&:hover": { backgroundColor: COLORS.lightGreen },
+        // backgroundColor: rowIndex % 2 === 0 ? COLORS.white : COLORS.grey[50],
+        // "&:hover": { backgroundColor: COLORS.lightGreen },
         "& td": { borderBottom: "none", py: 0.75 },
       }}
     >
@@ -343,32 +312,41 @@ acc[rangeKey].totalAmount = (item.pricePerState || 0) * uniqueRangeStatesCount;
             verticalAlign: "top",
             py: 0.75,
             borderRight: `2px solid ${COLORS.border}`,
-            backgroundColor: rowIndex % 2 === 0 ? COLORS.white : COLORS.grey[50],
+            // backgroundColor: rowIndex % 2 === 0 ? COLORS.white : COLORS.grey[50],
             borderBottom: "none",
           }}
         >
           <Box>
-            <Typography sx={{ fontSize: TEXT_SIZES.small, fontWeight: 700, color: COLORS.black, mb: 0.3 }}>
-              {planData.planName}
-            </Typography>
-            <Chip
+              <Chip
               icon={<CalendarMonthRoundedIcon sx={{ fontSize: "0.65rem" }} />}
               label={`${planData.validityDays} Days`}
               size="small"
-              sx={{ height: 20, fontSize: "0.6rem", backgroundColor: COLORS.lightOrange, color: COLORS.black, fontWeight: 500 }}
+              sx={{ height: 20, fontSize: "0.9rem", backgroundColor: COLORS.lightOrange, color: COLORS.black, fontWeight: 500 }}
             />
+            <Typography sx={{ fontSize: TEXT_SIZES.small, fontWeight: 700, color: COLORS.black, mb: 0.3 }}>
+              {planData.planName}
+            </Typography>
+          
           </Box>
         </TableCell>
       )}
 
-      {/* Investment Label */}
-      <TableCell sx={{ py: 0.75, borderBottom: "none" }}>
-        <Chip
-          label={rangeGroup.investmentRangeLabel || "—"}
-          size="small"
-          sx={{ fontSize: "0.68rem", height: 24, backgroundColor: COLORS.lightGreen, color: COLORS.black, fontWeight: 600 }}
-        />
-      </TableCell>
+   {!renderedLabels.has(rangeGroup.investmentRangeLabel || "—") && (() => {
+  const lbl = rangeGroup.investmentRangeLabel || "—";
+  renderedLabels.add(lbl);
+  return (
+    <TableCell  
+      rowSpan={labelRowSpanMap[lbl]}
+      sx={{ py: 0.75, borderBottom: "none", verticalAlign: "middle" }}
+    >
+      <Chip
+        label={lbl}
+        size="small"
+        sx={{ fontSize: "0.68rem", height: 24, color: COLORS.black, fontWeight: 600 }}
+      />
+    </TableCell>
+  );
+})()}
 
       {/* Investment Range */}
       <TableCell>
@@ -428,18 +406,21 @@ acc[rangeKey].totalAmount = (item.pricePerState || 0) * uniqueRangeStatesCount;
   </TableCell>
 )}
 
-      {/* Subtotal - only on first range row, spans all ranges */}
-      {idx === 0 && (
-        <TableCell
-          align="right"
-          rowSpan={sortedRanges.length}
-          sx={{ verticalAlign: "middle" }}
-        >
-          <Typography sx={{ fontSize: TEXT_SIZES.small, fontWeight: 700, color: COLORS.secondaryDark }}>
-            ₹{planData.items[0]?.totalAmount?.toLocaleString("en-IN") || "0"}
-          </Typography>
-        </TableCell>
-      )}
+    {!renderedSubtotals.has(rangeGroup.investmentRangeLabel || "—") && (() => {
+  const lbl = rangeGroup.investmentRangeLabel || "—";
+  renderedSubtotals.add(lbl);
+  return (
+    <TableCell
+      align="right"
+      rowSpan={labelRowSpanMap[lbl]}
+      sx={{ verticalAlign: "middle" }}
+    >
+      <Typography sx={{ fontSize: TEXT_SIZES.small, fontWeight: 700, color: COLORS.secondaryDark }}>
+        ₹{(labelSubtotalMap[lbl] || 0).toLocaleString("en-IN")}
+      </Typography>
+    </TableCell>
+  );
+})()}
 
     {/* Actions - for each investment range */}
 <TableCell
