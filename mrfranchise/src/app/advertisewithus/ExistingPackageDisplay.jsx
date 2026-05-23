@@ -14,6 +14,7 @@ import CancelIcon from "@mui/icons-material/Cancel";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import LocalOfferIcon from "@mui/icons-material/LocalOffer";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
+import UpgradeDialog from "./UpgradeDialog";
 
 // Colors from parent component
 const COLORS = {
@@ -71,8 +72,10 @@ const TABLE_CONFIGS = {
   },
 };
 
-const ExistingPackageDisplay = ({ data, loading, error, category, industry, brandName, isLoggedIn, upgradeSectionRef }) => {
+const ExistingPackageDisplay = ({ data, loading, error, category, industry, brandName, isLoggedIn, upgradeSectionRef,allPlans = [],           // ← ADD THIS
+  leadsDropdownData = {}    }) => {
     const [dialog, setDialog] = useState({ open: false, states: [], label: "" });
+    const [upgradeDialog, setUpgradeDialog] = useState({ open: false, pkg: null, item: null });
 
   // If not logged in, don't render anything
   if (!isLoggedIn) {
@@ -109,10 +112,17 @@ const ExistingPackageDisplay = ({ data, loading, error, category, industry, bran
     return new Date(date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
   };
 
- const handleUpgrade = (pkg, item) => {
-  console.log("Upgrade:", { packageType: pkg.packagesType, packageName: pkg.packagesName, item });
-  if (upgradeSectionRef?.current) {
-    upgradeSectionRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+const handleUpgrade = (pkg, item) => {
+  const packageType = (pkg.packagesType || "").toUpperCase();
+
+  if (packageType === "FREE") {
+    // Just scroll down for free
+    if (upgradeSectionRef?.current) {
+      upgradeSectionRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  } else {
+    // Open detail popup for LISTING and LEAD
+    setUpgradeDialog({ open: true, pkg, item });
   }
 };
 
@@ -335,30 +345,45 @@ if (type === "FREE") return [
     
     </Box>,
 
-    // Investment Group
-    <Chip
-      label={item.investmetRageLabel || "—"}
-      size="small"
-      sx={{ backgroundColor: COLORS.lightOrange, color: COLORS.primaryDark, fontWeight: 600, fontSize: TEXT_SIZES.xs, maxWidth: 120 }}
-    />,
+ // Investment Group
+<Typography fontSize={TEXT_SIZES.xs} fontWeight={600} color={COLORS.primaryDark}>
+  {item.investmetRageLabel || "—"}
+</Typography>,
 
-    // Investment Range(s)
-    <Chip
-      label={investmentRange}
-      size="small"
-      sx={{ backgroundColor: COLORS.lightOrange, color: COLORS.primaryDark, fontWeight: 600, fontSize: TEXT_SIZES.xs, maxWidth: 150 }}
-    />,
+// Investment Range(s)
+<Box sx={{ display: "flex", flexDirection: "column", gap: 0.5,  justifyContent:"left" }}>
+  {item.investmentranges?.length
+    ? item.investmentranges.map((r, i) => (
+        <Typography key={i} fontSize={TEXT_SIZES.xs} fontWeight={600} color={COLORS.primaryDark} noWrap>
+          {r.selectedPlanInvestmetrange || "—"}
+        </Typography>
+      ))
+    : <Typography fontSize={TEXT_SIZES.xs} color={COLORS.grey[500]}>—</Typography>
+  }
+</Box>,
 
     // States count + view
-    <Box
-      onClick={() => openStatesDialog(statesArr, investmentRange)}
-      sx={{ display: "inline-flex", alignItems: "center", gap: 0.5, cursor: "pointer" }}
-    >
-      <Typography fontSize={TEXT_SIZES.small} color={COLORS.primary} fontWeight={600}>
-        {stateCount}
-      </Typography>
-      <VisibilityOutlinedIcon sx={{ fontSize: 16, color: COLORS.primary }} />
-    </Box>,
+   // States count + view (per investment range)
+<Box sx={{ display: "flex", flexDirection: "column", gap: 0.5, alignItems: "center" }}>
+  {item.investmentranges?.length
+    ? item.investmentranges.map((r, i) => {
+        const rangeStates = (r.selectedPlanStateAndDistrict || []).map((s) => s.state);
+        return (
+          <Box
+            key={i}
+            onClick={() => openStatesDialog(rangeStates, r.selectedPlanInvestmetrange)}
+            sx={{ display: "inline-flex", alignItems: "center", gap: 0.5, cursor: "pointer" }}
+          >
+            <Typography fontSize={TEXT_SIZES.small} color={COLORS.primary} fontWeight={600}>
+              {rangeStates.length}
+            </Typography>
+            <VisibilityOutlinedIcon sx={{ fontSize: 16, color: COLORS.primary }} />
+          </Box>
+        );
+      })
+    : <Typography fontSize={TEXT_SIZES.xs} color={COLORS.grey[500]}>—</Typography>
+  }
+</Box>,
 
     // Total Leads
     <Typography fontWeight={700} fontSize={TEXT_SIZES.small} color={COLORS.black}>
@@ -611,6 +636,14 @@ if (type === "FREE") return [
           </Box>
         </DialogContent>
       </Dialog>
+      <UpgradeDialog
+  open={upgradeDialog.open}
+  onClose={() => setUpgradeDialog({ open: false, pkg: null, item: null })}
+  pkg={upgradeDialog.pkg}
+  item={upgradeDialog.item}
+   allPlans={allPlans}              // ← ADD THIS
+        leadsDropdownData={leadsDropdownData}
+/>
     </>
   );
 };

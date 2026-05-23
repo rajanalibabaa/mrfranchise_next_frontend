@@ -696,45 +696,93 @@ const handleOpenStateModal = useCallback(
     const key = getRangeKey(investmentRangeLabel, range, planId);
     setCurrentEditingRange(key);
 
-    // Check if this range is already committed to payment summary
+const otherRangeStates = new Set();
+const editingRangeValue = key.split("__")[2];
+
+// From existing purchased packages
+if (data && data.packages && Array.isArray(data.packages)) {
+  data.packages.forEach((packageItem) => {
+    const packageType = (packageItem.packagesType || packageItem.PackagesType || "").toUpperCase();
+    if (packageType !== "LEAD") return;
+
+    const investPackages =
+      packageItem.investmetPackages ||
+      packageItem.InvestmetPackages ||
+      packageItem.InvestmentPackages ||
+      packageItem.packages || [];
+
+    investPackages.forEach((investPackage) => {
+      const investmentRanges = investPackage.investmentranges || [];
+      investmentRanges.forEach((range) => {
+        const existingRange = range.selectedPlanInvestmetrange || "";
+        if (existingRange !== editingRangeValue) return;
+
+        const stateAndDistrict =
+          investPackage.selectedPlanStateAndDistrict ||
+          investPackage.SelectedPlanStateAndDistrict || [];
+        stateAndDistrict.forEach((entry) => {
+          if (entry.state) otherRangeStates.add(entry.state);
+        });
+
+        const rangeStates = range.selectedPlanStateAndDistrict || [];
+        rangeStates.forEach((entry) => {
+          if (entry.state) otherRangeStates.add(entry.state);
+        });
+      });
+    });
+  });
+}
+
+// From payment summary — same range value across all plans
+paymentSummary.forEach((group) => {
+  if (group.isListingPlan) return;
+  group.items.forEach((item) => {
+    const itemKey = getRangeKey(item.investmentRangeLabel, item.range, group.planId);
+    if (itemKey === key) return; // skip self
+    if (item.range === editingRangeValue) {
+      item.states.forEach((state) => otherRangeStates.add(state));
+    }
+  });
+});
+
+    // Also check statesByInvestmentRange for other ranges in this plan
+    Object.entries(statesByInvestmentRange).forEach(([rangeKey, states]) => {
+      if (rangeKey === key) return; // skip self
+      const keyPlanId = rangeKey.split("__")[0];
+      if (keyPlanId !== planId) return; // only same plan
+      states.forEach((state) => otherRangeStates.add(state));
+    });
+
+    // Priority: committed states > saved states > all states (default)
     const committedItem = paymentSummary
       .flatMap((g) => g.items)
       .find((item) => {
-        const itemKey = getRangeKey(
-          item.investmentRangeLabel,
-          item.range,
-          planId,
-        );
+        const itemKey = getRangeKey(item.investmentRangeLabel, item.range, planId);
         return itemKey === key;
       });
 
-    // Priority: committed states > saved states > all states (default)
     const committedStates = committedItem?.states;
     const savedStates = statesByInvestmentRange[key];
-    
-    // If there are saved states, use them; otherwise use all available states
+
     let statesToPreselect = committedStates || savedStates;
-    
+
     if (!statesToPreselect || statesToPreselect.length === 0) {
-      // First time - use all available states
       if (finalToken && allStates.length > 0) {
-        statesToPreselect = allStates;
+        // Pre-select only states NOT used by other ranges
+        statesToPreselect = allStates.filter((s) => !otherRangeStates.has(s));
       } else if (!finalToken && detectedState) {
         statesToPreselect = [detectedState];
       } else {
-        statesToPreselect = ALL_INDIA_STATES;
+        statesToPreselect = ALL_INDIA_STATES.filter((s) => !otherRangeStates.has(s));
       }
     }
-
-    console.log('=== Opening State Modal ===');
-    console.log('Key:', key);
-    console.log('States to preselect:', statesToPreselect);
 
     if (statesToPreselect && statesToPreselect.length > 0) {
       setSelectedStates(new Set(statesToPreselect));
     } else {
       setSelectedStates(new Set());
     }
+
     setOpenStateModal(true);
   },
   [
@@ -760,10 +808,49 @@ const getAlreadySelectedStatesInOtherRanges = useCallback(() => {
   const selectedInOtherRanges = new Set();
   if (!currentEditingRange) return selectedInOtherRanges;
 
-  // Key format: "planId__investmentRangeLabel__range"
-  const currentRange = currentEditingRange.split("__")[2]; // e.g. "Below 50k"
+  const currentRangeValue = currentEditingRange.split("__")[2]; // e.g. "Below 50k"
 
+  // 1. Block states from EXISTING PURCHASED lead packages for the same range
+  if (data && data.packages && Array.isArray(data.packages)) {
+    data.packages.forEach((packageItem) => {
+      const packageType = (packageItem.packagesType || packageItem.PackagesType || "").toUpperCase();
+      if (packageType !== "LEAD") return;
+
+      const investPackages =
+        packageItem.investmetPackages ||
+        packageItem.InvestmetPackages ||
+        packageItem.InvestmentPackages ||
+        packageItem.packages || [];
+
+      investPackages.forEach((investPackage) => {
+        const investmentRanges = investPackage.investmentranges || [];
+
+        investmentRanges.forEach((range) => {
+          const existingRange = range.selectedPlanInvestmetrange || "";
+          if (existingRange !== currentRangeValue) return;
+
+          const stateAndDistrict =
+            investPackage.selectedPlanStateAndDistrict ||
+            investPackage.SelectedPlanStateAndDistrict || [];
+
+          stateAndDistrict.forEach((entry) => {
+            if (entry.state) selectedInOtherRanges.add(entry.state);
+          });
+
+          const rangeStates = range.selectedPlanStateAndDistrict || [];
+          rangeStates.forEach((entry) => {
+            if (entry.state) selectedInOtherRanges.add(entry.state);
+          });
+        });
+      });
+    });
+  }
+
+  // 2. Block states from payment summary items that share the same
+  //    investment range value — across ALL plans, not just the current one
   paymentSummary.forEach((group) => {
+    if (group.isListingPlan) return;
+
     group.items.forEach((item) => {
       const itemKey = getRangeKey(
         item.investmentRangeLabel,
@@ -774,15 +861,15 @@ const getAlreadySelectedStatesInOtherRanges = useCallback(() => {
       // Skip the exact item we're editing
       if (itemKey === currentEditingRange) return;
 
-      // Block if the range value matches — regardless of plan or investment range label
-      if (item.range === currentRange) {
+      // Block if the range value matches — same range name across any plan
+      if (item.range === currentRangeValue) {
         item.states.forEach((state) => selectedInOtherRanges.add(state));
       }
     });
   });
 
   return selectedInOtherRanges;
-}, [currentEditingRange, paymentSummary, getRangeKey]);
+}, [currentEditingRange, data, paymentSummary, getRangeKey]);
 
 const handleSaveStates = useCallback(() => {
   const blocked = getAlreadySelectedStatesInOtherRanges();
@@ -1012,8 +1099,10 @@ return {
   const fetchData = async () => {
     try {
       setLoading(true);
+      
       const response = await fetch(`${API_URL}/api/v1/admin/plans/getAllPlans`);
       const json = await response.json();
+      console.log("Full API Data:", json.data);
       if (json.success && Array.isArray(json.data)) {
         setPlans(json.data);
         const leadsData = {};
@@ -1763,7 +1852,6 @@ const totalLeads = (updatedItems[0]?.selectedLeads || 0) * totalUniqueStates;
     }
   }, [movedGroupKeys]);
 
-  // Add the getRowBackgroundColor function separately (outside getInvestmentGroupColor)
   const getRowBackgroundColor = useCallback(
     (investmentRangeLabel, isInPayment, idx) => {
       // Get index of the investment group
@@ -1889,7 +1977,7 @@ const totalLeads = (updatedItems[0]?.selectedLeads || 0) * totalUniqueStates;
   sx={{
     border: `1px solid ${COLORS.border}`,
     borderRadius: "8px !important",
-    mb: 1.5,
+    mb: 0.6,
     "&:before": {
       display: "none",
     },
@@ -1926,7 +2014,7 @@ const totalLeads = (updatedItems[0]?.selectedLeads || 0) * totalUniqueStates;
         label={`${selectedCount}/${availableToSelectCount} available`}
         size="small"
         sx={{
-          height: 20,
+          height: 15,
           fontSize: "0.7rem",
           backgroundColor:
             selectedCount === availableToSelectCount
@@ -1946,7 +2034,7 @@ const totalLeads = (updatedItems[0]?.selectedLeads || 0) * totalUniqueStates;
       sx={{
         display: "flex",
         justifyContent: "flex-end",
-        mb: 2,
+        // mb: 2,
       }}
     >
       <Box
@@ -1986,7 +2074,7 @@ const totalLeads = (updatedItems[0]?.selectedLeads || 0) * totalUniqueStates;
           cursor: "pointer",
           display: "inline-flex",
           alignItems: "center",
-          padding: "4px 8px",
+          // padding: "4px 8px",
           borderRadius: "4px",
           "&:hover": {
             backgroundColor: COLORS.lightOrange,
@@ -2228,7 +2316,7 @@ const totalLeads = (updatedItems[0]?.selectedLeads || 0) * totalUniqueStates;
     )}
   </Box>
 )}
-<ExistingPackageDisplay data={data} error={errors} loading={loadings} isLoggedIn={!!finalToken} upgradeSectionRef={upgradeSectionRef}/>
+<ExistingPackageDisplay data={data} error={errors} loading={loadings} isLoggedIn={!!finalToken} upgradeSectionRef={upgradeSectionRef}   allPlans={plans}  leadsDropdownData={leadsDropdownData} />
           {/* LISTING PLANS SECTION */}
       <Box
        ref={upgradeSectionRef}

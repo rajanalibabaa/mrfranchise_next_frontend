@@ -75,9 +75,9 @@ const StateSelectionModal = ({
     fontSize: TEXT_SIZES.large,
     fontWeight: 700,
     color: COLORS.white,
-    py: 2.5,
-    display: "flex",           // Add this
-    justifyContent: "space-between",  // Add this
+    py: 1.5,
+    display: "flex",           
+    justifyContent: "space-between",  
     alignItems: "center",   
         }}
       >
