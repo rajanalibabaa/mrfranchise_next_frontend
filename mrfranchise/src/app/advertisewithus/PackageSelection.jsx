@@ -60,7 +60,7 @@ import PaymentSummaryTable from "./PaymentSummaryTable";
 import PaymentBottomBar from "./PaymentBottomBar";
 import ExistingPackageDisplay from "./ExistingPackageDisplay";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API_URL = process.env.NEXT_PUBLIC_API_URL ;
 
 // Enhanced Color Palette
 const COLORS = {
@@ -259,7 +259,7 @@ const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
 
   const [localBrandUUID, setLocalBrandUUID] = useState(null);
   const [localAccessToken, setLocalAccessToken] = useState(null);
-
+const [brandExpansionLocations, setBrandExpansionLocations] = useState([]);
     const [data, setData] = useState(null);
   const [loadings, setLoadings] = useState(true);
   const [errors, setErrors] = useState("");
@@ -275,7 +275,7 @@ const fetchPackages = async () => {
   try {
     setLoadings(true);
     const response = await axios.get(
-      `http://localhost:5000/api/v1/brand-packages-plans/get/${brandOwnerId}`,
+      `https://mrfranchisebackend.mrfranchise.in/api/v1/brand-packages-plans/get/${brandOwnerId}`,
     );
     
     console.log("=== API Response ===");
@@ -746,6 +746,8 @@ const handleOpenStateModal = useCallback(
     allStates,
   ],
 );
+
+
   const handleShowStates = useCallback((event, statesList) => {
     setTooltipStates(statesList);
     setTooltipAnchorEl(event.currentTarget);
@@ -968,6 +970,7 @@ return {
       const expansionLocations =
         brandData?.expansionlocationdata?.expansionLocations?.domestic
           ?.locations || [];
+setBrandExpansionLocations(expansionLocations);
       const extractedStates = expansionLocations
         .map((location) => {
           if (typeof location === "string") return location.trim();
@@ -1656,6 +1659,8 @@ const getStateCountForRange = useCallback(
     allStates,
   ],
 );
+
+
   const handleAddInvestmentRange = useCallback(
     (range, investmentRangeLabel) => {
       if (!finalToken) {
@@ -2327,13 +2332,26 @@ const totalLeads = (updatedItems[0]?.selectedLeads || 0) * totalUniqueStates;
                       : ALL_INDIA_STATES;
                     const stateCount = allAvailableStates.length;
 
+const states = brandExpansionLocations|| allAvailableStates;
+
+
+
                     // Create a single item with "ALL INVESTMENT RANGE" text
                     const listingItem = {
                       id: `listing-${plan._id}-item`,
-                      investmentRangeLabel: "ALL INVESTMENT RANGE",
-                      range: "ALL INVESTMENT RANGE",
+                      investmentRangeLabel: ficoInvestmentRanges,
+                      range: ficoInvestmentRanges,
                       stateCount: stateCount,
-                      states: ["ALL STATES"],
+                      states:states.map(
+      (location) => ({
+        state: location.state || "",
+
+        district:
+          (location.districts || []).map(
+            (d) => d.district,
+          ) || [],
+      }),
+    ),
                       selectedLeads: "-",
                       totalLeads: "-",
                       totalAmount: pkg.amount || 0,
@@ -2359,14 +2377,23 @@ const totalLeads = (updatedItems[0]?.selectedLeads || 0) * totalUniqueStates;
                           planName: plan.planName,
                           planUniqueId: plan.planUniqueId,
                           planpackageId:pkg._id,
-                          investmentRangeLabel: "ALL INVESTMENT RANGE",
+                          investmentRangeLabel: ficoInvestmentRanges,
                           validityDays: pkg.validityDays,
                           pricePerState: pkg.amount,
                           amount: pkg.amount,
                           totalLeads: "-",
                           items: [listingItem],
                           isListingPlan: true,
-                          uniqueStates: ["ALL STATES"],
+                          uniqueStates: states.map(
+      (location) => ({
+        state: location.state || "",
+
+        district:
+          (location.districts || []).map(
+            (d) => d.district,
+          ) || [],
+      }),
+    ),
                           totalStates: stateCount,
                         },
                       ];
