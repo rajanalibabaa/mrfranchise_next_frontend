@@ -4,7 +4,7 @@ export const dynamic = "force-static";
 export const revalidate = 86400;
 
 const API =
-  "https://mrfranchisebackend.mrfranchise.in/api/v1/filter/getAllBrandsAndFilter";
+  "http://localhost:5000/api/v1/filter/getAllBrandsAndFilter";
 
 /* ===============================
    🔧 SLUG HELPERS - MAIN

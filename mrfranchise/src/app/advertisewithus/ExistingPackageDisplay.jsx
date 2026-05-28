@@ -3,7 +3,8 @@ import {
   Box, Typography, CircularProgress, Alert, Chip,
   Paper, Button, Dialog, DialogTitle, DialogContent,
   IconButton, Table, TableBody, TableCell, TableContainer,
-  TableHead, TableRow, Tooltip, Divider
+  TableHead, TableRow, Tooltip, Divider,  Accordion, AccordionSummary, AccordionDetails, 
+  FormControlLabel, Checkbox,  
 } from "@mui/material";
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import CloseIcon from "@mui/icons-material/Close";
@@ -15,6 +16,7 @@ import LocationOnIcon from "@mui/icons-material/LocationOn";
 import LocalOfferIcon from "@mui/icons-material/LocalOffer";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import UpgradeDialog from "./UpgradeDialog";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
 // Colors from parent component
 const COLORS = {
@@ -76,8 +78,8 @@ const ExistingPackageDisplay = ({ data, loading, error, category, industry, bran
   allPlans = [],
   leadsDropdownData = {},
   ficoInvestmentRanges = [],
-  // Add these:
-  ALL_INDIA_STATES = [],
+ ALL_INDIA_STATES = [],
+  INDIA_STATES = {},
   finalToken,
   getAlreadySelectedStatesInOtherRanges,
   getStatesToDisplay,
@@ -90,6 +92,7 @@ const ExistingPackageDisplay = ({ data, loading, error, category, industry, bran
     const [upgradeDialog, setUpgradeDialog] = useState({ open: false, pkg: null, item: null });
     const [openStateModal, setOpenStateModal] = useState(false);
 const [selectedStates, setSelectedStates] = useState(new Set());
+const [upgradeEditingRange, setUpgradeEditingRange] = useState(null);
 
   // If not logged in, don't render anything
   if (!isLoggedIn) {
@@ -180,16 +183,28 @@ const handleUpgrade = (pkg, item) => {
   });
 
   const hasAnyPackages = grouped.FREE.length > 0 || grouped.LISTING.length > 0 || grouped.LEAD.length > 0;
-const allStates = grouped.LEAD.flatMap(({ item }) =>
-  (item.investmentranges || []).flatMap((r) =>
-    (r.selectedPlanStateAndDistrict || []).map((s) => {
-      return typeof s === 'object' ? s.state : s;
-    })
-  )
-);
-const uniqueAllStates = [...new Set(allStates.filter(Boolean))];
+const allStatesForUpgrade = (() => {
+  const statesSet = new Set();
+  if (data?.packages && Array.isArray(data.packages)) {
+    data.packages.forEach((pkg) => {
+      const investPackages = pkg.investmetPackages || pkg.InvestmetPackages || [];
+      investPackages.forEach((investPkg) => {
+        const ranges = investPkg.investmentranges || [];
+        ranges.forEach((range) => {
+          const stateAndDistrict = range.selectedPlanStateAndDistrict || [];
+          stateAndDistrict.forEach((entry) => {
+            if (entry.state && entry.state.trim()) {
+              statesSet.add(entry.state.trim());
+            }
+          });
+        });
+      });
+    });
+  }
+  return [...statesSet];
+})();
 
-const allStatesForUpgrade = uniqueAllStates;
+console.log("allStatesForUpgrade:", allStatesForUpgrade); 
 
   const StatusChip = ({ item }) => {
     const s = getStatus(item);
@@ -671,10 +686,13 @@ if (type === "LEAD")
   allPlans={allPlans}
   leadsDropdownData={leadsDropdownData}
   ficoInvestmentRanges={ficoInvestmentRanges}
+  INDIA_STATES={INDIA_STATES}
   // State modal props
   openStateModal={openStateModal}
-  onOpenStateModal={() => setOpenStateModal(true)}
-  onCloseStateModal={() => setOpenStateModal(false)}
+ onOpenStateModal={({ planId, range }) => {
+    setSelectedStates(new Set(allStatesForUpgrade)); // pre-select all states
+    setOpenStateModal(true);
+  }}  onCloseStateModal={() => setOpenStateModal(false)}
   selectedStates={selectedStates}
   setSelectedStates={setSelectedStates}
   allStates={allStatesForUpgrade} // Use the defined variable here
@@ -682,13 +700,60 @@ if (type === "LEAD")
   TEXT_SIZES={TEXT_SIZES}
   ALL_INDIA_STATES={ALL_INDIA_STATES}
   finalToken={finalToken}
-  getAlreadySelectedStatesInOtherRanges={getAlreadySelectedStatesInOtherRanges}
-  getStatesToDisplay={getStatesToDisplay}
-  handleSelectAll={handleSelectAll}
-  handleClearAll={handleClearAll}
-  renderStatesByRegion={renderStatesByRegion}
-  handleSaveStates={handleSaveStates}
-  router={router}
+getStatesToDisplay={() => allStatesForUpgrade}  
+  getAlreadySelectedStatesInOtherRanges={() => new Set()} 
+  handleSelectAll={() => setSelectedStates(new Set(allStatesForUpgrade))}
+  handleClearAll={() => setSelectedStates(new Set())}
+  renderStatesByRegion={() => {
+    return Object.entries(INDIA_STATES).map(([region, states]) => {
+      const available = states.filter((s) => allStatesForUpgrade.includes(s));
+      if (available.length === 0) return null;
+
+      return (
+        <Accordion key={region} elevation={0}
+          sx={{ border: "1px solid #e0e0e0", borderRadius: "8px !important", mb: 0.6, "&:before": { display: "none" } }}
+        >
+          <AccordionSummary expandIcon={<ExpandMoreIcon sx={{ color: COLORS.primary }} />}
+            sx={{ backgroundColor: COLORS.grey[50], borderRadius: "8px" }}
+          >
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <Typography fontWeight={700} fontSize="0.98rem">{region}</Typography>
+              <Chip
+                label={`${available.filter(s => selectedStates.has(s)).length}/${available.length}`}
+                size="small"
+                sx={{ height: 15, fontSize: "0.7rem", backgroundColor: COLORS.grey[400], color: "#fff" }}
+              />
+            </Box>
+          </AccordionSummary>
+          <AccordionDetails sx={{ p: 2 }}>
+            <Box sx={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 1 }}>
+              {available.map((state) => (
+                <FormControlLabel
+                  key={state}
+                  control={
+                    <Checkbox
+                      checked={selectedStates.has(state)}
+                      onChange={() => {
+                        setSelectedStates((prev) => {
+                          const next = new Set(prev);
+                          next.has(state) ? next.delete(state) : next.add(state);
+                          return next;
+                        });
+                      }}
+                      size="small"
+                      sx={{ color: COLORS.primary, "&.Mui-checked": { color: COLORS.secondary } }}
+                    />
+                  }
+                  label={<Typography fontSize="0.98rem">{state}</Typography>}
+                />
+              ))}
+            </Box>
+          </AccordionDetails>
+        </Accordion>
+      );
+    });
+  }}
+ 
 />
     </>
   );

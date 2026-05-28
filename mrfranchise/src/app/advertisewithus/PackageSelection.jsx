@@ -534,12 +534,9 @@ useEffect(() => {
   );
 
   const getStatesToDisplay = useCallback(() => {
-    if (finalToken) {
-      return allStates;
-    } else {
-      return ALL_INDIA_STATES;
-    }
-  }, [finalToken, allStates]);
+    // Only show states from API expansion locations, never fallback to all states
+    return allStates && allStates.length > 0 ? allStates : [];
+  }, [allStates]);
 
 useEffect(() => {
   if (Object.keys(leadsDropdownData).length === 0) return;
@@ -767,13 +764,12 @@ paymentSummary.forEach((group) => {
     let statesToPreselect = committedStates || savedStates;
 
     if (!statesToPreselect || statesToPreselect.length === 0) {
-      if (finalToken && allStates.length > 0) {
-        // Pre-select only states NOT used by other ranges
+      if (allStates.length > 0) {
+        // Pre-select only states NOT used by other ranges (from API only)
         statesToPreselect = allStates.filter((s) => !otherRangeStates.has(s));
-      } else if (!finalToken && detectedState) {
-        statesToPreselect = [detectedState];
       } else {
-        statesToPreselect = ALL_INDIA_STATES.filter((s) => !otherRangeStates.has(s));
+        // No API states available, use empty set
+        statesToPreselect = [];
       }
     }
 
@@ -900,9 +896,10 @@ const handleSaveStates = useCallback(() => {
   console.log(`Saving states for ${currentEditingRange}:`, selectedArray);
 
   // Only save if user has made changes
-  // Check if selectedArray is different from all available states
-  const allAvailableStates = finalToken ? allStates : ALL_INDIA_STATES;
-  const isAllStatesSelected = selectedArray.length === allAvailableStates.length &&
+  // Check if selectedArray is different from API available states
+  const allAvailableStates = allStates.length > 0 ? allStates : [];
+  const isAllStatesSelected = allAvailableStates.length > 0 && 
+    selectedArray.length === allAvailableStates.length &&
     selectedArray.every(state => allAvailableStates.includes(state));
 
   if (isAllStatesSelected) {
@@ -999,9 +996,9 @@ return {
   openSnack,
   handleCloseStateModal,
   getAlreadySelectedStatesInOtherRanges,
-  finalToken,
   allStates,
 ]);
+
   const fetchBrandDetails = async (uuid, accessToken) => {
     try {
       setBrandLoading(true);
@@ -2263,6 +2260,11 @@ const totalLeads = (updatedItems[0]?.selectedLeads || 0) * totalUniqueStates;
       </Box>
     )}
 
+    {/* Separator between Brand and Category */}
+    {/* {(data?.brandDetails?.brandName || data?.brandName || getBrandName()) && 
+     (data?.brandDetails?.category || data?.category) && (
+      <Box sx={{ width: 4, height: 4, borderRadius: "50%", backgroundColor: COLORS.grey[400] }} />
+    )} */}
 
     {/* Category Chip */}
     {(data?.brandDetails?.category || data?.category) && (
@@ -2284,7 +2286,11 @@ const totalLeads = (updatedItems[0]?.selectedLeads || 0) * totalUniqueStates;
       </Box>
     )}
 
-  
+    {/* Separator between Category and Industry */}
+    {/* {(data?.brandDetails?.category || data?.category) && 
+     (data?.brandDetails?.industry || data?.industry) && (
+      <Box sx={{ width: 4, height: 4, borderRadius: "50%", backgroundColor: COLORS.grey[400] }} />
+    )} */}
 
     {/* Industry Chip */}
     {(data?.brandDetails?.industry || data?.industry) && (
@@ -2307,7 +2313,19 @@ const totalLeads = (updatedItems[0]?.selectedLeads || 0) * totalUniqueStates;
     )}
   </Box>
 )}
-<ExistingPackageDisplay data={data} error={errors} loading={loadings} isLoggedIn={!!finalToken} upgradeSectionRef={upgradeSectionRef}   allPlans={plans}  leadsDropdownData={leadsDropdownData}  ficoInvestmentRanges={ficoInvestmentRanges}/>
+<ExistingPackageDisplay
+  data={data}
+  error={errors}
+  loading={loadings}
+  isLoggedIn={!!finalToken}
+  upgradeSectionRef={upgradeSectionRef}
+  allPlans={plans}
+  leadsDropdownData={leadsDropdownData}
+  INDIA_STATES={INDIA_STATES}
+  ALL_INDIA_STATES={ALL_INDIA_STATES}
+  allStates={allStates}        
+  finalToken={finalToken}
+/>
           {/* LISTING PLANS SECTION */}
       <Box
        ref={upgradeSectionRef}
@@ -2427,7 +2445,7 @@ const totalLeads = (updatedItems[0]?.selectedLeads || 0) * totalUniqueStates;
                       }
 
                       openSnack(`${plan.planName} added to cart`, "success");
-                      setTimeout(() => scrollToPaymentSummary(), 300);
+                      setTimeout(() => scrollToPaymentSummary(), 400);
 
                       return [
                         ...prev,
@@ -2911,7 +2929,7 @@ background: "linear-gradient(135deg, #fb8c00 0%, #ef6c00 100%)",
                                 lineHeight:1.5
                               }}
                             >
-                              Select<br/>Lead Plan
+                              Select<br/> Plan
                             </TableCell>
 
                             {/* Investment Group Column */}
@@ -3307,7 +3325,7 @@ background: "linear-gradient(135deg, #4cb04f 0%, #2e7d32 100%)",
             alignItems: "center",
             justifyContent: "center",
             width: "100%",
-            gap: 1,
+            gap: 3,
           }}
         >
           {/* Leads Options FIRST */}
@@ -3390,9 +3408,6 @@ background: "linear-gradient(135deg, #4cb04f 0%, #2e7d32 100%)",
               No leads
             </Typography>
           )}
-          <Typography sx={{ fontSize: TEXT_SIZES.xs, color: COLORS.grey[600] }}>
-            Investment Range Group
-          </Typography>
 
           {/* Investment Label BELOW */}
           <Typography

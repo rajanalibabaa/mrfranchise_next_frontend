@@ -3,10 +3,12 @@ import {
   Dialog, DialogTitle, DialogContent, IconButton,
   Box, Typography, Chip, Divider, Table, TableHead,
   TableBody, TableRow, TableCell, TableContainer,
-  Button, Checkbox,
+  Button, Checkbox, Accordion, AccordionSummary, AccordionDetails,
+  FormControlLabel,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import EditIcon from "@mui/icons-material/Edit";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import StateSelectionModal from "./StateSelectionModal";
 
 const UpgradeDialog = ({
@@ -28,6 +30,7 @@ const UpgradeDialog = ({
   COLORS,
   TEXT_SIZES,
   ALL_INDIA_STATES,
+  INDIA_STATES = {},
   finalToken,
   getAlreadySelectedStatesInOtherRanges,
   getStatesToDisplay,
@@ -40,7 +43,21 @@ const UpgradeDialog = ({
   const [selectedLeads, setSelectedLeads] = useState({});
   const [selectedPlanId, setSelectedPlanId] = useState(null);
   const [currentEditingRange, setCurrentEditingRange] = useState(null);
-
+const [stateSelections, setStateSelections] = useState(() => {
+  if (!item?.investmentranges?.length) return {};
+  const initial = {};
+  allPlans
+    .filter((p) => p.packages?.length > 1 && p.planName?.toLowerCase() !== "free")
+    .forEach((plan) => {
+      item.investmentranges.forEach((r) => {
+        const key = `${plan._id}_${r.selectedPlanInvestmetrange}`;
+        initial[key] = (r.selectedPlanStateAndDistrict || []).map((s) =>
+          typeof s === "object" ? s.state : s
+        );
+      });
+    });
+  return initial;
+});
   const existingRanges =
     item?.investmentranges?.map((r) => r.selectedPlanInvestmetrange).filter(Boolean) || [];
   const existingStateCounts = {};
@@ -127,12 +144,25 @@ const UpgradeDialog = ({
 
     const currentLead = selectedLeads[plan._id] ?? leadOptions[0] ?? 20;
     const checked = checkedRanges[plan._id] || new Set();
+const allSelectedStates = new Set();
+[...checked].forEach((r) => {
+  const key = `${plan._id}_${r}`;
+  // First check stateSelections, then fall back to item.investmentranges
+  let states = stateSelections[key];
+  if (!states) {
+    const matchingRange = item?.investmentranges?.find(
+      (ir) => ir.selectedPlanInvestmetrange === r
+    );
+    states = (matchingRange?.selectedPlanStateAndDistrict || []).map((s) =>
+      typeof s === "object" ? s.state : s
+    );
+  }
+  states.forEach((s) => allSelectedStates.add(s));
+});
 
-    const totalStates =
-      checked.size > 0
-        ? [...checked].reduce((s, r) => s + (stateCounts[`${plan._id}_${r}`] ?? 27), 0)
-        : 27;
-
+const totalStates = checked.size > 0 ? allSelectedStates.size : 0;
+const minLeads = leadOptions.length > 0 ? Math.min(...leadOptions) : 1;
+const divisor = minLeads > 0 ? minLeads : 1;
     return {
       id: plan._id,
       planName: plan.planName,
@@ -145,8 +175,7 @@ const UpgradeDialog = ({
       checked,
       totalStates,
       totalLeads: currentLead * totalStates,
-      totalAmount: pricePerState * totalStates,
-    };
+totalAmount: (pricePerState / divisor) * totalStates * currentLead,    };
   });
 
   const activePlanId = selectedPlanId ?? rows[0]?.id;
@@ -161,28 +190,34 @@ const UpgradeDialog = ({
       s.has(range) ? s.delete(range) : s.add(range);
       return { ...p, [planId]: s };
     });
+const editStates = (planId, range) => {
+  setCurrentEditingRange({ planId, range });
 
-  const editStates = (planId, range) => {
-    setCurrentEditingRange({ planId, range });
-    onOpenStateModal?.();
-  };
+  // Use stateSelections instead of item.investmentranges
+  const existing = stateSelections[`${planId}_${range}`] || [];
+  setSelectedStates(new Set(existing.length ? existing : allStates));
+  onOpenStateModal?.({ planId, range });
+};
+const handleSaveStatesFromModal = () => {
+  if (currentEditingRange) {
+    const stateArray = Array.from(selectedStates);
 
-  const handleSaveStatesFromModal = () => {
-    if (currentEditingRange) {
-      const stateArray = Array.from(selectedStates);
-      setStateCounts((p) => ({
-        ...p,
-        [`${currentEditingRange.planId}_${currentEditingRange.range}`]: stateArray.length,
-      }));
-      setCheckedRanges((p) => {
-        const s = new Set(p[currentEditingRange.planId] || []);
-        s.add(currentEditingRange.range);
-        return { ...p, [currentEditingRange.planId]: s };
-      });
-      onCloseStateModal?.();
-      setCurrentEditingRange(null);
-    }
-  };
+    // Save actual array, not just count
+    setStateSelections((p) => ({
+      ...p,
+      [`${currentEditingRange.planId}_${currentEditingRange.range}`]: stateArray,
+    }));
+
+    setCheckedRanges((p) => {
+      const s = new Set(p[currentEditingRange.planId] || []);
+      s.add(currentEditingRange.range);
+      return { ...p, [currentEditingRange.planId]: s };
+    });
+
+    onCloseStateModal?.();
+    setCurrentEditingRange(null);
+  }
+};
 
   const orangeHeaderSx = {
     fontWeight: 700,
@@ -423,8 +458,7 @@ const UpgradeDialog = ({
                                   const isChecked = (
                                     checkedRanges[activePlan.id] || new Set()
                                   ).has(range);
-                                  const stateVal =
-                                    stateCounts[`${activePlan.id}_${range}`] ?? 27;
+                                 const stateVal = (stateSelections[`${activePlan.id}_${range}`] ?? []).length || 27;
                                   const isRecommended =
                                     ficoInvestmentRanges.length > 0 &&
                                     isFicoInvestmentRange(range);
@@ -634,7 +668,7 @@ const UpgradeDialog = ({
         </DialogContent>
       </Dialog>
 
-      {/* State Selection Modal */}
+      {/* State Selection Accordion Dialog */}
       <StateSelectionModal
         open={openStateModal}
         onClose={onCloseStateModal}
@@ -643,15 +677,65 @@ const UpgradeDialog = ({
         selectedStates={selectedStates}
         finalToken={finalToken}
         ALL_INDIA_STATES={ALL_INDIA_STATES}
-        allStates={allStates}
-        getAlreadySelectedStatesInOtherRanges={getAlreadySelectedStatesInOtherRanges}
-        getStatesToDisplay={getStatesToDisplay}
-        handleSelectAll={handleSelectAll}
-        handleClearAll={handleClearAll}
-        renderStatesByRegion={renderStatesByRegion}
+     allStates={allStates}
+onOpenStateModal={({ planId, range }) => {
+  setSelectedStates(new Set(allStates));
+  setOpenStateModal(true);
+}}
+getStatesToDisplay={() => allStates}
+handleSelectAll={() => setSelectedStates(new Set(allStates))}
+handleClearAll={() => setSelectedStates(new Set())}
+renderStatesByRegion={() => {
+  return Object.entries(INDIA_STATES).map(([region, states]) => {
+    const available = states.filter((s) => allStates.includes(s));
+    if (available.length === 0) return null;
+    const selectedInRegion = available.filter((s) => selectedStates.has(s)).length;
+    return (
+      <Accordion key={region} elevation={0}
+        sx={{ border: `1px solid ${COLORS.border}`, borderRadius: "8px !important", "&:before": { display: "none" }, backgroundColor: COLORS.white }}
+      >
+        <AccordionSummary expandIcon={<ExpandMoreIcon sx={{ color: COLORS.primary }} />}
+          sx={{ backgroundColor: COLORS.grey[50], borderRadius: "8px", p: 1.5 }}
+        >
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1, flex: 1 }}>
+            <Typography fontWeight={700} fontSize={TEXT_SIZES.medium}>{region}</Typography>
+            <Chip
+              label={`${selectedInRegion}/${available.length}`}
+              size="small"
+              sx={{ height: 20, fontSize: TEXT_SIZES.xs, backgroundColor: selectedInRegion === available.length ? COLORS.secondary : COLORS.grey[400], color: COLORS.white, fontWeight: 600 }}
+            />
+          </Box>
+        </AccordionSummary>
+        <AccordionDetails sx={{ p: 2 }}>
+          <Box sx={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 1 }}>
+            {available.map((state) => (   // ← only API states
+              <FormControlLabel
+                key={state}
+                control={
+                  <Checkbox
+                    checked={selectedStates.has(state)}
+                    onChange={(e) => {
+                      const newStates = new Set(selectedStates);
+                      e.target.checked ? newStates.add(state) : newStates.delete(state);
+                      setSelectedStates(newStates);
+                    }}
+                    size="small"
+                    sx={{ color: COLORS.primary, "&.Mui-checked": { color: COLORS.secondary } }}
+                  />
+                }
+                label={<Typography fontSize={TEXT_SIZES.small} color={COLORS.black}>{state}</Typography>}
+              />
+            ))}
+          </Box>
+        </AccordionDetails>
+      </Accordion>
+    );
+  });
+}}
         handleSaveStates={handleSaveStatesFromModal}
         router={router}
       />
+
     </>
   );
 };

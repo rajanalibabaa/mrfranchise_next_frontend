@@ -7,8 +7,12 @@ import {
   Box,
   Chip,
   IconButton,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
 const SelectedStatesTooltipModal = ({
   open,
@@ -70,7 +74,7 @@ const SelectedStatesTooltipModal = ({
       {/* Content */}
       <DialogContent dividers sx={{ p: 2 }}>
         {tooltipStates.length > 0 ? (
-          <Box>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
             {/* Group By Region */}
             {Object.entries(INDIA_STATES).map(
               ([region, regionStates]) => {
@@ -81,46 +85,60 @@ const SelectedStatesTooltipModal = ({
                 if (matchedStates.length === 0) return null;
 
                 return (
-                  <Box key={region} sx={{ mb: 2 }}>
-                    {/* Region Title */}
-                    <Typography
+                  <Accordion
+                    key={region}
+                    elevation={0}
+                    sx={{
+                      border: `1px solid ${COLORS.border}`,
+                      borderRadius: "8px !important",
+                      "&:before": { display: "none" },
+                      backgroundColor: COLORS.white,
+                    }}
+                  >
+                    <AccordionSummary
+                      expandIcon={<ExpandMoreIcon sx={{ color: COLORS.primary }} />}
                       sx={{
-                        fontSize: TEXT_SIZES.medium,
-                        fontWeight: 700,
-                        color: COLORS.primary,
-                        mb: 1,
-                        pb: 0.5,
-                        borderBottom: `1px solid ${COLORS.border}`,
+                        backgroundColor: COLORS.grey[50],
+                        borderRadius: "8px",
+                        p: 1.5,
                       }}
                     >
-                      {region} ({matchedStates.length})
-                    </Typography>
-
-                    {/* States */}
-                    <Box
-                      sx={{
-                        display: "flex",
-                        flexWrap: "wrap",
-                        gap: 0.8,
-                        pl: 1,
-                      }}
-                    >
-                      {matchedStates.map((state, idx) => (
+                      <Box sx={{ display: "flex", alignItems: "center", gap: 1, flex: 1 }}>
+                        <Typography fontWeight={700} fontSize={TEXT_SIZES.medium} color={COLORS.black}>
+                          {region}
+                        </Typography>
                         <Chip
-                          key={idx}
-                          label={state}
+                          label={`${matchedStates.length}/${regionStates.length}`}
                           size="small"
                           sx={{
-                            backgroundColor: COLORS.lightOrange,
-                            color: COLORS.black,
-                            fontWeight: 500,
-                            fontSize: "0.8rem",
-                            height: 24,
+                            height: 22,
+                            fontSize: TEXT_SIZES.xs,
+                            backgroundColor: COLORS.primary,
+                            color: COLORS.white,
+                            fontWeight: 600,
                           }}
                         />
-                      ))}
-                    </Box>
-                  </Box>
+                      </Box>
+                    </AccordionSummary>
+                    <AccordionDetails sx={{ p: 2 }}>
+                      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+                        {matchedStates.map((state, idx) => (
+                          <Chip
+                            key={idx}
+                            label={state}
+                            size="small"
+                            sx={{
+                              backgroundColor: COLORS.lightOrange,
+                              color: COLORS.primaryDark,
+                              fontWeight: 600,
+                              fontSize: TEXT_SIZES.small,
+                              borderRadius: 1.5,
+                            }}
+                          />
+                        ))}
+                      </Box>
+                    </AccordionDetails>
+                  </Accordion>
                 );
               }
             )}
