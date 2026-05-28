@@ -65,7 +65,7 @@ const PaymentBottomBar = ({
     xl: "45%",
   },
   maxWidth: "1100px",
-  zIndex: 1400,
+  zIndex: 1200,
 
   /* LIGHT ORANGE SHADE */
   background:

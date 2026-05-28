@@ -28,7 +28,10 @@ const StateSelectionModal = ({
   handleSaveStates,
   router,
 }) => {
-  const blocked = getAlreadySelectedStatesInOtherRanges();
+ const blocked = typeof getAlreadySelectedStatesInOtherRanges === "function"
+    ? getAlreadySelectedStatesInOtherRanges()
+    : new Set();
+
 
   const currentRangeSelectedCount = [...selectedStates].filter(
     (s) => !blocked.has(s)
@@ -38,8 +41,9 @@ const StateSelectionModal = ({
     ? ALL_INDIA_STATES.filter((s) => !blocked.has(s)).length
     : allStates.filter((s) => !blocked.has(s)).length;
 
-  const statesToDisplay = getStatesToDisplay();
-
+  const statesToDisplay = typeof getStatesToDisplay === "function"
+    ? getStatesToDisplay()
+    : [];
   const selectableStates = statesToDisplay.filter((s) => !blocked.has(s));
 
   const isAllSelected = selectableStates.every((s) =>

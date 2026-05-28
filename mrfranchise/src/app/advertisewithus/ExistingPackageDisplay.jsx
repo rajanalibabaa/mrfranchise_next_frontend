@@ -72,10 +72,24 @@ const TABLE_CONFIGS = {
   },
 };
 
-const ExistingPackageDisplay = ({ data, loading, error, category, industry, brandName, isLoggedIn, upgradeSectionRef,allPlans = [],           // ← ADD THIS
-  leadsDropdownData = {}    }) => {
+const ExistingPackageDisplay = ({ data, loading, error, category, industry, brandName, isLoggedIn, upgradeSectionRef,
+  allPlans = [],
+  leadsDropdownData = {},
+  ficoInvestmentRanges = [],
+  // Add these:
+  ALL_INDIA_STATES = [],
+  finalToken,
+  getAlreadySelectedStatesInOtherRanges,
+  getStatesToDisplay,
+  handleSelectAll,
+  handleClearAll,
+  renderStatesByRegion,
+  handleSaveStates,
+  router,  }) => {
     const [dialog, setDialog] = useState({ open: false, states: [], label: "" });
     const [upgradeDialog, setUpgradeDialog] = useState({ open: false, pkg: null, item: null });
+    const [openStateModal, setOpenStateModal] = useState(false);
+const [selectedStates, setSelectedStates] = useState(new Set());
 
   // If not logged in, don't render anything
   if (!isLoggedIn) {
@@ -166,6 +180,11 @@ const handleUpgrade = (pkg, item) => {
   });
 
   const hasAnyPackages = grouped.FREE.length > 0 || grouped.LISTING.length > 0 || grouped.LEAD.length > 0;
+  const allStates = grouped.LEAD.flatMap(({ item }) =>
+  (item.investmentranges || []).flatMap((r) =>
+    (r.selectedPlanStateAndDistrict || []).map((s) => s.state || s)
+  )
+);
 
   const StatusChip = ({ item }) => {
     const s = getStatus(item);
@@ -281,7 +300,6 @@ if (type === "FREE") return [
 ];
 
    if (type === "LISTING") {
-  console.log("LISTING item:", JSON.stringify(item, null, 2));
   return [
     name,
     <Chip
@@ -315,75 +333,78 @@ if (type === "FREE") return [
   ];
 }
 
-  if (type === "LEAD") {
-  const statesArr =
-    item.investmentranges?.flatMap((r) =>
-      (r.selectedPlanStateAndDistrict || []).map((s) => s.state)
-    ) || [];
-  const stateCount = statesArr.length;
+if (type === "LEAD")
 
-  const start = item.isPending ? "—" : formatDate(item.packageStartDate);
-  const end = item.isPending ? "—" : formatDate(item.packageEndDate);
-
+   {
+    console.log("LEAD item:", JSON.stringify(item, null, 2));
+  // Extract states correctly from investmentranges
+  let allStates = [];
+  let investmentRangesWithStates = [];
+  
+  if (item.investmentranges && Array.isArray(item.investmentranges)) {
+    investmentRangesWithStates = item.investmentranges.map((r) => {
+      const rangeStates = (r.selectedPlanStateAndDistrict || []).map((s) => s.state || s);
+      allStates = [...allStates, ...rangeStates];
+      return {
+        range: r.selectedPlanInvestmetrange || "—",
+        states: rangeStates
+      };
+    });
+  }
+  
+  const totalLeads = item.totalLeads || 0;
   const sent = item.sendingLeads || 0;
   const remaining = item.remainingLeads || 0;
-  const totalLeads = item.totalLeads || 0;
   const progress = totalLeads > 0 ? (sent / totalLeads) * 100 : 0;
-
-  const investmentRange =
-    item.investmentranges?.map((r) => r.selectedPlanInvestmetrange).join(", ") || "—";
+  const start = item.isPending ? "—" : formatDate(item.packageStartDate);
+  const end = item.isPending ? "—" : formatDate(item.packageEndDate);
 
   return [
     // Package name cell
     <Box>
-       <Typography fontWeight={700} fontSize={TEXT_SIZES.xs} color={COLORS.black[700]}>
-  {item.validity ? `${item.validity} Days` : "—"}
-</Typography>
+      <Typography fontWeight={700} fontSize={TEXT_SIZES.xs} color={COLORS.black}>
+        {item.validity ? `${item.validity} Days` : "—"}
+      </Typography>
       <Typography fontWeight={300} fontSize={TEXT_SIZES.small} color={COLORS.black} noWrap>
         {item.packagesName || pkg.packagesName}
       </Typography>
-    
     </Box>,
 
- // Investment Group
-<Typography fontSize={TEXT_SIZES.xs} fontWeight={600} color={COLORS.primaryDark}>
-  {item.investmetRageLabel || "—"}
-</Typography>,
+    // Investment Group
+    <Typography fontSize={TEXT_SIZES.xs} fontWeight={600} color={COLORS.primaryDark}>
+      {item.investmetRageLabel || item.investmentGroupLabel || "—"}
+    </Typography>,
 
-// Investment Range(s)
-<Box sx={{ display: "flex", flexDirection: "column", gap: 0.5,  justifyContent:"left" }}>
-  {item.investmentranges?.length
-    ? item.investmentranges.map((r, i) => (
-        <Typography key={i} fontSize={TEXT_SIZES.xs} fontWeight={600} color={COLORS.primaryDark} noWrap>
-          {r.selectedPlanInvestmetrange || "—"}
-        </Typography>
-      ))
-    : <Typography fontSize={TEXT_SIZES.xs} color={COLORS.grey[500]}>—</Typography>
-  }
-</Box>,
-
-    // States count + view
-   // States count + view (per investment range)
-<Box sx={{ display: "flex", flexDirection: "column", gap: 0.5, alignItems: "center" }}>
-  {item.investmentranges?.length
-    ? item.investmentranges.map((r, i) => {
-        const rangeStates = (r.selectedPlanStateAndDistrict || []).map((s) => s.state);
-        return (
-          <Box
-            key={i}
-            onClick={() => openStatesDialog(rangeStates, r.selectedPlanInvestmetrange)}
-            sx={{ display: "inline-flex", alignItems: "center", gap: 0.5, cursor: "pointer" }}
-          >
-            <Typography fontSize={TEXT_SIZES.small} color={COLORS.primary} fontWeight={600}>
-              {rangeStates.length}
+    // Investment Range(s)
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5, justifyContent: "left" }}>
+      {investmentRangesWithStates.length > 0
+        ? investmentRangesWithStates.map((rangeData, i) => (
+            <Typography key={i} fontSize={TEXT_SIZES.xs} fontWeight={600} color={COLORS.primaryDark} noWrap>
+              {rangeData.range}
             </Typography>
-            <VisibilityOutlinedIcon sx={{ fontSize: 16, color: COLORS.primary }} />
-          </Box>
-        );
-      })
-    : <Typography fontSize={TEXT_SIZES.xs} color={COLORS.grey[500]}>—</Typography>
-  }
-</Box>,
+          ))
+        : <Typography fontSize={TEXT_SIZES.xs} color={COLORS.grey[500]}>—</Typography>
+      }
+    </Box>,
+
+    // States count + view (per investment range)
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5, alignItems: "center" }}>
+      {investmentRangesWithStates.length > 0
+        ? investmentRangesWithStates.map((rangeData, i) => (
+            <Box
+              key={i}
+              onClick={() => openStatesDialog(rangeData.states, rangeData.range)}
+              sx={{ display: "inline-flex", alignItems: "center", gap: 0.5, cursor: "pointer" }}
+            >
+              <Typography fontSize={TEXT_SIZES.small} color={COLORS.primary} fontWeight={600}>
+                {rangeData.states.length}
+              </Typography>
+              <VisibilityOutlinedIcon sx={{ fontSize: 16, color: COLORS.primary }} />
+            </Box>
+          ))
+        : <Typography fontSize={TEXT_SIZES.xs} color={COLORS.grey[500]}>—</Typography>
+      }
+    </Box>,
 
     // Total Leads
     <Typography fontWeight={700} fontSize={TEXT_SIZES.small} color={COLORS.black}>
@@ -636,13 +657,33 @@ if (type === "FREE") return [
           </Box>
         </DialogContent>
       </Dialog>
-      <UpgradeDialog
+ <UpgradeDialog
+  key={upgradeDialog.pkg?._id || "upgrade"}  
   open={upgradeDialog.open}
   onClose={() => setUpgradeDialog({ open: false, pkg: null, item: null })}
   pkg={upgradeDialog.pkg}
   item={upgradeDialog.item}
-   allPlans={allPlans}              // ← ADD THIS
-        leadsDropdownData={leadsDropdownData}
+  allPlans={allPlans}
+  leadsDropdownData={leadsDropdownData}
+  ficoInvestmentRanges={ficoInvestmentRanges}
+  // State modal props
+  openStateModal={openStateModal}
+  onOpenStateModal={() => setOpenStateModal(true)}
+  onCloseStateModal={() => setOpenStateModal(false)}
+  selectedStates={selectedStates}
+  setSelectedStates={setSelectedStates}
+  allStates={allStates}
+  COLORS={COLORS}
+  TEXT_SIZES={TEXT_SIZES}
+  ALL_INDIA_STATES={ALL_INDIA_STATES}
+  finalToken={finalToken}
+  getAlreadySelectedStatesInOtherRanges={getAlreadySelectedStatesInOtherRanges}
+    getStatesToDisplay={getStatesToDisplay}
+    handleSelectAll={handleSelectAll}
+    handleClearAll={handleClearAll}
+    renderStatesByRegion={renderStatesByRegion}
+    handleSaveStates={handleSaveStates}
+  router={router}
 />
     </>
   );

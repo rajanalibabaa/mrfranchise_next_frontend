@@ -2263,11 +2263,6 @@ const totalLeads = (updatedItems[0]?.selectedLeads || 0) * totalUniqueStates;
       </Box>
     )}
 
-    {/* Separator between Brand and Category */}
-    {/* {(data?.brandDetails?.brandName || data?.brandName || getBrandName()) && 
-     (data?.brandDetails?.category || data?.category) && (
-      <Box sx={{ width: 4, height: 4, borderRadius: "50%", backgroundColor: COLORS.grey[400] }} />
-    )} */}
 
     {/* Category Chip */}
     {(data?.brandDetails?.category || data?.category) && (
@@ -2289,11 +2284,7 @@ const totalLeads = (updatedItems[0]?.selectedLeads || 0) * totalUniqueStates;
       </Box>
     )}
 
-    {/* Separator between Category and Industry */}
-    {/* {(data?.brandDetails?.category || data?.category) && 
-     (data?.brandDetails?.industry || data?.industry) && (
-      <Box sx={{ width: 4, height: 4, borderRadius: "50%", backgroundColor: COLORS.grey[400] }} />
-    )} */}
+  
 
     {/* Industry Chip */}
     {(data?.brandDetails?.industry || data?.industry) && (
@@ -2316,7 +2307,7 @@ const totalLeads = (updatedItems[0]?.selectedLeads || 0) * totalUniqueStates;
     )}
   </Box>
 )}
-<ExistingPackageDisplay data={data} error={errors} loading={loadings} isLoggedIn={!!finalToken} upgradeSectionRef={upgradeSectionRef}   allPlans={plans}  leadsDropdownData={leadsDropdownData} />
+<ExistingPackageDisplay data={data} error={errors} loading={loadings} isLoggedIn={!!finalToken} upgradeSectionRef={upgradeSectionRef}   allPlans={plans}  leadsDropdownData={leadsDropdownData}  ficoInvestmentRanges={ficoInvestmentRanges}/>
           {/* LISTING PLANS SECTION */}
       <Box
        ref={upgradeSectionRef}
@@ -2920,7 +2911,7 @@ background: "linear-gradient(135deg, #fb8c00 0%, #ef6c00 100%)",
                                 lineHeight:1.5
                               }}
                             >
-                              Select<br/> Plan
+                              Select<br/>Lead Plan
                             </TableCell>
 
                             {/* Investment Group Column */}
@@ -3316,7 +3307,7 @@ background: "linear-gradient(135deg, #4cb04f 0%, #2e7d32 100%)",
             alignItems: "center",
             justifyContent: "center",
             width: "100%",
-            gap: 3,
+            gap: 1,
           }}
         >
           {/* Leads Options FIRST */}
@@ -3399,6 +3390,9 @@ background: "linear-gradient(135deg, #4cb04f 0%, #2e7d32 100%)",
               No leads
             </Typography>
           )}
+          <Typography sx={{ fontSize: TEXT_SIZES.xs, color: COLORS.grey[600] }}>
+            Investment Range Group
+          </Typography>
 
           {/* Investment Label BELOW */}
           <Typography
