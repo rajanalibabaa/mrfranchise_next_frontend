@@ -227,9 +227,7 @@ const UpgradeDialog = ({
             </Typography>
             <Typography fontSize="0.7rem" color="#757575">
               {clickedRangeLabel && `Investment Group: ${clickedRangeLabel} · `}
-              Click on a plan to select leads per state
-              {ficoInvestmentRanges.length > 0 &&
-                ` · Showing ${ficoInvestmentRanges.length} matching ranges`}
+            
             </Typography>
           </Box>
           <IconButton size="small" onClick={onClose}>
@@ -239,7 +237,7 @@ const UpgradeDialog = ({
 
         <Divider />
 
-        <DialogContent sx={{ pt: 2, pb: 1 }}>
+        <DialogContent sx={{ pt: 2, pb: 1, overflowX: 'hidden' }}>
           <TableContainer sx={{ borderRadius: 2, border: "1px solid #e0e0e0" }}>
             <Table size="small" sx={{ tableLayout: "fixed", width: "100%", minWidth: 800 }}>
               <TableHead>
@@ -480,19 +478,7 @@ const UpgradeDialog = ({
                                           }
                                         />
                                       </Box>
-                                      {isRecommended && (
-                                        <Chip
-                                          label="Recommended"
-                                          size="small"
-                                          sx={{
-                                            height: 16,
-                                            fontSize: "0.6rem",
-                                            backgroundColor: "#4caf50",
-                                            color: "#fff",
-                                            ml: 0.5,
-                                          }}
-                                        />
-                                      )}
+                                   
                                     </Box>
                                   );
                                 })}

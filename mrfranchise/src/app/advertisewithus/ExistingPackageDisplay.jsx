@@ -180,11 +180,16 @@ const handleUpgrade = (pkg, item) => {
   });
 
   const hasAnyPackages = grouped.FREE.length > 0 || grouped.LISTING.length > 0 || grouped.LEAD.length > 0;
-  const allStates = grouped.LEAD.flatMap(({ item }) =>
+const allStates = grouped.LEAD.flatMap(({ item }) =>
   (item.investmentranges || []).flatMap((r) =>
-    (r.selectedPlanStateAndDistrict || []).map((s) => s.state || s)
+    (r.selectedPlanStateAndDistrict || []).map((s) => {
+      return typeof s === 'object' ? s.state : s;
+    })
   )
 );
+const uniqueAllStates = [...new Set(allStates.filter(Boolean))];
+
+const allStatesForUpgrade = uniqueAllStates;
 
   const StatusChip = ({ item }) => {
     const s = getStatus(item);
@@ -592,72 +597,72 @@ if (type === "LEAD")
         )}
       </Box>
 
-      {/* States Dialog */}
-      <Dialog
-        open={dialog.open}
-        onClose={() => setDialog({ ...dialog, open: false })}
-        PaperProps={{
-          sx: {
-            borderRadius: 3,
-            minWidth: 380,
-            maxWidth: 500,
-            p: 0,
-            overflow: "hidden"
-          }
-        }}
-      >
-        <DialogTitle sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          pb: 1,
-          backgroundColor: COLORS.grey[50],
-          borderBottom: `1px solid ${COLORS.border}`
-        }}>
-          <Box>
-            <Typography fontWeight={700} fontSize={TEXT_SIZES.medium} color={COLORS.black}>
-              Selected States
-            </Typography>
-            {dialog.label && (
-              <Typography fontSize={TEXT_SIZES.xs} color={COLORS.grey[500]}>
-                {dialog.label}
-              </Typography>
-            )}
-          </Box>
-          <IconButton size="small" onClick={() => setDialog({ ...dialog, open: false })}>
-            <CloseIcon fontSize="small" sx={{ color: COLORS.grey[500] }} />
-          </IconButton>
-        </DialogTitle>
+    {/* States Dialog */}
+<Dialog
+  open={dialog.open}
+  onClose={() => setDialog({ ...dialog, open: false })}
+  PaperProps={{
+    sx: {
+      borderRadius: 3,
+      minWidth: 380,
+      maxWidth: 500,
+      p: 0,
+      overflow: "hidden"
+    }
+  }}
+>
+  <DialogTitle sx={{
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    pb: 1,
+    backgroundColor: COLORS.grey[50],
+    borderBottom: `1px solid ${COLORS.border}`
+  }}>
+    <Box>
+      <Typography fontWeight={700} fontSize={TEXT_SIZES.medium} color={COLORS.black}>
+        Selected States
+      </Typography>
+      {dialog.label && (
+        <Typography fontSize={TEXT_SIZES.xs} color={COLORS.grey[500]}>
+          {dialog.label}
+        </Typography>
+      )}
+    </Box>
+    <IconButton size="small" onClick={() => setDialog({ ...dialog, open: false })}>
+      <CloseIcon fontSize="small" sx={{ color: COLORS.grey[500] }} />
+    </IconButton>
+  </DialogTitle>
 
-        <Divider />
+  <Divider />
 
-        <DialogContent sx={{ pt: 2 }}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
-            <LocationOnIcon sx={{ fontSize: 16, color: COLORS.primary }} />
-            <Typography fontSize={TEXT_SIZES.small} color={COLORS.grey[600]}>
-              {dialog.states.length} state{dialog.states.length !== 1 ? "s" : ""} selected
-            </Typography>
-          </Box>
+  <DialogContent sx={{ pt: 2 }}>
+    <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
+      <LocationOnIcon sx={{ fontSize: 16, color: COLORS.primary }} />
+      <Typography fontSize={TEXT_SIZES.small} color={COLORS.grey[600]}>
+        {dialog.states.length} state{dialog.states.length !== 1 ? "s" : ""} selected
+      </Typography>
+    </Box>
 
-          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, maxHeight: 300, overflow: "auto" }}>
-            {dialog.states.map((state) => (
-              <Chip
-                key={state}
-                label={state}
-                size="small"
-                sx={{
-                  backgroundColor: COLORS.lightOrange,
-                  color: COLORS.primaryDark,
-                  fontWeight: 600,
-                  fontSize: TEXT_SIZES.xs,
-                  borderRadius: 1.5,
-                }}
-              />
-            ))}
-          </Box>
-        </DialogContent>
-      </Dialog>
- <UpgradeDialog
+    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, maxHeight: 300, overflow: "auto" }}>
+      {dialog.states.map((state) => (
+        <Chip
+          key={typeof state === 'object' ? state._id || state.state : state}
+          label={typeof state === 'object' ? state.state : state}
+          size="small"
+          sx={{
+            backgroundColor: COLORS.lightOrange,
+            color: COLORS.primaryDark,
+            fontWeight: 600,
+            fontSize: TEXT_SIZES.xs,
+            borderRadius: 1.5,
+          }}
+        />
+      ))}
+    </Box>
+  </DialogContent>
+</Dialog>
+<UpgradeDialog
   key={upgradeDialog.pkg?._id || "upgrade"}  
   open={upgradeDialog.open}
   onClose={() => setUpgradeDialog({ open: false, pkg: null, item: null })}
@@ -672,17 +677,17 @@ if (type === "LEAD")
   onCloseStateModal={() => setOpenStateModal(false)}
   selectedStates={selectedStates}
   setSelectedStates={setSelectedStates}
-  allStates={allStates}
+  allStates={allStatesForUpgrade} // Use the defined variable here
   COLORS={COLORS}
   TEXT_SIZES={TEXT_SIZES}
   ALL_INDIA_STATES={ALL_INDIA_STATES}
   finalToken={finalToken}
   getAlreadySelectedStatesInOtherRanges={getAlreadySelectedStatesInOtherRanges}
-    getStatesToDisplay={getStatesToDisplay}
-    handleSelectAll={handleSelectAll}
-    handleClearAll={handleClearAll}
-    renderStatesByRegion={renderStatesByRegion}
-    handleSaveStates={handleSaveStates}
+  getStatesToDisplay={getStatesToDisplay}
+  handleSelectAll={handleSelectAll}
+  handleClearAll={handleClearAll}
+  renderStatesByRegion={renderStatesByRegion}
+  handleSaveStates={handleSaveStates}
   router={router}
 />
     </>
