@@ -275,7 +275,7 @@ const fetchPackages = async () => {
   try {
     setLoadings(true);
     const response = await axios.get(
-      `https://mrfranchisebackend.mrfranchise.in/api/v1/brand-packages-plans/get/${brandOwnerId}`,
+      `http://localhost:5000/api/v1/brand-packages-plans/get/${brandOwnerId}`,
     );
     
     console.log("=== API Response ===");
