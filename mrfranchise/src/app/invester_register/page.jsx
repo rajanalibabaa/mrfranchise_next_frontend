@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
+import { fetchGlobalLocationByPostalCode } from "@/Utils/PincodeFetch.jsx";
 import {
   Grid,
   TextField,
@@ -281,80 +282,95 @@ const InvestorRegister = () => {
     setPhonePrefix(found ? found.dial_code : "+91");
   }, [formData.country, countryCodes]);
 
-  // Handle pincode lookup
+  const getCountryIsoCode = (countryName) => {
+    if (!countryName) return "IN";
+    const normalized = countryName.trim().toLowerCase();
+
+    if (normalized === "india") return "IN";
+
+    const selectedCountryObj = countries.find(
+      (c) =>
+        c.name?.toLowerCase() === normalized ||
+        c.code?.toLowerCase() === normalized ||
+        c.iso2?.toLowerCase() === normalized ||
+        c.iso3?.toLowerCase() === normalized,
+    );
+
+    if (selectedCountryObj?.code) return selectedCountryObj.code.toUpperCase();
+    return normalized.length === 2 ? normalized.toUpperCase() : "IN";
+  };
+
+  const lookupPincode = async (pincode, country) => {
+    const countryCode = getCountryIsoCode(country);
+    if (!pincode || !country) return;
+
+    setLoadingPincode(true);
+    setPincodeError("");
+
+    try {
+      const result = await fetchGlobalLocationByPostalCode(
+        pincode,
+        countryCode,
+      );
+
+      if (result.status !== "success") {
+        throw new Error(result.message || "No location found");
+      }
+
+      setFormData((prev) => ({
+        ...prev,
+        state: result.state || "",
+        city: result.city || "",
+      }));
+    } catch (err) {
+      setFormData((prev) => ({
+        ...prev,
+        state: "",
+        city: "",
+      }));
+      setPincodeError(
+        countryCode === "IN"
+          ? "Invalid Indian pincode"
+          : "Postal code not found for selected country",
+      );
+    } finally {
+      setLoadingPincode(false);
+    }
+  };
+
   useEffect(() => {
     const pincode = formData.pincode;
     const country = formData.country;
+    const countryCode = getCountryIsoCode(country);
 
-    if (!pincode || !country || pincode.length < 3) {
+    if (!pincode || !country) {
       setPincodeError("");
       return;
     }
 
-    const selectedCountryObj = countries.find((c) => c.name === country);
-    const countryCode = selectedCountryObj?.code || "IN";
+    if (
+      countryCode === "IN" && pincode.length === 6
+    ) {
+      lookupPincode(pincode, country);
+    } else if (countryCode !== "IN" && pincode.length >= 3) {
+      lookupPincode(pincode, country);
+    } else if (countryCode === "IN" && pincode.length > 0 && pincode.length < 6) {
+      setPincodeError("Enter 6-digit pincode");
+    }
+  }, [formData.pincode, formData.country, countries]);
+
+  const handlePincodeBlur = () => {
+    const pincode = formData.pincode;
+    const country = formData.country;
+    const countryCode = getCountryIsoCode(country);
 
     if (
       (countryCode === "IN" && pincode.length === 6) ||
       (countryCode !== "IN" && pincode.length >= 3)
     ) {
-      setLoadingPincode(true);
-      setPincodeError("");
-
-      const fetchLocation = async () => {
-        try {
-          if (countryCode === "IN") {
-            const res = await fetch(
-              `https://api.postalpincode.in/pincode/${pincode}`,
-            );
-            const data = await res.json();
-            if (data[0]?.Status === "Success" && data[0]?.PostOffice?.length) {
-              const po = data[0].PostOffice[0];
-              setFormData((prev) => ({
-                ...prev,
-                state: po.State || "",
-                city: po.District || po.Block || "",
-              }));
-            } else {
-              setFormData((prev) => ({
-                ...prev,
-                state: "",
-                city: "",
-              }));
-              setPincodeError("Invalid Indian pincode");
-            }
-          } else {
-            const code = countryCode.toLowerCase();
-            const res = await fetch(
-              `https://api.zippopotam.us/${code}/${pincode}`,
-            );
-            if (!res.ok) throw new Error("Not found");
-            const data = await res.json();
-            setFormData((prev) => ({
-              ...prev,
-              state: data.places?.[0]?.state || "",
-              city: data.places?.[0]?.["place name"] || "",
-            }));
-          }
-        } catch (err) {
-          setFormData((prev) => ({
-            ...prev,
-            state: "",
-            city: "",
-          }));
-          setPincodeError("Postal code not found for selected country");
-        } finally {
-          setLoadingPincode(false);
-        }
-      };
-
-      fetchLocation();
-    } else {
-      if (countryCode === "IN" && pincode.length > 0 && pincode.length < 6) {
-        setPincodeError("Enter 6-digit pincode");
-      }
+      lookupPincode(pincode, country);
     }
-  }, [formData.pincode, formData.country, countries]);
+  };
 
   // Fetch property states when property country changes
   useEffect(() => {
@@ -1392,6 +1408,7 @@ const InvestorRegister = () => {
                         </InputAdornment>
                       ) : null,
                     }}
+                    onBlur={handlePincodeBlur}
                     sx={{
                       "& .MuiOutlinedInput-root": {
                         borderRadius: "8px",
@@ -1548,13 +1565,18 @@ const InvestorRegister = () => {
                     fullWidth
                     variant="outlined"
                     value={formData.currentPreference.industry}
-                    onChange={(e) => handleIndustryChange("Food & Beverages")}
+                    onChange={(e) => handleIndustryChange(e.target.value)}
                     disabled={loadingIndustries}
                     sx={{ borderRadius: "8px" }}
                   >
-                    <MenuItem value="Food & Beverages">
-                      Food & Beverages
+                    <MenuItem value="">
+                      <em>Select Industry</em>
                     </MenuItem>
+                    {industryOptions.map((industry) => (
+                      <MenuItem key={industry} value={industry}>
+                        {industry}
+                      </MenuItem>
+                    ))}
                   </TextField>
                 </Box>
 <Box sx={{ width: '100%', minWidth: 0 }}>
