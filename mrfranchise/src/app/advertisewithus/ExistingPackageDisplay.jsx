@@ -363,8 +363,10 @@ if (type === "LEAD")
   
   if (item.investmentranges && Array.isArray(item.investmentranges)) {
     investmentRangesWithStates = item.investmentranges.map((r) => {
-      const rangeStates = (r.selectedPlanStateAndDistrict || []).map((s) => s.state || s);
-      allStates = [...allStates, ...rangeStates];
+const rangeStates = (r.selectedPlanStateAndDistrict || [])
+  .map((s) => (typeof s === "object" ? s.state : s) || "")
+  .filter((s) => s.trim() !== "");
+        allStates = [...allStates, ...rangeStates];
       return {
         range: r.selectedPlanInvestmetrange || "—",
         states: rangeStates

@@ -3260,7 +3260,7 @@ background: "linear-gradient(135deg, #4cb04f 0%, #2e7d32 100%)",
                                                       color: "black",
                                                     }}
                                                   >
-                                                    {uniqueValidityDays[0]} Days
+                                                    {uniqueValidityDays[0]} Days Plan
                                                   </Typography>
                                                   <Typography
                                                     sx={{

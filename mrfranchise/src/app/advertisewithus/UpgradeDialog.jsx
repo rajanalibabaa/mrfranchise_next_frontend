@@ -44,6 +44,12 @@ const UpgradeDialog = ({
   const [selectedPlanId, setSelectedPlanId] = useState(null);
   const [currentEditingRange, setCurrentEditingRange] = useState(null);
 const [stateSelections, setStateSelections] = useState(() => {
+  // Try loading from localStorage first
+  try {
+    const saved = localStorage.getItem(`stateSelections_${item?._id}`);
+    if (saved) return JSON.parse(saved);
+  } catch (e) {}
+
   if (!item?.investmentranges?.length) return {};
   const initial = {};
   allPlans
@@ -193,20 +199,41 @@ totalAmount: (pricePerState / divisor) * totalStates * currentLead,    };
 const editStates = (planId, range) => {
   setCurrentEditingRange({ planId, range });
 
-  // Use stateSelections instead of item.investmentranges
-  const existing = stateSelections[`${planId}_${range}`] || [];
-  setSelectedStates(new Set(existing.length ? existing : allStates));
+  const key = `${planId}_${range}`;
+
+  // Priority: localStorage saved states > item's existing states > allStates
+  const savedStates = stateSelections[key];
+
+  let statesToPreselect = savedStates;
+
+  if (!statesToPreselect || statesToPreselect.length === 0) {
+    // Fall back to item's investmentranges states
+    const matchingRange = item?.investmentranges?.find(
+      (ir) => ir.selectedPlanInvestmetrange === range
+    );
+    const existingFromItem = (matchingRange?.selectedPlanStateAndDistrict || [])
+      .map((s) => (typeof s === "object" ? s.state : s))
+      .filter((s) => s && s.trim() !== "");
+
+    statesToPreselect = existingFromItem.length ? existingFromItem : allStates;
+  }
+
+  setSelectedStates(new Set(statesToPreselect));
   onOpenStateModal?.({ planId, range });
 };
 const handleSaveStatesFromModal = () => {
   if (currentEditingRange) {
     const stateArray = Array.from(selectedStates);
+    const key = `${currentEditingRange.planId}_${currentEditingRange.range}`;
 
-    // Save actual array, not just count
-    setStateSelections((p) => ({
-      ...p,
-      [`${currentEditingRange.planId}_${currentEditingRange.range}`]: stateArray,
-    }));
+    setStateSelections((prev) => {
+      const updated = { ...prev, [key]: stateArray };
+      // Save entire stateSelections to localStorage
+      try {
+        localStorage.setItem(`stateSelections_${item?._id}`, JSON.stringify(updated));
+      } catch (e) {}
+      return updated;
+    });
 
     setCheckedRanges((p) => {
       const s = new Set(p[currentEditingRange.planId] || []);
@@ -679,8 +706,6 @@ const handleSaveStatesFromModal = () => {
         ALL_INDIA_STATES={ALL_INDIA_STATES}
      allStates={allStates}
 onOpenStateModal={({ planId, range }) => {
-  setSelectedStates(new Set(allStates));
-  setOpenStateModal(true);
 }}
 getStatesToDisplay={() => allStates}
 handleSelectAll={() => setSelectedStates(new Set(allStates))}
