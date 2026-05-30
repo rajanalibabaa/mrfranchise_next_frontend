@@ -60,6 +60,7 @@ import PaymentSummaryTable from "./PaymentSummaryTable";
 import PaymentBottomBar from "./PaymentBottomBar";
 import ExistingPackageDisplay from "./ExistingPackageDisplay";
 
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 // Enhanced Color Palette
@@ -3160,124 +3161,128 @@ background: "linear-gradient(135deg, #4cb04f 0%, #2e7d32 100%)",
                                     "& td": { borderBottom: "none" },
                                   }}
                                 >
-                                  {/* Plan Selection - Show only in first row */}
-                                  {isFirstRowOfTable && (
-                                    <TableCell
-                                      rowSpan={totalRows}
-                                      sx={{
-                                        px: 1.5,
-                                        py: 1.5,
-                                        borderRight: `2px solid ${COLORS.border}`,
-                                        verticalAlign: "middle",
-                                        backgroundColor: "#ffe0b2 ",
-                                        height: "100%",
-                                        borderRight: "none",
-                                      }}
-                                    >
-                                      <Box
-                                        sx={{
-                                          display: "flex",
-                                          flexDirection: "column",
-                                          alignItems: "center",
-                                          justifyContent: "space-evenly",
-                                          height: "100%",
-                                          minHeight: `${totalRows * 50}px`,
-                                        }}
-                                      >
-                                        <Box
-                                          sx={{
-                                            display: "flex",
-                                            flexDirection: "column",
-                                            gap: 8,
-                                            width: "75%",
-                                          }}
-                                        >
-                                          {filteredPlans.map((plan) => {
-                                            const uniqueValidityDays = [
-                                              ...new Set(
-                                                plan.packages
-                                                  ?.map(
-                                                    (pkg) => pkg.validityDays,
-                                                  )
-                                                  .filter(Boolean),
-                                              ),
-                                            ];
+{isFirstRowOfTable && (
+  <TableCell
+    rowSpan={totalRows}
+    sx={{
+      px: 1.5,
+      py: 1.5,
+      borderRight: `2px solid ${COLORS.border}`,
+      verticalAlign: "middle",
+      backgroundColor: "#ffe0b2",
+      borderRight: "none",
+      height: "100%",
+    }}
+  >
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-evenly", // Distributes space evenly top to bottom
+        height: "100%", // Takes full cell height
+        width: "100%",
+      }}
+    >
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "space-evenly", // Evenly distributes boxes
+          width: "75%",
+          margin: "0 auto", // Center horizontally
+          gap:3,
+          height: "100%", // Take full height
+        }}
+      >
+        {filteredPlans.map((plan) => {
+          const uniqueValidityDays = [
+            ...new Set(
+              plan.packages
+                ?.map((pkg) => pkg.validityDays)
+                .filter(Boolean),
+            ),
+          ];
 
-                                            return (
-                                              <Box
-                                                key={plan._id}
-                                                onClick={() => {
-                                                  setSelectedGroup(plan._id);
-                                                  setSelectedLeadsPerRange({});
-                                                }}
-                                                sx={{
-                                                  py: 0.8,
-                                                  px: 1,
-                                                  textAlign: "center",
-                                                  borderRadius: 1.5,
-                                                  cursor: "pointer",
-                                                  transition: "all 0.2s ease",
-                                                  backgroundColor:
-                                                    selectedGroup === plan._id
-                                                      ? COLORS.primary
-                                                      : COLORS.white,
-                                                  color:
-                                                    selectedGroup === plan._id
-                                                      ? COLORS.white
-                                                      : COLORS.black,
-                                                  fontWeight:
-                                                    selectedGroup === plan._id
-                                                      ? 700
-                                                      : 600,
-                                                  fontSize: TEXT_SIZES.xs,
-                                                  border: `1px solid ${selectedGroup === plan._id ? COLORS.primary : COLORS.border}`,
-                                                  boxShadow:
-                                                    selectedGroup === plan._id
-                                                      ? `0 2px 6px ${COLORS.shadow}`
-                                                      : "none",
-                                                  "&:hover": {
-                                                    backgroundColor:
-                                                      selectedGroup === plan._id
-                                                        ? COLORS.primaryDark
-                                                        : COLORS.lightOrange,
-                                                    transform:
-                                                      "translateX(2px)",
-                                                  },
-                                                }}
-                                              >
-                                                <Box
-                                                  sx={{
-                                                    display: "flex",
-                                                    flexDirection: "column",
-                                                    gap: 0.3,
-                                                  }}
-                                                >
-                                                  <Typography
-                                                    sx={{
-                                                      fontSize:
-                                                        TEXT_SIZES.medium,
-                                                      fontWeight: 600,
-                                                      color: "black",
-                                                    }}
-                                                  >
-                                                    {uniqueValidityDays[0]} Days Plan
-                                                  </Typography>
-                                                  <Typography
-                                                    sx={{
-                                                      fontSize: TEXT_SIZES.xs,
-                                                      fontWeight: "inherit",
-                                                    }}
-                                                  >
-                                                    {plan.planName}
-                                                  </Typography>
-                                                </Box>
-                                              </Box>
-                                            );
-                                          })}
-                                        </Box>
-                                      </Box>
-                                    </TableCell>
-                                  )}
+          return (
+            <Box
+              key={plan._id}
+              onClick={() => {
+                setSelectedGroup(plan._id);
+                setSelectedLeadsPerRange({});
+              }}
+              sx={{
+                py: 0.8,
+                px: 1,
+                textAlign: "center",
+                borderRadius: 1.5,
+                cursor: "pointer",
+                transition: "all 0.2s ease",
+                backgroundColor:
+                  selectedGroup === plan._id
+                    ? COLORS.primary
+                    : COLORS.white,
+                color:
+                  selectedGroup === plan._id
+                    ? COLORS.white
+                    : COLORS.black,
+                fontWeight:
+                  selectedGroup === plan._id ? 700 : 600,
+                fontSize: TEXT_SIZES.xs,
+                border: `1px solid ${
+                  selectedGroup === plan._id
+                    ? COLORS.primary
+                    : COLORS.border
+                }`,
+                boxShadow:
+                  selectedGroup === plan._id
+                    ? `0 2px 6px ${COLORS.shadow}`
+                    : "none",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                "&:hover": {
+                  backgroundColor:
+                    selectedGroup === plan._id
+                      ? COLORS.primaryDark
+                      : COLORS.lightOrange,
+                  transform: "translateX(2px)",
+                },
+              }}
+            >
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 0.3,
+                  width: "100%",
+                }}
+              >
+                <Typography
+                  sx={{
+                    fontSize: TEXT_SIZES.medium,
+                    fontWeight: 600,
+                    color: selectedGroup === plan._id ? COLORS.white : COLORS.black,
+                  }}
+                >
+                  {uniqueValidityDays[0]} Days Plan
+                </Typography>
+                <Typography
+                  sx={{
+                    fontSize: TEXT_SIZES.xs,
+                    fontWeight: "inherit",
+                    color: selectedGroup === plan._id ? COLORS.white : COLORS.black,
+                  }}
+                >
+                  {plan.planName}
+                </Typography>
+              </Box>
+            </Box>
+          );
+        })}
+      </Box>
+    </Box>
+  </TableCell>
+)}
 
                                   {/* Investment Group - Merged cell for same groups */}
                                  {isFirstInGroup &&
