@@ -269,74 +269,110 @@ const [brandOwnerId, setBrandOwnerId] = useState(null);
 
 useEffect(() => {
   const id = localStorage.getItem("brandOwnerId") || localStorage.getItem("brandUUID");
-  if (id) setBrandOwnerId(id);
+  console.log("🏢 Brand Owner ID from localStorage:", id);
+  if (id) {
+    console.log("✅ Brand Owner ID set to:", id);
+    setBrandOwnerId(id);
+  } else {
+    console.warn("⚠️ No Brand Owner ID found in localStorage");
+  }
 }, []);
  
 const fetchPackages = async () => {
   try {
     setLoadings(true);
+    console.log("📡 Fetching packages for brandOwnerId:", brandOwnerId);
+    
     const response = await axios.get(
       `http://localhost:5000/api/v1/brand-packages-plans/get/${brandOwnerId}`,
     );
     
-    console.log("=== API Response ===");
-    console.log("Full response:", response.data);
+    console.log("✅ API Response received");
+    console.log("📦 Full response object:", response);
+    console.log("📋 Response data:", response.data);
     
     const apiData = response.data.data || response.data;
-    console.log("Processed data:", apiData);
+    console.log("🎯 Extracted apiData:", apiData);
+    console.log("📊 API Data structure:", {
+      hasPackages: !!apiData?.packages,
+      packagesCount: apiData?.packages?.length || 0,
+      brandOwnerId: apiData?.brandOwnerId,
+      keys: Object.keys(apiData || {})
+    });
+    
     setData(apiData);
     
     // ===== EXTRACT STATES FROM API RESPONSE =====
     if (apiData && apiData.packages && Array.isArray(apiData.packages)) {
       const initialStatesByRange = {};
       
+      console.log("🔍 Processing packages...");
+      
       // Loop through each package
-      apiData.packages.forEach((packageItem) => {
+      apiData.packages.forEach((packageItem, pkgIndex) => {
+        console.log(`\n📦 Package #${pkgIndex}:`, packageItem);
+        
         // Check if investmetPackages exists
         if (packageItem.investmetPackages && Array.isArray(packageItem.investmetPackages)) {
-          packageItem.investmetPackages.forEach((investPackage) => {
-            // Get the planId - you might need to adjust this
-            const planId = apiData.brandOwnerId || "default";
+          packageItem.investmetPackages.forEach((investPackage, invIndex) => {
+            console.log(`  💰 Investment Package #${invIndex}:`, investPackage);
             
-            // Get the investment range label - you might need to determine this from your data
-            // For now, using a default value, but you should map it properly
+            // Get the planId
+            const planId = apiData.brandOwnerId || "default";
             const investmentRangeLabel = "Investment Range";
             
             // Check if investmentranges exist
             if (investPackage.investmentranges && Array.isArray(investPackage.investmentranges)) {
-              investPackage.investmentranges.forEach((range) => {
+              investPackage.investmentranges.forEach((range, rangeIndex) => {
+                console.log(`    💵 Range #${rangeIndex}:`, range);
+                
                 const investmentRange = range.selectedPlanInvestmetrange;
                 
                 // Extract states from selectedPlanStateAndDistrict
                 if (investPackage.selectedPlanStateAndDistrict && Array.isArray(investPackage.selectedPlanStateAndDistrict)) {
                   const states = investPackage.selectedPlanStateAndDistrict.map(item => item.state);
                   
-                  console.log(`Found states for range "${investmentRange}":`, states);
+                  console.log(`      📍 States found for range "${investmentRange}":`, states);
                   
                   if (states && states.length > 0) {
                     // Create the key matching your getRangeKey format
                     const key = `${planId}__${investmentRangeLabel}__${investmentRange}`;
                     initialStatesByRange[key] = states;
+                    console.log(`      ✨ Key created: ${key}`);
                   }
                 }
               });
+            } else {
+              console.warn(`  ⚠️ No investmentranges found in investment package #${invIndex}`);
             }
           });
+        } else {
+          console.warn(`⚠️ No investmetPackages found in package #${pkgIndex}`);
         }
       });
       
-      console.log('States to save:', initialStatesByRange);
+      console.log('✅ Final states to save:', initialStatesByRange);
       
       // Update statesByInvestmentRange
       if (Object.keys(initialStatesByRange).length > 0) {
         setStatesByInvestmentRange(initialStatesByRange);
         localStorage.setItem("investmentRangeStates", JSON.stringify(initialStatesByRange));
+        console.log('💾 Saved to localStorage and state');
+      } else {
+        console.warn('⚠️ No states were extracted from the API response');
       }
+    } else {
+      console.error("❌ API data structure invalid:", {
+        hasData: !!apiData,
+        hasPackages: !!apiData?.packages,
+        isArray: Array.isArray(apiData?.packages)
+      });
     }
     // =============================================
     
   } catch (err) {
-    console.error(err);
+    console.error("❌ Error fetching packages:", err);
+    console.error("   Response:", err?.response?.data);
     setErrors(
       err?.response?.data?.message ||
         "Failed to fetch package data"
@@ -348,7 +384,10 @@ const fetchPackages = async () => {
  
 useEffect(() => {
   if (brandOwnerId) {
+    console.log("🚀 useEffect triggered: brandOwnerId changed to", brandOwnerId);
     fetchPackages();
+  } else {
+    console.log("⏳ Waiting for brandOwnerId...");
   }
 }, [brandOwnerId]);
   // Scroll to payment summary function
@@ -366,21 +405,32 @@ useEffect(() => {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
+      console.log("📱 Component mounted: Loading from localStorage...");
+      
       setLocalBrandUUID(localStorage.getItem("brandUUID"));
       setLocalAccessToken(localStorage.getItem("accessToken"));
+      
       const savedStates = localStorage.getItem("investmentRangeStates");
+      console.log("📍 Saved investment range states from localStorage:", savedStates);
+      
       if (savedStates) {
         try {
-          setStatesByInvestmentRange(JSON.parse(savedStates));
+          const parsedStates = JSON.parse(savedStates);
+          console.log("✅ Successfully parsed saved states:", parsedStates);
+          setStatesByInvestmentRange(parsedStates);
         } catch (err) {
-          console.error("Error parsing saved states:", err);
+          console.error("❌ Error parsing saved states:", err);
         }
       }
 
       const savedSummary = localStorage.getItem("paymentSummaryDraft");
+      console.log("💳 Saved payment summary from localStorage:", savedSummary);
+      
       if (savedSummary) {
         try {
           const parsed = JSON.parse(savedSummary);
+          console.log("✅ Successfully parsed saved payment summary:", parsed);
+          
           if (Array.isArray(parsed) && parsed.length > 0) {
             setPaymentSummary(parsed);
 
@@ -391,9 +441,10 @@ useEffect(() => {
             if (savedMovedKeys) {
               try {
                 restoredMovedKeys = JSON.parse(savedMovedKeys);
+                console.log("✅ Restored moved group keys:", restoredMovedKeys);
                 setMovedGroupKeys(restoredMovedKeys);
               } catch (err) {
-                console.error("Error parsing moved group keys:", err);
+                console.error("❌ Error parsing moved group keys:", err);
               }
             }
 
@@ -410,6 +461,7 @@ useEffect(() => {
             if (
               JSON.stringify(newMovedKeys) !== JSON.stringify(restoredMovedKeys)
             ) {
+              console.log("🔄 Updated moved group keys:", newMovedKeys);
               setMovedGroupKeys(newMovedKeys);
             }
 
@@ -429,19 +481,22 @@ useEffect(() => {
                 }
               });
             });
+            console.log("✅ Restored selected items:", restoredSelected);
             setSelected((prev) => ({ ...prev, ...restoredSelected }));
             setCheckedItems(restoredChecked);
           }
         } catch (err) {
-          console.error("Error parsing saved payment summary:", err);
+          console.error("❌ Error parsing saved payment summary:", err);
         }
       }
       hasDraftChecked.current = true;
+      console.log("✨ Component initialization complete");
     }
   }, []);
 
   useEffect(() => {
     if (typeof window !== "undefined" && movedGroupKeys.length > 0) {
+      console.log("💾 Saving moved group keys to localStorage:", movedGroupKeys);
       localStorage.setItem("movedGroupKeys", JSON.stringify(movedGroupKeys));
     }
   }, [movedGroupKeys]);
@@ -449,6 +504,7 @@ useEffect(() => {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
+      console.log("💾 Saving payment summary to localStorage:", paymentSummary);
       localStorage.setItem(
         "paymentSummaryDraft",
         JSON.stringify(paymentSummary),
@@ -2326,6 +2382,60 @@ const totalLeads = (updatedItems[0]?.selectedLeads || 0) * totalUniqueStates;
   ALL_INDIA_STATES={ALL_INDIA_STATES}
   allStates={allStates}        
   finalToken={finalToken}
+  ficoInvestmentRanges={ficoInvestmentRanges}  // ADD THIS
+  onAddToPaymentSummary={(upgradeData) => {     // ADD THIS
+    const selectedItems = [];
+    (upgradeData.checkedRanges || []).forEach((range) => {
+      const states = upgradeData.statesByRange?.[range] || [];
+      if (states.length > 0) {
+        selectedItems.push({
+          id: `${upgradeData.planId}-${upgradeData.investmentRangeLabel}-${range}`,
+          investmentRangeLabel: upgradeData.investmentRangeLabel || "—",
+          range: range,
+          states: states,
+          stateCount: states.length,
+          selectedLeads: upgradeData.leads,
+          totalLeads: upgradeData.leads * states.length,
+          totalAmount: upgradeData.pricePerState * states.length,
+        });
+      }
+    });
+
+    if (selectedItems.length === 0) return;
+
+    const groupKey = `${upgradeData.planId}__${upgradeData.investmentRangeLabel}`;
+
+    setPaymentSummary((prev) => {
+      const existingIndex = prev.findIndex(p => p.groupKey === groupKey);
+      const newGroup = {
+        groupKey,
+        planId: upgradeData.planId,
+        planName: upgradeData.planName,
+        investmentRangeLabel: upgradeData.investmentRangeLabel,
+        pricePerState: upgradeData.pricePerState,
+        validityDays: upgradeData.validityDays,
+        items: selectedItems,
+        uniqueStates: [...new Set(selectedItems.flatMap(i => i.states))],
+        totalStates: new Set(selectedItems.flatMap(i => i.states)).size,
+        amount: upgradeData.pricePerState * new Set(selectedItems.flatMap(i => i.states)).size,
+        totalLeads: upgradeData.leads * new Set(selectedItems.flatMap(i => i.states)).size,
+        selectedLeads: upgradeData.leads,
+      };
+      if (existingIndex !== -1) {
+        const updated = [...prev];
+        updated[existingIndex] = newGroup;
+        return updated;
+      }
+      return [...prev, newGroup];
+    });
+
+    setMovedGroupKeys((prev) => {
+      if (!prev.includes(groupKey)) return [...prev, groupKey];
+      return prev;
+    });
+
+    setTimeout(() => scrollToPaymentSummary(), 100);
+  }}
 />
           {/* LISTING PLANS SECTION */}
       <Box

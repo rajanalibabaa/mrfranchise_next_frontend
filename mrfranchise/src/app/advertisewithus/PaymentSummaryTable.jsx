@@ -28,9 +28,9 @@ const PaymentSummaryTable = ({
   setItemToRemove,
   setOpenRemoveConfirmDialog,
 }) => {
- console.log("payment summary data",paymentSummary);
- 
-
+  console.log("PaymentSummaryTable received data:", JSON.stringify(paymentSummary, null, 2));
+  console.log("PaymentSummary length:", paymentSummary.length);
+  
   const groupedByPlan = {};
 
 paymentSummary.forEach((group) => {
