@@ -3,8 +3,8 @@ import {
   Dialog, DialogTitle, DialogContent, IconButton,
   Box, Typography, Chip, Divider, Table, TableHead,
   TableBody, TableRow, TableCell, TableContainer,
-  Button, Checkbox, Accordion, AccordionSummary, AccordionDetails,
-  FormControlLabel,
+  Button, Checkbox, FormControlLabel,
+  Snackbar, Alert,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import EditIcon from "@mui/icons-material/Edit";
@@ -28,7 +28,9 @@ const UpgradeDialog = ({
   getAlreadySelectedStatesInOtherRanges,
   getStatesToDisplay,
   handleSelectAll,
-  handleClearAll,
+  handleClearAll, 
+  currentRangeStates = [],
+  setCurrentRangeStates,
   renderStatesByRegion,
   onUpgrade,
   onViewSummary,
@@ -47,6 +49,7 @@ const UpgradeDialog = ({
 }) => {
   const [selectedLeads, setSelectedLeads] = useState({});
   const [selectedPlanId, setSelectedPlanId] = useState(null);
+  const [snackbar, setSnackbar] = useState({ open: false, message: "" });
   const liveSelectionsRef = useRef({});
 
   // ============================================================
@@ -254,17 +257,11 @@ useEffect(() => {
   // ✅ EDIT STATES — Uses PARENT'S data to compute blocked
   // ============================================================
 const editStates = (planId, range) => {
-  console.log("\n🚀 EDIT STATES CALLED");
-  console.log("Plan ID:", planId);
-  console.log("Range:", range);
-  console.log("allPlanStatesByRange received:", allPlanStatesByRange);
-  
   setCurrentEditingRange({ planId, range });
 
   const key = `${planId}_${range}`;
   const sessionStates = stateSelections?.[key];
 
-  // Pre-select: session edits > existing data
   const matchingRange = item?.investmentranges?.find(
     (ir) => ir.selectedPlanInvestmetrange === range
   );
@@ -273,27 +270,18 @@ const editStates = (planId, range) => {
     .filter((s) => s?.trim());
 
   const statesToPreselect = sessionStates?.length ? sessionStates : existingStates;
-  
-  // ✅ Get blocked states - only from SAME range in other LEAD packages
-  const blocked = new Set();
-  const rangeData = allPlanStatesByRange?.[range];
-  
-  if (rangeData) {
-    Object.entries(rangeData).forEach(([otherPlanId, states]) => {
-      if (String(otherPlanId) === String(planId)) return;
-      console.log(`  Blocking from plan ${otherPlanId}:`, states);
-      states.forEach((state) => blocked.add(state));
-    });
-  }
 
-  console.log("Blocked states:", Array.from(blocked));
-  console.log("States to preselect:", statesToPreselect);
+  const rangeSpecificStates = Object.values(allPlanStatesByRange?.[range] || {})
+    .flat()
+    .filter((s, i, arr) => arr.indexOf(s) === i);
 
-  setBlockedStates(blocked);
+  const statesPool = rangeSpecificStates.length > 0 ? rangeSpecificStates : (allStates ?? []);
+
+  setCurrentRangeStates(statesPool);
+  setBlockedStates(new Set()); // ✅ No blocked states — empty set
   setSelectedStates(new Set(statesToPreselect));
   setOpenStateModal(true);
 };
-
   // ============================================================
   // ✅ SAVE STATES — Persists to BOTH local state and parent
   // ============================================================
@@ -336,6 +324,23 @@ const handleSaveStatesFromModal = () => {
   setCurrentEditingRange(null);
 };
 
+const buildStatesByRange = (planId, checkedRanges) => {
+    const result = {};
+    [...checkedRanges].forEach((range) => {
+      const key = `${planId}_${range}`;
+      const states =
+        stateSelections[key] ??
+        liveSelectionsRef.current[key] ??
+        (item?.investmentranges?.find((ir) => ir.selectedPlanInvestmetrange === range)
+          ?.selectedPlanStateAndDistrict || [])
+          .map((s) => (typeof s === "object" ? s.state : s))
+          .filter(Boolean);
+      result[range] = states;
+    });
+    return result;
+  };
+
+
   // ============================================================
   // STYLES
   // ============================================================
@@ -352,11 +357,7 @@ const handleSaveStatesFromModal = () => {
     background: "linear-gradient(135deg, #4cb04f 0%, #2e7d32 100%)",
   };
 
-  const sortedRows = [...rows].sort((a, b) => {
-    if (a.id === activePlanId) return -1;
-    if (b.id === activePlanId) return 1;
-    return 0;
-  });
+
 
   // ============================================================
   // RENDER
@@ -417,336 +418,349 @@ const handleSaveStatesFromModal = () => {
                   </TableRow>
                 )}
 
-                {sortedRows.map((row) => {
-                  const isActive = row.id === activePlanId;
+           {rows.map((row, index) => {
+  const isActive = row.id === activePlanId;
+  const isFirstRow = index === 0; // ✅ shared columns always on row 0
+
+  return (
+    <TableRow key={row.id} sx={{ verticalAlign: "middle" }}>
+      {/* Select Plan Button — always shown */}
+      <TableCell sx={{ px: 1, py: 1.5, textAlign: "center", backgroundColor: "#fff3e0", borderRight: "1px solid #e0e0e0" }}>
+        <Button
+          variant="contained"
+          size="small"
+          onClick={() => setSelectedPlanId(row.id)}
+          sx={{
+            minWidth: 90, fontWeight: 700, fontSize: "0.75rem",
+            textTransform: "none", borderRadius: 2,
+            flexDirection: "column", lineHeight: 1.4,
+            backgroundColor: isActive ? "#e65100" : "#fb8c00",
+            color: "#fff",
+            outline: isActive ? "2px solid #111" : "none",
+            outlineOffset: 2,
+            "&:hover": { backgroundColor: "#e65100" },
+          }}
+        >
+           <Typography fontSize="0.8rem" fontWeight={1000} color="#fff" lineHeight={1.3}>
+            {row.validityDays} Days
+          </Typography>
+          <Typography fontSize="0.75rem" fontWeight={700} color="#fff" lineHeight={1.3}>
+            {row.planName}
+          </Typography>
+         
+        </Button>
+      </TableCell>
+
+      {/* ✅ Shared columns — always on first row, always show activePlan's data */}
+      {isFirstRow && (
+        <>
+          <TableCell
+            rowSpan={rows.length}
+            sx={{ px: 1, py: 1.5, textAlign: "center", backgroundColor: "#fff8f0", borderRight: "1px solid #e0e0e0", verticalAlign: "middle" }}
+          >
+            {activePlan && (
+              <>
+                <Typography fontSize="0.7rem" color="#1565c0" fontWeight={600} mb={0.5}>
+                  {activePlan.rangeLabel}
+                </Typography>
+                <Box sx={{ display: "flex", gap: 0.75, justifyContent: "center", flexWrap: "wrap" }}>
+                  {activePlan.leadOptions.map((lead) => {
+                    const active = (selectedLeads[activePlan.id] ?? activePlan.leadOptions[0]) === lead;
+                    return (
+                      <Chip
+                        key={lead} label={lead} size="small"
+                        onClick={() => setLead(activePlan.id, lead)}
+                        sx={{
+                          height: 26, minWidth: 34, fontWeight: 700,
+                          fontSize: "0.75rem", cursor: "pointer",
+                          backgroundColor: active ? "#4caf50" : "#fff",
+                          color: active ? "#fff" : "#111",
+                          border: `1px solid ${active ? "#4caf50" : "#bdbdbd"}`,
+                          "&:hover": { backgroundColor: active ? "#388e3c" : "#f5f5f5" },
+                        }}
+                      />
+                    );
+                  })}
+                </Box>
+              </>
+            )}
+          </TableCell>
+
+          <TableCell
+            rowSpan={rows.length}
+            sx={{ px: 1.5, py: 1, backgroundColor: "#fff8f0", borderRight: "1px solid #e0e0e0", verticalAlign: "middle" }}
+          >
+            {activePlan && (activePlan.investmentRanges.length === 0 ? (
+              <Typography fontSize="0.7rem" color="#9e9e9e" textAlign="center">
+                No matching investment ranges
+              </Typography>
+            ) : (
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 0.25 }}>
+                {activePlan.investmentRanges.map((range) => {
+                  const isChecked = (checkedRanges[activePlan.id] || new Set()).has(range);
+                  const stateVal =
+                    stateCounts[`${activePlan.id}_${range}`] ??
+                    stateSelections[`${activePlan.id}_${range}`]?.length ??
+                    (item?.investmentranges?.find((ir) => ir.selectedPlanInvestmetrange === range)
+                      ?.selectedPlanStateAndDistrict?.length ?? 0);
                   return (
-                    <TableRow key={row.id} sx={{ verticalAlign: "middle" }}>
-                      <TableCell sx={{ px: 1, py: 1.5, textAlign: "center", backgroundColor: "#fff3e0", borderRight: "1px solid #e0e0e0" }}>
-                        <Button
-                          variant="contained" size="small"
-                          onClick={() => setSelectedPlanId(row.id)}
-                          sx={{
-                            minWidth: 90, fontWeight: 700, fontSize: "0.75rem",
-                            textTransform: "none", borderRadius: 2,
-                            flexDirection: "column", lineHeight: 1.4,
-                            backgroundColor: isActive ? "#e65100" : "#fb8c00",
-                            color: "#fff",
-                            outline: isActive ? "2px solid #111" : "none",
-                            outlineOffset: 2,
-                            "&:hover": { backgroundColor: "#e65100" },
-                          }}
-                        >
-                          <Typography fontSize="0.75rem" fontWeight={700} color="#fff" lineHeight={1.3}>
-                            {row.planName}
-                          </Typography>
-                          <Typography fontSize="0.7rem" fontWeight={500} color="#fff" lineHeight={1.3}>
-                            {row.validityDays} Days
-                          </Typography>
-                        </Button>
-                      </TableCell>
+                    <Box key={range} sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                      <Checkbox
+                        size="small" checked={isChecked}
+                        onChange={() => toggleRange(activePlan.id, range)}
+                        sx={{ p: 0.25, color: "#fb8c00", "&.Mui-checked": { color: "#fb8c00" } }}
+                      />
+                      <Typography fontSize="0.7rem" color="#111" flex={1} noWrap>
+                        {range}
+                      </Typography>
+                      <Box sx={{ display: "flex", alignItems: "center", gap: 0.25, ml: 0.5 }}>
+                        <Typography fontSize="0.75rem" fontWeight={700} color="#111">
+                          {stateVal}
+                        </Typography>
+                        <EditIcon
+                          sx={{ fontSize: 11, color: "#e65100", cursor: "pointer" }}
+                          onClick={() => editStates(activePlan.id, range)}
+                        />
+                      </Box>
+                    </Box>
+                  );
+                })}
+              </Box>
+            ))}
+          </TableCell>
 
-                      {row.id === activePlanId && (
-                        <TableCell
-                          rowSpan={rows.length}
-                          sx={{ px: 1, py: 1.5, textAlign: "center", backgroundColor: "#fff8f0", borderRight: "1px solid #e0e0e0", verticalAlign: "middle" }}
-                        >
-                          {activePlan && (
-                            <>
-                              <Typography fontSize="0.7rem" color="#1565c0" fontWeight={600} mb={0.5}>
-                                {activePlan.rangeLabel}
-                              </Typography>
-                              <Box sx={{ display: "flex", gap: 0.75, justifyContent: "center", flexWrap: "wrap" }}>
-                                {activePlan.leadOptions.map((lead) => {
-                                  const active = (selectedLeads[activePlan.id] ?? activePlan.leadOptions[0]) === lead;
-                                  return (
-                                    <Chip
-                                      key={lead} label={lead} size="small"
-                                      onClick={() => setLead(activePlan.id, lead)}
-                                      sx={{
-                                        height: 26, minWidth: 34, fontWeight: 700,
-                                        fontSize: "0.75rem", cursor: "pointer",
-                                        backgroundColor: active ? "#4caf50" : "#fff",
-                                        color: active ? "#fff" : "#111",
-                                        border: `1px solid ${active ? "#4caf50" : "#bdbdbd"}`,
-                                        "&:hover": { backgroundColor: active ? "#388e3c" : "#f5f5f5" },
-                                      }}
-                                    />
-                                  );
-                                })}
-                              </Box>
-                            </>
-                          )}
-                        </TableCell>
-                      )}
+          <TableCell rowSpan={rows.length} sx={{ px: 1, py: 1.5, textAlign: "center", backgroundColor: "#f1f8e9", borderRight: "1px solid #e0e0e0", verticalAlign: "middle" }}>
+            <Typography fontSize="1.1rem" fontWeight={700} color="#111">
+              ₹{activePlan?.pricePerState.toLocaleString("en-IN")}
+            </Typography>
+          </TableCell>
 
-                      {row.id === activePlanId && (
-                        <TableCell
-                          rowSpan={rows.length}
-                          sx={{ px: 1.5, py: 1, backgroundColor: "#fff8f0", borderRight: "1px solid #e0e0e0", verticalAlign: "middle" }}
-                        >
-                          {activePlan && (activePlan.investmentRanges.length === 0 ? (
-                            <Typography fontSize="0.7rem" color="#9e9e9e" textAlign="center">
-                              No matching investment ranges
-                            </Typography>
-                          ) : (
-                            <Box sx={{ display: "flex", flexDirection: "column", gap: 0.25 }}>
-                              {activePlan.investmentRanges.map((range) => {
-                                const isChecked = (checkedRanges[activePlan.id] || new Set()).has(range);
-                                const stateVal =
-                                  stateCounts[`${activePlan.id}_${range}`] ??
-                                  stateSelections[`${activePlan.id}_${range}`]?.length ??
-                                  (item?.investmentranges?.find((ir) => ir.selectedPlanInvestmetrange === range)
-                                    ?.selectedPlanStateAndDistrict?.length ?? 0);
-                                return (
-                                  <Box key={range} sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                                    <Checkbox
-                                      size="small" checked={isChecked}
-                                      onChange={() => toggleRange(activePlan.id, range)}
-                                      sx={{ p: 0.25, color: "#fb8c00", "&.Mui-checked": { color: "#fb8c00" } }}
-                                    />
-                                    <Typography fontSize="0.7rem" color="#111" flex={1} noWrap>
-                                      {range}
-                                    </Typography>
-                                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.25, ml: 0.5 }}>
-                                      <Typography fontSize="0.75rem" fontWeight={700} color="#111">
-                                        {stateVal}
-                                      </Typography>
-                                      <EditIcon
-                                        sx={{ fontSize: 11, color: "#e65100", cursor: "pointer" }}
-                                        onClick={() => editStates(activePlan.id, range)}
-                                      />
-                                    </Box>
-                                  </Box>
-                                );
-                              })}
-                            </Box>
-                          ))}
-                        </TableCell>
-                      )}
+          <TableCell rowSpan={rows.length} sx={{ px: 1, py: 1.5, textAlign: "center", backgroundColor: "#f1f8e9", borderRight: "1px solid #e0e0e0", verticalAlign: "middle" }}>
+            <Typography fontSize="1.1rem" fontWeight={700} color="#111">
+              {activePlan?.totalLeads.toLocaleString("en-IN")}
+            </Typography>
+          </TableCell>
 
-                      {row.id === activePlanId && (
-                        <TableCell rowSpan={rows.length} sx={{ px: 1, py: 1.5, textAlign: "center", backgroundColor: "#f1f8e9", borderRight: "1px solid #e0e0e0", verticalAlign: "middle" }}>
-                          <Typography fontSize="1.1rem" fontWeight={700} color="#111">
-                            ₹{activePlan?.pricePerState.toLocaleString("en-IN")}
-                          </Typography>
-                        </TableCell>
-                      )}
+          <TableCell rowSpan={rows.length} sx={{ px: 1, py: 1.5, textAlign: "center", backgroundColor: "#f1f8e9", borderRight: "1px solid #e0e0e0", verticalAlign: "middle" }}>
+            <Typography fontSize="1.1rem" fontWeight={700} color="#111">
+              ₹{activePlan?.totalAmount.toLocaleString("en-IN")}
+            </Typography>
+          </TableCell>
 
-                      {row.id === activePlanId && (
-                        <TableCell rowSpan={rows.length} sx={{ px: 1, py: 1.5, textAlign: "center", backgroundColor: "#f1f8e9", borderRight: "1px solid #e0e0e0", verticalAlign: "middle" }}>
-                          <Typography fontSize="1.1rem" fontWeight={700} color="#111">
-                            {activePlan?.totalLeads.toLocaleString("en-IN")}
-                          </Typography>
-                        </TableCell>
-                      )}
-
-                      {row.id === activePlanId && (
-                        <TableCell rowSpan={rows.length} sx={{ px: 1, py: 1.5, textAlign: "center", backgroundColor: "#f1f8e9", borderRight: "1px solid #e0e0e0", verticalAlign: "middle" }}>
-                          <Typography fontSize="1.1rem" fontWeight={700} color="#111">
-                            ₹{activePlan?.totalAmount.toLocaleString("en-IN")}
-                          </Typography>
-                        </TableCell>
-                      )}
-
-                      {row.id === activePlanId && (
-                        <TableCell rowSpan={rows.length} sx={{ px: 1, py: 1.5, textAlign: "center", backgroundColor: "#f1f8e9", verticalAlign: "middle" }}>
-                          <Box sx={{ display: "flex", flexDirection: "column", gap: 0.75, alignItems: "center" }}>
-                            <Button
-                              variant="contained" size="small"
-                              onClick={() => onUpgrade?.({
-                                  planId: activePlan.id,
-    planName: activePlan.planName,
-    leads: activePlan.currentLead,
-    checkedRanges: [...activePlan.checked],
-    totalLeads: activePlan.totalLeads,
-    totalAmount: activePlan.totalAmount,
-    pricePerState: activePlan.pricePerState,  // ✅ Must be included
-    validityDays: activePlan.validityDays,    // ✅ Must be included
-    investmentRangeLabel: activePlan.rangeLabel, // ✅ Must be included
-    rangeLabel: activePlan.rangeLabel,
-                              })}
-                              sx={{
-                                minWidth: 78, fontWeight: 700, fontSize: "0.7rem",
-                                textTransform: "none", borderRadius: 2, lineHeight: 1.4,
-                                backgroundColor: "#fb8c00", color: "#fff",
-                                "&:hover": { backgroundColor: "#e65100" },
-                              }}
-                            >Add to<br />Plan</Button>
-                          <Button
+          <TableCell rowSpan={rows.length} sx={{ px: 1, py: 1.5, textAlign: "center", backgroundColor: "#f1f8e9", verticalAlign: "middle" }}>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 0.75, alignItems: "center" }}>
+        <Button
   variant="contained" size="small"
-  onClick={() => onViewSummary?.({
-    planId: activePlan.id,
-    planName: activePlan.planName,
-    leads: activePlan.currentLead,
-    checkedRanges: [...activePlan.checked],
-    totalLeads: activePlan.totalLeads,
-    totalAmount: activePlan.totalAmount,
-    pricePerState: activePlan.pricePerState,      // ✅ ADD THIS
-    validityDays: activePlan.validityDays,        // ✅ ADD THIS
-    investmentRangeLabel: activePlan.rangeLabel,  // ✅ ADD THIS
-    rangeLabel: activePlan.rangeLabel,            // ✅ ADD THIS
-  })}
+  onClick={() => {
+    const checkedRangesList = [...activePlan.checked];
+
+    if (checkedRangesList.length === 0) {
+      setSnackbar({ open: true, message: "Please select at least one investment range." });
+      return;
+    }
+
+    const missingStates = checkedRangesList.filter((range) => {
+      const key = `${activePlan.id}_${range}`;
+      const states =
+        stateSelections[key] ??
+        liveSelectionsRef.current[key] ??
+        (item?.investmentranges?.find((ir) => ir.selectedPlanInvestmetrange === range)
+          ?.selectedPlanStateAndDistrict || []);
+      return !states || states.length === 0;
+    });
+
+    if (missingStates.length > 0) {
+      setSnackbar({
+        open: true,
+        message: `Please select states for: ${missingStates.join(", ")}`,
+      });
+      return;
+    }
+
+    onUpgrade?.({
+      planId: activePlan.id,
+      planName: activePlan.planName,
+      leads: activePlan.currentLead,
+      checkedRanges: checkedRangesList,
+      statesByRange: buildStatesByRange(activePlan.id, activePlan.checked),
+      totalLeads: activePlan.totalLeads,
+      totalAmount: activePlan.totalAmount,
+      pricePerState: activePlan.pricePerState,
+      validityDays: activePlan.validityDays,
+      investmentRangeLabel: activePlan.rangeLabel,
+      rangeLabel: activePlan.rangeLabel,
+    });
+  }}
   sx={{
     minWidth: 78, fontWeight: 700, fontSize: "0.7rem",
     textTransform: "none", borderRadius: 2, lineHeight: 1.4,
-    backgroundColor: "#4caf50", color: "#fff",
-    "&:hover": { backgroundColor: "#388e3c" },
+    backgroundColor: "#fb8c00", color: "#fff",
+    "&:hover": { backgroundColor: "#e65100" },
   }}
->
-  View<br />Summary
-</Button>
-                          </Box>
-                        </TableCell>
-                      )}
-                    </TableRow>
-                  );
+>Add to<br />Plan</Button>
+              {/* <Button
+                variant="contained" size="small"
+                onClick={() => onViewSummary?.({
+                  planId: activePlan.id,
+                  planName: activePlan.planName,
+                  leads: activePlan.currentLead,
+                  checkedRanges: [...activePlan.checked],
+                  statesByRange: buildStatesByRange(activePlan.id, activePlan.checked), 
+                  totalLeads: activePlan.totalLeads,
+                  totalAmount: activePlan.totalAmount,
+                  pricePerState: activePlan.pricePerState,
+                  validityDays: activePlan.validityDays,
+                  investmentRangeLabel: activePlan.rangeLabel,
+                  rangeLabel: activePlan.rangeLabel,
                 })}
+                sx={{
+                  minWidth: 78, fontWeight: 700, fontSize: "0.7rem",
+                  textTransform: "none", borderRadius: 2, lineHeight: 1.4,
+                  backgroundColor: "#4caf50", color: "#fff",
+                  "&:hover": { backgroundColor: "#388e3c" },
+                }}
+              >View<br />Summary</Button> */}
+            </Box>
+          </TableCell>
+        </>
+      )}
+    </TableRow>
+  );
+})}
               </TableBody>
             </Table>
           </TableContainer>
         </DialogContent>
       </Dialog>
 
-      {/* STATE SELECTION MODAL */}
-      <Dialog
-        open={openStateModal}
-        onClose={() => setOpenStateModal(false)}
-        maxWidth="md"
-        fullWidth
-        PaperProps={{ sx: { borderRadius: 3, maxHeight: "90vh", overflow: "hidden" } }}
-      >
-        <DialogTitle
-          sx={{
-            display: "flex", justifyContent: "space-between", alignItems: "center",
-            pb: 1, backgroundColor: COLORS.grey[50], borderBottom: `1px solid ${COLORS.border}`,
-          }}
-        >
-          <Typography fontWeight={700} fontSize={TEXT_SIZES.medium} color={COLORS.black}>
-            Select States for {currentEditingRange?.range}
-          </Typography>
-          <IconButton size="small" onClick={() => setOpenStateModal(false)}>
-            <CloseIcon fontSize="small" sx={{ color: COLORS.grey[500] }} />
-          </IconButton>
-        </DialogTitle>
-        <DialogContent sx={{ pt: 2, pb: 1, maxHeight: "70vh", overflow: "auto" }}>
-          <Box sx={{ mb: 2, display: "flex", gap: 1, justifyContent: "flex-end" }}>
-            <Button
-              size="small" variant="outlined"
-              onClick={() => setSelectedStates(new Set(allStates ?? []))}
-            >
-              Select All ({(allStates ?? []).length})
-            </Button>
-            <Button
-              size="small" variant="outlined"
-              onClick={() => setSelectedStates(new Set())}
-              sx={{ color: COLORS.grey[600] }}
-            >
-              Clear All
-            </Button>
-          </Box>
+ 
+{/* STATE SELECTION MODAL */}
+<Dialog
+  open={openStateModal}
+  onClose={() => setOpenStateModal(false)}
+  maxWidth="md"
+  fullWidth
+  PaperProps={{ sx: { borderRadius: 3, maxHeight: "90vh", overflow: "hidden" } }}
+>
+  <DialogTitle
+    sx={{
+      display: "flex", justifyContent: "space-between", alignItems: "center",
+      pb: 1, backgroundColor: COLORS.grey[50], borderBottom: `1px solid ${COLORS.border}`,
+    }}
+  >
+    <Typography fontWeight={700} fontSize={TEXT_SIZES.medium} color={COLORS.black}>
+      Select States for {currentEditingRange?.range}
+    </Typography>
+    <IconButton size="small" onClick={() => setOpenStateModal(false)}>
+      <CloseIcon fontSize="small" sx={{ color: COLORS.grey[500] }} />
+    </IconButton>
+  </DialogTitle>
 
-          {renderStatesByRegion ? renderStatesByRegion() : (
-            Object.entries(INDIA_STATES).map(([region, states]) => {
-              const available = states.filter((s) => (allStates ?? []).includes(s));
-              if (available.length === 0) return null;
-              const selectedInRegion = available.filter((s) => selectedStates.has(s)).length;
-              return (
-                <Accordion
-                  key={region} elevation={0}
-                  sx={{
-                    border: `1px solid ${COLORS.border}`,
-                    borderRadius: "8px !important",
-                    "&:before": { display: "none" },
-                    backgroundColor: COLORS.white, mb: 1,
-                  }}
-                >
-                  <AccordionSummary
-                    expandIcon={<ExpandMoreIcon sx={{ color: COLORS.primary }} />}
-                    sx={{ backgroundColor: COLORS.grey[50], borderRadius: "8px", p: 1.5 }}
-                  >
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1, flex: 1 }}>
-                      <Typography fontWeight={700} fontSize={TEXT_SIZES.medium}>
-                        {region}
-                      </Typography>
-                      <Chip
-                        label={`${selectedInRegion}/${available.length}`}
-                        size="small"
-                        sx={{
-                          height: 20, fontSize: TEXT_SIZES.xs,
-                          backgroundColor: selectedInRegion === available.length ? COLORS.secondary : COLORS.grey[400],
-                          color: COLORS.white, fontWeight: 600,
-                        }}
-                      />
-                    </Box>
-                  </AccordionSummary>
-                  <AccordionDetails sx={{ p: 2 }}>
-                    <Box sx={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 1 }}>
-                      {available.map((state) => {
-                        const isBlocked = blockedStates.has(state);
-                        const isSelected = selectedStates.has(state);
-                        return (
-                          <FormControlLabel
-                            key={state}
-                            control={
-                              <Checkbox
-                                checked={isSelected}
-                                disabled={isBlocked}
-                                onChange={(e) => {
-                                  const ns = new Set(selectedStates);
-                                  e.target.checked ? ns.add(state) : ns.delete(state);
-                                  setSelectedStates(ns);
-                                }}
-                                size="small"
-                                sx={{
-                                  color: isBlocked ? COLORS.grey[300] : COLORS.primary,
-                                  "&.Mui-checked": { color: COLORS.secondary },
-                                }}
-                              />
-                            }
-                            label={
-                              <Typography
-                                fontSize={TEXT_SIZES.small}
-                                color={isBlocked ? COLORS.grey[400] : COLORS.black}
-                                sx={{ textDecoration: isBlocked ? "line-through" : "none" }}
-                              >
-                                {state}
-                                {isBlocked && (
-                                  <Typography
-                                    component="span"
-                                    fontSize="0.65rem"
-                                    color={COLORS.grey[400]}
-                                    sx={{ ml: 0.5 }}
-                                  >
-                                    (used in another plan)
-                                  </Typography>
-                                )}
-                              </Typography>
-                            }
-                          />
-                        );
-                      })}
-                    </Box>
-                  </AccordionDetails>
-                </Accordion>
-              );
-            })
-          )}
-        </DialogContent>
-        <DialogContent
-          sx={{
-            px: 2, pb: 2, borderTop: `1px solid ${COLORS.border}`,
-            backgroundColor: COLORS.grey[50],
+  {/* Scrollable state list */}
+  <DialogContent sx={{ pt: 2, pb: 1, maxHeight: "70vh", overflow: "auto" }}>
+    {/* Select All / Clear All buttons */}
+    <Box sx={{ mb: 2, display: "flex", gap: 1, justifyContent: "flex-end" }}>
+      <Button
+        size="small" variant="outlined"
+        onClick={() => {
+          const selectable = (currentRangeStates ?? []).filter(s => !blockedStates.has(s));
+          setSelectedStates(new Set(selectable));
+        }}
+      >
+        Select All ({(currentRangeStates ?? []).filter(s => !blockedStates.has(s)).length})
+      </Button>
+      <Button
+        size="small" variant="outlined"
+        onClick={() => setSelectedStates(new Set())}
+        sx={{ color: COLORS.grey[600] }}
+      >
+        Clear All
+      </Button>
+    </Box>
+
+    {/* State checkboxes */}
+    {(() => {
+      const pool = currentRangeStates ?? [];
+      if (pool.length === 0) {
+        return (
+          <Typography color="text.secondary" textAlign="center" py={4}>
+            No states available for this range.
+          </Typography>
+        );
+      }
+      return (
+        <Box sx={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 1, p: 1 }}>
+         {pool.map((state) => {
+  const isSelected = selectedStates.has(state);
+  return (
+    <FormControlLabel
+      key={state}
+      control={
+        <Checkbox
+          checked={isSelected}
+          onChange={(e) => {
+            const ns = new Set(selectedStates);
+            e.target.checked ? ns.add(state) : ns.delete(state);
+            setSelectedStates(ns);
           }}
-        >
-          <Button
-            variant="contained" size="small" color="primary"
-            onClick={handleSaveStatesFromModal}
-            sx={{ minWidth: 120 }}
-          >
-            Save States
-          </Button>
-        </DialogContent>
-      </Dialog>
+          size="small"
+          sx={{ color: COLORS.primary, "&.Mui-checked": { color: COLORS.secondary } }}
+        />
+      }
+      label={
+        <Typography fontSize={TEXT_SIZES.small} color={COLORS.black}>
+          {state}
+        </Typography>
+      }
+    />
+  );
+})}
+        </Box>
+      );
+    })()}
+  </DialogContent>
+
+  {/* Save button footer */}
+  <DialogContent
+    sx={{
+      px: 2, pb: 2, borderTop: `1px solid ${COLORS.border}`,
+      backgroundColor: COLORS.grey[50],
+    }}
+  >
+    <Button
+      variant="contained" size="small" color="primary"
+      onClick={handleSaveStatesFromModal}
+      sx={{ minWidth: 120 }}
+    >
+      Save States
+    </Button>
+  </DialogContent>
+</Dialog>
+
+{/* ✅ Validation Snackbar */}
+<Snackbar
+  open={snackbar.open}
+  autoHideDuration={4000}
+  onClose={() => setSnackbar({ open: false, message: "" })}
+  anchorOrigin={{ vertical: "top", horizontal: "center" }}
+>
+  <Alert
+    onClose={() => setSnackbar({ open: false, message: "" })}
+    severity="warning"
+    variant="filled"
+    sx={{
+      fontWeight: 600,
+      fontSize: "0.85rem",
+      borderRadius: 2,
+      backgroundColor: "#fb8c00",
+      color: "#fff",
+      "& .MuiAlert-icon": { color: "#fff" },
+      "& .MuiAlert-action .MuiIconButton-root": { color: "#fff" },
+    }}
+  >
+    {snackbar.message}
+  </Alert>
+</Snackbar>
     </>
   );
 };

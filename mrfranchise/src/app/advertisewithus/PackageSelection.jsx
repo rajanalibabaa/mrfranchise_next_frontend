@@ -232,7 +232,10 @@ const upgradeSectionRef = useRef(null);
   const [allStates, setAllStates] = useState(ALL_INDIA_STATES);
   const [selectedStates, setSelectedStates] = useState(new Set());
   const [statesByInvestmentRange, setStatesByInvestmentRange] = useState({});
+  const statesByInvestmentRangeRef = useRef(statesByInvestmentRange); 
   const [currentEditingRange, setCurrentEditingRange] = useState(null);
+  const [isUpgradeMode, setIsUpgradeMode] = useState(false);
+const [upgradePlanId, setUpgradePlanId] = useState(null);
   const [showLogin, setShowLogin] = useState(false);
   const [snack, setSnack] = useState({
     open: false,
@@ -252,6 +255,7 @@ const upgradeSectionRef = useRef(null);
   const [draftStatesByRange, setDraftStatesByRange] = useState({});
   const [openStatesTooltip, setOpenStatesTooltip] = useState(false);
   const [tooltipStates, setTooltipStates] = useState([]);
+  const [highlightExcludePlan, setHighlightExcludePlan] = useState(null);
   const [openRemoveConfirmDialog, setOpenRemoveConfirmDialog] = useState(false);
   const [itemToRemove, setItemToRemove] = useState(null);
   const { brandUUID: reduxBrandUUID, token: reduxToken } = useSelector(
@@ -500,7 +504,9 @@ useEffect(() => {
       localStorage.setItem("movedGroupKeys", JSON.stringify(movedGroupKeys));
     }
   }, [movedGroupKeys]);
-
+useEffect(() => {
+  statesByInvestmentRangeRef.current = statesByInvestmentRange;
+}, [statesByInvestmentRange]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -750,64 +756,81 @@ const handleOpenStateModal = useCallback(
     const key = getRangeKey(investmentRangeLabel, range, planId);
     setCurrentEditingRange(key);
 
-const otherRangeStates = new Set();
-const editingRangeValue = key.split("__")[2];
+    const otherRangeStates = new Set();
+    const editingRangeValue = key.split("__")[2];
 
-// From existing purchased packages
-if (data && data.packages && Array.isArray(data.packages)) {
-  data.packages.forEach((packageItem) => {
-    const packageType = (packageItem.packagesType || packageItem.PackagesType || "").toUpperCase();
-    if (packageType !== "LEAD") return;
+    // ── NEW: collect already-purchased states for THIS exact range ──
+    let purchasedStatesForThisRange = [];
 
-    const investPackages =
-      packageItem.investmetPackages ||
-      packageItem.InvestmetPackages ||
-      packageItem.InvestmentPackages ||
-      packageItem.packages || [];
+    if (data && data.packages && Array.isArray(data.packages)) {
+      data.packages.forEach((packageItem) => {
+        const packageType = (packageItem.packagesType || packageItem.PackagesType || "").toUpperCase();
+        if (packageType !== "LEAD") return;
 
-    investPackages.forEach((investPackage) => {
-      const investmentRanges = investPackage.investmentranges || [];
-      investmentRanges.forEach((range) => {
-        const existingRange = range.selectedPlanInvestmetrange || "";
-        if (existingRange !== editingRangeValue) return;
+        const investPackages =
+          packageItem.investmetPackages ||
+          packageItem.InvestmetPackages ||
+          packageItem.InvestmentPackages ||
+          packageItem.packages || [];
 
-        const stateAndDistrict =
-          investPackage.selectedPlanStateAndDistrict ||
-          investPackage.SelectedPlanStateAndDistrict || [];
-        stateAndDistrict.forEach((entry) => {
-          if (entry.state) otherRangeStates.add(entry.state);
-        });
+        investPackages.forEach((investPackage) => {
+          const investmentRanges = investPackage.investmentranges || [];
+          investmentRanges.forEach((r) => {
+            const existingRange = r.selectedPlanInvestmetrange || "";
 
-        const rangeStates = range.selectedPlanStateAndDistrict || [];
-        rangeStates.forEach((entry) => {
-          if (entry.state) otherRangeStates.add(entry.state);
+            if (existingRange === editingRangeValue) {
+              // ── THIS range: collect for pre-selection ──
+              const stateAndDistrict =
+                investPackage.selectedPlanStateAndDistrict ||
+                investPackage.SelectedPlanStateAndDistrict || [];
+              stateAndDistrict.forEach((entry) => {
+                if (entry.state) purchasedStatesForThisRange.push(entry.state);
+              });
+              const rangeStates = r.selectedPlanStateAndDistrict || [];
+              rangeStates.forEach((entry) => {
+                if (entry.state) purchasedStatesForThisRange.push(entry.state);
+              });
+            } else {
+              // ── OTHER range: block from selection ──
+              const stateAndDistrict =
+                investPackage.selectedPlanStateAndDistrict ||
+                investPackage.SelectedPlanStateAndDistrict || [];
+              stateAndDistrict.forEach((entry) => {
+                if (entry.state) otherRangeStates.add(entry.state);
+              });
+              const rangeStates = r.selectedPlanStateAndDistrict || [];
+              rangeStates.forEach((entry) => {
+                if (entry.state) otherRangeStates.add(entry.state);
+              });
+            }
+          });
         });
       });
-    });
-  });
-}
-
-// From payment summary — same range value across all plans
-paymentSummary.forEach((group) => {
-  if (group.isListingPlan) return;
-  group.items.forEach((item) => {
-    const itemKey = getRangeKey(item.investmentRangeLabel, item.range, group.planId);
-    if (itemKey === key) return; // skip self
-    if (item.range === editingRangeValue) {
-      item.states.forEach((state) => otherRangeStates.add(state));
     }
-  });
-});
+
+    purchasedStatesForThisRange = [...new Set(purchasedStatesForThisRange)];
+
+    // From payment summary — same range value across all plans
+    paymentSummary.forEach((group) => {
+      if (group.isListingPlan) return;
+      group.items.forEach((item) => {
+        const itemKey = getRangeKey(item.investmentRangeLabel, item.range, group.planId);
+        if (itemKey === key) return;
+        if (item.range === editingRangeValue) {
+          item.states.forEach((state) => otherRangeStates.add(state));
+        }
+      });
+    });
 
     // Also check statesByInvestmentRange for other ranges in this plan
     Object.entries(statesByInvestmentRange).forEach(([rangeKey, states]) => {
-      if (rangeKey === key) return; // skip self
+      if (rangeKey === key) return;
       const keyPlanId = rangeKey.split("__")[0];
-      if (keyPlanId !== planId) return; // only same plan
+      if (keyPlanId !== planId) return;
       states.forEach((state) => otherRangeStates.add(state));
     });
 
-    // Priority: committed states > saved states > all states (default)
+    // Priority: cart > purchased > saved > all-minus-blocked
     const committedItem = paymentSummary
       .flatMap((g) => g.items)
       .find((item) => {
@@ -816,25 +839,39 @@ paymentSummary.forEach((group) => {
       });
 
     const committedStates = committedItem?.states;
-    const savedStates = statesByInvestmentRange[key];
+  // ✅ NEW — search by label+range to handle planId mismatch
+const savedStates = statesByInvestmentRange[key] || (() => {
+  const matchingKey = Object.keys(statesByInvestmentRange).find(k => {
+    const parts = k.split("__");
+    const savedRange = parts[parts.length - 1];
+    const savedLabel = parts[parts.length - 2];
+    return savedRange === range && savedLabel === investmentRangeLabel;
+  });
+  return matchingKey ? statesByInvestmentRange[matchingKey] : null;
+})();
 
-    let statesToPreselect = committedStates || savedStates;
+console.log("🔍 key:", key);
+console.log("🔍 savedStates found:", savedStates);
+
+let statesToPreselect =
+  committedStates ||   // 1st: what's already in cart
+  savedStates ||       // 2nd: what user last saved
+  (purchasedStatesForThisRange.length > 0 ? purchasedStatesForThisRange : null) || // 3rd: existing purchase
+  [];
 
     if (!statesToPreselect || statesToPreselect.length === 0) {
       if (allStates.length > 0) {
-        // Pre-select only states NOT used by other ranges (from API only)
         statesToPreselect = allStates.filter((s) => !otherRangeStates.has(s));
       } else {
-        // No API states available, use empty set
         statesToPreselect = [];
       }
     }
 
-    if (statesToPreselect && statesToPreselect.length > 0) {
-      setSelectedStates(new Set(statesToPreselect));
-    } else {
-      setSelectedStates(new Set());
-    }
+    setSelectedStates(
+      statesToPreselect && statesToPreselect.length > 0
+        ? new Set(statesToPreselect)
+        : new Set(),
+    );
 
     setOpenStateModal(true);
   },
@@ -845,6 +882,7 @@ paymentSummary.forEach((group) => {
     finalToken,
     detectedState,
     allStates,
+    data,        // ← was missing before
   ],
 );
   const handleShowStates = useCallback((event, statesList) => {
@@ -964,6 +1002,7 @@ const handleSaveStates = useCallback(() => {
     const updated = { ...statesByInvestmentRange };
     delete updated[currentEditingRange];
     setStatesByInvestmentRange(updated);
+    statesByInvestmentRangeRef.current = updated;
     localStorage.setItem("investmentRangeStates", JSON.stringify(updated));
   } else {
     // Save only the user-selected states
@@ -1293,25 +1332,33 @@ const getIndustry = useCallback(() => {
       selectedPlan._id
     );
 
-    let states =
-      statesByInvestmentRange[key];
+// ✅ Replace this block
+let states = statesByInvestmentRangeRef.current[key];
 
-    if (!states || states.length === 0) {
+// ✅ If not found by exact key, search by range value alone
+if (!states || states.length === 0) {
+  const matchingKey = Object.keys(statesByInvestmentRangeRef.current).find(k => {
+    const parts = k.split("__");
+    const savedRange = parts[parts.length - 1];       // last part = range
+    const savedLabel = parts[parts.length - 2];       // second last = label
+    return savedRange === range && savedLabel === investmentRangeLabel;
+  });
 
-      if (!finalToken && detectedState) {
+  if (matchingKey) {
+    states = statesByInvestmentRangeRef.current[matchingKey];
+    console.log("✅ Found via label+range match:", matchingKey, states);
+  }
+}
 
-        states = [detectedState];
-
-      } else if (finalToken) {
-
-        states = allStates;
-
-      } else {
-
-        states = [];
-      }
-    }
-
+if (!states || states.length === 0) {
+  if (!finalToken && detectedState) {
+    states = [detectedState];
+  } else if (finalToken) {
+    states = allStates;
+  } else {
+    states = [];
+  }
+}
     if (states.length === 0) {
 
       openSnack(
@@ -2380,10 +2427,15 @@ const totalLeads = (updatedItems[0]?.selectedLeads || 0) * totalUniqueStates;
   leadsDropdownData={leadsDropdownData}
   INDIA_STATES={INDIA_STATES}
   ALL_INDIA_STATES={ALL_INDIA_STATES}
+  
   allStates={allStates}        
   finalToken={finalToken}
-  ficoInvestmentRanges={ficoInvestmentRanges}  // ADD THIS
-  onAddToPaymentSummary={(upgradeData) => {     // ADD THIS
+  ficoInvestmentRanges={ficoInvestmentRanges}  
+   onUpgradeModeChange={(isUpgrade, planId) => {
+    setIsUpgradeMode(isUpgrade);
+    setUpgradePlanId(planId);
+  }}
+  onAddToPaymentSummary={(upgradeData) => {    
     const selectedItems = [];
     (upgradeData.checkedRanges || []).forEach((range) => {
       const states = upgradeData.statesByRange?.[range] || [];
@@ -2505,29 +2557,49 @@ const totalLeads = (updatedItems[0]?.selectedLeads || 0) * totalUniqueStates;
                   gap: 2.5,
                 }}
               >
-                {listingPlans.map((plan, index) => {
-                  const pkg = plan.packages?.[0] || {};
-                  const groupKey = `listing-${plan._id}`;
+             {listingPlans.map((plan, index) => {
+  const pkg = plan.packages?.[0] || {};
+  const groupKey = `listing-${plan._id}`;
+  const isAdded = paymentSummary.some((g) => g.groupKey === groupKey);
 
-                  const isAdded = paymentSummary.some(
-                    (g) => g.groupKey === groupKey,
-                  );
+  // ✅ Check if this plan is already ACTIVE in existing packages
+  const isAlreadyActive = (() => {
+    if (!data?.packages) return false;
+    return data.packages.some((pkg) => {
+      const packageType = (pkg.packagesType || "").toUpperCase();
+      if (packageType !== "LISTING") return false;
+      const investPackages = pkg.investmetPackages || pkg.InvestmetPackages || pkg.InvestmentPackages || pkg.packages || [];
+      return investPackages.some((investPkg) => {
+        const pkgName = (investPkg.packagesName || pkg.packagesName || "").toLowerCase();
+        return pkgName === plan.planName.toLowerCase() && investPkg.isActive && !investPkg.isPending;
+      });
+    });
+  })();
 
-                  const handleAddListingPlan = (plan, pkg) => {
-                    const groupKey = `listing-${plan._id}`;
+  // ✅ Check if this plan is the one being upgraded from
+  const isExistingPlan = isUpgradeMode && upgradePlanId === plan._id;
 
-                    // Check if any listing plan already exists in paymentSummary
-                    const existingListingPlan = paymentSummary.some(
-                      (g) => g.isListingPlan === true,
-                    );
+  const handleAddListingPlan = (plan, pkg) => {
+    // Don't allow adding if this is the existing plan being upgraded
+    if (isExistingPlan) {
+      openSnack("You already have this plan. Please upgrade to a different plan.", "warning");
+      return;
+    }
+    
+    const groupKey = `listing-${plan._id}`;
 
-                    if (existingListingPlan) {
-                      openSnack(
-                        "You can select only one listing plan at a time.",
-                        "warning",
-                      );
-                      return;
-                    }
+    // Check if any listing plan already exists in paymentSummary
+    const existingListingPlan = paymentSummary.some(
+      (g) => g.isListingPlan === true,
+    );
+
+    if (existingListingPlan) {
+      openSnack(
+        "You can select only one listing plan at a time.",
+        "warning",
+      );
+      return;
+    }
 
                     // Get all available states
                     const allAvailableStates = finalToken
@@ -2715,35 +2787,45 @@ const totalLeads = (updatedItems[0]?.selectedLeads || 0) * totalUniqueStates;
                                   : "Ideal for getting started"}
                               </Typography>
                                  {/* Button */}
-                          <Button
-                            variant="contained"
-                            endIcon={isAdded ? <RemoveIcon /> : <AddIcon />}
-                            onClick={
-                              isAdded
-                                ? () => handleRemoveListingPlan(plan._id)
-                                : () => handleAddListingPlan(plan, pkg) // ← Pass both plan and pkg
-                            }
-                            sx={{
-                              minWidth: 145,
-                              height: 46,
-                              borderRadius: 2.5,
-                              textTransform: "none",
-                              fontWeight: 700,
-                              fontSize: TEXT_SIZES.medium,
-                              boxShadow: "none",
-                              background:
-                                index === 1
-                                  ? "linear-gradient(135deg,#ff9800 0%,#ff6f00 100%)"
-                                  : `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryDark} 100%)`,
-
-                              "&:hover": {
-                                boxShadow: "none",
-                                opacity: 0.95,
-                              },
-                            }}
-                          >
-                            {isAdded ? "Remove Plan" : "Add to Plan"}
-                          </Button>
+               <Button
+  variant="contained"
+  endIcon={isAlreadyActive ? null : isAdded ? <RemoveIcon /> : <AddIcon />}
+  onClick={
+    isAlreadyActive
+      ? undefined
+      : isAdded
+      ? () => handleRemoveListingPlan(plan._id)
+      : () => handleAddListingPlan(plan, pkg)
+  }
+  disabled={isExistingPlan || isAlreadyActive}
+  sx={{
+    minWidth: 145,
+    height: 46,
+    borderRadius: 2.5,
+    textTransform: "none",
+    fontWeight: 700,
+    fontSize: TEXT_SIZES.medium,
+    boxShadow: "none",
+    opacity: (isExistingPlan || isAlreadyActive) ? 0.75 : 1,
+    background: isAlreadyActive
+      ? "linear-gradient(135deg, #4cb04f 0%, #2e7d32 100%)" // ✅ Green for already active
+      : index === 1
+      ? "linear-gradient(135deg,#ff9800 0%,#ff6f00 100%)"
+      : `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryDark} 100%)`,
+    "&:hover": {
+      boxShadow: "none",
+      opacity: (isExistingPlan || isAlreadyActive) ? 0.75 : 0.95,
+    },
+  }}
+>
+  {isAlreadyActive
+    ? "✓ Already Active"
+    : isExistingPlan
+    ? "Already in Profile"
+    : isAdded
+    ? "Remove Plan"
+    : "Add to Plan"}
+</Button>
 
                            
                             </Box>
@@ -3758,60 +3840,84 @@ background: "linear-gradient(135deg, #4cb04f 0%, #2e7d32 100%)",
                                     </Box>
                                   </TableCell>
 
-                                  {/* Price/State */}
-                                  {isFirstInGroup && (
-                                    <TableCell
-                                      rowSpan={rowSpan}
-                                      sx={{
-                                        px: 0.5,
-                                        py: 0.4,
-                                        backgroundColor:"#bfe5c1 ",
-                                        textAlign: "center",
-                                        verticalAlign: "middle",
-                                        borderTop: !isFirstRowOfTable
-                                          ? `2px solid #b5d7b6`
-                                          : "none",
-                                      }}
-                                    >
-                                      <Typography
-                                        sx={{
-                                          fontSize: TEXT_SIZES.xl,
-                                          fontWeight: 700,
-                                          color: COLORS.black,
-                                        }}
-                                      >
-                                        ₹{pricePerState.toLocaleString("en-IN")}
-                                      </Typography>
-                                    </TableCell>
-                                  )}
+                                {/* Price per State with Selected Leads below */}
+{isFirstInGroup && (
+  <TableCell
+    rowSpan={rowSpan}
+    sx={{
+      px: 0.5,
+      py: 0.4,
+      backgroundColor: "#bfe5c1",
+      textAlign: "center",
+      verticalAlign: "middle",
+      borderTop: !isFirstRowOfTable
+        ? `2px solid #b5d7b6`
+        : "none",
+    }}
+  >
+    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <Typography
+        sx={{
+          fontSize: TEXT_SIZES.xl,
+          fontWeight: 700,
+          color: COLORS.black,
+        }}
+      >
+        ₹{(pricePerState * uniqueGroupStatesCount).toLocaleString("en-IN")}
+      </Typography>
+      <Typography
+        sx={{
+          fontSize: TEXT_SIZES.xs,
+          fontWeight: 600,
+          color: COLORS.secondary,
+          mt: 0.5,
+        }}
+      >
+        ({groupSelectedLeads} Leads)
+      </Typography>
+    </Box>
+  </TableCell>
+)}
 
-                                  {/* Total Leads */}
-                                  {isFirstInGroup && (
-                                    <TableCell
-                                      rowSpan={rowSpan}
-                                      sx={{
-                                        px: 0.5,
-                                        py: 0.4,
-                                        textAlign: "center",
-                                        verticalAlign: "middle",
-                                                                                backgroundColor:"#bfe5c1 ",
-                                        width: "4%",
-                                        borderTop: !isFirstRowOfTable
-                                          ? `2px solid #b5d7b6`
-                                          : "none",
-                                      }}
-                                    >
-                                      <Typography
-                                        sx={{
-                                          fontSize: TEXT_SIZES.xl,
-                                          fontWeight: 700,
-                                          color: COLORS.black,
-                                        }}
-                                      >
-                                        {groupTotalLeads}
-                                      </Typography>
-                                    </TableCell>
-                                  )}
+                               {/* Total Leads & Total States */}
+{isFirstInGroup && (
+  <TableCell
+    rowSpan={rowSpan}
+    sx={{
+      px: 0.5,
+      py: 0.4,
+      textAlign: "center",
+      verticalAlign: "middle",
+      backgroundColor: "#bfe5c1",
+      width: "4%",
+      borderTop: !isFirstRowOfTable
+        ? `2px solid #b5d7b6`
+        : "none",
+    }}
+  >
+    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5 }}>
+      <Typography
+        sx={{
+          fontSize: TEXT_SIZES.xl,
+          fontWeight: 700,
+          color: COLORS.black,
+        }}
+      >
+        {groupTotalLeads}
+      </Typography>
+     
+      <Typography
+        sx={{
+          fontSize: TEXT_SIZES.xs,
+          fontWeight: 700,
+          color: COLORS.black,
+        }}
+      >
+        (Above leads for {uniqueGroupStatesCount} States)
+      </Typography>
+    </Box>
+  </TableCell>
+)}
 
                                   {/* Total Amount (Pro-Rata Calculations Adjusted) */}
                                   {isFirstInGroup && (

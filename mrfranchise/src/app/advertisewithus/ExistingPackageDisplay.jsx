@@ -49,14 +49,16 @@ const TABLE_CONFIGS = {
 };
 
 const ExistingPackageDisplay = ({ 
-  data, loading, error, category, industry, brandName, isLoggedIn, upgradeSectionRef,
+  data, loading, error, category, industry, brandName, isLoggedIn, upgradeSectionRef,onHighlightExcludePlan,
   allPlans = [],
   leadsDropdownData = {},
 onAddToPaymentSummary, 
+onUpgradeModeChange,
   ficoInvestmentRanges = [], 
     ALL_INDIA_STATES = [],
   INDIA_STATES = {},
   finalToken,
+  expansionStates = []
 }) => {
  const [dialog, setDialog] = useState({ open: false, states: [], label: "" });
 const [upgradeDialog, setUpgradeDialog] = useState({ open: false, pkg: null, item: null });
@@ -65,10 +67,35 @@ const [currentEditingRange, setCurrentEditingRange] = useState(null);
 const [blockedStates, setBlockedStates] = useState(new Set());
 const [selectedStates, setSelectedStates] = useState(new Set());
 const [stateSelections, setStateSelections] = useState({});
+const [highlightExcludePlan, setHighlightExcludePlan] = useState(null);
+const [currentRangeStates, setCurrentRangeStates] = useState([]);
 
 const liveSelectionsRef = useRef({});
 
   if (!isLoggedIn) return null;
+
+  // Add this after the existing state declarations (around line 45)
+const existingListingPlans = useMemo(() => {
+  const plans = [];
+  if (data?.packages) {
+    data.packages.forEach((pkg) => {
+      const packageType = (pkg.packagesType || "").toUpperCase();
+      if (packageType === "LISTING") {
+        const packagesArray = pkg.investmetPackages || pkg.InvestmetPackages || pkg.InvestmentPackages || pkg.packages || [];
+        packagesArray.forEach((item) => {
+          if (item.isActive && !item.isPending) {
+            plans.push({
+              id: pkg._id,
+              name: pkg.packagesName,
+              planName: item.packagesName || pkg.packagesName,
+            });
+          }
+        });
+      }
+    });
+  }
+  return plans;
+}, [data]);
 
 const allPlanStatesByRange = useMemo(() => {
   const map = {};
@@ -218,14 +245,31 @@ useEffect(() => {
     return new Date(date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
   };
 
-  const handleUpgrade = (pkg, item) => {
+ // In ExistingPackageDisplay.js, modify the handleUpgrade function
+ const handleUpgrade = (pkg, item) => {
     const packageType = (pkg.packagesType || "").toUpperCase();
+    
     if (packageType === "FREE") {
+      onHighlightExcludePlan?.(item.packagesName || pkg.packagesName);
+      if (upgradeSectionRef?.current) {
+        upgradeSectionRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    } else if (packageType === "LISTING") {
+      // For LISTING: scroll to listing section and set upgrade mode
+      onUpgradeModeChange?.(true, pkg._id); // Notify parent we're in upgrade mode
+      onHighlightExcludePlan?.(item.packagesName || pkg.packagesName);
       if (upgradeSectionRef?.current) {
         upgradeSectionRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
       }
     } else {
-      const enrichedItem = { ...item, packagesName: item.packagesName || pkg.packagesName };
+      // For LEAD: open upgrade dialog
+      onUpgradeModeChange?.(false, null); // Reset upgrade mode
+      const enrichedItem = { 
+        ...item, 
+        packagesName: item.packagesName || pkg.packagesName,
+        existingPlanId: pkg._id,
+        existingPlanName: pkg.packagesName
+      };
       setUpgradeDialog({ open: true, pkg, item: enrichedItem });
     }
   };
@@ -235,34 +279,52 @@ useEffect(() => {
     setDialog({ open: true, states: arr, label: rangeLabel });
   };
 
-  // ✅ FIXED: Handle edit states - only block from same range
   const handleEditStates = useCallback(({ planId, range, preSelected }) => {
-    setCurrentEditingRange({ planId, range });
-    
-    // Get blocked states only for this specific range
-    const blocked = getBlockedStatesForRange(planId, range);
-    setBlockedStates(blocked);
-    setSelectedStates(new Set(preSelected || []));
-    setOpenStateModal(true);
-  }, [getBlockedStatesForRange]);
+  setCurrentEditingRange({ planId, range });
+// ✅ States available per range from the PLANS API (not existing purchases)
+const availableStatesByRange = useMemo(() => {
+  const map = {};
+  allPlans.forEach((plan) => {
+    (plan.packages || []).forEach((pkg) => {
+      (pkg.investmentRange || []).forEach((range) => {
+        if (!map[range]) map[range] = [];
+        // Get states available for this range from expansionStates
+        // Since allPlans defines the ranges, the pool is expansionStates filtered per range
+      });
+    });
+  });
+  return map;
+}, [allPlans, expansionStates]);
+  const blocked = getBlockedStatesForRange(planId, range);
+  setBlockedStates(blocked);
+  setSelectedStates(new Set(preSelected || []));
 
+  // ✅ Get only states for this specific range across all plans
+  const rangeSpecificStates = Object.values(allPlanStatesByRange?.[range] || {})
+    .flat()
+    .filter((s, i, arr) => arr.indexOf(s) === i); // dedupe
+
+  setCurrentRangeStates(rangeSpecificStates);
+  setOpenStateModal(true);
+}, [getBlockedStatesForRange, allPlanStatesByRange]);
+
+// ✅ FIX 2: Don't clear currentEditingRange here — UpgradeDialog handles that
 const handleSaveStates = useCallback((stateArray) => {
   if (!currentEditingRange) return;
   const { planId, range } = currentEditingRange;
   const key = `${planId}_${range}`;
-  
-  console.log(`\n💾 Saving states for range "${range}"`);
-  console.log(`  Selected states: ${stateArray.length > 0 ? stateArray.join(", ") : "None"}`);
-  
-  // Make sure stateArray is an array
+
   const statesToSave = Array.isArray(stateArray) ? stateArray : [];
-  
-  // Update live ref and state
+
+  console.log(`💾 Parent saving states for key "${key}":`, statesToSave);
+
+  // ✅ Update both ref AND state so buildStatesByRange in UpgradeDialog sees latest
   liveSelectionsRef.current = { ...liveSelectionsRef.current, [key]: statesToSave };
   setStateSelections((prev) => ({ ...prev, [key]: statesToSave }));
-  
-  setOpenStateModal(false);
-  setCurrentEditingRange(null);
+
+  // ❌ REMOVE these two lines — UpgradeDialog closes the modal and clears currentEditingRange itself
+  // setOpenStateModal(false);      ← remove
+  // setCurrentEditingRange(null);  ← remove
 }, [currentEditingRange]);
 
   if (loading) {
@@ -286,13 +348,22 @@ const handleSaveStates = useCallback((stateArray) => {
   const grouped = { FREE: [], LISTING: [], LEAD: [] };
   const isItemActive = (item) => item.isActive && !item.isPending;
 
-  data?.packages?.forEach((pkg) => {
-    const type = (pkg.packagesType || pkg.PackagesType || "").toUpperCase();
-    if (grouped[type]) {
-      const packagesArray = pkg.investmetPackages || pkg.InvestmetPackages || pkg.InvestmentPackages || pkg.packages || [];
-      packagesArray.forEach((item) => grouped[type].push({ pkg, item }));
-    }
-  });
+data?.packages?.forEach((pkg) => {
+  const type = (pkg.packagesType || pkg.PackagesType || "").toUpperCase();
+  if (grouped[type]) {
+    const packagesArray = pkg.investmetPackages || pkg.InvestmetPackages || pkg.InvestmentPackages || pkg.packages || [];
+    packagesArray.forEach((item) => {
+      // Make sure item has packagesName from the investment package
+      grouped[type].push({ 
+        pkg, 
+        item: {
+          ...item,
+          packagesName: item.packagesName || pkg.packagesName // Ensure the investment package name is used
+        } 
+      });
+    });
+  }
+});
 
   const hasActivePaidPackage = 
     grouped.LEAD.some(({ item }) => isItemActive(item)) || 
@@ -358,7 +429,7 @@ const handleSaveStates = useCallback((stateArray) => {
 
     const statesArr = item.investmentranges?.flatMap(r => r.selectedPlanState || []) || item.selectedPlanState || [];
     const stateCount = statesArr.length;
-
+const active = isItemActive(item);
     if (type === "FREE") return [
       <Box sx={{ display: "flex", alignItems: "center", gap: 1, whiteSpace: "nowrap" }}>
         <Box>
@@ -368,40 +439,74 @@ const handleSaveStates = useCallback((stateArray) => {
         </Box>
       </Box>,
       <StatusChip item={item} />,
-      <Button
-        variant="outlined" size="small" onClick={() => handleUpgrade(pkg, item)}
-        startIcon={<UpgradeIcon />}
-        sx={{
-          minWidth: 90, height: 32, fontSize: TEXT_SIZES.xs,
-          textTransform: "none", borderRadius: 2, fontWeight: 600,
-          borderColor: COLORS.primary, color: COLORS.primary,
-          "&:hover": { borderColor: COLORS.primaryDark, backgroundColor: COLORS.lightOrange },
-        }}
-      >Upgrade</Button>,
+    <Tooltip title={!active ? "Only active plans can be upgraded" : ""} arrow>
+  <span>
+    <Button
+      variant="outlined" size="small" onClick={() => handleUpgrade(pkg, item)}
+      startIcon={<UpgradeIcon />}
+      disabled={!active}
+      sx={{
+        minWidth: 90, height: 32, fontSize: TEXT_SIZES.xs,
+        textTransform: "none", borderRadius: 2, fontWeight: 600,
+        borderColor: COLORS.primary, color: COLORS.primary,
+        "&:hover": { borderColor: COLORS.primaryDark, backgroundColor: COLORS.lightOrange },
+        "&.Mui-disabled": { borderColor: COLORS.grey[300], color: COLORS.grey[400] },
+      }}
+    >Upgrade</Button>
+  </span>
+</Tooltip>,
     ];
 
-    if (type === "LISTING") {
-      return [
-        name,
-        <Chip label={`${item.validity || item.tenure || "—"} Days`} size="small"
-          sx={{ backgroundColor: COLORS.lightOrange, color: COLORS.primaryDark, fontWeight: 600, fontSize: TEXT_SIZES.xs }} />,
-        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 0.5 }}>
-          <CalendarTodayIcon sx={{ fontSize: 12, color: COLORS.grey[500] }} />
-          <Typography fontSize={TEXT_SIZES.xs} color={COLORS.grey[600]}>{start}</Typography>
-        </Box>,
-        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 0.5 }}>
-          <CalendarTodayIcon sx={{ fontSize: 12, color: COLORS.grey[500] }} />
-          <Typography fontSize={TEXT_SIZES.xs} color={COLORS.grey[600]}>{end}</Typography>
-        </Box>,
-        <StatusChip item={item} />,
-        <Button variant="contained" size="small" onClick={() => handleUpgrade(pkg, item)} startIcon={<UpgradeIcon />}
+if (type === "LISTING") {
+  // Use the investment package name (item.packagesName) instead of pkg.packagesName
+  const packageName = item.packagesName || pkg.packagesName;
+  
+  const name = (
+    <Box sx={{ minWidth: "120px" }}>
+      <Typography 
+        fontWeight={700} 
+        fontSize={TEXT_SIZES.small} 
+        color={COLORS.black} 
+        sx={{ 
+          wordBreak: "break-word", 
+          whiteSpace: "normal",
+          lineHeight: 1.3
+        }}
+      >
+        {packageName}
+      </Typography>
+  
+    </Box>
+  );
+
+  return [
+    name,  
+    <Chip label={`${item.validity || item.tenure || "—"} Days`} size="small"
+      sx={{ backgroundColor: COLORS.lightOrange, color: COLORS.primaryDark, fontWeight: 600, fontSize: TEXT_SIZES.xs }} />,
+    <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 0.5 }}>
+      <CalendarTodayIcon sx={{ fontSize: 12, color: COLORS.grey[500] }} />
+      <Typography fontSize={TEXT_SIZES.xs} color={COLORS.grey[600]}>{start}</Typography>
+    </Box>,
+    <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 0.5 }}>
+      <CalendarTodayIcon sx={{ fontSize: 12, color: COLORS.grey[500] }} />
+      <Typography fontSize={TEXT_SIZES.xs} color={COLORS.grey[600]}>{end}</Typography>
+    </Box>,
+    <StatusChip item={item} />,
+    <Tooltip title={!active ? "Only active plans can be upgraded" : ""} arrow>
+      <span>
+        <Button variant="contained" size="small" onClick={() => handleUpgrade(pkg, item)}
+          startIcon={<UpgradeIcon />}
+          disabled={!active}
           sx={{
             minWidth: 90, height: 32, fontSize: TEXT_SIZES.xs,
             textTransform: "none", borderRadius: 2, fontWeight: 600,
-            backgroundColor: COLORS.primary, '&:hover': { backgroundColor: COLORS.primaryDark }
-          }}>Upgrade</Button>,
-      ];
-    }
+            backgroundColor: COLORS.primary, '&:hover': { backgroundColor: COLORS.primaryDark },
+            "&.Mui-disabled": { backgroundColor: COLORS.grey[200], color: COLORS.grey[400] },
+          }}>Upgrade</Button>
+      </span>
+    </Tooltip>,
+  ];
+}
 
     if (type === "LEAD") {
       let allStates = [];
@@ -473,13 +578,20 @@ const handleSaveStates = useCallback((stateArray) => {
         <StatusChip item={item} />,
         <Typography fontSize={TEXT_SIZES.xs} color={COLORS.grey[600]}>{startDate}</Typography>,
         <Typography fontSize={TEXT_SIZES.xs} color={COLORS.grey[600]}>{endDate}</Typography>,
-        <Button variant="outlined" size="small" onClick={() => handleUpgrade(pkg, item)} startIcon={<UpgradeIcon />}
-          sx={{
-            minWidth: 90, height: 32, fontSize: TEXT_SIZES.xs,
-            textTransform: "none", borderRadius: 2, fontWeight: 600,
-            borderColor: COLORS.primary, color: COLORS.primary,
-            "&:hover": { borderColor: COLORS.primaryDark, backgroundColor: COLORS.lightOrange },
-          }}>Upgrade</Button>,
+       <Tooltip title={!active ? "Only active plans can be upgraded" : ""} arrow>
+  <span>
+    <Button variant="outlined" size="small" onClick={() => handleUpgrade(pkg, item)}
+      startIcon={<UpgradeIcon />}
+      disabled={!active}
+      sx={{
+        minWidth: 90, height: 32, fontSize: TEXT_SIZES.xs,
+        textTransform: "none", borderRadius: 2, fontWeight: 600,
+        borderColor: COLORS.primary, color: COLORS.primary,
+        "&:hover": { borderColor: COLORS.primaryDark, backgroundColor: COLORS.lightOrange },
+        "&.Mui-disabled": { borderColor: COLORS.grey[300], color: COLORS.grey[400] },
+      }}>Upgrade</Button>
+  </span>
+</Tooltip>,
       ];
     }
     return [];
@@ -607,9 +719,11 @@ const handleSaveStates = useCallback((stateArray) => {
   INDIA_STATES={INDIA_STATES}
   selectedStates={selectedStates}
   setSelectedStates={setSelectedStates}
-  allStates={ALL_INDIA_STATES.length > 0 ? ALL_INDIA_STATES : allStatesForUpgrade}
+ currentRangeStates={currentRangeStates}
+  setCurrentRangeStates={setCurrentRangeStates}
   COLORS={COLORS}
   TEXT_SIZES={TEXT_SIZES}
+   allStates={expansionStates}
   ALL_INDIA_STATES={ALL_INDIA_STATES}
   finalToken={finalToken}
   getStatesToDisplay={() => allStatesForUpgrade}
@@ -618,6 +732,7 @@ const handleSaveStates = useCallback((stateArray) => {
   handleClearAll={() => setSelectedStates(new Set())}
   allPlanStatesByRange={allPlanStatesByRange}
   onEditStates={handleEditStates}
+   highlightExcludePlan={highlightExcludePlan}
   onSaveStates={handleSaveStates}
   currentEditingRange={currentEditingRange}
   setCurrentEditingRange={setCurrentEditingRange}
@@ -627,31 +742,20 @@ const handleSaveStates = useCallback((stateArray) => {
   setOpenStateModal={setOpenStateModal}
   stateSelections={stateSelections}
   setStateSelections={setStateSelections}
+// ✅ FIX 1: Use data.statesByRange directly — stop rebuilding from stale stateSelections
 onUpgrade={(data) => {
-  const statesByRange = {};
-  (data.checkedRanges || []).forEach((range) => {
-    const key = `${data.planId}_${range}`;
-    statesByRange[range] = stateSelections[key] || [];
-  });
-  onAddToPaymentSummary?.({ ...data, statesByRange });
+  console.log("✅ onUpgrade received:", data);
+  onAddToPaymentSummary?.({ ...data }); // data.statesByRange already built correctly in UpgradeDialog
   setUpgradeDialog({ open: false, pkg: null, item: null });
 }}
+
 onViewSummary={(data) => {
-  const statesByRange = {};
-  (data.checkedRanges || []).forEach((range) => {
-    const key = `${data.planId}_${range}`;
-    statesByRange[range] = stateSelections[key] || [];
-  });
-  onAddToPaymentSummary?.({ ...data, statesByRange });
+  console.log("✅ onViewSummary received:", data);
+  onAddToPaymentSummary?.({ ...data }); // data.statesByRange already built correctly in UpgradeDialog
   setUpgradeDialog({ open: false, pkg: null, item: null });
 }}
  
 />
- 
-
-    
-
-   
     </>
   );
 };
