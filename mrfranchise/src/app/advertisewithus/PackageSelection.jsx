@@ -3868,12 +3868,12 @@ background: "linear-gradient(135deg, #4cb04f 0%, #2e7d32 100%)",
       <Typography
         sx={{
           fontSize: TEXT_SIZES.xs,
-          fontWeight: 600,
-          color: COLORS.secondary,
+          fontWeight: 500,
+          color: COLORS.black,
           mt: 0.5,
         }}
       >
-        ({groupSelectedLeads} Leads)
+        (Above price for<br/>{groupSelectedLeads} Leads)
       </Typography>
     </Box>
   </TableCell>
@@ -3909,7 +3909,7 @@ background: "linear-gradient(135deg, #4cb04f 0%, #2e7d32 100%)",
       <Typography
         sx={{
           fontSize: TEXT_SIZES.xs,
-          fontWeight: 700,
+          fontWeight: 500,
           color: COLORS.black,
         }}
       >
@@ -3941,8 +3941,8 @@ background: "linear-gradient(135deg, #4cb04f 0%, #2e7d32 100%)",
                                           fontWeight: 700,
                                         }}
                                       >
-                                        ₹
-                                        {groupTotalAmount.toLocaleString(
+                                        
+                                       ₹ {groupTotalAmount.toLocaleString(
                                           "en-IN",
                                         )}
                                       </Typography>
