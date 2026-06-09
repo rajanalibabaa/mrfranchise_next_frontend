@@ -8,6 +8,7 @@ import React, {
   memo,
   useRef,
 } from "react";
+
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import {
@@ -33,12 +34,13 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
+  useMediaQuery, useTheme
 } from "@mui/material";
 import { keyframes } from "@mui/system";
 import RemoveIcon from "@mui/icons-material/Remove";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import EditIcon from "@mui/icons-material/Edit";
-
+import MobilePackageSelection from "./Mobilepackageselection";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import AddIcon from "@mui/icons-material/Add";
 import { useSelector } from "react-redux";
@@ -214,6 +216,8 @@ const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
   const router = useRouter();
   const paymentSummaryRef = useRef(null);
   const hasDraftChecked = useRef(false);
+  const theme = useTheme();
+const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 const upgradeSectionRef = useRef(null);
   const [paymentSummary, setPaymentSummary] = useState([]);
   const [plans, setPlans] = useState([]);
@@ -2334,88 +2338,73 @@ const totalLeads = (updatedItems[0]?.selectedLeads || 0) * totalUniqueStates;
 {(data?.brandDetails?.brandName || data?.brandName || getBrandName() ||
   data?.brandDetails?.category || data?.category ||
   data?.brandDetails?.industry || data?.industry) && (
-  <Box
-    sx={{
-      display: "flex",
-      justifyContent: "flex-end",
-      alignItems: "center",
-      gap: 1,
-      mb: 3,
-      pb: 2,
-      px: { xs: 2, md: 4 },
-      flexWrap: "wrap",
-    }}
-  >
-    {/* Brand Name */}
-    {(data?.brandDetails?.brandName || data?.brandName || getBrandName()) && (
-      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-        <Typography sx={{ fontSize: TEXT_SIZES.small, color: COLORS.black }}>
-          Brand Name:
-        </Typography>
-        <Typography
-          sx={{
-            fontSize: TEXT_SIZES.small,
-            fontWeight: 700,
-            color: COLORS.primaryDark,
-          }}
-        >
-          {data?.brandDetails?.brandName || data?.brandName || getBrandName()}
-        </Typography>
-      </Box>
-    )}
+<Box
+  sx={{
+    display: "flex",
+    flexDirection: { xs: "column", md: "row" }, // Column on mobile, row on desktop
+    justifyContent: { xs: "flex-start", md: "flex-end" },
+    alignItems: { xs: "flex-start", md: "center" },
+    gap: { xs: 1, md: 2 },
+    mb: 3,
+    pb: 2,
+    px: { xs: 0, md: 4 },
+    flexWrap: "wrap",
+  }}
+>
+  {/* Brand Name */}
+  {(data?.brandDetails?.brandName || data?.brandName || getBrandName()) && (
+    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+      <Typography sx={{ fontSize: TEXT_SIZES.small, color: COLORS.black }}>
+        Brand Name:
+      </Typography>
+      <Typography
+        sx={{
+          fontSize: TEXT_SIZES.small,
+          fontWeight: 700,
+          color: COLORS.primaryDark,
+        }}
+      >
+        {data?.brandDetails?.brandName || data?.brandName || getBrandName()}
+      </Typography>
+    </Box>
+  )}
 
-    {/* Separator between Brand and Category */}
-    {/* {(data?.brandDetails?.brandName || data?.brandName || getBrandName()) && 
-     (data?.brandDetails?.category || data?.category) && (
-      <Box sx={{ width: 4, height: 4, borderRadius: "50%", backgroundColor: COLORS.grey[400] }} />
-    )} */}
+  {/* Category */}
+  {(data?.brandDetails?.category || data?.category) && (
+    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+      <Typography sx={{ fontSize: TEXT_SIZES.small, color: COLORS.black }}>
+        Category:
+      </Typography>
+      <Typography
+      sx={{
+          fontSize: TEXT_SIZES.small,
+          fontWeight: 700,
+          color: COLORS.primaryDark,
+        }}
+      >
+        {data?.brandDetails?.category || data?.category}
+      </Typography>
+    </Box>
+  )}
 
-    {/* Category Chip */}
-    {(data?.brandDetails?.category || data?.category) && (
-      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-        <Typography sx={{ fontSize: TEXT_SIZES.small, color: COLORS.black }}>
-          Category:
-        </Typography>
-        <Chip
-          label={data?.brandDetails?.category || data?.category}
-          size="small"
-          sx={{
-            backgroundColor: COLORS.white,
-            color: COLORS.primaryDark,
-            fontWeight: 600,
-            fontSize: TEXT_SIZES.small,
-            borderRadius: 1.5,
-          }}
-        />
-      </Box>
-    )}
-
-    {/* Separator between Category and Industry */}
-    {/* {(data?.brandDetails?.category || data?.category) && 
-     (data?.brandDetails?.industry || data?.industry) && (
-      <Box sx={{ width: 4, height: 4, borderRadius: "50%", backgroundColor: COLORS.grey[400] }} />
-    )} */}
-
-    {/* Industry Chip */}
-    {(data?.brandDetails?.industry || data?.industry) && (
-      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-        <Typography sx={{ fontSize: TEXT_SIZES.small, color: COLORS.black }}>
-          Industry:
-        </Typography>
-        <Chip
-          label={data?.brandDetails?.industry || data?.industry}
-          size="small"
-          sx={{
-            backgroundColor: COLORS.white,
-            color: COLORS.primaryDark,
-            fontWeight: 600,
-            fontSize: TEXT_SIZES.small,
-            borderRadius: 1.5,
-          }}
-        />
-      </Box>
-    )}
-  </Box>
+  {/* Industry */}
+  {(data?.brandDetails?.industry || data?.industry) && (
+    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+      <Typography sx={{ fontSize: TEXT_SIZES.small, color: COLORS.black }}>
+        Industry:
+      </Typography>
+      <Typography
+       sx={{
+          fontSize: TEXT_SIZES.small,
+          fontWeight: 700,
+          color: COLORS.primaryDark,
+        }}
+      >
+        {data?.brandDetails?.industry || data?.industry}
+      </Typography>
+    </Box>
+  )}
+</Box>
 )}
 <ExistingPackageDisplay
   data={data}
@@ -2490,17 +2479,18 @@ const totalLeads = (updatedItems[0]?.selectedLeads || 0) * totalUniqueStates;
   }}
 />
           {/* LISTING PLANS SECTION */}
-      <Box
-       ref={upgradeSectionRef}
-        sx={{
-          mb: 4,
-          display: "flex",
-          justifyContent: "center",
-       width: "100%",
-    flexDirection: "column",
-    alignItems: "center",
-        }}
-      >
+   {!isMobile && (
+  <Box
+    ref={upgradeSectionRef}
+    sx={{
+      mb: 4,
+      display: "flex",
+      justifyContent: "center",
+      width: "100%",
+      flexDirection: "column",
+      alignItems: "center",
+    }}
+  >
         <Box
           sx={{
             width: "100%",
@@ -2887,49 +2877,85 @@ const totalLeads = (updatedItems[0]?.selectedLeads || 0) * totalUniqueStates;
           })()}
         </Box>
       </Box>
+      )}
       {/* INVESTMENT RANGE PLANS SECTION */}
       <Box
-        sx={{
-          mb: 4,
-           display: "flex",
+  sx={{
+    mb: 4,
+    display: "flex",
     justifyContent: "center",
     flexDirection: "column",
     alignItems: "center",
+  }}
+>
+  {/* Heading and Description - ONLY SHOW ON DESKTOP */}
+  {!isMobile && (
+    <Box
+      sx={{
+        width: "100%",
+        maxWidth: "1300px",
+        mb: 3,
+        textAlign: "center",
+      }}
+    >
+      <Typography
+        variant="h4"
+        sx={{
+          fontWeight: 700,
+          color: COLORS.black,
+          mb: 1,
+          fontSize: { xs: "1rem", md: "1.9rem" },
         }}
       >
-        {/* Heading and Description */}
-  <Box
-    sx={{
-      width: "100%",
-      maxWidth: "1300px",
-      mb: 3,
-      textAlign: "center",
-    }}
-  >
-    <Typography
-      variant="h4"
-      sx={{
-        fontWeight: 700,
-        color: COLORS.black,
-        mb: 1,
-        fontSize: { xs: "1rem", md: "1.9rem" },
-      }}
-    >
-     INVESTOR LEAD PLANS
-    </Typography>
-    <Typography
-      variant="body3"
-      sx={{
-        color: COLORS.black,
-        fontSize: TEXT_SIZES.medium,
-        maxWidth: "600px",
-        mx: "auto",
-      }}
-    >
-      Franchise | Dealer and Distributor | Channel Partner | Agent and Association
-    </Typography>
-  </Box>
-
+        INVESTOR LEAD PLANS
+      </Typography>
+      <Typography
+        variant="body3"
+        sx={{
+          color: COLORS.black,
+          fontSize: TEXT_SIZES.medium,
+          maxWidth: "600px",
+          mx: "auto",
+        }}
+      >
+        Franchise | Dealer and Distributor | Channel Partner | Agent and Association
+      </Typography>
+    </Box>
+  )}
+  
+  {isMobile ? (
+    <MobilePackageSelection
+      filteredPlans={filteredPlans}
+      selectedGroup={selectedGroup}
+      setSelectedGroup={setSelectedGroup}
+      leadsDropdownData={leadsDropdownData}
+      selectedLeadsPerRange={selectedLeadsPerRange}
+      handleLeadsChange={handleLeadsChange}
+      checkedItems={checkedItems}
+      setCheckedItems={setCheckedItems}
+      paymentSummary={paymentSummary}
+      handleAddSingleToPayment={handleAddSingleToPayment}
+      statesByInvestmentRange={statesByInvestmentRange}
+      getStateCountForRange={getStateCountForRange}
+      getRangeKey={getRangeKey}
+      handleOpenStateModal={handleOpenStateModal}
+      isFicoInvestmentRange={isFicoInvestmentRange}
+      ficoInvestmentRanges={ficoInvestmentRanges}
+      scrollToPaymentSummary={scrollToPaymentSummary}
+      openSnack={openSnack}
+      setOpenConfirmDialog={setOpenConfirmDialog}
+      setPendingSelection={setPendingSelection}
+      finalToken={finalToken}
+      data={data}
+      allStates={allStates}
+      plans={plans}
+      paymentSummaryRef={paymentSummaryRef}
+      handleRemoveListingPlan={handleRemoveListingPlan}
+      isUpgradeMode={isUpgradeMode}
+      upgradePlanId={upgradePlanId}
+      hideListingPlans={false} // Let mobile component show listing plans
+    />
+  ) : (
         <Card
           elevation={0}
           sx={{
@@ -3868,8 +3894,8 @@ background: "linear-gradient(135deg, #4cb04f 0%, #2e7d32 100%)",
       <Typography
         sx={{
           fontSize: TEXT_SIZES.xs,
-          fontWeight: 600,
-          color: COLORS.secondary,
+          fontWeight: 500,
+          color: COLORS.black,
           mt: 0.5,
         }}
       >
@@ -3909,11 +3935,11 @@ background: "linear-gradient(135deg, #4cb04f 0%, #2e7d32 100%)",
       <Typography
         sx={{
           fontSize: TEXT_SIZES.xs,
-          fontWeight: 700,
+          fontWeight: 500,
           color: COLORS.black,
         }}
       >
-        (Above leads for {uniqueGroupStatesCount} States)
+        ({uniqueGroupStatesCount} States)
       </Typography>
     </Box>
   </TableCell>
@@ -3935,17 +3961,28 @@ background: "linear-gradient(135deg, #4cb04f 0%, #2e7d32 100%)",
                                           : "none",
                                       }}
                                     >
+                                       <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5 }}>
                                       <Typography
                                         sx={{
                                           fontSize: TEXT_SIZES.xl,
                                           fontWeight: 700,
                                         }}
                                       >
-                                        ₹
-                                        {groupTotalAmount.toLocaleString(
+                                        
+                                       ₹ {groupTotalAmount.toLocaleString(
                                           "en-IN",
                                         )}
                                       </Typography>
+                                        <Typography
+        sx={{
+          fontSize: TEXT_SIZES.xs,
+          fontWeight: 500,
+          color: COLORS.black,
+        }}
+      >
+        ({uniqueValidityDays[0]} Days Plan)
+      </Typography>
+                                      </Box>
                                     </TableCell>
                                   )}
 
@@ -4154,6 +4191,7 @@ background: "linear-gradient(135deg, #4cb04f 0%, #2e7d32 100%)",
             </Box>
           )}
         </Card>
+          )}
       </Box>
 
       
