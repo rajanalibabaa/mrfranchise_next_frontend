@@ -52,7 +52,7 @@ const ACTUAL_FILTER_KEYS = [
   "district",
   "city",
   "investmentRange",
-  "franchiseModel",
+  "modelType",
   "searchTerm",
   "areaRequired",
 ];
@@ -277,6 +277,8 @@ function BrandList({ maincat, subcat, slug, subslug }) {
   resolvedMaincatRef.current = resolvedMaincat;
   resolvedSubcatRef.current = resolvedSubcat;
 
+  const filtersRef = useRef(null);
+
   // ============================================
   // LOCAL STATE
   // ============================================
@@ -297,12 +299,17 @@ function BrandList({ maincat, subcat, slug, subslug }) {
     shallowEqual
   );
 
+  useEffect(() => {
+    filtersRef.current = filters;
+  }, [filters]);
+
   const {
     mainCategories,
     subCategories,
     childCategories,
     investmentRanges,
     franchiseModels,
+    areaRequired,
     states,
     districts,
     cities,
@@ -397,6 +404,7 @@ function BrandList({ maincat, subcat, slug, subslug }) {
     const urlSubcat = searchParams?.get("subcat");
     const urlState = searchParams?.get("state");
     const urlInvestmentRange = searchParams?.get("investmentRange");
+    const urlAreaRequired = searchParams?.get("areaRequired");
 
     const stored = getLocalStorageData();
 
@@ -404,7 +412,7 @@ function BrandList({ maincat, subcat, slug, subslug }) {
     const currentSubcat = resolvedSubcatRef.current;
 
     console.log("🔥 INIT currentMaincat:", currentMaincat);
-    console.log("🔥 INIT currentSubcat:", currentSubcat);
+    console.log("🔥 INIT currentSubcat:", resolvedSubcatRef.current);
 
     const initialFilters = {};
 
@@ -420,15 +428,20 @@ function BrandList({ maincat, subcat, slug, subslug }) {
 
     if (urlState) initialFilters.state = urlState;
     if (urlInvestmentRange) initialFilters.investmentRange = urlInvestmentRange;
+    if (urlAreaRequired) initialFilters.areaRequired = urlAreaRequired;
 
     if (stored?.searchTerm) {
       initialFilters.searchTerm = stored.searchTerm;
       localStorage.removeItem("franchiseFilters");
     }
 
-    if (stored?.enableComparison === "true") {
+    const comparisonFlag =
+      stored?.enableComparison === "true" ||
+      window.localStorage.getItem("enableComparison") === "true";
+
+    if (comparisonFlag) {
       setEnableComparison(true);
-      localStorage.removeItem("enableComparison");
+      window.localStorage.removeItem("enableComparison");
     }
 
     // console.log("🔥 FINAL INITIAL FILTERS:", initialFilters);
@@ -450,28 +463,10 @@ function BrandList({ maincat, subcat, slug, subslug }) {
       dispatch(fetchFilterOptions());
     }
 
-    // ─── If route slugs exist but query params are missing, inject them automatically.
-    if (typeof window !== "undefined") {
-      const hasMainParam = !!searchParams?.get("maincat");
-      const hasSubParam = !!searchParams?.get("subcat");
-      if ((!hasMainParam || !hasSubParam) && (currentMaincat || currentSubcat)) {
-        const url = new URL(window.location.href);
-        if (currentMaincat) url.searchParams.set("maincat", currentMaincat);
-        if (currentSubcat) url.searchParams.set("subcat", currentSubcat);
-
-        const nextUrl = `${url.pathname}${url.search}`;
-        if (nextUrl !== window.location.pathname + window.location.search) {
-          router.replace(nextUrl, { scroll: false });
-        }
-      }
+    if (isMountedRef.current) {
+      fetchBrands(initialFilters, true);
+      setInitialFiltersApplied(true);
     }
-
-    setTimeout(() => {
-      if (isMountedRef.current) {
-        fetchBrands(initialFilters, true);
-        setInitialFiltersApplied(true);
-      }
-    }, 100);
 
     const img = new Image();
     img.src = "/bg25.jpeg";
@@ -508,19 +503,31 @@ function BrandList({ maincat, subcat, slug, subslug }) {
       dispatch(setFilter({ filterName: name, value }));
 
       // ─── Fetch dependent dropdowns ───
-      if (name === "maincat" && value) {
-        dispatch(fetchFilterOptions({ main: value }));
-      } else if (name === "subcat" && value) {
-        dispatch(fetchFilterOptions({ sub: value }));
-      } else if (name === "state" && value) {
-        dispatch(fetchFilterOptions({ state: value }));
-      } else if (name === "district" && value) {
-        dispatch(fetchFilterOptions({ district: value }));
+      if (name === "maincat") {
+        if (value) {
+          dispatch(fetchFilterOptions({ main: value }));
+        } else {
+          dispatch(fetchFilterOptions());
+        }
+      } else if (name === "subcat") {
+        if (value) {
+          dispatch(fetchFilterOptions({ sub: value, main: filtersRef.current?.maincat }));
+        }
+      } else if (name === "state") {
+        if (value) {
+          dispatch(fetchFilterOptions({ state: value }));
+        } else {
+          dispatch(fetchFilterOptions());
+        }
+      } else if (name === "district") {
+        if (value) {
+          dispatch(fetchFilterOptions({ district: value, state: filtersRef.current?.state }));
+        }
       }
 
       // ─── 🔥 Navigate to clean slug URL when subcat selected ───
       if (name === "subcat" && value) {
-        const currentMaincat = filters.maincat || resolvedMaincatRef.current;
+        const currentMaincat = filtersRef.current?.maincat || resolvedMaincatRef.current;
 
         // Build clean slug URL
         const newUrl = buildSubCategoryUrl(currentMaincat, value);
@@ -544,7 +551,7 @@ function BrandList({ maincat, subcat, slug, subslug }) {
         }
       }
     },
-    [dispatch, filters, pathname, router]
+    [dispatch, pathname, router]
   );
 
   const handleMobileFilterChange = useCallback(
@@ -560,7 +567,12 @@ function BrandList({ maincat, subcat, slug, subslug }) {
     lastFetchKeyRef.current = "";
     dispatch(resetFilters());
     dispatch(fetchFilterOptions());
-  }, [dispatch]);
+      router.replace("/all-franchise-brands", { scroll: false });
+
+  // Fetch all brands again
+  fetchBrands({}, true);
+
+  }, [dispatch, router, fetchBrands]);
 
   const handlePageChange = useCallback(
     (_, page) => {
@@ -813,6 +825,7 @@ function BrandList({ maincat, subcat, slug, subslug }) {
                 subCategories={subCategories}
                 childCategories={childCategories}
                 franchiseModels={franchiseModels}
+                areaRequired={areaRequired}
                 investmentRanges={investmentRanges}
                 states={states}
                 districts={districts}
@@ -935,6 +948,7 @@ function BrandList({ maincat, subcat, slug, subslug }) {
                 subCategories={subCategories}
                 childCategories={childCategories}
                 franchiseModels={franchiseModels}
+                areaRequired={areaRequired}
                 investmentRanges={investmentRanges}
                 states={states}
                 districts={districts}

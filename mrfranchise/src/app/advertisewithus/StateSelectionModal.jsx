@@ -7,7 +7,9 @@ import {
   Box,
   Button,
   Typography,
+  IconButton
 } from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
 
 const StateSelectionModal = ({
   open,
@@ -18,6 +20,7 @@ const StateSelectionModal = ({
   finalToken,
   ALL_INDIA_STATES,
   allStates,
+  INDIA_STATES = {},
   getAlreadySelectedStatesInOtherRanges,
   getStatesToDisplay,
   handleSelectAll,
@@ -26,7 +29,10 @@ const StateSelectionModal = ({
   handleSaveStates,
   router,
 }) => {
-  const blocked = getAlreadySelectedStatesInOtherRanges();
+ const blocked = typeof getAlreadySelectedStatesInOtherRanges === "function"
+    ? getAlreadySelectedStatesInOtherRanges()
+    : new Set();
+
 
   const currentRangeSelectedCount = [...selectedStates].filter(
     (s) => !blocked.has(s)
@@ -36,13 +42,12 @@ const StateSelectionModal = ({
     ? ALL_INDIA_STATES.filter((s) => !blocked.has(s)).length
     : allStates.filter((s) => !blocked.has(s)).length;
 
-  const statesToDisplay = getStatesToDisplay();
-
+  const statesToDisplay = typeof getStatesToDisplay === "function"
+    ? getStatesToDisplay()
+    : [];
   const selectableStates = statesToDisplay.filter((s) => !blocked.has(s));
 
-  const isAllSelected = selectableStates.every((s) =>
-    selectedStates.has(s)
-  );
+const isAllSelected = selectableStates.every((s) => selectedStates.has(s));
 
   const isClearDisabled = [...selectedStates].every((s) =>
     blocked.has(s)
@@ -53,33 +58,51 @@ const StateSelectionModal = ({
       open={open}
       onClose={onClose}
       maxWidth="sm"
-      fullWidth
+   
+            fullWidth
       PaperProps={{
         sx: {
           borderRadius: 3,
           border: `3px solid ${COLORS.primary}`,
           boxShadow: `0 8px 32px ${COLORS.shadow}`,
+          margin: 6,           // Add this
+      position: "absolute", // Add this
+      top: 0, 
         },
       }}
     >
       {/* Header */}
       <DialogTitle
         sx={{
-          background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryDark} 100%)`,
-          fontSize: TEXT_SIZES.large,
-          fontWeight: 700,
-          color: COLORS.white,
-          py: 2.5,
+        background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryDark} 100%)`,
+    fontSize: TEXT_SIZES.large,
+    fontWeight: 700,
+    color: COLORS.white,
+    py: 1.5,
+    display: "flex",           
+    justifyContent: "space-between",  
+    alignItems: "center",   
         }}
       >
         Select States ({currentRangeSelectedCount} of {totalAvailable})
+        <IconButton
+    onClick={onClose}
+    sx={{
+      color: COLORS.white,
+      "&:hover": {
+        backgroundColor: "rgba(255, 255, 255, 0.2)",
+      },
+    }}
+  >
+    <CloseIcon />
+  </IconButton>
       </DialogTitle>
 
       {/* Content */}
       <DialogContent
         dividers
         sx={{
-          maxHeight: 500,
+          maxHeight: 300,
           overflow: "auto",
           p: 2,
           "&::-webkit-scrollbar": {
@@ -153,38 +176,75 @@ const StateSelectionModal = ({
             <Box>{renderStatesByRegion()}</Box>
           </>
         ) : (
-          <Box sx={{ textAlign: "center", py: 4 }}>
+          <Box sx={{ textAlign: "center" }}>
             <Typography
               sx={{
                 fontSize: TEXT_SIZES.medium,
                 color: COLORS.grey[600],
-                mb: 3,
+                mb: 2,
               }}
             >
-              No expansion states found
+              No expansion states found. Select states to add:
             </Typography>
 
-            <Button
-              variant="contained"
-              onClick={() => {
-                router.push("/brandDashboard/brand_listing_controller");
-                onClose();
-              }}
+            {/* Action Buttons */}
+            <Box
               sx={{
-                backgroundColor: COLORS.primary,
-                color: COLORS.white,
-                fontSize: TEXT_SIZES.medium,
-                fontWeight: 600,
-                px: 3,
-                py: 1,
-                borderRadius: 2,
-                "&:hover": {
-                  backgroundColor: COLORS.primaryDark,
-                },
+                display: "flex",
+                gap: 1.5,
+                mb: 2.5,
+                justifyContent: "center",
               }}
             >
-              Add States
-            </Button>
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={handleSelectAll}
+                sx={{
+                  borderColor: COLORS.primary,
+                  color: COLORS.primary,
+                  fontSize: TEXT_SIZES.small,
+                  borderWidth: 2,
+                  borderRadius: 1.5,
+                  fontWeight: 600,
+                  px: 2,
+                  "&:hover": {
+                    borderColor: COLORS.primaryDark,
+                    backgroundColor: COLORS.lightOrange,
+                    borderWidth: 2,
+                  },
+                }}
+              >
+                Select All ({Object.values(INDIA_STATES).flat().length})
+              </Button>
+
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={handleClearAll}
+                sx={{
+                  borderColor: COLORS.primary,
+                  color: COLORS.primary,
+                  fontSize: TEXT_SIZES.small,
+                  borderWidth: 2,
+                  borderRadius: 1.5,
+                  fontWeight: 600,
+                  px: 2,
+                  "&:hover": {
+                    borderColor: COLORS.primaryDark,
+                    backgroundColor: COLORS.lightOrange,
+                    borderWidth: 2,
+                  },
+                }}
+              >
+                Clear All
+              </Button>
+            </Box>
+
+            {/* State Selection Accordions */}
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5, mt: 2 }}>
+              {renderStatesByRegion()}
+            </Box>
           </Box>
         )}
       </DialogContent>
@@ -192,13 +252,13 @@ const StateSelectionModal = ({
       {/* Footer */}
       <DialogActions
         sx={{
-          justifyContent: "space-between",
+          justifyContent: "flex-end",
           px: 3,
           py: 2,
           backgroundColor: COLORS.grey[50],
         }}
       >
-        <Button
+        {/* <Button
           onClick={onClose}
           sx={{
             color: COLORS.grey[700],
@@ -210,7 +270,7 @@ const StateSelectionModal = ({
           }}
         >
           Cancel
-        </Button>
+        </Button> */}
 
         <Button
           onClick={handleSaveStates}

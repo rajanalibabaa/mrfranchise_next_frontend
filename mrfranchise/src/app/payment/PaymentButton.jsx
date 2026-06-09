@@ -32,7 +32,7 @@ export default function PaymentButton({ amount, packageName, packageData, onSucc
       }
 
       setBrandData({
-        name: brand?.brandDetails?.fullName || "MrFranchise User",
+        name: brand?.brandDetails?.brandName || "MrFranchise User",
         email: brand?.brandDetails?.email || "",
         phone: brand?.brandDetails?.mobileNumber || "",
         brandID: brand?.brandID || uuid,
@@ -98,32 +98,110 @@ export default function PaymentButton({ amount, packageName, packageData, onSucc
         return;
       }
 
+      const firstPackage = packageData?.[0];
+const firstItem = firstPackage?.items?.[0];
+
+const payload = {
+  brandOwnerId: uuid,
+
+  email: brandData.email,
+  phone: brandData.phone,
+  name: brandData.name,
+  brandID: brandData.brandID,
+
+  // =========================
+  // TOTALS
+  // =========================
+  totalAmount: packageData.reduce(
+    (sum, pkg) => sum + Number(pkg.amount || 0),
+    0
+  ),
+
+  totalLeads: packageData.reduce(
+    (sum, pkg) => sum + Number(pkg.totalLeads || 0),
+    0
+  ),
+
+  // =========================
+  // ALL PACKAGES
+  // =========================
+  packages: packageData.map((pkg) => ({
+    groupKey: pkg.groupKey,
+
+    packagesType: pkg.packagesType,
+
+    packageName: pkg.planName,
+
+    planId: pkg.planId,
+
+    planPackageId: pkg.planPackageId,
+
+    planUniqueId: pkg.planUniqueId,
+
+    investmentRangeLabel:
+      pkg.investmentRangeLabel,
+
+    amount: Number(pkg.amount || 0),
+
+    totalLeads: Number(pkg.totalLeads || 0),
+
+    selectedLeads: Number(
+      pkg.selectedLeads || 0
+    ),
+
+    totalStates: Number(
+      pkg.totalStates || 0
+    ),
+
+    uniqueStates: pkg.uniqueStates || [],
+
+    validityDays:
+      Number(pkg.validityDays || 30),
+
+    pricePerState:
+      Number(pkg.pricePerState || 0),
+
+    // =========================
+    // ALL ITEMS
+    // =========================
+    items:
+      pkg.items?.map((item) => ({
+        id: item.id,
+
+        investmentRangeLabel:
+          item.investmentRangeLabel,
+
+        range: item.range,
+
+        selectedLeads: Number(
+          item.selectedLeads || 0
+        ),
+
+        states: Array.isArray(item.states)
+          ? item.states
+          : [],
+
+        amount: Number(item.amount || 0),
+      })) || [],
+  })),
+
+  // =========================
+  // GST
+  // =========================
+  billingState: "TN",
+  companyState: "TN",
+
+  gstNumber: "",
+  pan: "",
+};
+
+console.log("PAYLOAD:", payload);
+
+
+
       // ✅ 2. Create Payment Order (Pass ALL required fields)
       const orderResponse = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/payment/create`,
-        {
-          // Core Required Fields
-          brandOwnerId: uuid,
-          baseAmount: amount, // Base amount before GST
-          packageName,
-          
-          // Customer Details (from brand)
-          email: brandData.email,
-          phone: brandData.phone,
-          name: brandData.name,
-          brandID: brandData.brandID,
-
-          // ✅ Compliance Fields (GST & PAN)
-          gstNumber: brandData.gstNumber || "", // Optional
-          pan: brandData.pan || "", // Optional
-
-          // ✅ State Information for GST (CGST/SGST vs IGST)
-          billingState: "MH", // Customer billing state
-          companyState: "MH", // Your company state
-
-          // ✅ Package Details Array (for multiple packages)
-          packageData: packageData || [],
-        },
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/payment/create`,payload,
         {
           headers: {
             "Content-Type": "application/json",
@@ -150,7 +228,7 @@ export default function PaymentButton({ amount, packageName, packageData, onSucc
         amount: orderAmount, // Always in paise from backend
         currency,
         name: "Mr Franchise",
-        description: `Purchase: ${packageName}`,
+description: `Purchase: ${packageData.length} Package(s)`,
         order_id: orderId,
         image: "/logo.png", // Your logo
         prefill: {
@@ -179,13 +257,176 @@ export default function PaymentButton({ amount, packageName, packageData, onSucc
               { timeout: 10000 }
             );
 
-            if (verifyResponse.data.success) {
-              toast.success("Payment Successful! 🎉");
-              onSuccess?.(verifyResponse.data.data); // Callback to parent
-              
-              // Redirect or update UI
-              // window.location.href = "/dashboard/payments/success";
-            }
+           if (verifyResponse.data.success) {
+
+  // =========================
+  // CREATE BRAND PACKAGE
+  // =========================
+
+const packagePayload = {
+  brandOwnerId: uuid,
+
+  packages: packageData.map(
+    (pkgGroup) => ({
+      packagesType:
+        pkgGroup?.packagesType,
+
+      packagesName:
+        pkgGroup?.planName,
+
+      planUniqueId:
+        pkgGroup?.planUniqueId,
+
+      InvestmetPackages: [
+        {
+          // ✅ LABEL
+          InvestmetRageLabel:
+            pkgGroup?.investmentRangeLabel,
+
+          // ✅ RANGE + STATES
+          investmentranges:
+            pkgGroup?.items.map(
+              (item) => ({
+                selectedPlanInvestmetrange:
+                  item?.range || "",
+
+                selectedPlanState:
+                  Array.isArray(
+                    item?.states
+                  )
+                    ? item.states
+                    : [],
+              })
+            ) || [],
+
+          // ✅ TOTAL LEADS
+          TotalLeads:
+          pkgGroup?.packagesType ===
+          "LISTING"
+            ? 0
+            : Number(
+                pkgGroup?.totalLeads || 0
+              ),
+
+          // ✅ REMAINING LEADS
+         remainingLeads:
+          pkgGroup?.packagesType ===
+          "LISTING"
+            ? 0
+            : Number(
+                pkgGroup?.selectedLeads || 0
+              ),
+
+          // ✅ AMOUNT
+          TotalAmount:
+            pkgGroup?.amount || 0,
+
+          // ✅ VALIDITY
+          Validity:
+            pkgGroup?.validityDays ||
+            30,
+
+          // ✅ DATES
+          PackageStartDate:
+            new Date(),
+
+          PackageEndDate:
+            new Date(
+              Date.now() +
+                Number(
+                  pkgGroup?.validityDays ||
+                    30
+                ) *
+                  24 *
+                  60 *
+                  60 *
+                  1000
+            ),
+
+          CurrentDate:
+            new Date(),
+
+          RenewalEndDate:
+            new Date(
+              Date.now() +
+                Number(
+                  pkgGroup?.validityDays ||
+                    30
+                ) *
+                  24 *
+                  60 *
+                  60 *
+                  1000
+            ),
+
+          // ✅ STATUS
+          isPaused: false,
+
+          pauseHistory: [],
+
+          isExperied: false,
+
+          isActive: false,
+
+          isPending: false,
+
+          // ✅ PAYMENT
+          paymentId:
+            verifyResponse.data.data
+              .paymentId,
+
+          orderId:
+            verifyResponse.data.data
+              .orderId,
+        },
+      ],
+    })
+  ),
+};
+
+console.log(
+  "PACKAGE PAYLOAD:",
+  packagePayload
+);
+
+  
+  // =========================
+  // CREATE PACKAGE API
+  // =========================
+
+  const packageResponse =
+    await axios.patch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/brand-packages-plans/create`,
+      packagePayload,
+      {
+        headers: {
+          "Content-Type":
+            "application/json",
+        },
+      }
+    );
+
+  console.log(
+    "PACKAGE RESPONSE:",
+    packageResponse.data
+  );
+
+  // =========================
+  // SUCCESS
+  // =========================
+
+  toast.success(
+    "Payment Successful! 🎉"
+  );
+
+  onSuccess?.({
+    payment:
+      verifyResponse.data.data,
+
+    package:
+      packageResponse.data,
+  });
+}
           } catch (verifyErr) {
             toast.error("Payment verification failed. Please contact support.");
             console.error("Verification Error:", verifyErr);
@@ -203,6 +444,11 @@ export default function PaymentButton({ amount, packageName, packageData, onSucc
 
     } catch (err) {
       console.error("Payment Error:", err);
+      alert(err?.response?.data?.message);
+  console.log(
+    "BACKEND RESPONSE:",
+    err?.response?.data
+  );
 
       // Enhanced Error Handling
       if (err.code === "ECONNABORTED") {

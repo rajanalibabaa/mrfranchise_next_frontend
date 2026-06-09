@@ -17,7 +17,7 @@ const BrandListNew = dynamic(
 
 
 
-export default function BrandCategoryViewPage({ maincat, subcat }) {
+export default function BrandCategoryViewPage({ slug, subslug, maincat, subcat, brands }) {
   
    console.log("frommaincat", maincat);
    console.log("fromsubcat", subcat);
@@ -43,7 +43,7 @@ export default function BrandCategoryViewPage({ maincat, subcat }) {
         }}
       >
         <Suspense fallback={<div>Loading...</div>}>
-            <BrandListNew maincat={maincat} subcat={subcat} />
+            <BrandListNew slug={slug} subslug={subslug} maincat={maincat} subcat={subcat} />
         </Suspense>
       </Box>
 

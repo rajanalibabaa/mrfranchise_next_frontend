@@ -291,7 +291,7 @@ const handleSubmit = useCallback(
         return;
       }
  
-      // console.log("Submitting payload:", payload);
+      console.log(" investore enquiry   Submitting payload:", payload);
  
       // Make API request
       const response = await axios.post(

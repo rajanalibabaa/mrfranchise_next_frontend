@@ -133,40 +133,7 @@ const FranchiseDetails = ({ data = {}, errors = {}, onChange = () => {} }) => {
       setLoading(false);
     }
   };
-  // Fetch industry details when an industry is selected
-  // const fetchIndustryDetails = async (industryName) => {
-  //   if (!industryName) return;
-  //   // const industry = "Food & Beverages"
-    
-  //   try {
-  //     setLoadingIndustryDetails(true);
-  //     const response = await fetch(
-  //       `${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/getIndustryByIndustryName?industry=${encodeURIComponent(industryName)}`
-  //     );
-  //     const result = await response.json();
-     
-  //     if (result.success && result.data) {
-        
-  //       setIndustryData(result.data);
-       
-  //       // Update selected category state
-  //       const newCategory = {
-  //         groupId: "",
-  //         main: result.data.industry || industryName,
-  //         sub: "",
-  //         productTags: [],
-  //         serviceTags: [],
-  //       };
-  //       setSelectedCategory(newCategory);
-  //       onChange({ brandCategories: newCategory,
-  //       franchiseTags: {}  });
-  //     }
-  //   } catch (error) {
-  //     console.error('Error fetching industry details:', error);
-  //   } finally {
-  //     setLoadingIndustryDetails(false);
-  //   }
-  // };
+
   const fetchIndustryDetails = async (industryName) => {
   if (!industryName) return;
   
@@ -222,6 +189,7 @@ const FranchiseDetails = ({ data = {}, errors = {}, onChange = () => {} }) => {
     setLoadingIndustryDetails(false);
   }
 };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     if (name === "companyOwnedOutlets" || name === "franchiseOutlets") {

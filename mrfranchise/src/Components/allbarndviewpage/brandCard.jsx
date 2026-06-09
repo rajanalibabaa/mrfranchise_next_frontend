@@ -122,6 +122,8 @@
       const dispatch = useDispatch();
       const [likeProcessing, setLikeProcessing] = useState(false);
       const [shortlistProcessing, setShortlistProcessing] = useState(false);
+
+      
       const videoRef = useRef(null);
       const likeButtonRef = useRef(null);
       const shortlistButtonRef = useRef(null);
@@ -271,14 +273,15 @@
               placement="right"
               arrow
             >
-              <span>
+              <span style={{ display: "inline-block" }}>
                 <IconButton
-                aria-label="Compare Brand"
+                  aria-label="Compare Brand"
                   sx={{
                     position: "absolute",
                     top: 8,
                     right: 8,
-                    zIndex: 2,
+                    zIndex: 10,
+                    pointerEvents: "auto",
                     backgroundColor: isSelectedForComparison
                       ? "#ff9800"
                       : maxComparisonReached
@@ -292,7 +295,10 @@
                     height: 36,
                     borderRadius: "50%",
                   }}
-                  onClick={() => onToggleBrandComparison(brand)}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    onToggleBrandComparison(brand);
+                  }}
                   disabled={maxComparisonReached && !isSelectedForComparison}
                 >
                   {isSelectedForComparison ? (

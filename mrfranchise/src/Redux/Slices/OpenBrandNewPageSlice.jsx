@@ -101,7 +101,10 @@ export default brandSlice.reducer;
 // };
 export const openBrandDialog = (brand, openInNewTab = true) => async (dispatch) => {
 
-  if (!brand) return;
+ 
+  
+
+  if (!brand) return console.error("❌ No brand payload provided");
 
   const brandId = brand.uuid;
 
