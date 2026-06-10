@@ -319,7 +319,7 @@ const BrandSearchus = () => {
 
   return (
     <><Box sx={{ display: "flex",  }}>
-    <BrandDashboardLayout/>
+  
     <Box component="main" sx={{width: "100%", p: 3 }}>
       <Typography
         variant="h6"

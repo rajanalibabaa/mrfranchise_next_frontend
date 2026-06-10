@@ -56,9 +56,9 @@ const BrandHeader = ({ brandData }) => {
     <Box
       sx={{
         mb: 2,
-        p: isMobile ? 1.5 : 2,
+        p: isMobile ? 1 : 0,
         display: "flex",
-        width: "100%",
+        width: "98%",
         flexDirection: isMobile ? "column" : "row",
         alignItems: isMobile ? "flex-start" : "center",
         gap: 2,
