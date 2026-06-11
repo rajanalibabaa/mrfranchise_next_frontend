@@ -241,6 +241,7 @@ const upgradeSectionRef = useRef(null);
   const [isUpgradeMode, setIsUpgradeMode] = useState(false);
 const [upgradePlanId, setUpgradePlanId] = useState(null);
   const [showLogin, setShowLogin] = useState(false);
+  const [openSection, setOpenSection] = useState("investor");
   const [snack, setSnack] = useState({
     open: false,
     message: "",
@@ -528,6 +529,9 @@ useEffect(() => {
   const openSnack = useCallback((message, severity = "info") => {
     setSnack({ open: true, message, severity });
   }, []);
+  const handleSectionChange = useCallback((sectionName) => (isOpen) => {
+  setOpenSection(isOpen ? sectionName : null);
+}, []);
 
   const closeSnack = useCallback(() => {
     setSnack((s) => ({ ...s, open: false }));
@@ -2413,7 +2417,8 @@ return allStates.length;
   leadsDropdownData={leadsDropdownData}
   INDIA_STATES={INDIA_STATES}
   ALL_INDIA_STATES={ALL_INDIA_STATES}
-  
+    sectionExpanded={openSection === "active"}
+  onSectionChange={handleSectionChange("active")}
   allStates={allStates}        
   finalToken={finalToken}
   ficoInvestmentRanges={ficoInvestmentRanges}  
@@ -2951,6 +2956,8 @@ return allStates.length;
       isUpgradeMode={isUpgradeMode}
       upgradePlanId={upgradePlanId}
       hideListingPlans={false} // Let mobile component show listing plans
+       sectionExpanded={openSection}
+  onSectionChange={handleSectionChange}
     />
   ) : (
         <Card
@@ -4315,6 +4322,8 @@ background: "linear-gradient(135deg, #4cb04f 0%, #2e7d32 100%)",
             handleShowStates={handleShowStates}
             setItemToRemove={setItemToRemove}
             setOpenRemoveConfirmDialog={setOpenRemoveConfirmDialog}
+              sectionExpanded={openSection === "summary"}
+  onSectionChange={handleSectionChange("summary")}
           />
         </>
       )}

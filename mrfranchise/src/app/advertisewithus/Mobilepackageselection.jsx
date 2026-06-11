@@ -36,8 +36,6 @@ import EditIcon from "@mui/icons-material/Edit";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import WorkspacePremiumRoundedIcon from "@mui/icons-material/WorkspacePremiumRounded";
 import StarBorderRoundedIcon from "@mui/icons-material/StarBorderRounded";
-import KeyboardArrowLeftIcon from "@mui/icons-material/KeyboardArrowLeft";
-import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
 // ─── Color palette ────────────────────────────────────────────────────────────
@@ -127,18 +125,31 @@ const getUniqueStatesForCheckedItems = (planId, label, items, checkedItems, stat
 };
 
 // ─── Mobile-only Section Accordion ───────────────────────────────────────────
-const SectionAccordion = ({ title, children, defaultExpanded = false }) => {
+const SectionAccordion = ({ 
+  title, 
+  children, 
+  defaultExpanded = false,
+  expanded: controlledExpanded,
+  onChange: controlledOnChange,
+}) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  const [expanded, setExpanded] = useState(defaultExpanded);
+  const [internalExpanded, setInternalExpanded] = useState(defaultExpanded);
 
-  // On desktop: render children directly, no accordion chrome
+  const isControlled = controlledExpanded !== undefined;
+  const isExpanded = isControlled ? controlledExpanded : internalExpanded;
+
+  const handleChange = (_, val) => {
+    if (isControlled) controlledOnChange?.(val);
+    else setInternalExpanded(val);
+  };
+
   if (!isMobile) return <>{children}</>;
 
   return (
     <Accordion
-      expanded={expanded}
-      onChange={(_, val) => setExpanded(val)}
+      expanded={isExpanded}
+      onChange={handleChange}
       disableGutters
       elevation={0}
       sx={{
@@ -212,23 +223,10 @@ const LeadsStepper = ({ value, options, onChange }) => {
 
 // ─── RangeGroupCard ───────────────────────────────────────────────────────────
 const RangeGroupCard = ({
-  label,
-  items,
-  expanded,
-  onToggle,
-  checkedItems,
-  onCheck,
-  onEditStates,
-  planId,
-  statesByInvestmentRange,
-  getStateCountForRange,
-  inPaymentSet,
-  availableLeads,
-  getGroupLeads,
-  handleLeadsChange,
-  leadsDropdownData,
-  leadsKey,
-  pricePerState,
+  label, items, expanded, onToggle, checkedItems, onCheck, onEditStates,
+  planId, statesByInvestmentRange, getStateCountForRange, inPaymentSet,
+  availableLeads, getGroupLeads, handleLeadsChange, leadsDropdownData,
+  leadsKey, pricePerState,
 }) => {
   const currentLeads = getGroupLeads ? getGroupLeads(label) : 0;
 
@@ -238,7 +236,6 @@ const RangeGroupCard = ({
 
   return (
     <Box sx={{ border: `1px solid ${COLORS.border}`, borderRadius: 2.5, overflow: "hidden", mb: 1.5, backgroundColor: COLORS.white }}>
-      {/* ── Header row ── */}
       <Box
         onClick={onToggle}
         sx={{
@@ -285,10 +282,8 @@ const RangeGroupCard = ({
         </Box>
       </Box>
 
-      {/* ── Expanded content ── */}
       <Collapse in={expanded}>
         <Box sx={{ backgroundColor: COLORS.grey[50], p: 2 }}>
-
           {(() => {
             const leads = currentLeads || 0;
             const checkedUniqueStates = getUniqueStatesForCheckedItems(
@@ -404,6 +399,88 @@ const RangeGroupCard = ({
   );
 };
 
+// ─── Listing Plan Card (detail view for selected tab) ─────────────────────────
+const ListingPlanDetail = ({
+  plan,
+  isAdded,
+  isAlreadyActive,
+  isExistingPlan,
+  isMostPopular,
+  onAdd,
+  onRemove,
+}) => {
+  const pkg = plan.packages?.[0] || {};
+
+  return (
+    <Box sx={{
+      border: `1.5px solid ${isAdded ? COLORS.primary : COLORS.border}`,
+      borderRadius: 2.5,
+      backgroundColor: "#fff0c5",
+      p: 1,
+      mt: 1.5,
+      position: "relative",
+      overflow: "hidden",
+    }}>
+      {isMostPopular && (
+        <Box sx={{
+          position: "absolute", top:8, left: -65,
+          transform: "rotate(-45deg)",
+          background: "linear-gradient(135deg,#ff9800 0%,#ff6f00 100%)",
+          color: "#fff", px: 3, py: 0.4, fontSize: "0.65rem", fontWeight: 700,
+          textAlign: "center", width: 110,
+          boxShadow: "0 2px 4px rgba(0,0,0,0.1)", zIndex: 1,
+        }}>
+         Popular
+        </Box>
+      )}
+
+      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", mb: 2, gap:0.5 }}>
+        <Box>
+          <Typography sx={{ fontWeight: 700, fontSize: T.lg, color: COLORS.black , ml:0.8}}>
+            {plan.planName}
+          </Typography>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mt: 0.5, ml:0.6 }}>
+            <CalendarMonthRoundedIcon sx={{ fontSize: 16  , color: COLORS.black[500] }} />
+            <Typography sx={{ fontSize: T.md, color: COLORS.black[600] }}>
+              {pkg.validityDays} Days 
+            </Typography>
+          </Box>
+        </Box>
+        <Typography sx={{ fontSize: "1.4rem", fontWeight: 800, color: isMostPopular ? "#ff9800" : COLORS.primary }}>
+          {fmtINR(pkg.amount)}
+        </Typography>
+      </Box>
+
+      <Button
+        variant="contained"
+        fullWidth
+        disabled={isExistingPlan || isAlreadyActive}
+        onClick={() => {
+          if (isAlreadyActive || isExistingPlan) return;
+          if (isAdded) onRemove();
+          else onAdd();
+        }}
+        sx={{
+          fontSize: T.md, fontWeight: 700, textTransform: "none",
+          borderRadius: 2, boxShadow: "none", py: 1.2, color: COLORS.white,
+          background: isAlreadyActive
+            ? "linear-gradient(135deg,#4cb04f 0%,#2e7d32 100%)"
+            : isMostPopular
+            ? "linear-gradient(135deg,#ff9800 0%,#ff6f00 100%)"
+            : `linear-gradient(135deg,${COLORS.primary} 0%,${COLORS.primaryDark} 100%)`,
+          "&:hover": {
+            boxShadow: "none", opacity: 0.9,
+          },
+          "&.Mui-disabled": { color: COLORS.white, opacity: 0.75 },
+          opacity: isExistingPlan || isAlreadyActive ? 0.75 : 1,
+        }}
+      >
+        {isAlreadyActive ? "✓ Active" : isExistingPlan ? "In Profile" : isAdded ? "Remove Plan" : "Add Plan"}
+      </Button>
+    </Box>
+  );
+};
+
 // ─── StatCard ─────────────────────────────────────────────────────────────────
 const StatCard = ({ label, value, sub, fullWidth }) => (
   <Box sx={{
@@ -453,21 +530,29 @@ const MobilePackageSelection = ({
   upgradePlanId,
   hideListingPlans = false,
   handleAddListingPlanProp,
+   sectionExpanded, 
+    onSectionChange,  
 }) => {
   const [expandedGroup, setExpandedGroup] = useState(null);
   const [snack, setSnack] = useState({ open: false, msg: "", sev: "info" });
 
-  const listingScrollRef = useRef(null);
-  const scrollListingLeft = () => {
-    if (listingScrollRef.current) {
-      listingScrollRef.current.scrollBy({ left: -280, behavior: "smooth" });
+  // ── Active listing tab state ──────────────────────────────────────────────
+  const listingPlans = useMemo(
+    () =>
+      plans
+        .filter((plan) => plan.packages?.length === 1 && plan.planName?.toLowerCase() !== "free")
+        .sort((a, b) => (a.packages?.[0]?.amount || 0) - (b.packages?.[0]?.amount || 0)),
+    [plans]
+  );
+
+  const [activeListingId, setActiveListingId] = useState(null);
+
+  // Auto-select first listing plan tab when plans load
+  useEffect(() => {
+    if (listingPlans.length > 0 && !activeListingId) {
+      setActiveListingId(listingPlans[0]._id);
     }
-  };
-  const scrollListingRight = () => {
-    if (listingScrollRef.current) {
-      listingScrollRef.current.scrollBy({ left: 280, behavior: "smooth" });
-    }
-  };
+  }, [listingPlans]);
 
   // ── Derived data ─────────────────────────────────────────────────────────────
   const selectedPlan = useMemo(
@@ -666,12 +751,15 @@ const MobilePackageSelection = ({
     setCheckedItems, openSnack, setPendingSelection, setOpenConfirmDialog,
   ]);
 
-  const listingPlans = useMemo(
-    () =>
-      plans
-        .filter((plan) => plan.packages?.length === 1 && plan.planName?.toLowerCase() !== "free")
-        .sort((a, b) => (a.packages?.[0]?.amount || 0) - (b.packages?.[0]?.amount || 0)),
-    [plans]
+  // ─── Active listing plan detail ─────────────────────────────────────────────
+  const activeListing = useMemo(
+    () => listingPlans.find((p) => p._id === activeListingId),
+    [listingPlans, activeListingId]
+  );
+
+  const maxListingPrice = useMemo(
+    () => Math.max(...listingPlans.map((p) => p.packages?.[0]?.amount || 0)),
+    [listingPlans]
   );
 
   // ── Render ────────────────────────────────────────────────────────────────────
@@ -679,7 +767,12 @@ const MobilePackageSelection = ({
     <Box sx={{ width: "100%" }}>
 
       {/* ── INVESTOR LEAD PLANS ── */}
-      <SectionAccordion title="Investor Lead Plans" defaultExpanded>
+ <SectionAccordion 
+  title="Investor Lead Plans" 
+  defaultExpanded
+  expanded={sectionExpanded === "investor"}
+  onChange={(isOpen) => onSectionChange?.("investor")(isOpen)}
+>
         <Box sx={{ px: 2, textAlign: "center" }}>
           <Typography sx={{ fontSize: "1.4rem", fontWeight: 700, color: COLORS.black, mb: 0.5 }}>
             INVESTOR LEAD PLANS
@@ -709,6 +802,7 @@ const MobilePackageSelection = ({
               </Typography>
             </Box>
 
+            {/* ── Campaign period pill tabs ── */}
             <Box sx={{ display: "flex", backgroundColor: COLORS.grey[100], borderRadius: 4, p: 0.5, position: "relative" }}>
               <Box sx={{
                 position: "absolute", height: "calc(100% - 8px)", top: 4,
@@ -801,190 +895,157 @@ const MobilePackageSelection = ({
 
       {/* ── BRAND LISTING PLANS ── */}
       {!hideListingPlans && listingPlans.length > 0 && (
-        <SectionAccordion title="Brand Listing Plans">
-          <Box sx={{ px: 2, textAlign: "center" }}>
-            <Typography sx={{ fontSize: "1.4rem", fontWeight: 700, color: COLORS.black, mb: 0.5 }}>
+          <Box id="brand-listing-section">
+     <SectionAccordion 
+  title="Brand Listing Plans"
+  expanded={sectionExpanded === "listing"}
+  onChange={(isOpen) => onSectionChange?.("listing")(isOpen)}
+>
+          <Box sx={{ px: 2, pb: 2 }}>
+            <Typography sx={{ fontSize: "1.4rem", fontWeight: 700, color: COLORS.black, mb: 0.5, textAlign: "center" }}>
               BRAND LISTING PLANS
             </Typography>
-            <Typography sx={{ fontSize: T.xs, color: COLORS.grey[600], mb: 2 }}>
+            <Typography sx={{ fontSize: T.xs, color: COLORS.grey[600], mb: 2, textAlign: "center" }}>
               List your Brand to increase its Digital Visibility
             </Typography>
 
-            <Box sx={{ position: "relative", display: "flex", alignItems: "center", gap: 1 }}>
-              <IconButton
-                onClick={scrollListingLeft}
-                sx={{
-                  position: "absolute", left: -10, zIndex: 2,
-                  backgroundColor: COLORS.white, boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-                  "&:hover": { backgroundColor: COLORS.grey[100] }, width: 32, height: 32,
-                  display: { xs: "flex", sm: "flex" },
-                }}
-              >
-                <KeyboardArrowLeftIcon />
-              </IconButton>
+            {/* ── Single line scrollable tabs ── */}
+            <Box sx={{
+              display: "flex",
+              overflowX: "auto",
+              gap: 0.3,
+              // ml:-1.4,
+              pb: 1,
+              // mb: 1,
+              scrollbarWidth: "thin",
+              "&::-webkit-scrollbar": {
+                height: 4,
+              },
+              "&::-webkit-scrollbar-track": {
+                backgroundColor: COLORS.grey[200],
+                borderRadius: 4,
+              },
+              "&::-webkit-scrollbar-thumb": {
+                backgroundColor: COLORS.primary,
+                borderRadius: 4,
+              },
+            }}>
+              {listingPlans.map((plan) => {
+                const isActive = activeListingId === plan._id;
+                const pkg = plan.packages?.[0] || {};
+                const isAdded = paymentSummary.some((g) => g.groupKey === `listing-${plan._id}`);
+                const isMostPopular = (pkg.amount || 0) === maxListingPrice && maxListingPrice > 0;
 
-              <Box
-                ref={listingScrollRef}
-                sx={{
-                  width: "100%", overflowX: "auto", overflowY: "hidden",
-                  scrollbarWidth: "thin",
-                  "&::-webkit-scrollbar": { height: 4 },
-                  "&::-webkit-scrollbar-track": { backgroundColor: COLORS.grey[200], borderRadius: 3 },
-                  "&::-webkit-scrollbar-thumb": { backgroundColor: COLORS.primary, borderRadius: 3 },
-                  scrollBehavior: "smooth", pb: 1, mx: 2.5,
-                }}
-              >
-                <Box sx={{ display: "inline-flex", gap: 2, p: 1, minWidth: "min-content", alignItems: "stretch" }}>
-                  {listingPlans.map((plan, index) => {
-                    const pkg = plan.packages?.[0] || {};
-                    const groupKey = `listing-${plan._id}`;
-                    const isAdded = paymentSummary.some((g) => g.groupKey === groupKey);
-                    const isAlreadyActive = (() => {
-                      if (!data?.packages) return false;
-                      return data.packages.some((p) => {
-                        const type = (p.packagesType || "").toUpperCase();
-                        if (type !== "LISTING") return false;
-                        const inv = p.investmetPackages || p.InvestmetPackages || p.packages || [];
-                        return inv.some(
-                          (ip) =>
-                            (ip.packagesName || "").toLowerCase() === plan.planName.toLowerCase() &&
-                            ip.isActive && !ip.isPending
-                        );
-                      });
-                    })();
-                    const isExistingPlan = isUpgradeMode && upgradePlanId === plan._id;
-                    const maxPrice = Math.max(...listingPlans.map(p => p.packages?.[0]?.amount || 0));
-                    const isMostPopular = (pkg.amount || 0) === maxPrice && maxPrice > 0;
-
-                    const handleAddListingPlan = () => {
-                      if (isExistingPlan) {
-                        openSnack("You already have this plan. Please upgrade to a different plan.", "warning");
-                        return;
-                      }
-                      const existingListingPlan = paymentSummary.some((g) => g.isListingPlan === true);
-                      if (existingListingPlan) {
-                        openSnack("You can select only one listing plan at a time.", "warning");
-                        return;
-                      }
-                      if (handleAddListingPlanProp) {
-                        handleAddListingPlanProp(plan, pkg);
-                        setTimeout(() => scrollToPaymentSummary?.(), 300);
-                      } else {
-                        openSnack("Add listing plan functionality not wired up", "info");
-                      }
-                    };
-
-                    return (
-                      <Card
-                        key={plan._id}
-                        elevation={0}
-                        sx={{
-                          width: { xs: 270, sm: 250 }, flexShrink: 0,
-                          border: `1.5px solid ${isAdded ? COLORS.primary : COLORS.border}`,
-                          borderRadius: 2.5, backgroundColor: "#fff0c5",
-                          overflow: "hidden", position: "relative",
-                          display: "flex", flexDirection: "column",
-                        }}
-                      >
-                        {isMostPopular && (
-                          <Box sx={{
-                            position: "absolute", top: 20, left: -70,
-                            transform: "rotate(-54deg)",
-                            background: "linear-gradient(135deg,#ff9800 0%,#ff6f00 100%)",
-                            color: "#fff", px: 3, py: 0.5, fontSize: 10, fontWeight: 700,
-                            textAlign: "center", width: 120,
-                            boxShadow: "0 2px 4px rgba(0,0,0,0.1)", zIndex: 1,
-                          }}>
-                            🔥 Most Popular
-                          </Box>
-                        )}
-
-                        <CardContent sx={{
-                          p: { xs: 1, sm: 2 }, flex: 1,
-                          display: "flex", flexDirection: "column",
-                          alignItems: "center", textAlign: "center",
-                        }}>
-                          <Typography sx={{ fontWeight: 700, fontSize: T.md, color: COLORS.black, mb: 0.5, textAlign: "center" }}>
-                            {plan.planName}
-                          </Typography>
-
-                          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 0.5, mb: 2 }}>
-                            <CalendarMonthRoundedIcon sx={{ fontSize: 16, color: COLORS.black[500] }} />
-                            <Typography sx={{ fontSize: T.small, color: COLORS.black[600] }}>
-                              {pkg.validityDays} Days
-                            </Typography>
-                          </Box>
-
-                          <Typography sx={{ fontSize: T.xl, fontWeight: 800, color: isMostPopular ? "#ff9800" : COLORS.primary, mb: 2 }}>
-                            {fmtINR(pkg.amount)}
-                          </Typography>
-
-                          <Button
-                            variant="contained"
-                            size="medium"
-                            disabled={isExistingPlan || isAlreadyActive}
-                            onClick={() => {
-                              if (isAlreadyActive || isExistingPlan) return;
-                              if (isAdded) handleRemoveListingPlan(plan._id);
-                              else handleAddListingPlan();
-                            }}
-                            fullWidth
-                            sx={{
-                              fontSize: T.sm, fontWeight: 700, textTransform: "none",
-                              borderRadius: 2, boxShadow: "none", py: 1, color: COLORS.white,
-                              background: isAlreadyActive
-                                ? "linear-gradient(135deg,#4cb04f 0%,#2e7d32 100%)"
-                                : isMostPopular
-                                ? "linear-gradient(135deg,#ff9800 0%,#ff6f00 100%)"
-                                : `linear-gradient(135deg,${COLORS.primary} 0%,${COLORS.white} 100%)`,
-                              "&:hover": {
-                                boxShadow: "none", opacity: 0.9,
-                                background: isAlreadyActive
-                                  ? "linear-gradient(135deg,#4cb04f 0%,#2e7d32 100%)"
-                                  : isMostPopular
-                                  ? "linear-gradient(135deg,#ff9800 0%,#ff6f00 100%)"
-                                  : `linear-gradient(135deg,${COLORS.primaryDark} 0%,${COLORS.primary} 100%)`,
-                              },
-                              "&.Mui-disabled": { color: COLORS.white, opacity: 0.75 },
-                              opacity: isExistingPlan || isAlreadyActive ? 0.75 : 1,
-                            }}
-                          >
-                            {isAlreadyActive ? "✓ Active" : isExistingPlan ? "In Profile" : isAdded ? "Remove" : "Add Plan"}
-                          </Button>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
-                </Box>
-              </Box>
-
-              <IconButton
-                onClick={scrollListingRight}
-                sx={{
-                  position: "absolute", right: -10, zIndex: 2,
-                  backgroundColor: COLORS.white, boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-                  "&:hover": { backgroundColor: COLORS.grey[100] }, width: 32, height: 32,
-                  display: { xs: "flex", sm: "flex" },
-                }}
-              >
-                <KeyboardArrowRightIcon />
-              </IconButton>
+                return (
+                  <Box
+                    key={plan._id}
+                    onClick={() => setActiveListingId(plan._id)}
+                    sx={{
+                      flexShrink: 0,
+                      px: 1.4,
+                      py: 0.5,
+                      borderRadius: "24px",
+                      fontSize: T.sm,
+                      fontWeight: isActive ? 700 : 500,
+                      cursor: "pointer",
+                      whiteSpace: "nowrap",
+                      border: `1.5px solid ${isActive ? COLORS.primary : isAdded ? COLORS.secondary : COLORS.border}`,
+                      backgroundColor: isActive ? COLORS.primary : isAdded ? "rgba(76,176,79,0.08)" : COLORS.white,
+                      color: isActive ? COLORS.white : isAdded ? COLORS.secondary : COLORS.grey[700],
+                      transition: "all 0.2s ease",
+                      display: "flex",
+                      alignItems: "center",
+                      // gap: 0.5,
+                      "&:hover": {
+                        transform: "translateY(-2px)",
+                        boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                      },
+                    }}
+                  >
+                    {isMostPopular && (
+                      <Typography component="span" sx={{ fontSize: "0.7rem" }}></Typography>
+                    )}
+                    {plan.planName}
+                    {isAdded && (
+                      <Typography component="span" sx={{ fontSize: "0.7rem", ml: 0.3 }}>✓</Typography>
+                    )}
+                  </Box>
+                );
+              })}
             </Box>
+
+            {/* ── Selected listing plan detail card ── */}
+            {activeListing && (() => {
+              const pkg = activeListing.packages?.[0] || {};
+              const groupKey = `listing-${activeListing._id}`;
+              const isAdded = paymentSummary.some((g) => g.groupKey === groupKey);
+              const isAlreadyActive = (() => {
+                if (!data?.packages) return false;
+                return data.packages.some((p) => {
+                  const type = (p.packagesType || "").toUpperCase();
+                  if (type !== "LISTING") return false;
+                  const inv = p.investmetPackages || p.InvestmetPackages || p.packages || [];
+                  return inv.some(
+                    (ip) =>
+                      (ip.packagesName || "").toLowerCase() === activeListing.planName.toLowerCase() &&
+                      ip.isActive && !ip.isPending
+                  );
+                });
+              })();
+              const isExistingPlan = isUpgradeMode && upgradePlanId === activeListing._id;
+              const isMostPopular = (pkg.amount || 0) === maxListingPrice && maxListingPrice > 0;
+
+              const handleAddListingPlan = () => {
+                if (isExistingPlan) {
+                  openSnack("You already have this plan. Please upgrade to a different plan.", "warning");
+                  return;
+                }
+                const existingListingPlan = paymentSummary.some((g) => g.isListingPlan === true);
+                if (existingListingPlan) {
+                  openSnack("You can select only one listing plan at a time.", "warning");
+                  return;
+                }
+                if (handleAddListingPlanProp) {
+                  handleAddListingPlanProp(activeListing, pkg);
+                  setTimeout(() => scrollToPaymentSummary?.(), 300);
+                } else {
+                  openSnack("Add listing plan functionality not wired up", "info");
+                }
+              };
+
+              return (
+                <ListingPlanDetail
+                  plan={activeListing}
+                  isAdded={isAdded}
+                  isAlreadyActive={isAlreadyActive}
+                  isExistingPlan={isExistingPlan}
+                  isMostPopular={isMostPopular}
+                  onAdd={handleAddListingPlan}
+                  onRemove={() => handleRemoveListingPlan(activeListing._id)}
+                />
+              );
+            })()}
           </Box>
         </SectionAccordion>
+          </Box>
       )}
 
       {/* Snackbar */}
-      <Snackbar
-        open={snack.open}
-        autoHideDuration={3000}
-        onClose={() => setSnack((s) => ({ ...s, open: false }))}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-      >
-        <Alert severity={snack.sev} variant="filled" sx={{ fontSize: T.sm, fontWeight: 600, borderRadius: 2 }}>
-          {snack.msg}
-        </Alert>
-      </Snackbar>
+    <Snackbar
+  open={snack.open}
+  autoHideDuration={3000}
+  onClose={() => setSnack((s) => ({ ...s, open: false }))}
+  anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+  sx={{
+    '& .MuiSnackbar-root': {
+      bottom: { xs: 70, sm: 80, md: 90 }, // Different for mobile/tablet/desktop
+    },
+  }}
+>
+  <Alert severity={snack.sev} variant="filled" sx={{ fontSize: T.sm, fontWeight: 600, borderRadius: 2 }}>
+    {snack.msg}
+  </Alert>
+</Snackbar>
     </Box>
   );
 };

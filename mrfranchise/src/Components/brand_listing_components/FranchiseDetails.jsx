@@ -1681,7 +1681,7 @@ Franchise Tags
         fontWeight={700}
         sx={{ mb: 3, color: "#ff9800" }}
       >
-        Establishment & Franchise year Details
+        Establishment & Business Year Details
       </Typography>
       <Grid
         container
@@ -1840,7 +1840,7 @@ Franchise Tags
       </Grid>
       {/* Franchise Network */}
       <Typography variant="h6" fontWeight={700} sx={{ color: "#ff9800" }}>
-        Franchise Network
+        Business Network
       </Typography>
       <Grid
         container
@@ -1902,7 +1902,7 @@ Franchise Tags
         fontWeight={700}
         sx={{ mt: 2, color: "#ff9800" }}
       >
-        Franchise Business Models
+       Business Models
       </Typography>
       {errors.fico && typeof errors.fico === "string" && (
         <Typography color="error" sx={{ mb: 2 }}>
@@ -1929,7 +1929,7 @@ Franchise Tags
             required
             size="medium"
           >
-            <InputLabel>Franchise Model</InputLabel>
+            <InputLabel>Business Model</InputLabel>
             <Select
               value={currentFicoModel.franchiseModel}
               onChange={handleFicoChange}
@@ -1955,7 +1955,7 @@ Franchise Tags
             required
             size="medium"
           >
-            <InputLabel>Franchise Type</InputLabel>
+            <InputLabel>Business Type</InputLabel>
             <Select
               value={currentFicoModel.franchiseType}
               onChange={handleFicoChange}

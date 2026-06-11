@@ -31,17 +31,32 @@ import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
 // ─── Mobile-only Section Accordion ───────────────────────────────────────────
-const SectionAccordion = ({ title, children, defaultExpanded = false, COLORS }) => {
+const SectionAccordion = ({ 
+  title, 
+  children, 
+  defaultExpanded = false, 
+  COLORS,
+  expanded: controlledExpanded,       // ← new
+  onChange: controlledOnChange,       // ← new
+}) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  const [expanded, setExpanded] = useState(defaultExpanded);
+  const [internalExpanded, setInternalExpanded] = useState(defaultExpanded);
+
+  const isControlled = controlledExpanded !== undefined;
+  const isExpanded = isControlled ? controlledExpanded : internalExpanded;
+
+  const handleChange = (_, val) => {
+    if (isControlled) controlledOnChange?.(val);
+    else setInternalExpanded(val);
+  };
 
   if (!isMobile) return <>{children}</>;
 
   return (
     <Accordion
-      expanded={expanded}
-      onChange={(_, val) => setExpanded(val)}
+      expanded={isExpanded}
+      onChange={handleChange}
       disableGutters
       elevation={0}
       sx={{
@@ -80,6 +95,8 @@ const PaymentSummaryTable = ({
   handleShowStates,
   setItemToRemove,
   setOpenRemoveConfirmDialog,
+  sectionExpanded,       
+  onSectionChange,  
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -731,7 +748,8 @@ const PaymentSummaryTable = ({
         }}
       >
         {/* ── Wrap entire summary in mobile accordion ── */}
-        <SectionAccordion title="Summary" defaultExpanded COLORS={COLORS}>
+        <SectionAccordion title="Summary" defaultExpanded COLORS={COLORS} expanded={sectionExpanded}
+  onChange={onSectionChange}>
           {/* Header */}
           <Box sx={{ mb: 2, pt: { xs: 1, sm: 0 } }}>
             <Typography
