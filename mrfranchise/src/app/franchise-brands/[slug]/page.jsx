@@ -1,7 +1,7 @@
 import BrandClient from "./BrandClient";
 
 const SITE_URL = "https://mrfranchise.in";
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://mrfranchisebackend.mrfranchise.in";
 
 function slugify(text = "") {
   return text
