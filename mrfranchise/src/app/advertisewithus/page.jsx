@@ -18,8 +18,8 @@ const AdvertisingPage = () => {
   const sentinelRef = useRef(null);
   const [openModal, setOpenModal] = useState(false);
   const [investmentRangeData, setInvestmentRangeData] = useState(null);
-  const [statCards, setStatCards] = useState([]);      // ← lift state up from PackageSelection
-  const [totalAmount, setTotalAmount] = useState(0);   // ← lift state up from PackageSelection
+  const [statCards, setStatCards] = useState([]);
+  const [totalAmount, setTotalAmount] = useState(0);
 
   const handleAddInvestmentRange = (range, investmentRangeLabel) => {
     setInvestmentRangeData({ range, investmentRangeLabel });
@@ -35,23 +35,17 @@ const AdvertisingPage = () => {
     <Box>
       <Navbar />
 
-      <Box sx={{ p: 3 }}>
+      <Box sx={{ p: { xs: 1, sm: 3, md: 4 }, pt: { xs: 3, sm: 4, md: 5 } }}>
 
-        {/* PackageSelection renders the plan cards + Selected Plan Summary table */}
+        {/* Single PackageSelection — sections become accordions on mobile inside */}
         <PackageSelection
           onAddInvestmentRange={handleAddInvestmentRange}
-          
-          onSummaryChange={(cards, amount) => {   // ← PackageSelection calls this when selection changes
+          onSummaryChange={(cards, amount) => {
             setStatCards(cards);
             setTotalAmount(amount);
           }}
         />
 
-        {/* 
-          ↓ sentinel sits RIGHT HERE — after the summary table,
-            before the footer. Bar will render inline here,
-            then go fixed as user scrolls up, then park here again near footer.
-        */}
         <Box ref={sentinelRef} sx={{ mt: 2 }} />
 
         <PaymentBottomBar
@@ -61,16 +55,9 @@ const AdvertisingPage = () => {
           loading={false}
           handleProceedToPayment={() => {}}
         />
-
       </Box>
 
-      <Dialog
-        open={openModal}
-        onClose={handleCloseModal}
-        maxWidth="600"
-        fullWidth
-        scroll="paper"
-      >
+      <Dialog open={openModal} onClose={handleCloseModal} maxWidth="600" fullWidth scroll="paper">
         <DialogTitle sx={{ backgroundColor: '#f8f9fa', m: 0, p: 2, pr: 6 }}>
           You Are Adding a New Franchise Business Model For This Investment Range — {investmentRangeData?.range}
           <Typography variant="subtitle2" color="textSecondary">
@@ -80,7 +67,6 @@ const AdvertisingPage = () => {
             <CloseIcon />
           </IconButton>
         </DialogTitle>
-
         <DialogContent dividers ref={dialogScrollRef} sx={{ p: 2 }}>
           <PaymentBrandUpdate
             isEditing={true}
@@ -90,14 +76,12 @@ const AdvertisingPage = () => {
             scrollContainerRef={dialogScrollRef}
           />
         </DialogContent>
-
         <DialogActions sx={{ px: 3, py: 2 }}>
           <Button onClick={handleCloseModal} color="inherit">Close</Button>
         </DialogActions>
       </Dialog>
 
       <Footer id="footer" />
-
     </Box>
   );
 };
