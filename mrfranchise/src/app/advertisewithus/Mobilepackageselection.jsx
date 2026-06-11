@@ -19,8 +19,14 @@ import {
   Snackbar,
   Alert,
   CircularProgress,
+  CardContent,
   Card,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
 } from "@mui/material";
+import { useTheme } from "@mui/material/styles";
+import useMediaQuery from "@mui/material/useMediaQuery";
 import CalendarMonthRoundedIcon from "@mui/icons-material/CalendarMonthRounded";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
@@ -30,8 +36,11 @@ import EditIcon from "@mui/icons-material/Edit";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import WorkspacePremiumRoundedIcon from "@mui/icons-material/WorkspacePremiumRounded";
 import StarBorderRoundedIcon from "@mui/icons-material/StarBorderRounded";
+import KeyboardArrowLeftIcon from "@mui/icons-material/KeyboardArrowLeft";
+import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
-// ─── Color palette (matches desktop) ────────────────────────────────────────
+// ─── Color palette ────────────────────────────────────────────────────────────
 const COLORS = {
   primary: "#FF9900",
   primaryDark: "#E68A00",
@@ -65,77 +74,145 @@ const T = {
   xl: "1.125rem",
 };
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-const fmtINR = (n) =>
-  "₹" + Math.round(n || 0).toLocaleString("en-IN");
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+const fmtINR = (n) => "₹" + Math.round(n || 0).toLocaleString("en-IN");
 
-// ─── Leads Stepper Component ───────────────────────────────────────────────
-const LeadsStepper = ({ value, options, onChange }) => {
-  const idx = options.indexOf(value);
-  const dec = () => idx > 0 && onChange(options[idx - 1]);
-  const inc = () => idx < options.length - 1 && onChange(options[idx + 1]);
+const getUniqueStatesForGroup = (planId, label, items, statesByInvestmentRange) => {
+  const set = new Set();
+  items.forEach((item) => {
+    const key = `${planId}__${label}__${item.range}`;
+    const states = statesByInvestmentRange[key];
+    if (states && states.length > 0) {
+      states.forEach((s) => set.add(s));
+      return;
+    }
+    const fallbackKey = Object.keys(statesByInvestmentRange).find((k) => {
+      const parts = k.split("__");
+      return (
+        parts[parts.length - 1] === item.range &&
+        parts[parts.length - 2] === label
+      );
+    });
+    if (fallbackKey) {
+      statesByInvestmentRange[fallbackKey].forEach((s) => set.add(s));
+    }
+  });
+  return set;
+};
+
+const getUniqueStatesForCheckedItems = (planId, label, items, checkedItems, statesByInvestmentRange) => {
+  const set = new Set();
+  items.forEach((item) => {
+    const id = `${planId}-${label}-${item.range}`;
+    if (!checkedItems[id]) return;
+
+    const key = `${planId}__${label}__${item.range}`;
+    const states = statesByInvestmentRange[key];
+    if (states && states.length > 0) {
+      states.forEach((s) => set.add(s));
+      return;
+    }
+    const fallbackKey = Object.keys(statesByInvestmentRange).find((k) => {
+      const parts = k.split("__");
+      return (
+        parts[parts.length - 1] === item.range &&
+        parts[parts.length - 2] === label
+      );
+    });
+    if (fallbackKey) {
+      statesByInvestmentRange[fallbackKey].forEach((s) => set.add(s));
+    }
+  });
+  return set;
+};
+
+// ─── Mobile-only Section Accordion ───────────────────────────────────────────
+const SectionAccordion = ({ title, children, defaultExpanded = false }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const [expanded, setExpanded] = useState(defaultExpanded);
+
+  // On desktop: render children directly, no accordion chrome
+  if (!isMobile) return <>{children}</>;
 
   return (
-    <Box sx={{ display: "flex", alignItems: "center", gap: 0 }}>
-      <IconButton
-        onClick={dec}
-        disabled={idx <= 0}
-        size="small"
+    <Accordion
+      expanded={expanded}
+      onChange={(_, val) => setExpanded(val)}
+      disableGutters
+      elevation={0}
+      sx={{
+        mb: 1.5,
+        border: `1px solid ${COLORS.border}`,
+        borderRadius: "12px !important",
+        overflow: "hidden",
+        "&:before": { display: "none" },
+      }}
+    >
+      <AccordionSummary
+        expandIcon={<ExpandMoreIcon sx={{ color: COLORS.primary }} />}
         sx={{
-          width: 36,
-          height: 36,
-          border: `1px solid ${COLORS.border}`,
-          borderRadius: "8px 0 0 8px",
-          backgroundColor: COLORS.white,
-          "&:hover": { backgroundColor: COLORS.grey[100] },
-          "&.Mui-disabled": { opacity: 0.35 },
+          backgroundColor: "#fff8ee",
+          minHeight: 52,
+          px: 2,
+          "& .MuiAccordionSummary-content": { my: 0 },
         }}
       >
-        <RemoveIcon sx={{ fontSize: 16 }} />
-      </IconButton>
+        <Typography sx={{ fontWeight: 700, fontSize: T.lg, color: COLORS.black }}>
+          {title}
+        </Typography>
+      </AccordionSummary>
+      <AccordionDetails sx={{ p: 0 }}>
+        {children}
+      </AccordionDetails>
+    </Accordion>
+  );
+};
 
-      <Box
-        sx={{
-          width: 50,
-          height: 36,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          borderTop: `1px solid ${COLORS.border}`,
-          borderBottom: `1px solid ${COLORS.border}`,
-          backgroundColor: COLORS.white,
-        }}
-      >
-        <Typography sx={{ fontSize: T.md, fontWeight: 600 }}>{value}</Typography>
+// ─── Leads Stepper ────────────────────────────────────────────────────────────
+const LeadsStepper = ({ value, options, onChange }) => {
+  const idx = options.indexOf(value);
+  const dec = (e) => { e.stopPropagation(); if (idx > 0) onChange(options[idx - 1]); };
+  const inc = (e) => { e.stopPropagation(); if (idx < options.length - 1) onChange(options[idx + 1]); };
+
+  return (
+    <Box sx={{
+      display: "flex", alignItems: "flex-end",
+      backgroundColor: COLORS.white,
+      border: `1.5px solid ${COLORS.primary}`,
+      borderRadius: "12px", overflow: "hidden",
+      boxShadow: "0 2px 8px rgba(255,153,0,0.15)",
+    }}>
+      <Box onClick={dec} sx={{
+        width: 24, height: 34, display: "flex", alignItems: "center", justifyContent: "center",
+        cursor: idx <= 0 ? "not-allowed" : "pointer",
+        transition: "background 0.2s",
+        "&:active": { backgroundColor: idx <= 0 ? COLORS.grey[100] : "rgba(255,153,0,0.2)" },
+      }}>
+        <RemoveIcon sx={{ fontSize: 20, color: idx <= 0 ? COLORS.grey[400] : COLORS.primary, fontWeight: 900 }} />
       </Box>
 
-      <IconButton
-        onClick={inc}
-        disabled={idx >= options.length - 1}
-        size="small"
-        sx={{
-          width: 36,
-          height: 36,
-          border: `1px solid ${COLORS.border}`,
-          borderRadius: "0 8px 8px 0",
-          backgroundColor: COLORS.white,
-          "&:hover": { backgroundColor: COLORS.grey[100] },
-          "&.Mui-disabled": { opacity: 0.35 },
-        }}
-      >
-        <AddIcon sx={{ fontSize: 16 }} />
-      </IconButton>
+      <Box sx={{ minWidth: 24, height: 34, display: "flex", alignItems: "center", justifyContent: "center", px: 1, backgroundColor: COLORS.white }}>
+        <Typography sx={{ fontSize: "0.8rem", fontWeight: 800, color: COLORS.primary, letterSpacing: "-0.01em", lineHeight: 1 }}>
+          {value}
+        </Typography>
+      </Box>
+
+      <Box onClick={inc} sx={{
+        width: 24, height: 34, display: "flex", alignItems: "center", justifyContent: "center",
+        cursor: idx >= options.length - 1 ? "not-allowed" : "pointer",
+        transition: "background 0.2s",
+        "&:active": { backgroundColor: idx >= options.length - 1 ? COLORS.grey[100] : "rgba(255,153,0,0.2)" },
+      }}>
+        <AddIcon sx={{ fontSize: 20, color: idx >= options.length - 1 ? COLORS.grey[400] : COLORS.primary, fontWeight: 900 }} />
+      </Box>
     </Box>
   );
 };
 
-
-/** Single investment-range group card with leads stepper and state count in single row */
+// ─── RangeGroupCard ───────────────────────────────────────────────────────────
 const RangeGroupCard = ({
   label,
-  price,
-  totalLeads,
-  totalStates,
   items,
   expanded,
   onToggle,
@@ -143,45 +220,30 @@ const RangeGroupCard = ({
   onCheck,
   onEditStates,
   planId,
-  getRangeKey,
   statesByInvestmentRange,
   getStateCountForRange,
   inPaymentSet,
   availableLeads,
   getGroupLeads,
   handleLeadsChange,
+  leadsDropdownData,
   leadsKey,
-   pricePerState,
+  pricePerState,
 }) => {
   const currentLeads = getGroupLeads ? getGroupLeads(label) : 0;
-  
-  // Calculate total states for this group
-  const totalStatesCount = items.reduce(
-    (s, item) => s + getStateCountForRange(label, item.range, planId),
-    0
-  );
-  
+
+  const totalStatesCount = useMemo(() => {
+    return getUniqueStatesForGroup(planId, label, items, statesByInvestmentRange).size;
+  }, [planId, label, items, statesByInvestmentRange]);
+
   return (
-    <Box
-      sx={{
-        border: `1px solid ${COLORS.border}`,
-        borderRadius: 2.5,
-        overflow: "hidden",
-        mb: 1.5,
-        backgroundColor: COLORS.white,
-      }}
-    >
-      {/* Header row */}
+    <Box sx={{ border: `1px solid ${COLORS.border}`, borderRadius: 2.5, overflow: "hidden", mb: 1.5, backgroundColor: COLORS.white }}>
+      {/* ── Header row ── */}
       <Box
         onClick={onToggle}
         sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          px: 2,
-          py: 1.4,
-          cursor: "pointer",
-          backgroundColor: "#fff0c5",
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          px: 2, py: 1.4, cursor: "pointer", backgroundColor: "#fff0c5",
           "&:active": { backgroundColor: "#ffe5a0" },
         }}
       >
@@ -190,125 +252,104 @@ const RangeGroupCard = ({
         </Typography>
 
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          {/* <Typography
-            sx={{ fontSize: T.sm, color: COLORS.grey[700], fontWeight: 500 }}
-          >
-            {fmtINR(price)}
-          </Typography> */}
-          {/* <Chip
-            label={`${totalLeads.toLocaleString("en-IN")} leads`}
-            size="small"
-            sx={{
-              height: 22,
-              fontSize: T.xs,
-              fontWeight: 600,
-              backgroundColor: COLORS.grey[200],
-              color: COLORS.grey[700],
-              "& .MuiChip-label": { px: 1 },
-            }}
-          /> */}
-          {expanded ? (
-            <KeyboardArrowUpIcon sx={{ fontSize: 18, color: COLORS.grey[500] }} />
+          {availableLeads && availableLeads.length > 1 ? (
+            <LeadsStepper
+              value={currentLeads}
+              options={availableLeads}
+              onChange={(val) => handleLeadsChange(leadsKey, val)}
+            />
           ) : (
-            <KeyboardArrowDownIcon sx={{ fontSize: 18, color: COLORS.grey[500] }} />
+            <Box sx={{ display: "flex", gap: 0.5 }}>
+              {availableLeads?.map((opt) => {
+                const sel = currentLeads === opt;
+                return (
+                  <Box key={opt} onClick={(e) => { e.stopPropagation(); handleLeadsChange(leadsKey, opt); }}
+                    sx={{
+                      px: 1.5, py: 0.5, borderRadius: 1.5,
+                      border: `1px solid ${sel ? COLORS.secondary : COLORS.border}`,
+                      backgroundColor: sel ? COLORS.secondary : COLORS.white,
+                      color: sel ? COLORS.white : COLORS.black,
+                      fontSize: T.sm, fontWeight: 600, cursor: "pointer",
+                    }}>
+                    {opt}
+                  </Box>
+                );
+              })}
+            </Box>
           )}
+
+          {expanded
+            ? <KeyboardArrowUpIcon sx={{ fontSize: 18, color: COLORS.grey[500] }} />
+            : <KeyboardArrowDownIcon sx={{ fontSize: 18, color: COLORS.grey[500] }} />
+          }
         </Box>
       </Box>
 
-      {/* Expanded Content - Contains Leads Stepper and Sub-ranges */}
+      {/* ── Expanded content ── */}
       <Collapse in={expanded}>
         <Box sx={{ backgroundColor: COLORS.grey[50], p: 2 }}>
-          {/* Leads per state + State Count - SINGLE ROW */}
-          <Box
-            sx={{
-              display: "flex",
-              // alignItems: "center",
-              justifyContent: "space-between",
-              mb: 2,
-              flexWrap: "wrap",
-              gap: 1,
-            }}
-          >
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1, justifyContent:"space-between" }}>
-              <Typography
-                sx={{
-                  fontSize: T.sm,
-                  fontWeight: 600,
-                  color: COLORS.grey[700],
-                }}
-              >
-                Leads per state:
-              </Typography>
-              {availableLeads && availableLeads.length > 1 ? (
-                <LeadsStepper
-                  value={currentLeads}
-                  options={availableLeads}
-                  onChange={(val) => handleLeadsChange(leadsKey, val)}
-                />
-              ) : (
-                <Box sx={{ display: "flex", gap: 1 }}>
-                  {availableLeads?.map((opt) => {
-                    const sel = currentLeads === opt;
-                    return (
-                      <Box
-                        key={opt}
-                        onClick={() => handleLeadsChange(leadsKey, opt)}
-                        sx={{
-                          px: 1.5,
-                          py: 0.5,
-                          borderRadius: 1.5,
-                          border: `1px solid ${sel ? COLORS.secondary : COLORS.border}`,
-                          backgroundColor: sel ? COLORS.secondary : COLORS.white,
-                          color: sel ? COLORS.white : COLORS.black,
-                          fontSize: T.sm,
-                          fontWeight: 600,
-                          cursor: "pointer",
-                        }}
-                      >
-                        {opt}
-                      </Box>
-                    );
-                  })}
+
+          {(() => {
+            const leads = currentLeads || 0;
+            const checkedUniqueStates = getUniqueStatesForCheckedItems(
+              planId, label, items, checkedItems, statesByInvestmentRange
+            );
+            const totalUniqueStates = checkedUniqueStates.size;
+            const lKey = `${planId}_${label}`;
+            const avail = leadsDropdownData ? (leadsDropdownData[lKey] || []) : [];
+            const minLeads = avail.length > 0 ? Math.min(...avail) : 1;
+            const divisor = minLeads > 0 ? minLeads : 1;
+            const groupTotalLeads = leads * totalUniqueStates;
+            const groupAmount = (pricePerState / divisor) * totalUniqueStates * leads;
+
+            return (
+              <Box sx={{ display: "flex", gap: 0.8, mb: 2, borderRadius: 2, backgroundColor: COLORS.white }}>
+                <Box sx={{
+                  flex: 1, display: "flex", flexDirection: "column", alignItems: "center",
+                  backgroundColor: "rgba(255,153,0,0.06)", border: "1px solid rgba(255,153,0,0.18)",
+                  borderRadius: "10px", px: 1, py: 0.8,
+                }}>
+                  <Typography sx={{ fontSize: "0.55rem", color: COLORS.grey[600], fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", lineHeight: 1, mb: 0.4, whiteSpace: "nowrap" }}>
+                    Per State
+                  </Typography>
+                  <Typography sx={{ fontSize: "0.82rem", fontWeight: 800, color: COLORS.primaryDark, lineHeight: 1 }}>
+                    {fmtINR(pricePerState || 0)}
+                  </Typography>
                 </Box>
-              )}
-            </Box>
 
-            {/* State Count Badge */}
-            {/* <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                gap: 0.5,
-                backgroundColor: COLORS.grey[200],
-                borderRadius: 2,
-                px: 1.5,
-                py: 0.5,
-              }}
-            >
-              <Typography
-                sx={{
-                  fontSize: T.sm,
-                  fontWeight: 600,
-                  color: COLORS.grey[700],
-                }}
-              >
-                States:
-              </Typography>
-              <Typography
-                sx={{
-                  fontSize: T.md,
-                  fontWeight: 700,
-                  color: COLORS.primary,
-                }}
-              >
-                {totalStatesCount}
-              </Typography>
-            </Box> */}
-          </Box>
+                <Box sx={{ width: "1px", backgroundColor: "rgba(255,153,0,0.15)", borderRadius: 1 }} />
 
-          {/* <Divider sx={{ my: 1.5 }} /> */}
+                <Box sx={{
+                  flex: 1, display: "flex", flexDirection: "column", alignItems: "center",
+                  backgroundColor: "rgba(76,176,79,0.06)", border: "1px solid rgba(76,176,79,0.18)",
+                  borderRadius: "10px", px: 1, py: 0.8,
+                }}>
+                  <Typography sx={{ fontSize: "0.55rem", color: COLORS.grey[600], fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", lineHeight: 1, mb: 0.4, whiteSpace: "nowrap" }}>
+                    Total Leads
+                  </Typography>
+                  <Typography sx={{ fontSize: "0.82rem", fontWeight: 800, color: COLORS.secondary, lineHeight: 1 }}>
+                    {groupTotalLeads.toLocaleString("en-IN")}
+                  </Typography>
+                </Box>
 
-          {/* Sub-range rows */}
+                <Box sx={{ width: "1px", backgroundColor: "rgba(255,153,0,0.15)", borderRadius: 1 }} />
+
+                <Box sx={{
+                  flex: 1, display: "flex", flexDirection: "column", alignItems: "center",
+                  backgroundColor: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.08)",
+                  borderRadius: "10px", px: 1, py: 0.8,
+                }}>
+                  <Typography sx={{ fontSize: "0.55rem", color: COLORS.grey[600], fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", lineHeight: 1, mb: 0.4, whiteSpace: "nowrap" }}>
+                    Total Amount
+                  </Typography>
+                  <Typography sx={{ fontSize: "0.82rem", fontWeight: 800, color: COLORS.black, lineHeight: 1 }}>
+                    {fmtINR(groupAmount)}
+                  </Typography>
+                </Box>
+              </Box>
+            );
+          })()}
+
           {items.map((item, i) => {
             const id = `${planId}-${label}-${item.range}`;
             const isChecked = checkedItems[id] || false;
@@ -316,65 +357,43 @@ const RangeGroupCard = ({
             const stateCount = getStateCountForRange(label, item.range, planId);
 
             return (
-              <Box
-                key={id}
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  py: 1,
-                  borderBottom: i < items.length - 1 ? `1px solid ${COLORS.border}` : "none",
-                  backgroundColor: isChecked || inPayment ? COLORS.lightGreen : "transparent",
-                }}
-              >
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1.2 }}>
+              <Box key={id} sx={{
+                display: "flex", alignItems: "center", justifyContent: "space-between",
+                borderRadius: 1.5,
+                mb: i < items.length - 1 ? 0.5 : 0,
+                border: `1px solid ${inPayment ? "rgba(76,176,79,0.35)" : isChecked ? "rgba(255,153,0,0.3)" : "transparent"}`,
+                backgroundColor: inPayment ? "rgba(76,176,79,0.06)" : isChecked ? "rgba(255,153,0,0.05)" : "transparent",
+                transition: "all 0.2s ease",
+                px: 0.5, py: 0.5,
+              }}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                   <Checkbox
                     size="small"
-                    checked={isChecked || inPayment}
+                    checked={isChecked}
                     disabled={inPayment}
                     onChange={() => !inPayment && onCheck(id)}
                     sx={{
-                      p: 0,
-                      color: COLORS.primary,
+                      p: 0, color: COLORS.primary,
                       "&.Mui-checked": { color: COLORS.secondary },
                       "&.Mui-disabled": { color: COLORS.secondary },
                     }}
                   />
-                  <Typography sx={{ fontSize: T.md, color: COLORS.black }}>
+                  <Typography sx={{ fontSize: T.md, fontWeight: 600, color: COLORS.black }}>
                     {item.range}
                   </Typography>
                 </Box>
 
-                <Box sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
-                  {/* State count + edit */}
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 0.3,
-                      backgroundColor: COLORS.grey[100],
-                      border: `1px solid ${COLORS.border}`,
-                      borderRadius: 1.5,
-                      px: 1,
-                      py: 0.3,
-                    }}
-                  >
-                    <Typography
-                      sx={{ fontSize: T.sm, fontWeight: 600, color: COLORS.black }}
-                    >
-                      {stateCount}
-                    </Typography>
-                    <IconButton
-                      size="small"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onEditStates(label, item.range, planId);
-                      }}
-                      sx={{ p: 0.2 }}
-                    >
-                      <EditIcon sx={{ fontSize: 12, color: COLORS.primary }} />
-                    </IconButton>
-                  </Box>
+                <Box sx={{
+                  display: "flex", alignItems: "center", gap: 0.3,
+                  backgroundColor: COLORS.grey[100], border: `1px solid ${COLORS.border}`,
+                  borderRadius: 1.5, px: 1, py: 0.3,
+                }}>
+                  <Typography sx={{ fontSize: T.sm, fontWeight: 600, color: COLORS.black }}>
+                    {stateCount}
+                  </Typography>
+                  <IconButton size="small" onClick={(e) => { e.stopPropagation(); onEditStates(label, item.range, planId); }} sx={{ p: 0.2 }}>
+                    <EditIcon sx={{ fontSize: 12, color: COLORS.primary }} />
+                  </IconButton>
                 </Box>
               </Box>
             );
@@ -385,42 +404,24 @@ const RangeGroupCard = ({
   );
 };
 
-/** Summary stat card */
+// ─── StatCard ─────────────────────────────────────────────────────────────────
 const StatCard = ({ label, value, sub, fullWidth }) => (
-  <Box
-    sx={{
-      flex: fullWidth ? "1 1 100%" : "1 1 calc(50% - 6px)",
-      backgroundColor: COLORS.grey[50],
-      border: `1px solid ${COLORS.border}`,
-      borderRadius: 2,
-      p: 1.5,
-    }}
-  >
-    <Typography
-      sx={{
-        fontSize: T.xs,
-        textTransform: "uppercase",
-        letterSpacing: "0.06em",
-        color: COLORS.grey[600],
-        mb: 0.5,
-        fontWeight: 500,
-      }}
-    >
+  <Box sx={{
+    flex: fullWidth ? "1 1 100%" : "1 1 calc(50% - 6px)",
+    backgroundColor: COLORS.grey[50], border: `1px solid ${COLORS.border}`,
+    borderRadius: 2, p: 1.5,
+  }}>
+    <Typography sx={{ fontSize: T.xs, textTransform: "uppercase", letterSpacing: "0.06em", color: COLORS.grey[600], mb: 0.5, fontWeight: 500 }}>
       {label}
     </Typography>
     <Typography sx={{ fontSize: T.xl, fontWeight: 700, color: COLORS.black }}>
       {value}
     </Typography>
-    {sub && (
-      <Typography sx={{ fontSize: T.xs, color: COLORS.grey[500], mt: 0.3 }}>
-        {sub}
-      </Typography>
-    )}
+    {sub && <Typography sx={{ fontSize: T.xs, color: COLORS.grey[500], mt: 0.3 }}>{sub}</Typography>}
   </Box>
 );
 
 // ─── Main Component ───────────────────────────────────────────────────────────
-
 const MobilePackageSelection = ({
   filteredPlans = [],
   selectedGroup,
@@ -453,16 +454,27 @@ const MobilePackageSelection = ({
   hideListingPlans = false,
   handleAddListingPlanProp,
 }) => {
-const [expandedGroup, setExpandedGroup] = useState(null);
+  const [expandedGroup, setExpandedGroup] = useState(null);
   const [snack, setSnack] = useState({ open: false, msg: "", sev: "info" });
 
-  // ── Derived data ────────────────────────────────────────────────────────────
+  const listingScrollRef = useRef(null);
+  const scrollListingLeft = () => {
+    if (listingScrollRef.current) {
+      listingScrollRef.current.scrollBy({ left: -280, behavior: "smooth" });
+    }
+  };
+  const scrollListingRight = () => {
+    if (listingScrollRef.current) {
+      listingScrollRef.current.scrollBy({ left: 280, behavior: "smooth" });
+    }
+  };
+
+  // ── Derived data ─────────────────────────────────────────────────────────────
   const selectedPlan = useMemo(
     () => filteredPlans.find((p) => p._id === selectedGroup),
     [filteredPlans, selectedGroup]
   );
 
-  // All packages flattened: { investmentRangeLabel, range, pkg }
   const allPackages = useMemo(() => {
     if (!selectedPlan) return [];
     const out = [];
@@ -474,7 +486,6 @@ const [expandedGroup, setExpandedGroup] = useState(null);
     return out;
   }, [selectedPlan]);
 
-  // Filter to FICO ranges if available, else show all
   const profilePackages = useMemo(
     () =>
       ficoInvestmentRanges.length > 0
@@ -483,7 +494,6 @@ const [expandedGroup, setExpandedGroup] = useState(null);
     [allPackages, ficoInvestmentRanges, isFicoInvestmentRange]
   );
 
-  // Group by investmentRangeLabel
   const groupedPackages = useMemo(() => {
     const map = {};
     profilePackages.forEach((item) => {
@@ -494,7 +504,6 @@ const [expandedGroup, setExpandedGroup] = useState(null);
     return map;
   }, [profilePackages]);
 
-  // Available leads for selected plan
   const availableLeads = useMemo(() => {
     if (!selectedPlan) return [];
     return [
@@ -507,21 +516,14 @@ const [expandedGroup, setExpandedGroup] = useState(null);
     ].sort((a, b) => a - b);
   }, [selectedPlan, leadsDropdownData]);
 
-  // Validity
   const validityDays = useMemo(() => {
     if (!selectedPlan) return null;
-    const days = [
-      ...new Set(
-        selectedPlan.packages?.map((p) => p.validityDays).filter(Boolean)
-      ),
-    ];
+    const days = [...new Set(selectedPlan.packages?.map((p) => p.validityDays).filter(Boolean))];
     return days[0] || null;
   }, [selectedPlan]);
 
-  // Per-group leads key
   const leadsKeyForGroup = useCallback(
-    (label) =>
-      selectedPlan ? `plan-${selectedPlan._id}-${label}` : null,
+    (label) => selectedPlan ? `plan-${selectedPlan._id}-${label}` : null,
     [selectedPlan]
   );
 
@@ -533,85 +535,88 @@ const [expandedGroup, setExpandedGroup] = useState(null);
     [leadsKeyForGroup, selectedLeadsPerRange, availableLeads]
   );
 
-  // Items currently in payment
   const inPaymentSet = useMemo(() => {
     const s = new Set();
-    paymentSummary.forEach((g) => {
-      g.items?.forEach((it) => s.add(it.id));
-    });
+    paymentSummary.forEach((g) => { g.items?.forEach((it) => s.add(it.id)); });
     return s;
   }, [paymentSummary]);
 
-  // Summary totals across all checked + payment items
   const summary = useMemo(() => {
     if (!selectedPlan) return { price: 0, totalLeads: 0, totalStates: 0 };
 
-    let totalStates = 0;
     let totalLeads = 0;
     let price = 0;
+    const globalUniqueStates = new Set();
 
     Object.entries(groupedPackages).forEach(([label, { pkg, items }]) => {
       const leads = getGroupLeads(label);
       const pricePerState = Number(pkg?.amount || 0);
+
       const lKey = `${selectedPlan._id}_${label}`;
       const avail = leadsDropdownData[lKey] || [];
       const minLeads = avail.length > 0 ? Math.min(...avail) : 1;
       const divisor = minLeads > 0 ? minLeads : 1;
 
+      const groupUniqueStates = new Set();
       items.forEach((item) => {
         const id = `${selectedPlan._id}-${label}-${item.range}`;
-        if (checkedItems[id] || inPaymentSet.has(id)) {
-          const sc = getStateCountForRange(label, item.range, selectedPlan._id);
-          totalStates += sc;
-          totalLeads += leads * sc;
-          price += (pricePerState / divisor) * sc * leads;
+        if (!inPaymentSet.has(id)) return;
+
+        const key = `${selectedPlan._id}__${label}__${item.range}`;
+        const states = statesByInvestmentRange[key];
+        if (states && states.length > 0) {
+          states.forEach((s) => { groupUniqueStates.add(s); globalUniqueStates.add(s); });
+          return;
+        }
+        const fallbackKey = Object.keys(statesByInvestmentRange).find((k) => {
+          const parts = k.split("__");
+          return parts[parts.length - 1] === item.range && parts[parts.length - 2] === label;
+        });
+        if (fallbackKey) {
+          statesByInvestmentRange[fallbackKey].forEach((s) => { groupUniqueStates.add(s); globalUniqueStates.add(s); });
         }
       });
+
+      const groupUniqueCount = groupUniqueStates.size;
+      if (groupUniqueCount > 0) {
+        price += (pricePerState / divisor) * groupUniqueCount * leads;
+        totalLeads += leads * groupUniqueCount;
+      }
     });
 
-    return { price, totalLeads, totalStates };
-  }, [
-    selectedPlan,
-    groupedPackages,
-    checkedItems,
-    inPaymentSet,
-    getGroupLeads,
-    getStateCountForRange,
-    leadsDropdownData,
-  ]);
+    return { price, totalLeads, totalStates: globalUniqueStates.size };
+  }, [selectedPlan, groupedPackages, inPaymentSet, getGroupLeads, leadsDropdownData, statesByInvestmentRange]);
 
-  // Group totals (for the header chip)
   const getGroupTotals = useCallback(
     (label, items, pkg) => {
-      if (!selectedPlan) return { price: 0, totalLeads: 0 };
+      if (!selectedPlan) return { price: 0, totalLeads: 0, uniqueStatesCount: 0 };
+
       const leads = getGroupLeads(label);
       const pricePerState = Number(pkg?.amount || 0);
+
       const lKey = `${selectedPlan._id}_${label}`;
       const avail = leadsDropdownData[lKey] || [];
       const minLeads = avail.length > 0 ? Math.min(...avail) : 1;
       const divisor = minLeads > 0 ? minLeads : 1;
 
-      let totalStates = 0;
-      items.forEach((item) => {
-        totalStates += getStateCountForRange(label, item.range, selectedPlan._id);
-      });
+      const uniqueStates = getUniqueStatesForGroup(selectedPlan._id, label, items, statesByInvestmentRange);
+      const uniqueStatesCount = uniqueStates.size;
 
       return {
-        price: (pricePerState / divisor) * totalStates * leads,
-        totalLeads: leads * totalStates,
+        price: (pricePerState / divisor) * uniqueStatesCount * leads,
+        totalLeads: leads * uniqueStatesCount,
+        uniqueStatesCount,
       };
     },
-    [selectedPlan, getGroupLeads, getStateCountForRange, leadsDropdownData]
+    [selectedPlan, getGroupLeads, leadsDropdownData, statesByInvestmentRange]
   );
 
-  // ── Handlers ────────────────────────────────────────────────────────────────
-const toggleGroup = useCallback((label) => {
-  setExpandedGroup((prev) => (prev === label ? null : label));
-}, []);
+  const toggleGroup = useCallback((label) => {
+    setExpandedGroup((prev) => (prev === label ? null : label));
+  }, []);
+
   const handleCheck = useCallback(
-    (id) => {
-      setCheckedItems((prev) => ({ ...prev, [id]: !prev[id] }));
-    },
+    (id) => { setCheckedItems((prev) => ({ ...prev, [id]: !prev[id] })); },
     [setCheckedItems]
   );
 
@@ -628,14 +633,9 @@ const toggleGroup = useCallback((label) => {
       return;
     }
 
-    const hasNonProfile =
-      finalToken && toAdd.some((p) => !isFicoInvestmentRange(p.range));
-
+    const hasNonProfile = finalToken && toAdd.some((p) => !isFicoInvestmentRange(p.range));
     if (hasNonProfile) {
-      const rangeNames = toAdd
-        .filter((p) => !isFicoInvestmentRange(p.range))
-        .map((p) => p.range)
-        .join(", ");
+      const rangeNames = toAdd.filter((p) => !isFicoInvestmentRange(p.range)).map((p) => p.range).join(", ");
       setPendingSelection({ selectedItemsInGroup: toAdd, selectedPlan, rangeNames });
       setOpenConfirmDialog(true);
       return;
@@ -653,7 +653,6 @@ const toggleGroup = useCallback((label) => {
       );
     });
 
-    // Clear checked items that were just added
     setCheckedItems((prev) => {
       const next = { ...prev };
       toAdd.forEach((item) => {
@@ -662,482 +661,318 @@ const toggleGroup = useCallback((label) => {
       return next;
     });
   }, [
-    selectedPlan,
-    profilePackages,
-    checkedItems,
-    inPaymentSet,
-    finalToken,
-    isFicoInvestmentRange,
-    handleAddSingleToPayment,
-    setCheckedItems,
-    openSnack,
-    setPendingSelection,
-    setOpenConfirmDialog,
+    selectedPlan, profilePackages, checkedItems, inPaymentSet,
+    finalToken, isFicoInvestmentRange, handleAddSingleToPayment,
+    setCheckedItems, openSnack, setPendingSelection, setOpenConfirmDialog,
   ]);
 
-  // Listing plans
   const listingPlans = useMemo(
     () =>
       plans
-        .filter(
-          (plan) =>
-            plan.packages?.length === 1 &&
-            plan.planName?.toLowerCase() !== "free"
-        )
-        .sort(
-          (a, b) => (a.packages?.[0]?.amount || 0) - (b.packages?.[0]?.amount || 0)
-        ),
+        .filter((plan) => plan.packages?.length === 1 && plan.planName?.toLowerCase() !== "free")
+        .sort((a, b) => (a.packages?.[0]?.amount || 0) - (b.packages?.[0]?.amount || 0)),
     [plans]
   );
 
-  // ── Render ──────────────────────────────────────────────────────────────────
+  // ── Render ────────────────────────────────────────────────────────────────────
   return (
     <Box sx={{ width: "100%" }}>
-      {/* ── BRAND LISTING PLANS ── */}
-      {!hideListingPlans && (
-        <>
-          <Box sx={{ px: 2, pb: 1, textAlign: "center" }}>
-            <Typography
-              sx={{
-                fontSize: "1.4rem",
-                fontWeight: 700,
-                color: COLORS.black,
-                mb: 0.5,
-              }}
-            >
-              BRAND LISTING PLANS
-            </Typography>
-            <Typography
-              sx={{
-                fontSize: T.xs,
-                color: COLORS.grey[600],
-                mb: 2,
-              }}
-            >
-              List your Brand to increase its Digital Visibility
-            </Typography>
-
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
-              {listingPlans.map((plan, index) => {
-                const pkg = plan.packages?.[0] || {};
-                const groupKey = `listing-${plan._id}`;
-                const isAdded = paymentSummary.some((g) => g.groupKey === groupKey);
-                const isAlreadyActive = (() => {
-                  if (!data?.packages) return false;
-                  return data.packages.some((p) => {
-                    const type = (p.packagesType || "").toUpperCase();
-                    if (type !== "LISTING") return false;
-                    const inv =
-                      p.investmetPackages ||
-                      p.InvestmetPackages ||
-                      p.packages ||
-                      [];
-                    return inv.some(
-                      (ip) =>
-                        (ip.packagesName || "").toLowerCase() ===
-                          plan.planName.toLowerCase() &&
-                        ip.isActive &&
-                        !ip.isPending
-                    );
-                  });
-                })();
-                const isExistingPlan = isUpgradeMode && upgradePlanId === plan._id;
-
-                const handleAddListingPlan = () => {
-                  if (isExistingPlan) {
-                    openSnack("You already have this plan. Please upgrade to a different plan.", "warning");
-                    return;
-                  }
-                  
-                  const existingListingPlan = paymentSummary.some(
-                    (g) => g.isListingPlan === true,
-                  );
-
-                  if (existingListingPlan) {
-                    openSnack("You can select only one listing plan at a time.", "warning");
-                    return;
-                  }
-
-                  if (handleAddListingPlanProp) {
-                    handleAddListingPlanProp(plan, pkg);
-                  } else {
-                    openSnack("Add listing plan functionality not wired up", "info");
-                  }
-                };
-
-                return (
-                  <Card
-                    key={plan._id}
-                    elevation={0}
-                    sx={{
-                      border: `1.5px solid ${isAdded ? COLORS.primary : COLORS.border}`,
-                      borderRadius: 2.5,
-                      backgroundColor: "#fff0c5",
-                      overflow: "hidden",
-                    }}
-                  >
-                    {index === 1 && (
-                      <Box
-                        sx={{
-                          background: "linear-gradient(135deg,#ff9800 0%,#ff6f00 100%)",
-                          color: "#fff",
-                          px: 2,
-                          py: 0.5,
-                          fontSize: 11,
-                          fontWeight: 700,
-                        }}
-                      >
-                        🔥 Most Popular
-                      </Box>
-                    )}
-
-                    <Box
-                      sx={{
-                        p: 2,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        gap: 1,
-                      }}
-                    >
-                      <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                        <Box
-                          sx={{
-                            width: 44,
-                            height: 44,
-                            borderRadius: "50%",
-                            backgroundColor:
-                              index === 1
-                                ? "rgba(255,152,0,0.1)"
-                                : "rgba(25,118,210,0.08)",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            flexShrink: 0,
-                          }}
-                        >
-                          {index === 1 ? (
-                            <WorkspacePremiumRoundedIcon sx={{ color: "#ff9800", fontSize: 24 }} />
-                          ) : (
-                            <StarBorderRoundedIcon sx={{ color: COLORS.primary, fontSize: 24 }} />
-                          )}
-                        </Box>
-
-                        <Box>
-                          <Typography sx={{ fontWeight: 700, fontSize: T.md, color: COLORS.black }}>
-                            {plan.planName}
-                          </Typography>
-                          <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mt: 0.3 }}>
-                            <CalendarMonthRoundedIcon sx={{ fontSize: 13, color: COLORS.grey[500] }} />
-                            <Typography sx={{ fontSize: T.xs, color: COLORS.grey[600] }}>
-                              {pkg.validityDays} Days
-                            </Typography>
-                          </Box>
-                        </Box>
-                      </Box>
-
-                      <Box sx={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 0.8 }}>
-                        <Typography
-                          sx={{
-                            fontSize: T.lg,
-                            fontWeight: 800,
-                            color: index === 1 ? "#ff9800" : COLORS.primary,
-                          }}
-                        >
-                          {fmtINR(pkg.amount)}
-                        </Typography>
-
-                        <Button
-                          variant="contained"
-                          size="small"
-                          disabled={isExistingPlan || isAlreadyActive}
-                          onClick={() => {
-                            if (isAlreadyActive || isExistingPlan) return;
-                            if (isAdded) {
-                              handleRemoveListingPlan(plan._id);
-                            } else {
-                              handleAddListingPlan();
-                            }
-                          }}
-                          sx={{
-                            fontSize: T.xs,
-                            fontWeight: 700,
-                            textTransform: "none",
-                            borderRadius: 1.5,
-                            boxShadow: "none",
-                            minWidth: 90,
-                            background: isAlreadyActive
-                              ? "linear-gradient(135deg,#4cb04f 0%,#2e7d32 100%)"
-                              : index === 1
-                              ? "linear-gradient(135deg,#ff9800 0%,#ff6f00 100%)"
-                              : `linear-gradient(135deg,${COLORS.primary} 0%,${COLORS.primaryDark} 100%)`,
-                            "&:hover": { boxShadow: "none", opacity: 0.9 },
-                            opacity: isExistingPlan || isAlreadyActive ? 0.75 : 1,
-                          }}
-                        >
-                          {isAlreadyActive
-                            ? "✓ Active"
-                            : isExistingPlan
-                            ? "In Profile"
-                            : isAdded
-                            ? "Remove"
-                            : "Add Plan"}
-                        </Button>
-                      </Box>
-                    </Box>
-                  </Card>
-                );
-              })}
-            </Box>
-          </Box>
-          <Divider sx={{ mx: 2, my: 2 }} />
-        </>
-      )}
 
       {/* ── INVESTOR LEAD PLANS ── */}
-      <Box sx={{ px: 2, textAlign: "center" }}>
-        <Typography
-          sx={{
-            fontSize: "1.4rem",
-            fontWeight: 700,
-            color: COLORS.black,
-            mb: 0.5,
-          }}
-        >
-          INVESTOR LEAD PLANS
-        </Typography>
-        <Typography
-          sx={{
-            fontSize: T.sm,
-            color: COLORS.grey[600],
-            mb: 2,
-          }}
-        >
-          Franchise | Dealer and Distributor | Channel Partner | Agent and Association
-        </Typography>
+      <SectionAccordion title="Investor Lead Plans" defaultExpanded>
+        <Box sx={{ px: 2, textAlign: "center" }}>
+          <Typography sx={{ fontSize: "1.4rem", fontWeight: 700, color: COLORS.black, mb: 0.5 }}>
+            INVESTOR LEAD PLANS
+          </Typography>
+          <Typography sx={{ fontSize: T.sm, color: COLORS.grey[600], mb: 2 }}>
+            Franchise | Dealer and Distributor | Channel Partner | Agent and Association
+          </Typography>
 
-     {/* Plan selector - SEGMENTED CONTROL (iOS Style) */}
-<Box sx={{ mb: 3 }}>
-     {/* Add new range button */}
+          <Box sx={{ mb: 3 }}>
             <Button
               variant="outlined"
               startIcon={<AddCircleOutlineIcon />}
               fullWidth
               onClick={() => setOpenConfirmDialog(true)}
               sx={{
-                mb: 2.5,
-                borderRadius: 2,
-                textTransform: "none",
-                fontWeight: 700,
-                fontSize: T.sm,
-                borderColor: COLORS.secondary,
-                color: COLORS.secondary,
-                "&:hover": {
-                  backgroundColor: COLORS.lightGreen,
-                  borderColor: COLORS.secondaryDark,
-                },
+                mb: 2.5, borderRadius: 2, textTransform: "none", fontWeight: 700,
+                fontSize: T.sm, borderColor: COLORS.secondary, color: COLORS.secondary,
+                "&:hover": { backgroundColor: COLORS.lightGreen, borderColor: COLORS.secondaryDark },
               }}
             >
               Add New Investment Range
             </Button>
-  <Box
-    sx={{
-      display: "flex",
-      backgroundColor: COLORS.grey[100],
-      borderRadius: 4,
-      p: 0.5,
-      position: "relative",
-    }}
-  >
-    
-    {/* Animated background slider */}
-    <Box
-      sx={{
-        position: "absolute",
-        height: "calc(100% - 8px)",
-        top: 4,
-        width: `${100 / filteredPlans.length}%`,
-        left: `${(filteredPlans.findIndex(p => p._id === selectedGroup) || 0) * (100 / filteredPlans.length)}%`,
-        backgroundColor: COLORS.primary,
-        borderRadius: 3,
-        transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-        zIndex: 0,
-      }}
-    />
-    
-    {filteredPlans.map((plan) => {
-      const days = [
-        ...new Set(
-          plan.packages?.map((p) => p.validityDays).filter(Boolean)
-        ),
-      ][0];
-      const isSelected = selectedGroup === plan._id;
-      
-      return (
-        <Box
-          key={plan._id}
-          onClick={() => setSelectedGroup(plan._id)}
-          sx={{
-            flex: 1,
-            textAlign: "center",
-            py: 1.5,
-            px: 1,
-            borderRadius: 3,
-            cursor: "pointer",
-            position: "relative",
-            zIndex: 1,
-            transition: "all 0.2s ease",
-          }}
-        >
-          <Typography
-            sx={{
-              fontSize: T.md,
-              fontWeight: 700,
-              color: isSelected ? COLORS.white : COLORS.grey[600],
-              transition: "color 0.2s ease",
-            }}
-          >
-            {days}
-          </Typography>
-          <Typography
-            sx={{
-              fontSize: T.xs,
-              fontWeight: 500,
-              color: isSelected ? "rgba(255,255,255,0.9)" : COLORS.grey[500],
-              transition: "color 0.2s ease",
-            }}
-          >
-            Days
-          </Typography>
+
+            <Box sx={{ mb: 1.5 }}>
+              <Typography sx={{ fontSize: T.sm, fontWeight: 700, color: COLORS.black, mb: 0.3 }}>
+                Select Campaign Period
+              </Typography>
+            </Box>
+
+            <Box sx={{ display: "flex", backgroundColor: COLORS.grey[100], borderRadius: 4, p: 0.5, position: "relative" }}>
+              <Box sx={{
+                position: "absolute", height: "calc(100% - 8px)", top: 4,
+                width: `${100 / filteredPlans.length}%`,
+                left: `${(filteredPlans.findIndex((p) => p._id === selectedGroup) || 0) * (100 / filteredPlans.length)}%`,
+                backgroundColor: COLORS.primary, borderRadius: 3,
+                transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)", zIndex: 0,
+              }} />
+
+              {filteredPlans.map((plan) => {
+                const days = [...new Set(plan.packages?.map((p) => p.validityDays).filter(Boolean))][0];
+                const isSelected = selectedGroup === plan._id;
+                return (
+                  <Box key={plan._id} onClick={() => setSelectedGroup(plan._id)} sx={{
+                    flex: 1, textAlign: "center", py: 1.5, px: 1,
+                    borderRadius: 3, cursor: "pointer", position: "relative", zIndex: 1, transition: "all 0.2s ease",
+                  }}>
+                    <Typography sx={{ fontSize: T.md, fontWeight: 700, color: isSelected ? COLORS.white : COLORS.grey[600], transition: "color 0.2s ease" }}>
+                      {days}
+                    </Typography>
+                    <Typography sx={{ fontSize: T.xs, fontWeight: 500, color: isSelected ? "rgba(255,255,255,0.9)" : COLORS.grey[500], transition: "color 0.2s ease" }}>
+                      Days
+                    </Typography>
+                  </Box>
+                );
+              })}
+            </Box>
+          </Box>
+
+          {selectedPlan && (
+            <>
+              {Object.keys(groupedPackages).map((label) => {
+                const { pkg, items } = groupedPackages[label];
+                const leadsKey = leadsKeyForGroup(label);
+                const { price, totalLeads, uniqueStatesCount } = getGroupTotals(label, items, pkg);
+
+                return (
+                  <Box key={label} sx={{ mb: 2 }}>
+                    <RangeGroupCard
+                      label={label}
+                      items={items}
+                      expanded={expandedGroup === label}
+                      onToggle={() => toggleGroup(label)}
+                      checkedItems={checkedItems}
+                      onCheck={handleCheck}
+                      onEditStates={handleOpenStateModal}
+                      planId={selectedPlan._id}
+                      statesByInvestmentRange={statesByInvestmentRange}
+                      getStateCountForRange={getStateCountForRange}
+                      inPaymentSet={inPaymentSet}
+                      availableLeads={availableLeads}
+                      getGroupLeads={getGroupLeads}
+                      handleLeadsChange={handleLeadsChange}
+                      leadsKey={leadsKey}
+                      pricePerState={Number(pkg?.amount || 0)}
+                      leadsDropdownData={leadsDropdownData}
+                    />
+                  </Box>
+                );
+              })}
+
+              <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1.5, mb: 4 }}>
+                <Button
+                  variant="outlined"
+                  onClick={handleAddToCart}
+                  sx={{
+                    height: 48, borderRadius: 2, textTransform: "none", fontWeight: 700,
+                    fontSize: T.md, borderColor: COLORS.border, color: COLORS.black,
+                    backgroundColor: COLORS.white, "&:hover": { backgroundColor: COLORS.grey[100] },
+                  }}
+                >
+                  Add to Plan
+                </Button>
+                <Button
+                  variant="contained"
+                  onClick={scrollToPaymentSummary}
+                  sx={{
+                    height: 48, borderRadius: 2, textTransform: "none", fontWeight: 700,
+                    fontSize: T.md, backgroundColor: "#4cb04f", color: COLORS.white,
+                    boxShadow: "none", "&:hover": { backgroundColor: COLORS.grey[700], boxShadow: "none" },
+                  }}
+                >
+                  View Summary
+                </Button>
+              </Box>
+            </>
+          )}
         </Box>
-      );
-    })}
-  </Box>
-  
-  {/* Selected plan price display */}
-  {/* {selectedPlan && (
-    <Box
-      sx={{
-        mt: 2,
-        p: 2,
-        backgroundColor: COLORS.lightOrange,
-        borderRadius: 3,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-      }}
-    >
-      <Box>
-        <Typography sx={{ fontSize: T.xs, color: COLORS.grey[600], mb: 0.5 }}>
-          Total Investment
-        </Typography>
-        <Typography sx={{ fontSize: "1.5rem", fontWeight: 800, color: COLORS.primary }}>
-          {fmtINR(summary.price || 0)}
-        </Typography>
-      </Box>
-      <Box sx={{ textAlign: "right" }}>
-        <Typography sx={{ fontSize: T.xs, color: COLORS.grey[600], mb: 0.5 }}>
-          Est. Leads
-        </Typography>
-        <Typography sx={{ fontSize: "1.2rem", fontWeight: 700, color: COLORS.secondary }}>
-          {summary.totalLeads.toLocaleString("en-IN")}
-        </Typography>
-      </Box>
-    </Box>
-  )} */}
-</Box>
+      </SectionAccordion>
 
-        {selectedPlan && (
-          <>
-            {/* Leads stepper — per group - Now inside accordion */}
-            {Object.keys(groupedPackages).map((label) => {
-              const { pkg, items } = groupedPackages[label];
-              const leadsKey = leadsKeyForGroup(label);
-              const { price, totalLeads } = getGroupTotals(label, items, pkg);
+      {/* ── BRAND LISTING PLANS ── */}
+      {!hideListingPlans && listingPlans.length > 0 && (
+        <SectionAccordion title="Brand Listing Plans">
+          <Box sx={{ px: 2, textAlign: "center" }}>
+            <Typography sx={{ fontSize: "1.4rem", fontWeight: 700, color: COLORS.black, mb: 0.5 }}>
+              BRAND LISTING PLANS
+            </Typography>
+            <Typography sx={{ fontSize: T.xs, color: COLORS.grey[600], mb: 2 }}>
+              List your Brand to increase its Digital Visibility
+            </Typography>
 
-              return (
-                <Box key={label} sx={{ mb: 2 }}>
-                  <RangeGroupCard
-                    label={label}
-                    price={price}
-                    totalLeads={totalLeads}
-                    totalStates={items.reduce(
-                      (s, item) => s + getStateCountForRange(label, item.range, selectedPlan._id),
-                      0
-                    )}
-                    items={items}
-                  expanded={expandedGroup === label} 
-                    onToggle={() => toggleGroup(label)}
-                    checkedItems={checkedItems}
-                    onCheck={handleCheck}
-                    onEditStates={handleOpenStateModal}
-                    planId={selectedPlan._id}
-                    getRangeKey={getRangeKey}
-                    statesByInvestmentRange={statesByInvestmentRange}
-                    getStateCountForRange={getStateCountForRange}
-                    inPaymentSet={inPaymentSet}
-                    availableLeads={availableLeads}
-                    getGroupLeads={getGroupLeads}
-                    handleLeadsChange={handleLeadsChange}
-                    leadsKey={leadsKey}
-                  />
+            <Box sx={{ position: "relative", display: "flex", alignItems: "center", gap: 1 }}>
+              <IconButton
+                onClick={scrollListingLeft}
+                sx={{
+                  position: "absolute", left: -10, zIndex: 2,
+                  backgroundColor: COLORS.white, boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+                  "&:hover": { backgroundColor: COLORS.grey[100] }, width: 32, height: 32,
+                  display: { xs: "flex", sm: "flex" },
+                }}
+              >
+                <KeyboardArrowLeftIcon />
+              </IconButton>
+
+              <Box
+                ref={listingScrollRef}
+                sx={{
+                  width: "100%", overflowX: "auto", overflowY: "hidden",
+                  scrollbarWidth: "thin",
+                  "&::-webkit-scrollbar": { height: 4 },
+                  "&::-webkit-scrollbar-track": { backgroundColor: COLORS.grey[200], borderRadius: 3 },
+                  "&::-webkit-scrollbar-thumb": { backgroundColor: COLORS.primary, borderRadius: 3 },
+                  scrollBehavior: "smooth", pb: 1, mx: 2.5,
+                }}
+              >
+                <Box sx={{ display: "inline-flex", gap: 2, p: 1, minWidth: "min-content", alignItems: "stretch" }}>
+                  {listingPlans.map((plan, index) => {
+                    const pkg = plan.packages?.[0] || {};
+                    const groupKey = `listing-${plan._id}`;
+                    const isAdded = paymentSummary.some((g) => g.groupKey === groupKey);
+                    const isAlreadyActive = (() => {
+                      if (!data?.packages) return false;
+                      return data.packages.some((p) => {
+                        const type = (p.packagesType || "").toUpperCase();
+                        if (type !== "LISTING") return false;
+                        const inv = p.investmetPackages || p.InvestmetPackages || p.packages || [];
+                        return inv.some(
+                          (ip) =>
+                            (ip.packagesName || "").toLowerCase() === plan.planName.toLowerCase() &&
+                            ip.isActive && !ip.isPending
+                        );
+                      });
+                    })();
+                    const isExistingPlan = isUpgradeMode && upgradePlanId === plan._id;
+                    const maxPrice = Math.max(...listingPlans.map(p => p.packages?.[0]?.amount || 0));
+                    const isMostPopular = (pkg.amount || 0) === maxPrice && maxPrice > 0;
+
+                    const handleAddListingPlan = () => {
+                      if (isExistingPlan) {
+                        openSnack("You already have this plan. Please upgrade to a different plan.", "warning");
+                        return;
+                      }
+                      const existingListingPlan = paymentSummary.some((g) => g.isListingPlan === true);
+                      if (existingListingPlan) {
+                        openSnack("You can select only one listing plan at a time.", "warning");
+                        return;
+                      }
+                      if (handleAddListingPlanProp) {
+                        handleAddListingPlanProp(plan, pkg);
+                        setTimeout(() => scrollToPaymentSummary?.(), 300);
+                      } else {
+                        openSnack("Add listing plan functionality not wired up", "info");
+                      }
+                    };
+
+                    return (
+                      <Card
+                        key={plan._id}
+                        elevation={0}
+                        sx={{
+                          width: { xs: 270, sm: 250 }, flexShrink: 0,
+                          border: `1.5px solid ${isAdded ? COLORS.primary : COLORS.border}`,
+                          borderRadius: 2.5, backgroundColor: "#fff0c5",
+                          overflow: "hidden", position: "relative",
+                          display: "flex", flexDirection: "column",
+                        }}
+                      >
+                        {isMostPopular && (
+                          <Box sx={{
+                            position: "absolute", top: 20, left: -70,
+                            transform: "rotate(-54deg)",
+                            background: "linear-gradient(135deg,#ff9800 0%,#ff6f00 100%)",
+                            color: "#fff", px: 3, py: 0.5, fontSize: 10, fontWeight: 700,
+                            textAlign: "center", width: 120,
+                            boxShadow: "0 2px 4px rgba(0,0,0,0.1)", zIndex: 1,
+                          }}>
+                            🔥 Most Popular
+                          </Box>
+                        )}
+
+                        <CardContent sx={{
+                          p: { xs: 1, sm: 2 }, flex: 1,
+                          display: "flex", flexDirection: "column",
+                          alignItems: "center", textAlign: "center",
+                        }}>
+                          <Typography sx={{ fontWeight: 700, fontSize: T.md, color: COLORS.black, mb: 0.5, textAlign: "center" }}>
+                            {plan.planName}
+                          </Typography>
+
+                          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 0.5, mb: 2 }}>
+                            <CalendarMonthRoundedIcon sx={{ fontSize: 16, color: COLORS.black[500] }} />
+                            <Typography sx={{ fontSize: T.small, color: COLORS.black[600] }}>
+                              {pkg.validityDays} Days
+                            </Typography>
+                          </Box>
+
+                          <Typography sx={{ fontSize: T.xl, fontWeight: 800, color: isMostPopular ? "#ff9800" : COLORS.primary, mb: 2 }}>
+                            {fmtINR(pkg.amount)}
+                          </Typography>
+
+                          <Button
+                            variant="contained"
+                            size="medium"
+                            disabled={isExistingPlan || isAlreadyActive}
+                            onClick={() => {
+                              if (isAlreadyActive || isExistingPlan) return;
+                              if (isAdded) handleRemoveListingPlan(plan._id);
+                              else handleAddListingPlan();
+                            }}
+                            fullWidth
+                            sx={{
+                              fontSize: T.sm, fontWeight: 700, textTransform: "none",
+                              borderRadius: 2, boxShadow: "none", py: 1, color: COLORS.white,
+                              background: isAlreadyActive
+                                ? "linear-gradient(135deg,#4cb04f 0%,#2e7d32 100%)"
+                                : isMostPopular
+                                ? "linear-gradient(135deg,#ff9800 0%,#ff6f00 100%)"
+                                : `linear-gradient(135deg,${COLORS.primary} 0%,${COLORS.white} 100%)`,
+                              "&:hover": {
+                                boxShadow: "none", opacity: 0.9,
+                                background: isAlreadyActive
+                                  ? "linear-gradient(135deg,#4cb04f 0%,#2e7d32 100%)"
+                                  : isMostPopular
+                                  ? "linear-gradient(135deg,#ff9800 0%,#ff6f00 100%)"
+                                  : `linear-gradient(135deg,${COLORS.primaryDark} 0%,${COLORS.primary} 100%)`,
+                              },
+                              "&.Mui-disabled": { color: COLORS.white, opacity: 0.75 },
+                              opacity: isExistingPlan || isAlreadyActive ? 0.75 : 1,
+                            }}
+                          >
+                            {isAlreadyActive ? "✓ Active" : isExistingPlan ? "In Profile" : isAdded ? "Remove" : "Add Plan"}
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
                 </Box>
-              );
-            })}
+              </Box>
 
-         
-
-            {/* Summary cards */}
-            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mb: 2 }}>
-              <StatCard
-                label="Total Amount"
-                value={fmtINR(summary.price)}
-                sub={`${summary.totalStates} states`}
-                fullWidth
-              />
-            </Box>
-
-            {/* CTA buttons */}
-            <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1.5, mb: 4 }}>
-              <Button
-                variant="outlined"
-                onClick={handleAddToCart}
+              <IconButton
+                onClick={scrollListingRight}
                 sx={{
-                  height: 48,
-                  borderRadius: 2,
-                  textTransform: "none",
-                  fontWeight: 700,
-                  fontSize: T.md,
-                  borderColor: COLORS.border,
-                  color: COLORS.black,
-                  backgroundColor: COLORS.white,
-                  "&:hover": { backgroundColor: COLORS.grey[100] },
+                  position: "absolute", right: -10, zIndex: 2,
+                  backgroundColor: COLORS.white, boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+                  "&:hover": { backgroundColor: COLORS.grey[100] }, width: 32, height: 32,
+                  display: { xs: "flex", sm: "flex" },
                 }}
               >
-                Add to Plan
-              </Button>
-
-              <Button
-                variant="contained"
-                onClick={scrollToPaymentSummary}
-                sx={{
-                  height: 48,
-                  borderRadius: 2,
-                  textTransform: "none",
-                  fontWeight: 700,
-                  fontSize: T.md,
-                  backgroundColor: COLORS.black,
-                  color: COLORS.white,
-                  boxShadow: "none",
-                  "&:hover": { backgroundColor: COLORS.grey[700], boxShadow: "none" },
-                }}
-              >
-                View Summary
-              </Button>
+                <KeyboardArrowRightIcon />
+              </IconButton>
             </Box>
-          </>
-        )}
-      </Box>
+          </Box>
+        </SectionAccordion>
+      )}
 
       {/* Snackbar */}
       <Snackbar
@@ -1146,11 +981,7 @@ const toggleGroup = useCallback((label) => {
         onClose={() => setSnack((s) => ({ ...s, open: false }))}
         anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
       >
-        <Alert
-          severity={snack.sev}
-          variant="filled"
-          sx={{ fontSize: T.sm, fontWeight: 600, borderRadius: 2 }}
-        >
+        <Alert severity={snack.sev} variant="filled" sx={{ fontSize: T.sm, fontWeight: 600, borderRadius: 2 }}>
           {snack.msg}
         </Alert>
       </Snackbar>

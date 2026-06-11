@@ -532,6 +532,15 @@ useEffect(() => {
   const closeSnack = useCallback(() => {
     setSnack((s) => ({ ...s, open: false }));
   }, []);
+  const getRangeKey = useCallback(
+  (investmentRangeLabel, range, planId = null) => {
+    if (planId) {
+      return `${planId}__${investmentRangeLabel}__${range}`;
+    }
+    return `${investmentRangeLabel}__${range}`;
+  },
+  [],
+);
 
   useEffect(() => {
     const detectLocation = async () => {
@@ -581,6 +590,7 @@ useEffect(() => {
     detectLocation();
   }, [finalToken]);
 
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -590,15 +600,7 @@ useEffect(() => {
     fetchBrandDetails(finalBrandUUID, finalToken);
   }, [finalBrandUUID, finalToken]);
 
-  const getRangeKey = useCallback(
-    (investmentRangeLabel, range, planId = null) => {
-      if (planId) {
-        return `${planId}__${investmentRangeLabel}__${range}`;
-      }
-      return `${investmentRangeLabel}__${range}`;
-    },
-    [],
-  );
+
 
   const getStatesToDisplay = useCallback(() => {
     // Only show states from API expansion locations, never fallback to all states
@@ -623,18 +625,10 @@ useEffect(() => {
           // Never reset states that are already on the item from draft
           let states = statesByInvestmentRange[key];
 
-          if (!states || states.length === 0) {
-            // ✅ KEY FIX: Use the item's existing states from draft first
-            if (item.states && item.states.length > 0) {
-              states = item.states;  // ← USE DRAFT STATES, don't reset
-            } else if (!finalToken && detectedState) {
-              states = [detectedState];
-            } else if (finalToken) {
-              states = allStates;
-            } else {
-              states = [];
-            }
-          }
+        if (!states || states.length === 0) {
+  // ✅ Only use item's existing draft states — never reset to allStates
+  states = item.states && item.states.length > 0 ? item.states : [];
+}
 
           const leadsDataKey = `${group.planId}_${group.investmentRangeLabel}`;
           const availableLeads = leadsDropdownData[leadsDataKey] || [];
@@ -683,9 +677,6 @@ useEffect(() => {
   }
 }, [
   statesByInvestmentRange,
-  finalToken,
-  detectedState,
-  allStates,
   getRangeKey,
   leadsDropdownData,
 ]);
@@ -858,9 +849,10 @@ console.log("🔍 key:", key);
 console.log("🔍 savedStates found:", savedStates);
 
 let statesToPreselect =
-  committedStates ||   // 1st: what's already in cart
-  savedStates ||       // 2nd: what user last saved
-  (purchasedStatesForThisRange.length > 0 ? purchasedStatesForThisRange : null) || // 3rd: existing purchase
+  committedStates ||
+  savedStates ||
+  (purchasedStatesForThisRange.length > 0 ? purchasedStatesForThisRange : null) ||
+  (!finalToken && detectedState ? [detectedState] : null) || // ← auto-select IP state for guests
   [];
 
     if (!statesToPreselect || statesToPreselect.length === 0) {
@@ -1827,20 +1819,28 @@ if (!states || states.length === 0) {
     router,
     transformPaymentToAPIFormat,
   ]);
-
 const getStateCountForRange = useCallback(
   (investmentRangeLabel, range, planId = null) => {
     const key = getRangeKey(investmentRangeLabel, range, planId);
 
-    // Check if user has saved custom states for this range
+    // ✅ Check exact key first
     if (Object.prototype.hasOwnProperty.call(statesByInvestmentRange, key)) {
       return statesByInvestmentRange[key].length;
     }
 
-    // If no custom states saved, return all available states
-    if (!finalToken && detectedState) return 1;
-    if (finalToken) return allStates.length;
-    return ALL_INDIA_STATES.length;
+ // ✅ Fallback: search by label+range in case planId differs
+const matchingKey = Object.keys(statesByInvestmentRange).find((k) => {
+  const parts = k.split("__");
+  return (
+    parts[parts.length - 1] === range &&
+    parts[parts.length - 2] === investmentRangeLabel
+  );
+});
+if (matchingKey) return statesByInvestmentRange[matchingKey].length;
+
+// ✅ Never fall back to ALL_INDIA_STATES
+if (!finalToken && detectedState) return 1;
+return allStates.length;
   },
   [
     getRangeKey,
@@ -1864,76 +1864,73 @@ const getStateCountForRange = useCallback(
     [onAddInvestmentRange, finalToken, openSnack],
   );
 
-  const handleLeadsChange = useCallback(
-    (planGroupKey, newLeadsValue) => {
-      setSelectedLeadsPerRange((prev) => ({
-        ...prev,
-        [planGroupKey]: newLeadsValue,
-      }));
+ const handleLeadsChange = useCallback(
+  (planGroupKey, newLeadsValue) => {
+    setSelectedLeadsPerRange((prev) => ({
+      ...prev,
+      [planGroupKey]: newLeadsValue,
+    }));
 
-      // Extract the range from the key
-      const withoutPrefix = planGroupKey.replace("plan-", "");
-      const parts = withoutPrefix.split("-");
-      const actualPlanId = parts[0];
-      const investmentRangeLabel = parts[1];
-      const specificRange = parts.slice(2).join("-"); // Get the full range name
+    const withoutPrefix = planGroupKey.replace("plan-", "");
+    const parts = withoutPrefix.split("-");
+    const actualPlanId = parts[0];
+    const investmentRangeLabel = parts[1];
+    const specificRange = parts.slice(2).join("-");
 
-      setPaymentSummary((prev) =>
-        prev.map((group) => {
-          if (group.isListingPlan) return group;
-          // Match by checking if the group contains this specific range
-          const hasRange = group.items.some(
-            (item) => item.range === specificRange,
-          );
-          if (group.planId !== actualPlanId) return group;
-          if (!hasRange) return group;
+    setPaymentSummary((prev) =>
+      prev.map((group) => {
+        if (group.isListingPlan) return group;
+        if (group.planId !== actualPlanId) return group;
 
-          const updatedItems = group.items.map((item) => {
-            if (item.range !== specificRange) return item;
+        const hasRange = group.items.some(
+          (item) => item.range === specificRange,
+        );
+        if (!hasRange) return group;
 
-            return {
-              ...item,
-              selectedLeads: newLeadsValue,
-              totalLeads: newLeadsValue * item.stateCount,
-              totalAmount: group.pricePerState * item.stateCount,
-            };
-          });
+        // ✅ ADD THIS: If this group is already in the summary (movedGroupKeys),
+        // don't update it — leads are locked once added
+        if (movedGroupKeys.includes(group.groupKey)) return group; // ← THIS IS THE FIX
 
-         const allStatesSet = new Set();
-updatedItems.forEach((item) => {
-  (item.states || []).forEach((state) => allStatesSet.add(state));
-});
-const uniqueStates = Array.from(allStatesSet);
-const totalUniqueStates = uniqueStates.length;
+        const leadsDataKey = `${group.planId}_${group.investmentRangeLabel}`;
+        const availableLeads = leadsDropdownData[leadsDataKey] || [];
+        const minLeads = availableLeads.length > 0 ? Math.min(...availableLeads) : 1;
+        const divisor = minLeads > 0 ? minLeads : 1;
 
-          const leadsDataKey = `${group.planId}_${group.investmentRangeLabel}`;
-          const availableLeads = leadsDropdownData[leadsDataKey] || [];
-          const minLeads =
-            availableLeads.length > 0 ? Math.min(...availableLeads) : 1;
-          const divisor = minLeads > 0 ? minLeads : 1;
-
-          // Calculate total amount across all items (each with their own leads count)
-       const totalAmount = (group.pricePerState / divisor) * totalUniqueStates * (updatedItems[0]?.selectedLeads || 0);
-const totalLeads = (updatedItems[0]?.selectedLeads || 0) * totalUniqueStates;
-
+        const updatedItems = group.items.map((item) => {
+          if (item.range !== specificRange) return item;
           return {
-            ...group,
-            items: updatedItems,
-            uniqueStates,
-            totalStates: totalUniqueStates,
-            amount: totalAmount,
-            totalLeads: updatedItems.reduce(
-              (sum, item) => sum + item.selectedLeads * item.stateCount,
-              0,
-            ),
+            ...item,
+            selectedLeads: newLeadsValue,
+            totalLeads: newLeadsValue * item.stateCount,
+            totalAmount: (group.pricePerState / divisor) * item.stateCount * newLeadsValue,
           };
-        }),
-      );
+        });
 
-      openSnack(`Leads updated to ${newLeadsValue}`, "info");
-    },
-    [leadsDropdownData, openSnack],
-  );
+        const allStatesSet = new Set();
+        updatedItems.forEach((item) => {
+          (item.states || []).forEach((state) => allStatesSet.add(state));
+        });
+        const uniqueStates = Array.from(allStatesSet);
+        const totalUniqueStates = uniqueStates.length;
+
+        const totalAmount = (group.pricePerState / divisor) * totalUniqueStates * newLeadsValue;
+        const totalLeads = newLeadsValue * totalUniqueStates;
+
+        return {
+          ...group,
+          items: updatedItems,
+          uniqueStates,
+          totalStates: totalUniqueStates,
+          amount: totalAmount,
+          totalLeads,
+        };
+      }),
+    );
+
+    openSnack(`Leads updated to ${newLeadsValue}`, "info");
+  },
+  [leadsDropdownData, movedGroupKeys, openSnack], // ← add movedGroupKeys to deps
+);
 
   // Add this useEffect to clear localStorage when payment summary is empty
   useEffect(() => {
@@ -2116,7 +2113,7 @@ const totalLeads = (updatedItems[0]?.selectedLeads || 0) * totalUniqueStates;
         {region}
       </Typography>
       <Chip
-        label={`${selectedCount}/${availableToSelectCount} available`}
+        label={`${selectedCount}/${availableToSelectCount} Selected`}
         size="small"
         sx={{
           height: 15,
@@ -2133,7 +2130,7 @@ const totalLeads = (updatedItems[0]?.selectedLeads || 0) * totalUniqueStates;
     {/* REMOVED the Select All button from here */}
   </AccordionSummary>
 
-  <AccordionDetails sx={{ p: 2 }}>
+  <AccordionDetails sx={{ p: {xs:0, sm:2} }}>
     {/* MOVED the Select All button inside AccordionDetails */}
     <Box
       sx={{
@@ -2798,7 +2795,7 @@ const totalLeads = (updatedItems[0]?.selectedLeads || 0) * totalUniqueStates;
     boxShadow: "none",
     opacity: (isExistingPlan || isAlreadyActive) ? 0.75 : 1,
     background: isAlreadyActive
-      ? "linear-gradient(135deg, #4cb04f 0%, #2e7d32 100%)" // ✅ Green for already active
+      ? "linear-gradient(135deg, #4cb04f 0%, #2e7d32 100%)" 
       : index === 1
       ? "linear-gradient(135deg,#ff9800 0%,#ff6f00 100%)"
       : `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryDark} 100%)`,
@@ -3027,15 +3024,24 @@ const totalLeads = (updatedItems[0]?.selectedLeads || 0) * totalUniqueStates;
 
 let states = statesByInvestmentRange[key];
 
-// If no custom states saved for this range, use all available states
+// ✅ Fallback: search by label+range in case planId differs
 if (!states || states.length === 0) {
-  // For first time or when no custom selection exists, use all states
-  if (finalToken && allStates.length > 0) {
-    states = allStates;
-  } else if (!finalToken && detectedState) {
+  const matchingKey = Object.keys(statesByInvestmentRange).find((k) => {
+    const parts = k.split("__");
+    return (
+      parts[parts.length - 1] === pkgItem.range &&
+      parts[parts.length - 2] === pkgItem.investmentRangeLabel
+    );
+  });
+  if (matchingKey) states = statesByInvestmentRange[matchingKey];
+}
+
+if (!states || states.length === 0) {
+  // ✅ Never use ALL_INDIA_STATES — only expansion locations
+  if (!finalToken && detectedState) {
     states = [detectedState];
   } else {
-    states = ALL_INDIA_STATES;
+    states = allStates.length > 0 ? allStates : [];
   }
 }
                   const itemId = `${selectedPlan._id}-${pkgItem.investmentRangeLabel}-${pkgItem.range}`;
@@ -3484,7 +3490,7 @@ background: "linear-gradient(135deg, #4cb04f 0%, #2e7d32 100%)",
                 >
                   {uniqueValidityDays[0]} Days Plan
                 </Typography>
-                <Typography
+                {/* <Typography
                   sx={{
                     fontSize: TEXT_SIZES.xs,
                     fontWeight: "inherit",
@@ -3492,7 +3498,7 @@ background: "linear-gradient(135deg, #4cb04f 0%, #2e7d32 100%)",
                   }}
                 >
                   {plan.planName}
-                </Typography>
+                </Typography> */}
               </Box>
             </Box>
           );
@@ -3563,63 +3569,67 @@ background: "linear-gradient(135deg, #4cb04f 0%, #2e7d32 100%)",
                 mt: 1,
               }}
             >
-              {availableLeads.map((leadOption) => {
-                const rangeSpecificKey = `plan-${selectedPlan._id}-${item.investmentRangeLabel}`;
+            {availableLeads.map((leadOption) => {
+  const rangeSpecificKey = `plan-${selectedPlan._id}-${item.investmentRangeLabel}`;
 
-                const isSelected =
-                  selectedLeadsPerRange[
-                    rangeSpecificKey
-                  ] === leadOption ||
-                  (!selectedLeadsPerRange[
-                    rangeSpecificKey
-                  ] &&
-                    leadOption ===
-                      availableLeads[0]);
+  const isSelected =
+    selectedLeadsPerRange[rangeSpecificKey] === leadOption ||
+    (!selectedLeadsPerRange[rangeSpecificKey] &&
+      leadOption === availableLeads[0]);
 
-                return (
-                  <Box
-                    key={leadOption}
-                    onClick={() =>
-                      handleLeadsChange(
-                        rangeSpecificKey,
-                        leadOption,
-                      )
-                    }
-                    sx={{
-                      px: 1.5,
-                      py: 0.7,
-                      borderRadius: 1.5,
-                      cursor: "pointer",
-                      textAlign: "center",
-                      transition:
-                        "all 0.2s ease",
-                      backgroundColor: isSelected
-                        ? COLORS.secondary
-                        : COLORS.white,
-                      color: isSelected
-                        ? COLORS.white
-                        : COLORS.black,
-                      fontWeight: isSelected
-                        ? 700
-                        : 600,
-                      fontSize: "0.95rem",
-                      border: `1px solid ${
-                        isSelected
-                          ? COLORS.secondary
-                          : COLORS.border
-                      }`,
-                      whiteSpace: "nowrap",
-                      "&:hover": {
-                        backgroundColor: isSelected
-                          ? COLORS.secondaryDark
-                          : COLORS.lightOrange,
-                      },
-                    }}
-                  >
-                    {leadOption}
-                  </Box>
-                );
-              })}
+  // ✅ ADD THIS: Check if ANY item in this investment range label is already in summary
+  const isLockedInSummary = paymentSummary.some(
+    (group) =>
+      group.planId === selectedPlan._id &&
+      group.investmentRangeLabel === item.investmentRangeLabel &&
+      movedGroupKeys.includes(group.groupKey)
+  );
+
+  return (
+    <Box
+      key={leadOption}
+      onClick={() => {
+        // ✅ ADD THIS: Block change and show warning if locked
+        if (isLockedInSummary) {
+          openSnack(
+            "Remove this range from the summary first to change leads",
+            "warning"
+          );
+          return;
+        }
+        handleLeadsChange(rangeSpecificKey, leadOption);
+      }}
+      sx={{
+        px: 1.5,
+        py: 0.7,
+        borderRadius: 1.5,
+        cursor: isLockedInSummary ? "not-allowed" : "pointer", // ✅ cursor change
+        textAlign: "center",
+        transition: "all 0.2s ease",
+        backgroundColor: isSelected
+          ? COLORS.secondary
+          : COLORS.white,
+        color: isSelected ? COLORS.white : COLORS.black,
+        fontWeight: isSelected ? 700 : 600,
+        fontSize: "0.95rem",
+        border: `1px solid ${
+          isSelected ? COLORS.secondary : COLORS.border
+        }`,
+        opacity: isLockedInSummary ? 0.5 : 1, // ✅ visually dimmed when locked
+        whiteSpace: "nowrap",
+        "&:hover": {
+          backgroundColor: isLockedInSummary
+            ? COLORS.white  // ✅ no hover effect when locked
+            : isSelected
+            ? COLORS.secondaryDark
+            : COLORS.lightOrange,
+        },
+      }}
+    >
+      {leadOption}
+    </Box>
+  );
+})}
             </Box>
           ) : (
             <Typography
@@ -3889,7 +3899,7 @@ background: "linear-gradient(135deg, #4cb04f 0%, #2e7d32 100%)",
           color: COLORS.black,
         }}
       >
-        ₹{(pricePerState * uniqueGroupStatesCount).toLocaleString("en-IN")}
+        ₹{(pricePerState ).toLocaleString("en-IN")}
       </Typography>
       <Typography
         sx={{
