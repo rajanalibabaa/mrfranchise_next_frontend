@@ -147,8 +147,8 @@ const BrandDashboard = () => {
       case "actionManager":
         return <BrandRequestHandle />;
 
-      case "packageUpgrade":
-        return <PaymentPackageUpgrade />;  
+      // case "packageUpgrade":
+      //   return <PaymentPackageUpgrade />;  
 
       case "ContactMappingForLeads":
         return <ContactMappingForLeads brandOwnerId="80469c64-efe0-4ef1-891c-86c033f46d91" />;

@@ -1,6 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import React, {
+  useState,
+  useEffect,
+} from "react";
+
 import {
   Box,
   Drawer,
@@ -30,12 +34,19 @@ export default function Sidebar({
 }) {
   const theme = useTheme();
 
-  const isMobileOrTablet = useMediaQuery(
-    theme.breakpoints.down("md")
-  );
+  const isMobileOrTablet =
+    useMediaQuery(
+      theme.breakpoints.down("md")
+    );
 
   const [mobileOpen, setMobileOpen] =
     useState(false);
+
+  useEffect(() => {
+    if (!isMobileOrTablet) {
+      setMobileOpen(false);
+    }
+  }, [isMobileOrTablet]);
 
   const handleDrawerToggle = () => {
     setMobileOpen((prev) => !prev);
@@ -62,16 +73,16 @@ export default function Sidebar({
       label: "Action Manager",
       icon: <ManageAccountsIcon />,
     },
-     {
+    {
       key: "ContactMappingForLeads",
       label: "Contact Mapping for Leads",
       icon: <TrendingUpIcon />,
     },
-    {
-      key: "packageUpgrade",
-      label: "Package Upgrade",
-      icon: <TrendingUpIcon />,
-    },
+    // {
+    //   key: "packageUpgrade",
+    //   label: "Package Upgrade",
+    //   icon: <TrendingUpIcon />,
+    // },
   ];
 
   const drawerContent = (
@@ -137,7 +148,7 @@ export default function Sidebar({
 
               backgroundColor:
                 activePage === item.key
-                  ? "#1976d2"
+                  ? "#d48c28"
                   : "#fff",
 
               color:
@@ -150,12 +161,13 @@ export default function Sidebar({
                   ? "none"
                   : "1px solid #e5e5e5",
 
-              transition: "0.2s ease",
+              transition:
+                "all .2s ease",
 
               "&:hover": {
                 backgroundColor:
                   activePage === item.key
-                    ? "#1565c0"
+                    ? "#d48c28"
                     : "#f5f5f5",
               },
             }}
@@ -174,7 +186,7 @@ export default function Sidebar({
         ))}
       </Box>
 
-      {/* Close Button Mobile */}
+      {/* Mobile Close */}
       {isMobileOrTablet && (
         <>
           <Divider />
@@ -189,7 +201,8 @@ export default function Sidebar({
             <IconButton
               onClick={handleDrawerToggle}
               sx={{
-                border: "1px solid #ddd",
+                border:
+                  "1px solid #ddd",
               }}
             >
               <CloseIcon />
@@ -202,7 +215,7 @@ export default function Sidebar({
 
   return (
     <>
-      {/* Mobile Header */}
+      {/* Mobile / Tablet Header */}
       {isMobileOrTablet && (
         <AppBar
           position="fixed"
@@ -216,7 +229,9 @@ export default function Sidebar({
           <Toolbar>
             <IconButton
               edge="start"
-              onClick={handleDrawerToggle}
+              onClick={
+                handleDrawerToggle
+              }
             >
               <MenuIcon />
             </IconButton>
@@ -238,33 +253,48 @@ export default function Sidebar({
       {!isMobileOrTablet && (
         <Box
           sx={{
-            width: DESKTOP_DRAWER_WIDTH,
+            width:
+              DESKTOP_DRAWER_WIDTH,
             minHeight: "100vh",
             borderRight:
               "1px solid #e5e5e5",
-            backgroundColor: "#fff",
+            backgroundColor:
+              "#fff",
             position: "sticky",
             top: 0,
+            flexShrink: 0,
           }}
         >
           {drawerContent}
         </Box>
       )}
 
-      {/* Mobile Drawer */}
+      {/* Mobile / Tablet Drawer */}
       <Drawer
         anchor="left"
-        open={mobileOpen}
-        onClose={handleDrawerToggle}
+        open={
+          isMobileOrTablet &&
+          mobileOpen
+        }
+        onClose={
+          handleDrawerToggle
+        }
         ModalProps={{
           keepMounted: true,
         }}
         sx={{
+          display: {
+            xs: "block",
+            md: "none",
+          },
+
           "& .MuiDrawer-paper": {
-            width: MOBILE_DRAWER_WIDTH,
+            width:
+              MOBILE_DRAWER_WIDTH,
             maxWidth: "85vw",
-            mt: "50px", // start below AppBar
-            boxSizing: "border-box",
+            mt: "56px",
+            boxSizing:
+              "border-box",
           },
         }}
       >
