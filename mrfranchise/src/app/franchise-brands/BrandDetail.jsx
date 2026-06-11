@@ -326,13 +326,39 @@ const handleSubmit = useCallback(
           planToInvest: "",
           readyToInvest: "",
         });
-                alert("✅ Success! Your application has been submitted.");
- if (whatsappNumber) {
-          const cleanNumber = whatsappNumber.replace(/[\s()-]/g, "");
-          const message = encodeURIComponent(
-            `Hi, I just submitted an application for the ${brandName} franchise. I'm interested in discussing this opportunity further.`
-          );
-          window.open(`https://wa.me/${cleanNumber}?text=${message}`, "_blank");
+        alert("✅ Enquiry submitted successfully!");
+        const brandUrl = window.location.href;
+
+if (whatsappNumber) {
+  const cleanNumber = whatsappNumber.replace(/[\s()-]/g, "");
+
+  const message = encodeURIComponent(
+`Hello ${brandName} Team,
+
+I have successfully submitted my enquiry through Mr Franchise and I am interested in learning more about your franchise opportunity.
+
+Brand: ${brandName}
+Brand Page: ${brandUrl}
+
+I would appreciate it if your team could share detailed information regarding:
+• Investment requirements
+• Franchise model
+• Expected returns
+• Expansion opportunities
+• Support and training provided
+
+Looking forward to discussing this opportunity with you.
+
+Thank you.
+
+Submitted via Mr Franchise
+https://mrfranchise.in`
+  );
+
+  window.open(
+    `https://wa.me/${cleanNumber}?text=${message}`,
+    "_blank"
+  );
         }
       } else {
         throw new Error(response.data?.message || "Unknown error occurred");
