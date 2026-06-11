@@ -128,11 +128,11 @@ export const openBrandDialog = (brand, openInNewTab = true) => async (dispatch) 
       .replace(/^-|-$/g, "");
 
   const slug = clean(brand.slug);
-  const city = clean(fullBrand?.brandDetails?.city);
+  const district = clean(fullBrand?.brandDetails?.district);
   const state = clean(fullBrand?.brandDetails?.state);
 
   // 🔥 FINAL SEO URL
-  const brandUrl = `/franchise-brands/${slug}-franchise-in-${city}-${state}_${slug}`;
+  const brandUrl = `/franchise-brands/start-your-${slug}-franchise-business-opportunity-in-${district}-${state}_${slug}`;
 
   // 🔥 STORE DATA
   if (typeof window !== "undefined") {

@@ -234,7 +234,7 @@ export async function generateStaticParams() {
       page += 1;
     }
 
-    // console.log("✅ Total slugs generated:", allSlugs.length);
+    console.log("✅ Total slugs generated:", allSlugs.length);
 
     return allSlugs;
   } catch (error) {

@@ -3,6 +3,7 @@ const nextConfig = {
   // output: "export",
   reactStrictMode: true,
   trailingSlash: true,
+  staticPageGenerationTimeout: 1200,
 
   images: {
     unoptimized: true,

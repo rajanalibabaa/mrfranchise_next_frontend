@@ -1,32 +1,25 @@
 "use client";
 import { useEffect, useState } from "react";
-import {useParams } from "next/navigation";
-
+import { useParams } from "next/navigation";
+import axios from "axios";
 import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
 import CircularProgress from "@mui/material/CircularProgress";
-import { GetApiCall } from "@/Api/DefaultApi";
-import { api } from "@/Api/api";
-import PackageCard from "@/ui/cards/PackageCard";
 import LeadsTableOutlet from "@/ui/tables/LeadsTableOutlet";
 import { getUserId } from "@/Utils/autherId";
 import ErrorPopup from "@/ui/popup/ErrorPopup";
+
 const userId = getUserId();
+
 const Leads = () => {
   const { search } = useParams();
   const query = new URLSearchParams(search);
   const id = query.get("id") || userId;
 
-  const [brandPackage, setBrandPackage] = useState(null);
-  const [leads, setLeads] = useState(null);
-  const [pagination, setPagination] = useState(null);
-  const [selectedPackage, setSelectedPackage] = useState(null);
-  const [hasMore, setHasMore] = useState(true);
-
-  const [selectedFilter, setSelectedFilter] = useState("");
+  const [leads, setLeads] = useState([]);
+  const [filteredLeads, setFilteredLeads] = useState([]);
+  const [brandInfo, setBrandInfo] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [selectedDateFilter, setSelectedDateFilter] = useState("");
-  const [isReset, setReset] = useState(false);
-
   const [error, setError] = useState("");
 
   const handleAxiosError = (err) => {
@@ -34,260 +27,119 @@ const Leads = () => {
       err?.response?.data?.message ||
       err?.message ||
       "Something went wrong. Try again.";
-
     setError(msg);
   };
 
-  const fetchBrandAndLeads = async (id) => {
+  const fetchLeads = async (brandId) => {
     try {
-      const res = await GetApiCall(
-        `${api.allBrandsApi.get.getBrandByID}/${id}`,
-        { paymentHistory: true }
+      setLoading(true);
+      const res = await axios.post(
+        `https://mrfranchisebackend.mrfranchise.in/api/v1/instantapply/getSentLeadsByBrandIdEnquires`,
+        { brandId }
       );
 
       const responseData = res?.data;
+      console.log("===responsedata", responseData);
 
-      setBrandPackage(responseData?.data || null);
-      setSelectedPackage(responseData?.data?.activePackage);
+      if (responseData?.success) {
+        const dataArray = responseData?.data || [];
 
-      if (responseData?.statuscode === 200) {
-        const res2 = await GetApiCall(
-          `${api.allBrandsApi.get.getleadsbybrandid}/${id}`,
-          {
-            packageStartDate:
-              responseData?.data?.activePackage?.packageUpdatedTime,
-          }
+        // Extract all brandsSent entries with parent investor info
+        const allLeads = [];
+
+        dataArray.forEach((item) => {
+          const brandsSent = item?.brandsSent || [];
+          brandsSent.forEach((sent) => {
+            allLeads.push({
+              _id: sent._id,
+              investorName: item.investorName,
+              investorEmail: item.investorEmail,
+              investorPhone: item.investorPhone,
+              investorId: item.investorId,
+              city: item.city,
+              state: item.state,
+              district: item.district,
+              industry: item.industry,
+              category: item.category,
+              investmentRange: item.investmentRange,
+              planToInvest: item.planToInvest,
+              readyToInvest: item.readyToInvest,
+              status: item.status,
+              brandName: sent.brandName,
+              brandEmail: sent.brandEmail,
+              brandId: sent.brandId,
+              emailSent: sent.emailSent,
+              emailSentAt: sent.emailSentAt,
+            });
+          });
+        });
+
+        // Sort by latest emailSentAt
+        allLeads.sort(
+          (a, b) => new Date(b.emailSentAt) - new Date(a.emailSentAt)
         );
 
-        if (res2?.data?.statuscode === 200) {
-          setLeads(res2?.data?.data.leads);
-          setPagination(res2?.data?.data.pagination);
-          setHasMore(true);
-        }
+        setLeads(allLeads);
+        setFilteredLeads(allLeads);
+        setBrandInfo(dataArray[0] || null);
       } else {
-        setError("Server error");
+        setError("Failed to fetch leads.");
       }
-    } catch (error) {
-      console.error("Error fetching brand:", error);
-      handleAxiosError(error);
+    } catch (err) {
+      console.error("Error fetching leads:", err);
+      handleAxiosError(err);
+    } finally {
+      setLoading(false);
     }
   };
 
+  // Date filter logic
+  const handleDateFilter = (days) => {
+    setSelectedDateFilter(days);
+    if (!days) {
+      setFilteredLeads(leads);
+      return;
+    }
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - Number(days));
+    const filtered = leads.filter(
+      (lead) => new Date(lead.emailSentAt) >= cutoff
+    );
+    setFilteredLeads(filtered);
+  };
+
+  const handleReset = () => {
+    setSelectedDateFilter("");
+    setFilteredLeads(leads);
+  };
+
   useEffect(() => {
-    fetchBrandAndLeads(id);
+    fetchLeads(id);
   }, [id]);
 
-  if (!brandPackage)
+  if (loading) {
     return (
       <Box p={4} display="flex" justifyContent="center">
         <CircularProgress />
       </Box>
     );
-
-  const handlePackageClick = async (pkg, type, value) => {
-    setSelectedPackage(pkg);
-
-    const cheak1 = pkg?.packageUpdatedTime || pkg.packageStartTime;
-    const cheak2 =
-      selectedPackage?.packageUpdatedTime || selectedPackage.packageStartTime;
-
-    if (cheak1 !== cheak2) {
-      setSelectedFilter("");
-      setSelectedDateFilter("");
-    }
-
-    let queryParams = {};
-
-    if (pkg.packageType === "free") {
-      queryParams = {
-        status: pkg?.isActive,
-        leadType: pkg?.packageType,
-      };
-    } else {
-      queryParams = {
-        packageStartDate: pkg?.packageUpdatedTime || pkg.packageStartTime,
-        status: pkg?.isActive,
-        leadType: "paid",
-      };
-    }
-
-    if (type === "match") {
-      setSelectedFilter("");
-      setSelectedFilter(value);
-      queryParams.filter = value;
-      queryParams.dateFilter = selectedDateFilter;
-    }
-
-    if (type === "date") {
-      setSelectedDateFilter("");
-      setSelectedDateFilter(value);
-      queryParams.dateFilter = value;
-      queryParams.filter = selectedFilter;
-    }
-
-    try {
-      const res2 = await GetApiCall(
-        `${api.allBrandsApi.get.getleadsbybrandid}/${id}`,
-        queryParams
-      );
-
-      if (res2?.data?.statuscode === 200) {
-        setLeads(res2?.data?.data?.leads);
-        setPagination(res2?.data?.data?.pagination);
-        setHasMore(true);
-      } else {
-        setError("Could not load leads.");
-      }
-    } catch (error) {
-      console.error("Package click error:", error);
-      handleAxiosError(error);
-    }
-  };
-
-  const loadMore = async () => {
-    if (!pagination) return;
-
-    const nextPage = pagination.currentPage + 1;
-    if (nextPage >= pagination.totalPages) {
-      setHasMore(false);
-      return;
-    }
-
-    let queryParams = { page: nextPage, limit: pagination.pageSize };
-
-    if (selectedPackage) {
-      if (selectedPackage?.packageType === "free") {
-        queryParams.status = selectedPackage?.isActive;
-        queryParams.leadType = "free";
-      } else {
-        queryParams.packageStartDate =
-          selectedPackage?.packageUpdatedTime ||
-          selectedPackage?.packageStartTime;
-        queryParams.status = selectedPackage?.isActive;
-        queryParams.leadType = "paid";
-      }
-    }
-
-    if (selectedFilter) {
-      queryParams.filter = selectedFilter;
-    }
-
-    try {
-      const res = await GetApiCall(
-        `${api.allBrandsApi.get.getleadsbybrandid}/${id}`,
-        queryParams
-      );
-
-      if (res?.data?.statuscode === 200) {
-        setLeads((prev) => [...prev, ...res.data.data.leads]);
-        setPagination(res.data.data.pagination);
-      }
-    } catch (e) {
-      console.error("Load more error:", e);
-      handleAxiosError(e);
-    }
-  };
-
-  const handleReset = () => {
-    setReset(true);
-    setSelectedDateFilter("");
-    setSelectedFilter("");
-
-    setTimeout(() => {
-      setReset(false);
-      handlePackageClick(selectedPackage);
-    }, 500);
-  };
+  }
 
   return (
-    <Box p={3}>
-      <Typography variant="h5" fontWeight="600" mb={2}>
-        Packages
-      </Typography>
-
-   <Box
-  display="grid"
-  sx={{
-    gridTemplateColumns: {
-      xs: "repeat(1, 1fr)", // mobile
-      sm: "repeat(2, 1fr)", // tablet
-      md: "repeat(5, 1fr)", // desktop
-    },
-    gap: 2,
-    overflowX: "auto",
-    pb: 1,
-    "&::-webkit-scrollbar": { height: 6 },
-    "&::-webkit-scrollbar-thumb": { background: "#ccc", borderRadius: 2 },
-  }}
->
-        {brandPackage?.activePackage && (
-          <Box
-        sx={{
-    cursor: "pointer",
-    // border:
-    //   selectedPackage?._id === brandPackage?.activePackage?._id
-    //     ? "1px solid #08612c"
-    //     : "1px solid transparent",
-    borderRadius: 2,
-    width: {
-      xs: "100%",   // 📱 mobile smaller width
-      sm: "100%",  // desktop full width
-    },
-  }}
-            onClick={() => handlePackageClick(brandPackage.activePackage)}
-          >
-            <PackageCard
-              data={brandPackage.activePackage}
-              background="#08612cff"
-              color="white"
-            />
-          </Box>
-        )}
-
-        {brandPackage?.oldPackageHistory?.length > 0 &&
-          brandPackage?.oldPackageHistory.map((pkg, i) => (
-            <Box
-              key={pkg._id || i}
-              sx={{
-                cursor: "pointer",
-                border:
-                  selectedPackage?._id === pkg._id
-                    ? "2px solid #ff9800"
-                    : "2px solid transparent",
-                borderRadius: 2,  
-                            }}
-              onClick={() => handlePackageClick(pkg)}
-            >
-              <PackageCard data={pkg} />
-            </Box>
-          ))}
-      </Box>
-
-      <Box mt={4}>
-        <LeadsTableOutlet
-          leads={leads}
-          pagination={pagination}
-          loadMore={loadMore}
-          hasMore={hasMore}
-          // leadsFilter={[
-          //   { label: "Category Investmentrange", value: "catInv" },
-          //   { label: "Category Location", value: "catLoc" },
-          // ]}
-          dateFilter={[
-            { label: "Last 3 days", value: 3 },
-            { label: "Last 7 days", value: 7 },
-            { label: "Last 30 days", value: 30 },
-          ]}
-          selectedPackage={selectedPackage}
-          selectedFilter={selectedFilter}
-          setSelectedFilter={setSelectedFilter}
-          selectedDateFilter={selectedDateFilter}
-          setSelectedDateFilter={setSelectedDateFilter}
-          handlePackageClick={handlePackageClick}
-          handleReset={handleReset}
-          isReset={isReset}
-        />
-      </Box>
+    <Box p={1}>
+      <LeadsTableOutlet
+        leads={filteredLeads}
+        totalLeads={leads.length}
+        dateFilter={[
+          { label: "Last 3 days", value: 3 },
+          { label: "Last 7 days", value: 7 },
+          { label: "Last 30 days", value: 30 },
+        ]}
+        selectedDateFilter={selectedDateFilter}
+        onDateFilter={handleDateFilter}
+        onReset={handleReset}
+        loading={loading}
+      />
 
       {error && (
         <ErrorPopup

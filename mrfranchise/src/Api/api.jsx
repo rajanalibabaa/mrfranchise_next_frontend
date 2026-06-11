@@ -31,7 +31,7 @@ export const api = {
   instantApplyApi: {
     post: `${API_BASE_URL}/instantapply/postInstaApply`,
     get: {
-      getInstaApplyById: `${API_BASE_URL}/instantapply/getInstaApplyById`,
+      getInstaApplyById: `${API_BASE_URL}/instantapply`,
       getAllInstaApply: `${API_BASE_URL}/instantapply/getAllInstaApply`,
       getAllLeads: `${API_BASE_URL}/instantapply/getAllLeads`,
     }

@@ -32,7 +32,7 @@ export default function PaymentButton({ amount, packageName, packageData, onSucc
       }
 
       setBrandData({
-        name: brand?.brandDetails?.fullName || "MrFranchise User",
+        name: brand?.brandDetails?.brandName || "MrFranchise User",
         email: brand?.brandDetails?.email || "",
         phone: brand?.brandDetails?.mobileNumber || "",
         brandID: brand?.brandID || uuid,

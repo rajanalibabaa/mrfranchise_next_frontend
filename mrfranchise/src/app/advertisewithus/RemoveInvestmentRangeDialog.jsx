@@ -7,7 +7,9 @@ import {
   Typography,
   Button,
   Box,
+  IconButton,
 } from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
 
 const RemoveInvestmentRangeDialog = ({
   open,
@@ -41,20 +43,20 @@ const RemoveInvestmentRangeDialog = ({
       maxWidth="xs"
       fullWidth
       sx={{
-    '& .MuiDialog-container': {
-      alignItems: 'flex-start', // Aligns dialog to the top
-    },
-  }}
+        '& .MuiDialog-container': {
+          alignItems: 'flex-start',
+        },
+      }}
       PaperProps={{
         sx: {
           borderRadius: 3,
           border: `2px solid ${COLORS.primary}`,
           boxShadow: `0 8px 32px ${COLORS.shadow}`,
-           marginTop: '10vh',
+          marginTop: '10vh',
         },
       }}
     >
-      {/* Header */}
+      {/* Header with Close Icon */}
       <DialogTitle
         sx={{
           background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryDark} 100%)`,
@@ -62,13 +64,27 @@ const RemoveInvestmentRangeDialog = ({
           fontWeight: 700,
           color: COLORS.white,
           py: 2,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
         }}
       >
         Confirm Removal
+        <IconButton
+          onClick={handleDialogClose}
+          sx={{
+            color: COLORS.white,
+            '&:hover': {
+              backgroundColor: 'rgba(255, 255, 255, 0.2)',
+            },
+          }}
+        >
+          <CloseIcon />
+        </IconButton>
       </DialogTitle>
 
       {/* Content */}
-      <DialogContent sx={{ pt: 3, pb: 2 }}>
+      <DialogContent sx={{ pt: 3, pb: 1 , mt:1}}>
         <Typography
           sx={{
             fontSize: TEXT_SIZES.medium,
@@ -83,8 +99,8 @@ const RemoveInvestmentRangeDialog = ({
         {itemToRemove && (
           <Box
             sx={{
-              mt: 2,
-              p: 2,
+              mt: 1,
+              p: 1,
               bgcolor: COLORS.lightOrange,
               borderRadius: 2,
             }}
@@ -123,30 +139,15 @@ const RemoveInvestmentRangeDialog = ({
         )}
       </DialogContent>
 
-      {/* Footer */}
+      {/* Footer - Only Remove button */}
       <DialogActions
         sx={{
-          justifyContent: "space-between",
-          px: 3,
+          justifyContent: "flex-end",
+          px: 2,
           py: 2,
           bgcolor: COLORS.grey[50],
         }}
       >
-        <Button
-          onClick={handleDialogClose}
-          sx={{
-            color: COLORS.grey[700],
-            fontSize: TEXT_SIZES.medium,
-            fontWeight: 600,
-
-            "&:hover": {
-              bgcolor: COLORS.grey[200],
-            },
-          }}
-        >
-          Cancel
-        </Button>
-
         <Button
           onClick={handleConfirmRemove}
           variant="contained"
@@ -156,7 +157,6 @@ const RemoveInvestmentRangeDialog = ({
             fontSize: TEXT_SIZES.medium,
             fontWeight: 600,
             px: 3,
-
             "&:hover": {
               bgcolor: COLORS.primaryDark,
             },
