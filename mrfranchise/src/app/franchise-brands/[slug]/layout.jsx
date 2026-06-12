@@ -159,7 +159,7 @@ export default async function BrandLayout({ children, params }) {
 
   // Generate structured data for SEO
   const structuredData = brand ? generateStructuredData(brand, slug) : null;
-const logo = brand?.uploads?.logo
+// const logo = brand?.uploads?.logo
   return (
     <>
       {/* Structured Data (JSON-LD) */}
@@ -181,64 +181,64 @@ const logo = brand?.uploads?.logo
   );
 }
 
-function cleanSlug(slug) {
-  return slug
-    ?.toLowerCase()
-    .replace(/[^a-z0-9-]/g, "-")
-    .replace(/-+/g, "-")
-    .replace(/^-|-$/g, "")
-    .slice(0, 60); // 🔥 VERY IMPORTANT (keep small)
-}
+// function cleanSlug(slug) {
+//   return slug
+//     ?.toLowerCase()
+//     .replace(/[^a-z0-9-]/g, "-")
+//     .replace(/-+/g, "-")
+//     .replace(/^-|-$/g, "")
+//     .slice(0, 60); // 🔥 VERY IMPORTANT (keep small)
+// }
 
-export async function generateStaticParams() {
-  try {
-    let allSlugs = [];
-    let page = 1;
-    let hasMore = true;
+// export async function generateStaticParams() {
+//   try {
+//     let allSlugs = [];
+//     let page = 1;
+//     let hasMore = true;
 
-    while (hasMore) {
-      const res = await fetch(
-        `https://mrfranchisebackend.mrfranchise.in/api/v1/overAllPlatformOnlyMainCategory?page=${page}&limit=20`,
-        { next: { revalidate: 3600 } }
-      );
+//     while (hasMore) {
+//       const res = await fetch(
+//         `http://localhost:5000/api/v1/overAllPlatformOnlyMainCategory?page=${page}&limit=20`,
+//         { next: { revalidate: 3600 } }
+//       );
 
-      if (!res.ok) break;
+//       if (!res.ok) break;
 
-      const json = await res.json();
+//       const json = await res.json();
 
-      const data = json?.data ?? {};
-      const brands = Array.isArray(data) ? data : data?.brands || [];
+//       const data = json?.data ?? {};
+//       const brands = Array.isArray(data) ? data : data?.brands || [];
 
-      // ✅ Extract slug
-       const slugs = brands
-      .filter((b) => b?.slug)
-      .map((b) => ({
-        slug: cleanSlug(b.slug), // ✅ MUST USE THIS
-      }));
+//       // ✅ Extract slug
+//        const slugs = brands
+//       .filter((b) => b?.slug)
+//       .map((b) => ({
+//         slug: cleanSlug(b.slug), // ✅ MUST USE THIS
+//       }));
 
-      allSlugs.push(...slugs);
+//       allSlugs.push(...slugs);
 
-      // ✅ Pagination logic
-      const pagination = data?.pagination ?? json?.pagination ?? {};
+//       // ✅ Pagination logic
+//       const pagination = data?.pagination ?? json?.pagination ?? {};
 
-      if (pagination?.hasNext !== undefined) {
-        hasMore = pagination.hasNext;
-      } else if (pagination?.hasNextPage !== undefined) {
-        hasMore = pagination.hasNextPage;
-      } else if (pagination?.totalPages !== undefined) {
-        hasMore = page < pagination.totalPages;
-      } else {
-        hasMore = false;
-      }
+//       if (pagination?.hasNext !== undefined) {
+//         hasMore = pagination.hasNext;
+//       } else if (pagination?.hasNextPage !== undefined) {
+//         hasMore = pagination.hasNextPage;
+//       } else if (pagination?.totalPages !== undefined) {
+//         hasMore = page < pagination.totalPages;
+//       } else {
+//         hasMore = false;
+//       }
 
-      page += 1;
-    }
+//       page += 1;
+//     }
 
-    console.log("✅ Total slugs generated:", allSlugs.length);
+//     console.log("✅ Total slugs generated:", allSlugs.length);
 
-    return allSlugs;
-  } catch (error) {
-    console.error("❌ Static params error:", error);
-    return [];
-  }
-}
+//     return allSlugs;
+//   } catch (error) {
+//     console.error("❌ Static params error:", error);
+//     return [];
+//   }
+// }
