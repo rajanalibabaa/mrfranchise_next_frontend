@@ -39,13 +39,14 @@ const COLORS = {
 };
 
 const TEXT_SIZES = {
-  xs: "0.725rem", small: "0.80rem", medium: "0.980rem",
+  xs: "0.725rem", small: "0.80rem", medium: "1.3rem",
   large: "1rem", xl: "1.125rem", xxl: "1.25rem",
 };
 
 // ─── Mobile-only Section Accordion ───────────────────────────────────────────
 const SectionAccordion = ({ 
   title, 
+    fontSize="1.3rem",
   children, 
   defaultExpanded = false,
   expanded: controlledExpanded,
@@ -73,7 +74,7 @@ const SectionAccordion = ({
       elevation={0}
       sx={{
         mb: 1.5,
-        border: `1px solid ${COLORS.border}`,
+        border: `3px solid ${COLORS.primary}`,
         borderRadius: "12px !important",
         overflow: "hidden",
         "&:before": { display: "none" },
@@ -88,9 +89,9 @@ const SectionAccordion = ({
           "& .MuiAccordionSummary-content": { my: 0 },
         }}
       >
-        <Typography sx={{ fontWeight: 700, fontSize: "1rem", color: COLORS.black }}>
-          {title}
-        </Typography>
+     <Typography sx={{ fontWeight: 700,textAlign:"center", fontSize: fontSize, color: COLORS.black , ml:2}}>
+  {title}
+</Typography>
       </AccordionSummary>
       <AccordionDetails sx={{ p: 0 }}>
         {children}
@@ -144,7 +145,7 @@ const StatusChip = ({ item }) => {
 const FreePackageCard = ({ pkg, item, active, handleUpgrade, upgradeSectionRef }) => {
   const [expanded, setExpanded] = useState(false);
   return (
-    <Card sx={{ borderRadius: 2, border: `1px solid ${COLORS.border}`, overflow: "hidden", width: "100%", display: "flex", flexDirection: "column" }}>
+    <Card sx={{ borderRadius: 2, border: `1px solid ${COLORS.secondary}`, overflow: "hidden", width: "100%", display: "flex", flexDirection: "column" }}>
       <CardContent sx={{ p: 1.5, flex: 1, display: "flex", flexDirection: "column" }}>
         <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1 }}>
           <Box sx={{ flex: 1 }}>
@@ -188,7 +189,7 @@ const ListingPackageCard = ({ pkg, item, active, handleUpgrade, formatDate, upgr
   const end   = item.isPending ? "—" : formatDate(item.packageEndDate   || item.PackageEndDate);
   const packageName = item.packagesName || pkg.packagesName;
   return (
-    <Card sx={{ borderRadius: 2, border: `1px solid ${COLORS.border}`, overflow: "hidden", width: "100%", display: "flex", flexDirection: "column" }}>
+    <Card sx={{ borderRadius: 2, border: `1px solid ${COLORS.secondary}`, overflow: "hidden", width: "100%", display: "flex", flexDirection: "column" }}>
       <CardContent sx={{ p: 1.5, flex: 1, display: "flex", flexDirection: "column" }}>
         <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", mb: 1 }}>
           <Box sx={{ flex: 1 }}>
@@ -242,33 +243,81 @@ const LeadPackageCard = ({ pkg, item, active, handleUpgrade, formatDate, openSta
       }))
     : [];
   return (
-    <Card sx={{ borderRadius: 2, border: `1px solid ${COLORS.border}`, overflow: "hidden", width: "100%" }}>
+    <Card sx={{ borderRadius: 2, border: `1px solid ${COLORS.secondary}`, overflow: "hidden", width: "100%" }}>
       <CardContent sx={{ p: 1.5 }}>
         <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", mb: 1, pb: 0.5, borderBottom: `1px solid ${COLORS.border}` }}>
           <Box>
-            <Typography fontWeight={700} fontSize={TEXT_SIZES.small} color={COLORS.black}>{item.validity ? `${item.validity} Days` : "—"}</Typography>
-            <Typography fontSize="0.7rem" color={COLORS.grey[600]}>{item.packagesType || pkg.packagesType} PLAN</Typography>
-          </Box>
+<Typography fontWeight={700} fontSize={"1.5rem"} color={COLORS.primary}>
+  {item.validity ? `${item.validity} Days` : "—"}
+</Typography>
+<Typography fontSize={TEXT_SIZES.medium} color={COLORS.black[900]}sx={{ fontWeight: 600 }}>
+  {item.packagesType || pkg.packagesType} PLAN
+</Typography>          </Box>
           <StatusChip item={item} />
         </Box>
-        <Box sx={{ mb: 1 }}>
-          <Typography fontSize="0.65rem" color={COLORS.grey[600]}>Investment Group</Typography>
-          <Typography fontSize="0.75rem" fontWeight={600} color={COLORS.primaryDark}>{item.investmetRageLabel || item.investmentGroupLabel || "—"}</Typography>
+    
+ <Box
+  sx={{
+    mb: 1,
+    display: "flex",
+    alignItems: "center",
+    gap: 0.5,
+    p: 1,
+    backgroundColor: COLORS.grey[50],
+    borderRadius: 1,
+    justifyContent: "space-evenly",
+  }}
+>          <Typography fontSize="1rem" color={COLORS.black[600]}>Total Leads</Typography>
+          <Typography
+    fontSize="1rem"
+    fontWeight={600}
+    color={COLORS.primaryDark}
+  >{totalLeads}</Typography>
         </Box>
-        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1.5, p: 1, backgroundColor: COLORS.grey[50], borderRadius: 1 }}>
-          <Typography fontSize="0.75rem" color={COLORS.grey[600]}>Total Leads</Typography>
-          <Typography fontWeight={700} fontSize="0.9rem" color={COLORS.black}>{totalLeads}</Typography>
-        </Box>
+                <Box
+  sx={{
+    p: 1,
+    backgroundColor: COLORS.grey[50],
+    borderRadius: 1,
+  }}
+>
+  <Box
+    sx={{
+      display: "flex",
+      justifyContent: "space-evenly",
+      alignItems: "center",
+      mb: 1,
+    }}
+  >
+      <Typography fontSize="0.9rem" color={COLORS.grey[600]}>Start Date:</Typography>
+     <Typography fontSize="0.9rem" fontWeight={500}>
+      {startDate}
+    </Typography>
+  </Box>
+
+  <Box
+    sx={{
+      display: "flex",
+      justifyContent: "space-evenly",
+      alignItems: "center",
+    }}
+  >
+      <Typography fontSize="0.9rem" color={COLORS.grey[600]}>End Date:</Typography>
+     <Typography fontSize="0.9rem" fontWeight={500}>
+      {endDate}
+    </Typography>
+  </Box>
+</Box>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 1 }}>
           <Button size="small" onClick={() => setExpanded(!expanded)}
-            sx={{ flex: 1, color: COLORS.primary, fontSize: "0.75rem", textTransform: "none", fontWeight: 600, border: `1px solid ${COLORS.primary}`, borderRadius: 1.5, py: 0.75, "&:hover": { backgroundColor: COLORS.lightOrange } }}>
+            sx={{ flex: 1, color: COLORS.primary, fontSize: "1.2rem", textTransform: "none", fontWeight: 600, border: `1px solid ${COLORS.primary}`, borderRadius: 1.5, py: 0.75, "&:hover": { backgroundColor: COLORS.lightOrange } }}>
             {expanded ? "View Less" : "View More"}
           </Button>
           <Tooltip title={!active ? "Only active plans can be upgraded" : ""} arrow>
             <span style={{ flex: 1 }}>
               <Button variant="outlined" size="small" onClick={() => handleUpgrade(pkg, item, upgradeSectionRef)}
-                startIcon={<UpgradeIcon sx={{ fontSize: 16 }} />} disabled={!active} fullWidth
-                sx={{ height: 36, fontSize: "0.75rem", textTransform: "none", borderRadius: 1.5, fontWeight: 600, borderColor: COLORS.primary, color: COLORS.primary, "&:hover": { borderColor: COLORS.primaryDark, backgroundColor: COLORS.lightOrange }, "&.Mui-disabled": { borderColor: COLORS.grey[300], color: COLORS.grey[400] } }}>
+                disabled={!active} fullWidth
+            sx={{ flex: 1, color: COLORS.primary, fontSize: "1.2rem", textTransform: "none", fontWeight: 600, border: `1px solid ${COLORS.primary}`, borderRadius: 1.5, py: 0.75, "&:hover": { backgroundColor: COLORS.lightOrange } }}>
                 Upgrade
               </Button>
             </span>
@@ -277,40 +326,55 @@ const LeadPackageCard = ({ pkg, item, active, handleUpgrade, formatDate, openSta
         {expanded && (
           <Box sx={{ mt: 1.5, pt: 1.5, borderTop: `1px solid ${COLORS.border}` }}>
             {[["Sent Leads", sentLeads, COLORS.secondaryDark], ["Remaining Leads", remainingLeads, remainingLeads > 0 ? COLORS.primary : COLORS.grey[400]]].map(([label, val, color]) => (
-              <Box key={label} sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1, p: 1, backgroundColor: COLORS.grey[50], borderRadius: 1 }}>
-                <Typography fontSize="0.75rem" color={COLORS.grey[600]}>{label}</Typography>
-                <Typography fontWeight={600} fontSize="0.85rem" color={color}>{val}</Typography>
+              <Box key={label} sx={{ display: "flex", justifyContent: "space-between",  mb: 1, p: 1, backgroundColor: COLORS.grey[50], borderRadius: 1 }}>
+                <Typography fontSize="1rem" color={COLORS.black[600]}>{label}:</Typography>
+                <Typography fontWeight={600} fontSize="1rem" color={color}>{val}</Typography>
               </Box>
             ))}
-            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1.5, p: 1, backgroundColor: COLORS.grey[50], borderRadius: 1 }}>
-              <Typography fontSize="0.75rem" color={COLORS.grey[600]}>Progress</Typography>
-              <Typography fontWeight={600} fontSize="0.85rem" color={COLORS.primary}>{Math.round(progressVal)}%</Typography>
-            </Box>
+            {/* <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1.5, p: 1, backgroundColor: COLORS.grey[50], borderRadius: 1 }}>
+              <Typography fontSize="1rem" color={COLORS.black[600]}>Progress:</Typography>
+              <Typography fontWeight={600} fontSize="1rem" color={COLORS.primary}>{Math.round(progressVal)}%</Typography>
+            </Box> */}
             {investmentRangesWithStates.length > 0 && (
               <Box sx={{ mb: 1.5 }}>
-                <Typography fontSize="0.65rem" color={COLORS.grey[600]} fontWeight={500} mb={1}>Investment Ranges</Typography>
-                {investmentRangesWithStates.map((rangeData, i) => (
+   <Box
+  sx={{
+    mb: 1,
+    display: "flex",
+    alignItems: "center",
+    gap: 0.5,
+    p: 1,
+    backgroundColor: COLORS.grey[50],
+    borderRadius: 1,
+    justifyContent: "space-evenly",
+  }}
+>
+  <Typography fontSize="1rem" color={COLORS.black[600]}>
+    Investment Group:
+  </Typography>
+
+  <Typography
+    fontSize="1rem"
+    fontWeight={600}
+    color={COLORS.primaryDark}
+  >
+    {item.investmetRageLabel || item.investmentGroupLabel || "—"}
+  </Typography>
+</Box>                {investmentRangesWithStates.map((rangeData, i) => (
                   <Box key={i} sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1, p: 0.75, backgroundColor: COLORS.grey[50], borderRadius: 1 }}>
-                    <Typography fontSize="0.7rem" fontWeight={600} color={COLORS.primaryDark} sx={{ flex: 1 }}>
+                    <Typography fontSize="1rem" fontWeight={600} color={COLORS.primaryDark} sx={{ flex: 1 }}>
                       {rangeData.range.length > 25 ? rangeData.range.substring(0, 25) + "..." : rangeData.range}
                     </Typography>
                     <Box onClick={() => openStatesDialog(rangeData.states, rangeData.range)}
                       sx={{ display: "inline-flex", alignItems: "center", gap: 0.5, cursor: "pointer", backgroundColor: COLORS.white, px: 1, py: 0.5, borderRadius: 1, border: `1px solid ${COLORS.border}` }}>
-                      <Typography fontSize="0.7rem" color={COLORS.primary} fontWeight={600}>{rangeData.states.length} states</Typography>
+                      <Typography fontSize="1rem" color={COLORS.primary} fontWeight={600}>{rangeData.states.length} states</Typography>
                       <VisibilityOutlinedIcon sx={{ fontSize: 14, color: COLORS.primary }} />
                     </Box>
                   </Box>
                 ))}
               </Box>
             )}
-            <Box sx={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 1, p: 0.75, backgroundColor: COLORS.grey[50], borderRadius: 1 }}>
-              {[["Start:", startDate], ["End:", endDate]].map(([label, val]) => (
-                <Box key={label} sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                  <CalendarTodayIcon sx={{ fontSize: 12, color: COLORS.grey[500] }} />
-                  <Typography fontSize="0.65rem" color={COLORS.grey[600]}>{label} {val}</Typography>
-                </Box>
-              ))}
-            </Box>
+
           </Box>
         )}
       </CardContent>
@@ -337,18 +401,20 @@ const MobileTabView = ({ grouped, shouldShowFree, isItemActive, handleUpgrade, f
   if (tabs.length === 0) return null;
 
   const tabSx = (isActive) => ({
-    flex: 1,
-    textAlign: "center",
-    py: 1.25,
-    fontSize: "1.3rem",
-    fontWeight: isActive ? 700 : 400,
-    color: isActive ? COLORS.primary : COLORS.grey[500],
-    borderBottom: isActive ? `2.5px solid ${COLORS.primary}` : "2.5px solid transparent",
-    mb: "-1px",
-    cursor: "pointer",
-    transition: "all 0.15s",
-    userSelect: "none",
-  });
+  flex: 1,
+  textAlign: "center",
+  py: 1.25,
+  fontSize: "1.3rem",
+  fontWeight: isActive ? 700 : 700,
+ border: `1.5px solid ${isActive ? COLORS.primary : COLORS.border}`,
+  color: isActive ? COLORS.white : COLORS.black[600],
+  backgroundColor: isActive ? COLORS.primary : COLORS.white,
+  borderRadius: "8px 8px 8px 8px",
+ 
+  cursor: "pointer",
+  transition: "all 0.15s",
+  userSelect: "none",
+});
 
   return (
     <Box sx={{ width: "100%" }}>
@@ -358,6 +424,7 @@ const MobileTabView = ({ grouped, shouldShowFree, isItemActive, handleUpgrade, f
         borderBottom: `1px solid ${COLORS.border}`,
         backgroundColor: COLORS.grey[50],
         px: 1,
+         gap: 0.5,
       }}>
         {tabs.map(({ key, label }) => (
           <Box key={key} onClick={() => setActiveTab(key)} sx={tabSx(activeTab === key)}>
@@ -389,9 +456,11 @@ const MobileTabView = ({ grouped, shouldShowFree, isItemActive, handleUpgrade, f
               <Box sx={{
                 display: "flex",
                 flexWrap: "wrap",
-                gap: 1,
+              
                 mb: 1.5,
                 pb: 1.5,
+                display: "flex",
+                justifyContent: "space-evenly",
                 borderBottom: `1px solid ${COLORS.border}`,
               }}>
                 {leadItems.map(({ item }, idx) => {
@@ -405,14 +474,17 @@ const MobileTabView = ({ grouped, shouldShowFree, isItemActive, handleUpgrade, f
                         px: 1.5,
                         py: 0.5,
                         borderRadius: "20px",
-                        fontSize: "1rem",
-                        fontWeight: isActive ? 700 : 500,
+                        fontSize: "1.2rem",
+                        fontWeight: isActive ? 500 : 500,
                         cursor: "pointer",
                         border: `1.5px solid ${isActive ? COLORS.primary : COLORS.border}`,
                         backgroundColor: isActive ? COLORS.primary : COLORS.white,
                         color: isActive ? COLORS.white : COLORS.grey[600],
                         transition: "all 0.15s",
                         userSelect: "none",
+                    alignItems: "center",
+                        display: "flex",
+jusifyContent: "space-evenly",
                       }}
                     >
                       {label}
@@ -778,12 +850,13 @@ const ExistingPackageDisplay = ({
   /* ── render ── */
   return (
     <>
-      <SectionAccordion title="Current Active Plans" defaultExpanded>
+      <SectionAccordion   title=" CURRENT ACTIVE PLANS" defaultExpanded>
         <Box sx={{
           display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
           width: "100%", mb: 5, px: { xs: 0, sm: 1, md: 1 },
         }}>
           <Typography variant="h4" sx={{
+            display: { xs: "none", sm: "block" },
             fontWeight: 700, color: COLORS.black, mb: 2,
             fontSize: { xs: "1.3rem", sm: "1.5rem", md: "1.9rem" },
             textAlign: "center",
@@ -794,7 +867,7 @@ const ExistingPackageDisplay = ({
           {!hasAnyPackages ? (
             <Paper elevation={0} sx={{
               p: 1, textAlign: "center", borderRadius: 2,
-              border: `1px dashed ${COLORS.border}`, backgroundColor: COLORS.grey[50],
+              border: `1px dashed ${COLORS.primary}`, backgroundColor: COLORS.grey[50],
               width: "100%", maxWidth: { xs: "100%", sm: "500px" },
             }}>
               <Typography fontSize={TEXT_SIZES.medium} color={COLORS.grey[500]}>No packages found</Typography>

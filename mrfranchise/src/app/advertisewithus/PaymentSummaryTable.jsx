@@ -33,6 +33,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 // ─── Mobile-only Section Accordion ───────────────────────────────────────────
 const SectionAccordion = ({ 
   title, 
+    fontSize="1.3rem",
   children, 
   defaultExpanded = false, 
   COLORS,
@@ -76,7 +77,7 @@ const SectionAccordion = ({
           "& .MuiAccordionSummary-content": { my: 0 },
         }}
       >
-        <Typography sx={{ fontWeight: 700, fontSize: "1rem", color: COLORS.black }}>
+        <Typography sx={{ fontWeight: 700,textAlign:"center", fontSize: fontSize, color: COLORS.black }}>
           {title}
         </Typography>
       </AccordionSummary>
@@ -314,14 +315,14 @@ const PaymentSummaryTable = ({
                     sx={{
                       backgroundColor: "rgba(255,255,255,0.15)",
                       borderRadius: 2,
-                      px: 1.5,
+                      px: 1,
                       py: 0.75,
                       textAlign: "center",
                       minWidth: 72,
                       flexShrink: 0,
                     }}
                   >
-                    <Typography sx={{ fontSize: "0.6rem", color: COLORS.white, opacity: 0.85, letterSpacing: 0.3 }}>
+                    <Typography sx={{ fontSize: "1rem", color: COLORS.white, opacity: 0.85, letterSpacing: 0.3 }}>
                       TOTAL LEADS
                     </Typography>
                     <Typography sx={{ fontSize: "1rem", fontWeight: 800, color: COLORS.white, lineHeight: 1.2 }}>
@@ -329,7 +330,7 @@ const PaymentSummaryTable = ({
                         ? planData.totalPlanLeads.toLocaleString("en-IN")
                         : planData.totalPlanLeads}
                     </Typography>
-                    <Typography sx={{ fontSize: "0.58rem", color: COLORS.white, opacity: 0.7 }}>
+                    <Typography sx={{ fontSize: "0.78rem",fontWeight: 700, color: COLORS.white, opacity: 0.7 }}>
                       {planData.lastSelectedLeads} × {planData.totalPlanStates}
                     </Typography>
                   </Box>
@@ -361,10 +362,10 @@ const PaymentSummaryTable = ({
                       }}
                     >
                       <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                        <Typography sx={{ fontSize: "0.85rem", fontWeight: 700, color: COLORS.black }}>
+                        <Typography sx={{ fontSize: "1rem", fontWeight: 700, color: COLORS.black }}>
                           {label}
                         </Typography>
-                        <Typography sx={{ fontSize: "0.85rem", fontWeight: 700, color: COLORS.secondaryDark }}>
+                        <Typography sx={{ fontSize: "1rem", fontWeight: 700, color: COLORS.secondaryDark }}>
                           ₹{groupSubtotal.toLocaleString("en-IN")}
                         </Typography>
                       </Box>
@@ -377,7 +378,7 @@ const PaymentSummaryTable = ({
                         <Box
                           key={`${planId}-${rangeGroup.range}-${idx}`}
                           sx={{
-                            px: 2.5,
+                            px: 1,
                             py: 1.75,
                             borderBottom: isLastInGroup ? `1px solid ${COLORS.border}` : "none",
                             backgroundColor: idx % 2 !== 0 ? `${COLORS.lightOrange}40` : COLORS.white,
@@ -388,24 +389,24 @@ const PaymentSummaryTable = ({
                               label={rangeGroup.range}
                               size="small"
                               sx={{
-                                fontSize: "0.7rem",
+                                fontSize: "1rem",
                                 height: 26,
-                                backgroundColor: COLORS.lightOrange,
+                                backgroundColor: COLORS.white,
                                 color: COLORS.black,
                                 fontWeight: 600,
                               }}
                             />
 
-                            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                              <Typography sx={{ fontSize: "0.62rem", color: COLORS.grey[500], fontWeight: 500, textTransform: "uppercase", letterSpacing: 0.4 }}>
+                            <Box sx={{ display: "flex",flexDirection:"flex-end", alignItems: "center", gap: 1 }}>
+                              {/* <Typography sx={{ fontSize: "0.62rem", color: COLORS.grey[500], fontWeight: 500, textTransform: "uppercase", letterSpacing: 0.4 }}>
                                 States
-                              </Typography>
+                              </Typography> */}
                               {rangeGroup.items[0]?.isListingPlan ? (
                                 <Typography sx={{ fontSize: "0.78rem", fontWeight: 700, color: COLORS.black }}>
                                   All States
                                 </Typography>
                               ) : (
-                                <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                                <Box sx={{ display: "flex",flexDirection:"flex-end",  gap: 0.5 }}>
                                   <Typography sx={{ fontSize: "1rem", fontWeight: 200, color: COLORS.black, lineHeight: 1 }}>
                                     {rangeGroup.totalStates}
                                   </Typography>
@@ -748,13 +749,13 @@ const PaymentSummaryTable = ({
         }}
       >
         {/* ── Wrap entire summary in mobile accordion ── */}
-        <SectionAccordion title="Summary" defaultExpanded COLORS={COLORS} expanded={sectionExpanded}
+        <SectionAccordion title="SELECTED PLAN SUMMARY" defaultExpanded COLORS={COLORS} expanded={sectionExpanded}
   onChange={onSectionChange}>
           {/* Header */}
           <Box sx={{ mb: 2, pt: { xs: 1, sm: 0 } }}>
             <Typography
               variant="h5"
-              sx={{ fontWeight: 700, color: COLORS.black, mb: 1, fontSize: TEXT_SIZES.xl, ml:{xs:1,sm:0} }}
+              sx={{ fontWeight: 700, color: COLORS.black, mb: 1, fontSize: TEXT_SIZES.xl, ml:{xs:1,sm:0} ,display: { xs: "none", sm: "block" }, }}
             >
               Selected Plan Summary
             </Typography>

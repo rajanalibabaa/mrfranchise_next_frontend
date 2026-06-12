@@ -126,7 +126,8 @@ const getUniqueStatesForCheckedItems = (planId, label, items, checkedItems, stat
 
 // ─── Mobile-only Section Accordion ───────────────────────────────────────────
 const SectionAccordion = ({ 
-  title, 
+  title,
+  fontSize="1.3rem",
   children, 
   defaultExpanded = false,
   expanded: controlledExpanded,
@@ -169,7 +170,7 @@ const SectionAccordion = ({
           "& .MuiAccordionSummary-content": { my: 0 },
         }}
       >
-        <Typography sx={{ fontWeight: 700, fontSize: T.lg, color: COLORS.black }}>
+        <Typography sx={{ fontWeight: 700,textAlign:"center", fontSize: fontSize, color: COLORS.black, ml:2 }}>
           {title}
         </Typography>
       </AccordionSummary>
@@ -198,13 +199,13 @@ const LeadsStepper = ({ value, options, onChange }) => {
         width: 24, height: 34, display: "flex", alignItems: "center", justifyContent: "center",
         cursor: idx <= 0 ? "not-allowed" : "pointer",
         transition: "background 0.2s",
-        "&:active": { backgroundColor: idx <= 0 ? COLORS.grey[100] : "rgba(255,153,0,0.2)" },
+        "&:active": { backgroundColor: idx <= 0 ? COLORS.secondary[100] : "rgba(255,153,0,0.2)" },
       }}>
         <RemoveIcon sx={{ fontSize: 20, color: idx <= 0 ? COLORS.grey[400] : COLORS.primary, fontWeight: 900 }} />
       </Box>
 
       <Box sx={{ minWidth: 24, height: 34, display: "flex", alignItems: "center", justifyContent: "center", px: 1, backgroundColor: COLORS.white }}>
-        <Typography sx={{ fontSize: "0.8rem", fontWeight: 800, color: COLORS.primary, letterSpacing: "-0.01em", lineHeight: 1 }}>
+        <Typography sx={{ fontSize: "1rem", fontWeight: 800, color: COLORS.primary, letterSpacing: "-0.01em", lineHeight: 1 }}>
           {value}
         </Typography>
       </Box>
@@ -244,7 +245,7 @@ const RangeGroupCard = ({
           "&:active": { backgroundColor: "#ffe5a0" },
         }}
       >
-        <Typography sx={{ fontSize: T.md, fontWeight: 700, color: COLORS.black }}>
+        <Typography sx={{ fontSize: T.lg, fontWeight: 700, color: COLORS.black }}>
           {label}
         </Typography>
 
@@ -266,7 +267,7 @@ const RangeGroupCard = ({
                       border: `1px solid ${sel ? COLORS.secondary : COLORS.border}`,
                       backgroundColor: sel ? COLORS.secondary : COLORS.white,
                       color: sel ? COLORS.white : COLORS.black,
-                      fontSize: T.sm, fontWeight: 600, cursor: "pointer",
+                      fontSize: T.md, fontWeight: 700, cursor: "pointer",
                     }}>
                     {opt}
                   </Box>
@@ -283,7 +284,7 @@ const RangeGroupCard = ({
       </Box>
 
       <Collapse in={expanded}>
-        <Box sx={{ backgroundColor: COLORS.grey[50], p: 2 }}>
+        <Box sx={{ backgroundColor: COLORS.grey[50], p: 1 }}>
           {(() => {
             const leads = currentLeads || 0;
             const checkedUniqueStates = getUniqueStatesForCheckedItems(
@@ -298,16 +299,16 @@ const RangeGroupCard = ({
             const groupAmount = (pricePerState / divisor) * totalUniqueStates * leads;
 
             return (
-              <Box sx={{ display: "flex", gap: 0.8, mb: 2, borderRadius: 2, backgroundColor: COLORS.white }}>
+              <Box sx={{ display: "flex", gap: 0.5, mb: 2, borderRadius: 2, backgroundColor: COLORS.white }}>
                 <Box sx={{
                   flex: 1, display: "flex", flexDirection: "column", alignItems: "center",
                   backgroundColor: "rgba(255,153,0,0.06)", border: "1px solid rgba(255,153,0,0.18)",
-                  borderRadius: "10px", px: 1, py: 0.8,
+                  borderRadius: "10px", px: 0, py: 0.8,
                 }}>
-                  <Typography sx={{ fontSize: "0.55rem", color: COLORS.grey[600], fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", lineHeight: 1, mb: 0.4, whiteSpace: "nowrap" }}>
+                  <Typography sx={{ fontSize: "0.75rem", color: COLORS.black[600], fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", lineHeight: 1, mb: 0.4, whiteSpace: "nowrap" }}>
                     Per State
                   </Typography>
-                  <Typography sx={{ fontSize: "0.82rem", fontWeight: 800, color: COLORS.primaryDark, lineHeight: 1 }}>
+                  <Typography sx={{ fontSize: "0.85rem", fontWeight: 800, color: COLORS.primaryDark, lineHeight: 1 }}>
                     {fmtINR(pricePerState || 0)}
                   </Typography>
                 </Box>
@@ -319,10 +320,10 @@ const RangeGroupCard = ({
                   backgroundColor: "rgba(76,176,79,0.06)", border: "1px solid rgba(76,176,79,0.18)",
                   borderRadius: "10px", px: 1, py: 0.8,
                 }}>
-                  <Typography sx={{ fontSize: "0.55rem", color: COLORS.grey[600], fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", lineHeight: 1, mb: 0.4, whiteSpace: "nowrap" }}>
+                  <Typography sx={{ fontSize: "0.75rem", color: COLORS.black[600], fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", lineHeight: 1, mb: 0.4, whiteSpace: "nowrap" }}>
                     Total Leads
                   </Typography>
-                  <Typography sx={{ fontSize: "0.82rem", fontWeight: 800, color: COLORS.secondary, lineHeight: 1 }}>
+                  <Typography sx={{ fontSize: "0.85rem", fontWeight: 800, color: COLORS.secondary, lineHeight: 1 }}>
                     {groupTotalLeads.toLocaleString("en-IN")}
                   </Typography>
                 </Box>
@@ -334,10 +335,10 @@ const RangeGroupCard = ({
                   backgroundColor: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.08)",
                   borderRadius: "10px", px: 1, py: 0.8,
                 }}>
-                  <Typography sx={{ fontSize: "0.55rem", color: COLORS.grey[600], fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", lineHeight: 1, mb: 0.4, whiteSpace: "nowrap" }}>
+                  <Typography sx={{ fontSize: "0.75rem", color: COLORS.black[600], fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", lineHeight: 1, mb: 0.4, whiteSpace: "nowrap" }}>
                     Total Amount
                   </Typography>
-                  <Typography sx={{ fontSize: "0.82rem", fontWeight: 800, color: COLORS.black, lineHeight: 1 }}>
+                  <Typography sx={{ fontSize: "0.85rem", fontWeight: 800, color: COLORS.black, lineHeight: 1 }}>
                     {fmtINR(groupAmount)}
                   </Typography>
                 </Box>
@@ -373,21 +374,20 @@ const RangeGroupCard = ({
                       "&.Mui-disabled": { color: COLORS.secondary },
                     }}
                   />
-                  <Typography sx={{ fontSize: T.md, fontWeight: 600, color: COLORS.black }}>
+                  <Typography sx={{ fontSize: T.lg, fontWeight: 600, color: COLORS.black }}>
                     {item.range}
                   </Typography>
                 </Box>
 
                 <Box sx={{
                   display: "flex", alignItems: "center", gap: 0.3,
-                  backgroundColor: COLORS.grey[100], border: `1px solid ${COLORS.border}`,
-                  borderRadius: 1.5, px: 1, py: 0.3,
+              px: 1, py: 0.3,
                 }}>
-                  <Typography sx={{ fontSize: T.sm, fontWeight: 600, color: COLORS.black }}>
+                  <Typography sx={{ fontSize: T.xl, fontWeight: 600, color: COLORS.black }}>
                     {stateCount}
                   </Typography>
                   <IconButton size="small" onClick={(e) => { e.stopPropagation(); onEditStates(label, item.range, planId); }} sx={{ p: 0.2 }}>
-                    <EditIcon sx={{ fontSize: 12, color: COLORS.primary }} />
+                    <EditIcon sx={{ fontSize: 16, color: COLORS.primary }} />
                   </IconButton>
                 </Box>
               </Box>
@@ -768,16 +768,16 @@ const MobilePackageSelection = ({
 
       {/* ── INVESTOR LEAD PLANS ── */}
  <SectionAccordion 
-  title="Investor Lead Plans" 
+  title="INVESTOR LEAD PLANS" 
   defaultExpanded
   expanded={sectionExpanded === "investor"}
   onChange={(isOpen) => onSectionChange?.("investor")(isOpen)}
 >
         <Box sx={{ px: 2, textAlign: "center" }}>
-          <Typography sx={{ fontSize: "1.4rem", fontWeight: 700, color: COLORS.black, mb: 0.5 }}>
+          {/* <Typography sx={{ fontSize: "1.4rem", fontWeight: 700, color: COLORS.black, mb: 0.5 }}>
             INVESTOR LEAD PLANS
-          </Typography>
-          <Typography sx={{ fontSize: T.sm, color: COLORS.grey[600], mb: 2 }}>
+          </Typography> */}
+          <Typography sx={{ fontSize: T.lg, color: COLORS.grey[600], mb: 2 }}>
             Franchise | Dealer and Distributor | Channel Partner | Agent and Association
           </Typography>
 
@@ -789,7 +789,7 @@ const MobilePackageSelection = ({
               onClick={() => setOpenConfirmDialog(true)}
               sx={{
                 mb: 2.5, borderRadius: 2, textTransform: "none", fontWeight: 700,
-                fontSize: T.sm, borderColor: COLORS.secondary, color: COLORS.secondary,
+                fontSize: T.md, borderColor: COLORS.secondary, color: COLORS.secondary,
                 "&:hover": { backgroundColor: COLORS.lightGreen, borderColor: COLORS.secondaryDark },
               }}
             >
@@ -797,7 +797,7 @@ const MobilePackageSelection = ({
             </Button>
 
             <Box sx={{ mb: 1.5 }}>
-              <Typography sx={{ fontSize: T.sm, fontWeight: 700, color: COLORS.black, mb: 0.3 }}>
+              <Typography sx={{ fontSize: T.md, fontWeight: 700, color: COLORS.black, mb: 0.3 }}>
                 Select Campaign Period
               </Typography>
             </Box>
@@ -820,13 +820,13 @@ const MobilePackageSelection = ({
                     flex: 1, textAlign: "center", py: 1.5, px: 1,
                     borderRadius: 3, cursor: "pointer", position: "relative", zIndex: 1, transition: "all 0.2s ease",
                   }}>
-                    <Typography sx={{ fontSize: T.md, fontWeight: 700, color: isSelected ? COLORS.white : COLORS.grey[600], transition: "color 0.2s ease" }}>
+                    <Typography sx={{ fontSize: T.xl, fontWeight: 900, color: isSelected ? COLORS.white : COLORS.grey[600], transition: "color 0.2s ease" }}>
                       {days}
                     </Typography>
-                    <Typography sx={{ fontSize: T.xs, fontWeight: 500, color: isSelected ? "rgba(255,255,255,0.9)" : COLORS.grey[500], transition: "color 0.2s ease" }}>
+                    <Typography sx={{ fontSize: T.xl, fontWeight: 700, color: isSelected ? "rgba(255,255,255,0.9)" : COLORS.grey[500], transition: "color 0.2s ease" }}>
                       Days
                     </Typography>
-                  </Box>
+                  </Box>  
                 );
               })}
             </Box>
@@ -870,7 +870,7 @@ const MobilePackageSelection = ({
                   onClick={handleAddToCart}
                   sx={{
                     height: 48, borderRadius: 2, textTransform: "none", fontWeight: 700,
-                    fontSize: T.md, borderColor: COLORS.border, color: COLORS.black,
+                    fontSize: T.xl, borderColor: COLORS.border, color: COLORS.black,
                     backgroundColor: COLORS.white, "&:hover": { backgroundColor: COLORS.grey[100] },
                   }}
                 >
@@ -881,7 +881,7 @@ const MobilePackageSelection = ({
                   onClick={scrollToPaymentSummary}
                   sx={{
                     height: 48, borderRadius: 2, textTransform: "none", fontWeight: 700,
-                    fontSize: T.md, backgroundColor: "#4cb04f", color: COLORS.white,
+                    fontSize: T.lg, backgroundColor: "#4cb04f", color: COLORS.white,
                     boxShadow: "none", "&:hover": { backgroundColor: COLORS.grey[700], boxShadow: "none" },
                   }}
                 >
@@ -897,15 +897,15 @@ const MobilePackageSelection = ({
       {!hideListingPlans && listingPlans.length > 0 && (
           <Box id="brand-listing-section">
      <SectionAccordion 
-  title="Brand Listing Plans"
+  title="  BRAND LISTING PLANS"
   expanded={sectionExpanded === "listing"}
   onChange={(isOpen) => onSectionChange?.("listing")(isOpen)}
 >
           <Box sx={{ px: 2, pb: 2 }}>
-            <Typography sx={{ fontSize: "1.4rem", fontWeight: 700, color: COLORS.black, mb: 0.5, textAlign: "center" }}>
+            {/* <Typography sx={{ fontSize: "1.4rem", fontWeight: 700, color: COLORS.black, mb: 0.5, textAlign: "center" }}>
               BRAND LISTING PLANS
-            </Typography>
-            <Typography sx={{ fontSize: T.xs, color: COLORS.grey[600], mb: 2, textAlign: "center" }}>
+            </Typography> */}
+            <Typography sx={{ fontSize: T.lg, color: COLORS.grey[600], mb: 2, textAlign: "center" }}>
               List your Brand to increase its Digital Visibility
             </Typography>
 
@@ -945,10 +945,10 @@ const MobilePackageSelection = ({
                       px: 1.4,
                       py: 0.5,
                       borderRadius: "24px",
-                      fontSize: T.sm,
+                      fontSize: T.xl,
                       fontWeight: isActive ? 700 : 500,
                       cursor: "pointer",
-                      whiteSpace: "nowrap",
+                      // whiteSpace: "nowrap",
                       border: `1.5px solid ${isActive ? COLORS.primary : isAdded ? COLORS.secondary : COLORS.border}`,
                       backgroundColor: isActive ? COLORS.primary : isAdded ? "rgba(76,176,79,0.08)" : COLORS.white,
                       color: isActive ? COLORS.white : isAdded ? COLORS.secondary : COLORS.grey[700],
@@ -963,7 +963,7 @@ const MobilePackageSelection = ({
                     }}
                   >
                     {isMostPopular && (
-                      <Typography component="span" sx={{ fontSize: "0.7rem" }}></Typography>
+                      <Typography component="span" sx={{ fontSize: "1rem" }}></Typography>
                     )}
                     {plan.planName}
                     {isAdded && (

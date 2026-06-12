@@ -185,7 +185,7 @@ const PaymentBottomBar = ({
           boxShadow: "0 28px 80px rgba(255,152,0,0.18)",
           transform: position.y === null ? "translateX(-50%) translateY(-2px)" : "translateY(-2px)",
         },
-        mb: { xs: -4, sm: 0 },
+        mb: { xs: -8, sm: 0 },
       }}
     >
       {/* Drag Handle */}
@@ -264,7 +264,7 @@ const PaymentBottomBar = ({
               >
                 <Typography
                   sx={{
-                    fontSize: { xs: "0.55rem", sm: "0.65rem", md: "0.7rem" },
+                    fontSize: { xs: "0.75rem", sm: "0.65rem", md: "0.7rem" },
                     color: "#777",
                     fontWeight: 600,
                     textTransform: "uppercase",
@@ -277,7 +277,7 @@ const PaymentBottomBar = ({
                 </Typography>
                 <Typography
                   sx={{
-                    fontSize: { xs: "0.85rem", sm: "1.1rem", md: "1.5rem" },
+                    fontSize: { xs: "0.95rem", sm: "1.1rem", md: "1.5rem" },
                     fontWeight: 800,
                     color: "#111",
                     lineHeight: 1,
@@ -301,7 +301,7 @@ const PaymentBottomBar = ({
         >
           <Typography
             sx={{
-              fontSize: { xs: "0.55rem", sm: "0.65rem", md: "0.7rem" },
+              fontSize: { xs: "0.75rem", sm: "0.65rem", md: "0.7rem" },
               color: "#777",
               fontWeight: 600,
               letterSpacing: "0.03em",
@@ -341,7 +341,7 @@ const PaymentBottomBar = ({
             px: { xs: 1.5, sm: 2.5, md: 3, lg: 4 },
             background: "linear-gradient(135deg,#ff9800 0%,#ff6f00 100%)",
             color: "#fff",
-            fontSize: { xs: "0.75rem", sm: "0.9rem", md: "1rem" },
+            fontSize: { xs: "0.95rem", sm: "0.9rem", md: "1rem" },
             fontWeight: 800,
             textTransform: "none",
             letterSpacing: "0.02em",

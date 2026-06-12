@@ -2343,8 +2343,8 @@ return allStates.length;
   sx={{
     display: "flex",
     flexDirection: { xs: "column", md: "row" }, // Column on mobile, row on desktop
-    justifyContent: { xs: "flex-start", md: "flex-end" },
-    alignItems: { xs: "flex-start", md: "center" },
+    justifyContent: { xs: "center", md: "flex-end" },
+    alignItems: { xs: "center", md: "center" },
     gap: { xs: 1, md: 2 },
     mb: 3,
     pb: 2,
@@ -2354,33 +2354,52 @@ return allStates.length;
 >
   {/* Brand Name */}
   {(data?.brandDetails?.brandName || data?.brandName || getBrandName()) && (
-    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-      <Typography sx={{ fontSize: TEXT_SIZES.small, color: COLORS.black }}>
+    <Box sx={{ display: "flex", alignItems: "center" }}>
+      <Typography sx={{ fontSize:{xs:TEXT_SIZES.large,sm: TEXT_SIZES.small}, color: COLORS.black , display: { xs: "none", md: "block" } }}>
         Brand Name:
       </Typography>
       <Typography
         sx={{
-          fontSize: TEXT_SIZES.small,
+          fontSize: TEXT_SIZES.xl,
           fontWeight: 700,
-          color: COLORS.primaryDark,
+          color: COLORS.primary,
+          textAlign:"center"
         }}
       >
         {data?.brandDetails?.brandName || data?.brandName || getBrandName()}
       </Typography>
     </Box>
   )}
-
+  {/* Industry */}
+  {(data?.brandDetails?.industry || data?.industry) && (
+    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+      <Typography sx={{ fontSize:{xs:TEXT_SIZES.large,sm: TEXT_SIZES.small}, color: COLORS.black , display: { xs: "none", md: "block" } }}>
+        Industry:
+      </Typography>
+      <Typography
+       sx={{
+          fontSize: TEXT_SIZES.xl,
+          fontWeight: 700,
+          color: COLORS.black,
+          textAlign:"center"
+        }}
+      >
+        {data?.brandDetails?.industry || data?.industry}
+      </Typography>
+    </Box>
+  )}
   {/* Category */}
   {(data?.brandDetails?.category || data?.category) && (
     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-      <Typography sx={{ fontSize: TEXT_SIZES.small, color: COLORS.black }}>
+      <Typography sx={{ fontSize:{xs:TEXT_SIZES.large,sm: TEXT_SIZES.small}, color: COLORS.black,display: { xs: "none", md: "block" } }}>
         Category:
       </Typography>
       <Typography
       sx={{
-          fontSize: TEXT_SIZES.small,
+          fontSize: TEXT_SIZES.medium,
           fontWeight: 700,
-          color: COLORS.primaryDark,
+          color: COLORS.black,
+           textAlign:"center"
         }}
       >
         {data?.brandDetails?.category || data?.category}
@@ -2388,23 +2407,7 @@ return allStates.length;
     </Box>
   )}
 
-  {/* Industry */}
-  {(data?.brandDetails?.industry || data?.industry) && (
-    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-      <Typography sx={{ fontSize: TEXT_SIZES.small, color: COLORS.black }}>
-        Industry:
-      </Typography>
-      <Typography
-       sx={{
-          fontSize: TEXT_SIZES.small,
-          fontWeight: 700,
-          color: COLORS.primaryDark,
-        }}
-      >
-        {data?.brandDetails?.industry || data?.industry}
-      </Typography>
-    </Box>
-  )}
+
 </Box>
 )}
 <ExistingPackageDisplay
