@@ -103,7 +103,7 @@ const Dashboard = () => {
 
     try {
       const res = await axios.post(
-        "https://mrfranchisebackend.mrfranchise.in/api/v1/instantapply",
+        "http://localhost:5000/api/v1/instantapply",
         { applyId: investorUUID },
         { headers: { "Content-Type": "application/json" } }
       );
