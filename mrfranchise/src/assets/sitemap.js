@@ -28,7 +28,7 @@ export default async function sitemap() {
 
   while (hasNextPage) {
     const res = await fetch(
-      `http://localhost:5000/api/v1/overAllPlatformOnlyMainCategory?page=${page}&limit=${limit}`
+      `https://mrfranchisebackend.mrfranchise.in/api/v1/overAllPlatformOnlyMainCategory?page=${page}&limit=${limit}`
     );
 
     if (!res.ok) {
