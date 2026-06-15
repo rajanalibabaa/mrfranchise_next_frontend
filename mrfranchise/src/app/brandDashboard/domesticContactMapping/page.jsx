@@ -1025,7 +1025,7 @@ const StateField = React.memo(({ label, type, value, verified, onChange, onVerif
         <Button
           variant="contained"
           size="small"
-          // onClick={onVerify}
+          onClick={onVerify}
           sx={{ whiteSpace: "nowrap", fontSize: 11, px: 1.5, backgroundColor: "#d38122" }}
         >
           Verify
@@ -1059,7 +1059,7 @@ const InputVerifyCell = React.memo(({ value, verified, onChange, onVerify }) => 
       <Button
         variant="contained"
         size="small"
-        // onClick={onVerify}
+        onClick={onVerify}
         sx={{ fontSize: 10, py: 0.3, px: 1, backgroundColor: "#d38122" }}
       >
         Verify

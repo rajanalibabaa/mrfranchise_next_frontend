@@ -476,7 +476,7 @@ const FranchiseDetails = ({ data = {}, errors = {}, onChange = () => {} }) => {
   };
   const franchiseTypes = [
     "Single Unit",
-    "Multi Unit ",
+    "Multi Unit",
     "Master Franchise",
     "City Franchise",
     "Area Franchise",
