@@ -477,10 +477,26 @@ const FranchiseDetails = ({ data = {}, errors = {}, onChange = () => {} }) => {
     onChange({ fico: updatedFico });
     setSavedFicoModels(updatedFico);
   };
-  const franchiseTypes = {
-  "FRANCHISE": ["KIOSK","CLOUD KITCHEN","SHOP IN SHOP","FOFO-SINGLE UNIT","FOFO-MULTI UNIT","FOFO-MASTER FRANCHISE","FOFO-CITY FRANCHISE","FOFO-AREA FRANCHISE","FOFO-DISTRICT FRANCHISE","FOFO-STATE FRANCHISE","FOFO -COUNTRY", "FICO-SINGLE UNIT","FICO-MULTI UNIT","FICO-MASTER FRANCHISE","FICO-CITY FRANCHISE","FICO-AREA FRANCHISE","FICO-DISTRICT FRANCHISE","FICO-STATE FRANCHISE","FICO-COUNTRY", "COCO-SINGLE UNIT","COCO-MULTI UNIT","COCO-MASTER FRANCHISE","COCO-CITY FRANCHISE","COCO-AREA FRANCHISE","COCO-DISTRICT FRANCHISE","COCO-STATE FRANCHISE","COCO-COUNTRY", "COFO-SINGLE UNIT","COFO-MULTI UNIT","COFO-MASTER FRANCHISE","COFO-CITY FRANCHISE","COFO-AREA FRANCHISE","COFO-DISTRICT FRANCHISE","COFO-STATE FRANCHISE","COFO-COUNTRY", "FOCO-SINGLE UNIT","FOCO-MULTI UNIT","FOCO-MASTER FRANCHISE","FOCO-CITY FRANCHISE","FOCO-AREA FRANCHISE","FOCO-DISTRICT FRANCHISE","FOCO-STATE FRANCHISE","FOCO-COUNTRY"],
-  "DEALERS & DISTRIBUTORS": ["STOCKIST","DEALER","DISTRIBUTOR","WHOLESALE SELLER","STOCKIST-AREA","STOCKIST-CITY","STOCKIST-DISTRICT","STOCKIST-STATE","DEALER-AREA","DEALER-CITY","DEALER-DISTRICT","DEALER-STATE","DISTRIBUTOR-AREA","DISTRIBUTOR-CITY","DISTRIBUTOR-DISTRICT","DISTRIBUTOR-STATE","WHOLESALE SELLER-AREA","WHOLESALE SELLER-CITY","WHOLESALE SELLER-DISTRICT","WHOLESALE SELLER-STATE",],
-  "CHANNEL PARTNERS": ["Single Unit", "Multi Unit", "Master Franchise", "City Franchise", "Area Franchise"],
+const franchiseTypes = {
+  "FRANCHISE": {
+    "KIOSK": ["KIOSK"],
+    "CLOUD KITCHEN": ["CLOUD KITCHEN"],
+    "SHOP IN SHOP": ["SHOP IN SHOP"],
+    "FOFO": ["FOFO - Single Unit", "FOFO - Multi Unit", "FOFO - Master Franchise", "FOFO - City Franchise", "FOFO - Area Franchise", "FOFO - District Franchise", "FOFO - State Franchise"],
+    "FICO": ["FICO - Single Unit", "FICO - Multi Unit", "FICO - Master Franchise", "FICO - City Franchise", "FICO - Area Franchise", "FICO - District Franchise", "FICO - State Franchise"],
+    "COCO": ["COCO - Single Unit", "COCO - Multi Unit", "COCO - Master Franchise", "COCO - City Franchise", "COCO - Area Franchise", "COCO - District Franchise", "COCO - State Franchise"],
+    "COFO": ["COFO - Single Unit", "COFO - Multi Unit", "COFO - Master Franchise", "COFO - City Franchise", "COFO - Area Franchise", "COFO - District Franchise", "COFO - State Franchise"],
+    "FOCO": ["FOCO - Single Unit", "FOCO - Multi Unit", "FOCO - Master Franchise", "FOCO - City Franchise", "FOCO - Area Franchise", "FOCO - District Franchise", "FOCO - State Franchise"],
+  },
+  "DEALERS & DISTRIBUTORS": {
+    "STOCKIST": ["STOCKIST", "STOCKIST - Area", "STOCKIST - City", "STOCKIST - District", "STOCKIST - State"],
+    "DEALER": ["DEALER", "DEALER - Area", "DEALER - City", "DEALER - District", "DEALER - State"],
+    "DISTRIBUTOR": ["DISTRIBUTOR", "DISTRIBUTOR - Area", "DISTRIBUTOR - City", "DISTRIBUTOR - District", "DISTRIBUTOR - State"],
+    "WHOLESALE SELLER": ["WHOLESALE SELLER", "WHOLESALE SELLER - Area", "WHOLESALE SELLER - City", "WHOLESALE SELLER - District", "WHOLESALE SELLER - State"],
+  },
+  "CHANNEL PARTNERS": {
+    "CHANNEL PARTNERS": ["CHANNEL PARTNERS", "CHANNEL PARTNERS - Area", "CHANNEL PARTNERS - City", "CHANNEL PARTNERS - District", "CHANNEL PARTNERS - State"],
+  },
 };
   const franchiseModels = [
     "FRANCHISE",
@@ -1940,32 +1956,55 @@ Franchise Tags
             )}
           </FormControl>
         </Grid>
-        {/* Column 2 - Franchise Type */}
-        <Grid item>
-          <FormControl
-            fullWidth
-            error={!!errors.franchiseType}
-            required
-            size="medium"
-          >
-            <InputLabel>Business Model & Type</InputLabel>
-            <Select
-              value={currentFicoModel.franchiseType}
-              onChange={handleFicoChange}
-              name="franchiseType"
-              label="Franchise Type*"
+   
+    {/* Column 2 - Franchise Type */}
+<Grid item>
+  <FormControl
+    fullWidth
+    error={!!errors.franchiseType}
+    required
+    size="medium"
+  >
+    <InputLabel>Business Model & Type</InputLabel>
+    <Select
+      value={currentFicoModel.franchiseType}
+      onChange={handleFicoChange}
+      name="franchiseType"
+      label="Business Model & Type"
+    >
+      {currentFicoModel.franchiseModel &&
+        franchiseTypes[currentFicoModel.franchiseModel] &&
+        Object.entries(franchiseTypes[currentFicoModel.franchiseModel]).flatMap(
+          ([groupLabel, items]) => [
+            <MenuItem
+              key={`group-${groupLabel}`}
+              disabled
+              sx={{
+                fontWeight: 700,
+                fontSize: "0.75rem",
+                color: "#ff9800 !important",
+                backgroundColor: "#fff8e1",
+                letterSpacing: 1,
+                opacity: "1 !important",
+                pointerEvents: "none",
+                mt: 0.5,
+              }}
             >
-            {(franchiseTypes[currentFicoModel.franchiseModel] || []).map((type) => (
-  <MenuItem key={type} value={type}>
-    {type}
-  </MenuItem>
-))}
-            </Select>
-            {errors.franchiseType && (
-              <FormHelperText error>{errors.franchiseType}</FormHelperText>
-            )}
-          </FormControl>
-        </Grid>
+              ── {groupLabel} ──
+            </MenuItem>,
+            ...items.map((type) => (
+              <MenuItem key={type} value={type} sx={{ pl: 3 }}>
+                {type}
+              </MenuItem>
+            )),
+          ]
+        )}
+    </Select>
+    {errors.franchiseType && (
+      <FormHelperText error>{errors.franchiseType}</FormHelperText>
+    )}
+  </FormControl>
+</Grid>
         {/* Column 3 - Investment Range */}
         <Grid item>
           <FormControl
