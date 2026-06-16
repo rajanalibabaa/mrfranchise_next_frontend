@@ -241,6 +241,7 @@ const upgradeSectionRef = useRef(null);
   const [isUpgradeMode, setIsUpgradeMode] = useState(false);
 const [upgradePlanId, setUpgradePlanId] = useState(null);
   const [showLogin, setShowLogin] = useState(false);
+  const [openSection, setOpenSection] = useState("investor");
   const [snack, setSnack] = useState({
     open: false,
     message: "",
@@ -528,6 +529,9 @@ useEffect(() => {
   const openSnack = useCallback((message, severity = "info") => {
     setSnack({ open: true, message, severity });
   }, []);
+  const handleSectionChange = useCallback((sectionName) => (isOpen) => {
+  setOpenSection(isOpen ? sectionName : null);
+}, []);
 
   const closeSnack = useCallback(() => {
     setSnack((s) => ({ ...s, open: false }));
@@ -634,7 +638,7 @@ useEffect(() => {
           const availableLeads = leadsDropdownData[leadsDataKey] || [];
           const minLeads = availableLeads.length > 0 ? Math.min(...availableLeads) : 1;
           const divisor = minLeads > 0 ? minLeads : 1;
-          
+            
           const itemAmount = (group.pricePerState / divisor) * (states || []).length * (item.selectedLeads || 0);
 
           return {
@@ -2339,9 +2343,12 @@ return allStates.length;
   sx={{
     display: "flex",
     flexDirection: { xs: "column", md: "row" }, // Column on mobile, row on desktop
-    justifyContent: { xs: "flex-start", md: "flex-end" },
-    alignItems: { xs: "flex-start", md: "center" },
+    justifyContent: { xs: "center", md: "flex-end" },
+    alignItems: { xs: "center", md: "center" },
     gap: { xs: 1, md: 2 },
+    backgroundColor: {xs:COLORS.grey[100], md: COLORS.white},
+ border: { xs: `2px solid ${COLORS.secondary}`, md: 'none' },
+     borderRadius: 2,
     mb: 3,
     pb: 2,
     px: { xs: 0, md: 4 },
@@ -2350,33 +2357,52 @@ return allStates.length;
 >
   {/* Brand Name */}
   {(data?.brandDetails?.brandName || data?.brandName || getBrandName()) && (
-    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-      <Typography sx={{ fontSize: TEXT_SIZES.small, color: COLORS.black }}>
+    <Box sx={{ display: "flex", alignItems: "center" }}>
+      <Typography sx={{ fontSize:{xs:TEXT_SIZES.large,sm: TEXT_SIZES.small}, color: COLORS.black , display: { xs: "none", md: "block" } }}>
         Brand Name:
       </Typography>
       <Typography
         sx={{
-          fontSize: TEXT_SIZES.small,
+          fontSize: TEXT_SIZES.xl,
           fontWeight: 700,
-          color: COLORS.primaryDark,
+          color: COLORS.primary,
+          textAlign:"center"
         }}
       >
         {data?.brandDetails?.brandName || data?.brandName || getBrandName()}
       </Typography>
     </Box>
   )}
-
+  {/* Industry */}
+  {(data?.brandDetails?.industry || data?.industry) && (
+    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+      <Typography sx={{ fontSize:{xs:TEXT_SIZES.large,sm: TEXT_SIZES.small}, color: COLORS.black , display: { xs: "none", md: "block" } }}>
+        Industry:
+      </Typography>
+      <Typography
+       sx={{
+          fontSize: TEXT_SIZES.xl,
+          fontWeight: 700,
+          color: COLORS.black,
+          textAlign:"center"
+        }}
+      >
+        {data?.brandDetails?.industry || data?.industry}
+      </Typography>
+    </Box>
+  )}
   {/* Category */}
   {(data?.brandDetails?.category || data?.category) && (
     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-      <Typography sx={{ fontSize: TEXT_SIZES.small, color: COLORS.black }}>
+      <Typography sx={{ fontSize:{xs:TEXT_SIZES.large,sm: TEXT_SIZES.small}, color: COLORS.black,display: { xs: "none", md: "block" } }}>
         Category:
       </Typography>
       <Typography
       sx={{
-          fontSize: TEXT_SIZES.small,
+          fontSize: TEXT_SIZES.medium,
           fontWeight: 700,
-          color: COLORS.primaryDark,
+          color: COLORS.black,
+           textAlign:"center"
         }}
       >
         {data?.brandDetails?.category || data?.category}
@@ -2384,23 +2410,7 @@ return allStates.length;
     </Box>
   )}
 
-  {/* Industry */}
-  {(data?.brandDetails?.industry || data?.industry) && (
-    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-      <Typography sx={{ fontSize: TEXT_SIZES.small, color: COLORS.black }}>
-        Industry:
-      </Typography>
-      <Typography
-       sx={{
-          fontSize: TEXT_SIZES.small,
-          fontWeight: 700,
-          color: COLORS.primaryDark,
-        }}
-      >
-        {data?.brandDetails?.industry || data?.industry}
-      </Typography>
-    </Box>
-  )}
+
 </Box>
 )}
 <ExistingPackageDisplay
@@ -2413,7 +2423,8 @@ return allStates.length;
   leadsDropdownData={leadsDropdownData}
   INDIA_STATES={INDIA_STATES}
   ALL_INDIA_STATES={ALL_INDIA_STATES}
-  
+    sectionExpanded={openSection === "active"}
+  onSectionChange={handleSectionChange("active")}
   allStates={allStates}        
   finalToken={finalToken}
   ficoInvestmentRanges={ficoInvestmentRanges}  
@@ -2951,6 +2962,8 @@ return allStates.length;
       isUpgradeMode={isUpgradeMode}
       upgradePlanId={upgradePlanId}
       hideListingPlans={false} // Let mobile component show listing plans
+       sectionExpanded={openSection}
+  onSectionChange={handleSectionChange}
     />
   ) : (
         <Card
@@ -3892,15 +3905,11 @@ background: "linear-gradient(135deg, #4cb04f 0%, #2e7d32 100%)",
     }}
   >
     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-      <Typography
-        sx={{
-          fontSize: TEXT_SIZES.xl,
-          fontWeight: 700,
-          color: COLORS.black,
-        }}
-      >
-        ₹{(pricePerState ).toLocaleString("en-IN")}
-      </Typography>
+  <Typography sx={{ fontSize: TEXT_SIZES.xl, fontWeight: 700, color: COLORS.black }}>
+  ₹{uniqueGroupStatesCount > 0 
+      ? (groupTotalAmount / uniqueGroupStatesCount).toLocaleString("en-IN") 
+      : (0).toLocaleString("en-IN")}
+</Typography>
       <Typography
         sx={{
           fontSize: TEXT_SIZES.xs,
@@ -4315,6 +4324,8 @@ background: "linear-gradient(135deg, #4cb04f 0%, #2e7d32 100%)",
             handleShowStates={handleShowStates}
             setItemToRemove={setItemToRemove}
             setOpenRemoveConfirmDialog={setOpenRemoveConfirmDialog}
+              sectionExpanded={openSection === "summary"}
+  onSectionChange={handleSectionChange("summary")}
           />
         </>
       )}

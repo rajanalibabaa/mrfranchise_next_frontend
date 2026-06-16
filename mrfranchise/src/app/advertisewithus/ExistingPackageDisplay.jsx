@@ -4,9 +4,10 @@ import {
   Paper, Button, Dialog, DialogTitle, DialogContent,
   IconButton, Table, TableBody, TableCell, TableContainer,
   TableHead, TableRow, Tooltip, Divider,
-  Card, CardContent, useMediaQuery, useTheme,
+  Card, CardContent, useMediaQuery, 
   Accordion, AccordionSummary, AccordionDetails,
 } from "@mui/material";
+import { useTheme, keyframes } from "@mui/material/styles";
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import CloseIcon from "@mui/icons-material/Close";
 import UpgradeIcon from "@mui/icons-material/Upgrade";
@@ -16,10 +17,13 @@ import CancelIcon from "@mui/icons-material/Cancel";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import UpgradeDialog from "./UpgradeDialog";
-import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
-import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
+const pulseAnimation = keyframes`
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 153, 0, 0.7); }
+  70% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(255, 153, 0, 0); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 153, 0, 0); }
+`;
 const COLORS = {
   primary: "#FF9900",
   primaryDark: "#E68A00",
@@ -41,44 +45,84 @@ const COLORS = {
 };
 
 const TEXT_SIZES = {
-  xs: "0.725rem", small: "0.80rem", medium: "0.980rem",
+  xs: "0.725rem", small: "0.80rem", medium: "1.3rem",
   large: "1rem", xl: "1.125rem", xxl: "1.25rem",
 };
 
 // ─── Mobile-only Section Accordion ───────────────────────────────────────────
-const SectionAccordion = ({ title, children, defaultExpanded = false }) => {
+const SectionAccordion = ({ 
+  title, 
+    fontSize="1.3rem",
+  children, 
+  defaultExpanded = false,
+  expanded: controlledExpanded,
+  onChange: controlledOnChange,
+}) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  const [expanded, setExpanded] = useState(defaultExpanded);
+  const [internalExpanded, setInternalExpanded] = useState(defaultExpanded);
+
+  const isControlled = controlledExpanded !== undefined;
+  const isExpanded = isControlled ? controlledExpanded : internalExpanded;
+
+  const handleChange = (_, val) => {
+    if (isControlled) controlledOnChange?.(val);
+    else setInternalExpanded(val);
+  };
 
   if (!isMobile) return <>{children}</>;
 
   return (
     <Accordion
-      expanded={expanded}
-      onChange={(_, val) => setExpanded(val)}
+      expanded={isExpanded}
+      onChange={handleChange}
       disableGutters
       elevation={0}
       sx={{
         mb: 1.5,
-        border: `1px solid ${COLORS.border}`,
+        border: `3px solid ${COLORS.primary}`,
         borderRadius: "12px !important",
         overflow: "hidden",
         "&:before": { display: "none" },
       }}
     >
-      <AccordionSummary
-        expandIcon={<ExpandMoreIcon sx={{ color: COLORS.primary }} />}
-        sx={{
-          backgroundColor: "#fff8ee",
-          minHeight: 52,
-          px: 2,
-          "& .MuiAccordionSummary-content": { my: 0 },
-        }}
-      >
-        <Typography sx={{ fontWeight: 700, fontSize: "1rem", color: COLORS.black }}>
-          {title}
-        </Typography>
+    <AccordionSummary
+  expandIcon={
+    <Box
+      className="expand-icon-btn"
+      sx={{
+        width: 36,
+        height: 36,
+        borderRadius: "50%",
+        backgroundColor: COLORS.primary,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        transition: "all 0.25s ease",
+      }}
+    >
+      <ExpandMoreIcon sx={{ color: COLORS.white, fontSize: "1.5rem" }} />
+    </Box>
+  }
+  sx={{
+    backgroundColor: "#fff8ee",
+    minHeight: 52,
+    px: 2,
+    transition: "background-color 0.25s ease",
+    "& .MuiAccordionSummary-content": { my: 0 },
+    "&:hover": {
+      backgroundColor: "#ffe5b0",
+      "& .expand-icon-btn": {
+        animation: `${pulseAnimation} 0.8s ease infinite`,
+        backgroundColor: COLORS.secondary,
+        transform: "scale(1.15)",
+      },
+    },
+  }}
+>
+     <Typography sx={{ fontWeight: 700,textAlign:"center", fontSize: fontSize, color: COLORS.black , ml:2}}>
+  {title}
+</Typography>
       </AccordionSummary>
       <AccordionDetails sx={{ p: 0 }}>
         {children}
@@ -127,12 +171,12 @@ const StatusChip = ({ item }) => {
   );
 };
 
-/* ─── Mobile cards (all unchanged) ─────────────────────────────────────────── */
+/* ─── Mobile cards ─────────────────────────────────────────────────────────── */
 
 const FreePackageCard = ({ pkg, item, active, handleUpgrade, upgradeSectionRef }) => {
   const [expanded, setExpanded] = useState(false);
   return (
-    <Card sx={{ borderRadius: 2, border: `1px solid ${COLORS.border}`, overflow: "hidden", width: "100%", height: "100%", display: "flex", flexDirection: "column" }}>
+    <Card sx={{ borderRadius: 2, border: `1px solid ${COLORS.secondary}`, overflow: "hidden", width: "100%", display: "flex", flexDirection: "column" }}>
       <CardContent sx={{ p: 1.5, flex: 1, display: "flex", flexDirection: "column" }}>
         <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1 }}>
           <Box sx={{ flex: 1 }}>
@@ -176,34 +220,35 @@ const ListingPackageCard = ({ pkg, item, active, handleUpgrade, formatDate, upgr
   const end   = item.isPending ? "—" : formatDate(item.packageEndDate   || item.PackageEndDate);
   const packageName = item.packagesName || pkg.packagesName;
   return (
-    <Card sx={{ borderRadius: 2, border: `1px solid ${COLORS.border}`, overflow: "hidden", width: "100%", height: "100%", display: "flex", flexDirection: "column" }}>
+    <Card sx={{ borderRadius: 2, border: `1px solid ${COLORS.secondary}`, overflow: "hidden", width: "100%", display: "flex", flexDirection: "column" }}>
       <CardContent sx={{ p: 1.5, flex: 1, display: "flex", flexDirection: "column" }}>
         <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", mb: 1 }}>
           <Box sx={{ flex: 1 }}>
-            <Typography fontWeight={700} fontSize={TEXT_SIZES.small} color={COLORS.black} mb={0.5}>
+            <Typography fontWeight={700} fontSize={TEXT_SIZES.medium} color={COLORS.black} mb={0.5} textAlign={"center"}>
               {packageName.length > 25 ? packageName.substring(0, 25) + "..." : packageName}
             </Typography>
-            <Chip label={`${item.validity || item.tenure || "—"} Days`} size="small"
-              sx={{ height: 20, fontSize: "0.65rem", backgroundColor: COLORS.lightOrange, color: COLORS.primaryDark, fontWeight: 600 }} />
+            <Typography fontSize="1.5rem" color={COLORS.primaryDark} fontWeight={600} textAlign={"center"}>
+              {item.validity || item.tenure || "—"} Days
+            </Typography>
           </Box>
-          <StatusChip item={item} />
+          <StatusChip sx={{fontSize: "1rem"}} item={item} />
         </Box>
         <Box sx={{ mt: 1.5, pt: 1, borderTop: `1px solid ${COLORS.border}` }}>
-          <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1, p: 0.75, backgroundColor: COLORS.grey[50], borderRadius: 1 }}>
-            <Typography fontSize="0.7rem" color={COLORS.grey[600]}>Start Date:</Typography>
-            <Typography fontSize="0.7rem" fontWeight={500}>{start}</Typography>
+          <Box sx={{ display: "flex", justifyContent: "space-evenly", mb: 1, p: 0.75, backgroundColor: COLORS.grey[50], borderRadius: 1 }}>
+            <Typography fontSize="0.9rem" color={COLORS.grey[600]}>Start Date:</Typography>
+            <Typography fontSize="0.9rem" fontWeight={500}>{start}</Typography>
           </Box>
-          <Box sx={{ display: "flex", justifyContent: "space-between", p: 0.75, backgroundColor: COLORS.grey[50], borderRadius: 1 }}>
-            <Typography fontSize="0.7rem" color={COLORS.grey[600]}>End Date:</Typography>
-            <Typography fontSize="0.7rem" fontWeight={500}>{end}</Typography>
+          <Box sx={{ display: "flex", justifyContent: "space-evenly", p: 0.75, backgroundColor: COLORS.grey[50], borderRadius: 1 }}>
+            <Typography fontSize="0.9rem" color={COLORS.grey[600]}>End Date:</Typography>
+            <Typography fontSize="0.9rem" fontWeight={500}>{end}</Typography>
           </Box>
         </Box>
         <Box sx={{ mt: "auto", pt: 1 }}>
           <Tooltip title={!active ? "Only active plans can be upgraded" : ""} arrow>
             <span style={{ width: "100%" }}>
               <Button variant="contained" size="small" onClick={() => handleUpgrade(pkg, item, upgradeSectionRef)}
-                startIcon={<UpgradeIcon sx={{ fontSize: 16 }} />} disabled={!active} fullWidth
-                sx={{ height: 36, fontSize: "0.75rem", textTransform: "none", borderRadius: 1.5, fontWeight: 600, backgroundColor: COLORS.primary, "&:hover": { backgroundColor: COLORS.primaryDark }, "&.Mui-disabled": { backgroundColor: COLORS.grey[200], color: COLORS.grey[400] } }}>
+               disabled={!active} fullWidth
+                sx={{ height: 36, fontSize: "1rem", textTransform: "none", borderRadius: 1.5, fontWeight: 600, backgroundColor: COLORS.primary, "&:hover": { backgroundColor: COLORS.primaryDark }, "&.Mui-disabled": { backgroundColor: COLORS.grey[200], color: COLORS.grey[400] } }}>
                 Upgrade
               </Button>
             </span>
@@ -229,33 +274,81 @@ const LeadPackageCard = ({ pkg, item, active, handleUpgrade, formatDate, openSta
       }))
     : [];
   return (
-    <Card sx={{ borderRadius: 2, border: `1px solid ${COLORS.border}`, overflow: "hidden", width: "100%", height: "100%" }}>
+    <Card sx={{ borderRadius: 2, border: `1px solid ${COLORS.secondary}`, overflow: "hidden", width: "100%" }}>
       <CardContent sx={{ p: 1.5 }}>
         <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", mb: 1, pb: 0.5, borderBottom: `1px solid ${COLORS.border}` }}>
           <Box>
-            <Typography fontWeight={700} fontSize={TEXT_SIZES.small} color={COLORS.black}>{item.validity ? `${item.validity} Days` : "—"}</Typography>
-            <Typography fontSize="0.7rem" color={COLORS.grey[600]}>{item.packagesType || pkg.packagesType} PLAN</Typography>
-          </Box>
+<Typography fontWeight={700} fontSize={"1.5rem"} color={COLORS.primary}>
+  {item.validity ? `${item.validity} Days` : "—"}
+</Typography>
+<Typography fontSize={TEXT_SIZES.medium} color={COLORS.black[900]}sx={{ fontWeight: 600 }}>
+  {item.packagesType || pkg.packagesType} PLAN
+</Typography>          </Box>
           <StatusChip item={item} />
         </Box>
-        <Box sx={{ mb: 1 }}>
-          <Typography fontSize="0.65rem" color={COLORS.grey[600]}>Investment Group</Typography>
-          <Typography fontSize="0.75rem" fontWeight={600} color={COLORS.primaryDark}>{item.investmetRageLabel || item.investmentGroupLabel || "—"}</Typography>
+    
+ <Box
+  sx={{
+    mb: 1,
+    display: "flex",
+    alignItems: "center",
+    gap: 0.5,
+    p: 1,
+    backgroundColor: COLORS.grey[50],
+    borderRadius: 1,
+    justifyContent: "space-evenly",
+  }}
+>          <Typography fontSize="1rem" color={COLORS.black[600]}>Total Leads</Typography>
+          <Typography
+    fontSize="1rem"
+    fontWeight={600}
+    color={COLORS.primaryDark}
+  >{totalLeads}</Typography>
         </Box>
-        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1.5, p: 1, backgroundColor: COLORS.grey[50], borderRadius: 1 }}>
-          <Typography fontSize="0.75rem" color={COLORS.grey[600]}>Total Leads</Typography>
-          <Typography fontWeight={700} fontSize="0.9rem" color={COLORS.black}>{totalLeads}</Typography>
-        </Box>
+                <Box
+  sx={{
+    p: 1,
+    backgroundColor: COLORS.grey[50],
+    borderRadius: 1,
+  }}
+>
+  <Box
+    sx={{
+      display: "flex",
+      justifyContent: "space-evenly",
+      alignItems: "center",
+      mb: 1,
+    }}
+  >
+      <Typography fontSize="0.9rem" color={COLORS.grey[600]}>Start Date:</Typography>
+     <Typography fontSize="0.9rem" fontWeight={500}>
+      {startDate}
+    </Typography>
+  </Box>
+
+  <Box
+    sx={{
+      display: "flex",
+      justifyContent: "space-evenly",
+      alignItems: "center",
+    }}
+  >
+      <Typography fontSize="0.9rem" color={COLORS.grey[600]}>End Date:</Typography>
+     <Typography fontSize="0.9rem" fontWeight={500}>
+      {endDate}
+    </Typography>
+  </Box>
+</Box>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 1 }}>
           <Button size="small" onClick={() => setExpanded(!expanded)}
-            sx={{ flex: 1, color: COLORS.primary, fontSize: "0.75rem", textTransform: "none", fontWeight: 600, border: `1px solid ${COLORS.primary}`, borderRadius: 1.5, py: 0.75, "&:hover": { backgroundColor: COLORS.lightOrange } }}>
+            sx={{ flex: 1, color: COLORS.primary, fontSize: "1.2rem", textTransform: "none", fontWeight: 600, border: `1px solid ${COLORS.primary}`, borderRadius: 1.5, py: 0.75, "&:hover": { backgroundColor: COLORS.lightOrange } }}>
             {expanded ? "View Less" : "View More"}
           </Button>
           <Tooltip title={!active ? "Only active plans can be upgraded" : ""} arrow>
             <span style={{ flex: 1 }}>
               <Button variant="outlined" size="small" onClick={() => handleUpgrade(pkg, item, upgradeSectionRef)}
-                startIcon={<UpgradeIcon sx={{ fontSize: 16 }} />} disabled={!active} fullWidth
-                sx={{ height: 36, fontSize: "0.75rem", textTransform: "none", borderRadius: 1.5, fontWeight: 600, borderColor: COLORS.primary, color: COLORS.primary, "&:hover": { borderColor: COLORS.primaryDark, backgroundColor: COLORS.lightOrange }, "&.Mui-disabled": { borderColor: COLORS.grey[300], color: COLORS.grey[400] } }}>
+                disabled={!active} fullWidth
+            sx={{ flex: 1, color: COLORS.primary, fontSize: "1.2rem", textTransform: "none", fontWeight: 600, border: `1px solid ${COLORS.primary}`, borderRadius: 1.5, py: 0.75, "&:hover": { backgroundColor: COLORS.lightOrange } }}>
                 Upgrade
               </Button>
             </span>
@@ -264,44 +357,193 @@ const LeadPackageCard = ({ pkg, item, active, handleUpgrade, formatDate, openSta
         {expanded && (
           <Box sx={{ mt: 1.5, pt: 1.5, borderTop: `1px solid ${COLORS.border}` }}>
             {[["Sent Leads", sentLeads, COLORS.secondaryDark], ["Remaining Leads", remainingLeads, remainingLeads > 0 ? COLORS.primary : COLORS.grey[400]]].map(([label, val, color]) => (
-              <Box key={label} sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1, p: 1, backgroundColor: COLORS.grey[50], borderRadius: 1 }}>
-                <Typography fontSize="0.75rem" color={COLORS.grey[600]}>{label}</Typography>
-                <Typography fontWeight={600} fontSize="0.85rem" color={color}>{val}</Typography>
+              <Box key={label} sx={{ display: "flex", justifyContent: "space-between",  mb: 1, p: 1, backgroundColor: COLORS.grey[50], borderRadius: 1 }}>
+                <Typography fontSize="1rem" color={COLORS.black[600]}>{label}:</Typography>
+                <Typography fontWeight={600} fontSize="1rem" color={color}>{val}</Typography>
               </Box>
             ))}
-            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1.5, p: 1, backgroundColor: COLORS.grey[50], borderRadius: 1 }}>
-              <Typography fontSize="0.75rem" color={COLORS.grey[600]}>Progress</Typography>
-              <Typography fontWeight={600} fontSize="0.85rem" color={COLORS.primary}>{Math.round(progressVal)}%</Typography>
-            </Box>
+            {/* <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1.5, p: 1, backgroundColor: COLORS.grey[50], borderRadius: 1 }}>
+              <Typography fontSize="1rem" color={COLORS.black[600]}>Progress:</Typography>
+              <Typography fontWeight={600} fontSize="1rem" color={COLORS.primary}>{Math.round(progressVal)}%</Typography>
+            </Box> */}
             {investmentRangesWithStates.length > 0 && (
               <Box sx={{ mb: 1.5 }}>
-                <Typography fontSize="0.65rem" color={COLORS.grey[600]} fontWeight={500} mb={1}>Investment Ranges</Typography>
-                {investmentRangesWithStates.map((rangeData, i) => (
+   <Box
+  sx={{
+    mb: 1,
+    display: "flex",
+    alignItems: "center",
+    gap: 0.5,
+    p: 1,
+    backgroundColor: COLORS.grey[50],
+    borderRadius: 1,
+    justifyContent: "space-evenly",
+  }}
+>
+  <Typography fontSize="1rem" color={COLORS.black[600]}>
+    Investment Group:
+  </Typography>
+
+  <Typography
+    fontSize="1rem"
+    fontWeight={600}
+    color={COLORS.primaryDark}
+  >
+    {item.investmetRageLabel || item.investmentGroupLabel || "—"}
+  </Typography>
+</Box>                {investmentRangesWithStates.map((rangeData, i) => (
                   <Box key={i} sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1, p: 0.75, backgroundColor: COLORS.grey[50], borderRadius: 1 }}>
-                    <Typography fontSize="0.7rem" fontWeight={600} color={COLORS.primaryDark} sx={{ flex: 1 }}>
+                    <Typography fontSize="1rem" fontWeight={600} color={COLORS.primaryDark} sx={{ flex: 1 }}>
                       {rangeData.range.length > 25 ? rangeData.range.substring(0, 25) + "..." : rangeData.range}
                     </Typography>
                     <Box onClick={() => openStatesDialog(rangeData.states, rangeData.range)}
                       sx={{ display: "inline-flex", alignItems: "center", gap: 0.5, cursor: "pointer", backgroundColor: COLORS.white, px: 1, py: 0.5, borderRadius: 1, border: `1px solid ${COLORS.border}` }}>
-                      <Typography fontSize="0.7rem" color={COLORS.primary} fontWeight={600}>{rangeData.states.length} states</Typography>
+                      <Typography fontSize="1rem" color={COLORS.primary} fontWeight={600}>{rangeData.states.length} states</Typography>
                       <VisibilityOutlinedIcon sx={{ fontSize: 14, color: COLORS.primary }} />
                     </Box>
                   </Box>
                 ))}
               </Box>
             )}
-            <Box sx={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 1, p: 0.75, backgroundColor: COLORS.grey[50], borderRadius: 1 }}>
-              {[["Start:", startDate], ["End:", endDate]].map(([label, val]) => (
-                <Box key={label} sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                  <CalendarTodayIcon sx={{ fontSize: 12, color: COLORS.grey[500] }} />
-                  <Typography fontSize="0.65rem" color={COLORS.grey[600]}>{label} {val}</Typography>
-                </Box>
-              ))}
-            </Box>
+
           </Box>
         )}
       </CardContent>
     </Card>
+  );
+};
+
+/* ─── Mobile Tab View ───────────────────────────────────────────────────────── */
+
+const MobileTabView = ({ grouped, shouldShowFree, isItemActive, handleUpgrade, formatDate, openStatesDialog, upgradeSectionRef }) => {
+  // Build top-level tabs
+  const tabs = [
+    shouldShowFree && grouped.FREE.length > 0 && { key: "FREE", label: "Free" },
+    grouped.LISTING.length > 0 && { key: "LISTING", label: "Listing" },
+    grouped.LEAD.length > 0 && { key: "LEAD", label: "Lead" },
+  ].filter(Boolean);
+
+  const [activeTab, setActiveTab] = useState(tabs[0]?.key || "FREE");
+
+  // For Lead sub-tabs (one pill per lead plan by days)
+  const leadItems = grouped.LEAD;
+  const [activeLeadIdx, setActiveLeadIdx] = useState(0);
+
+  if (tabs.length === 0) return null;
+
+  const tabSx = (isActive) => ({
+  flex: 1,
+  textAlign: "center",
+  py: 1.25,
+  fontSize: "1.3rem",
+  fontWeight: isActive ? 700 : 700,
+ border: `1.5px solid ${isActive ? COLORS.primary : COLORS.border}`,
+  color: isActive ? COLORS.white : COLORS.black[600],
+  backgroundColor: isActive ? COLORS.primary : COLORS.white,
+  borderRadius: "8px 8px 8px 8px",
+ 
+  cursor: "pointer",
+  transition: "all 0.15s",
+  userSelect: "none",
+});
+
+  return (
+    <Box sx={{ width: "100%" }}>
+      {/* ── Main tab strip ── */}
+      <Box sx={{
+        display: "flex",
+        borderBottom: `1px solid ${COLORS.border}`,
+        backgroundColor: COLORS.grey[50],
+        px: 1,
+         gap: 0.5,
+      }}>
+        {tabs.map(({ key, label }) => (
+          <Box key={key} onClick={() => setActiveTab(key)} sx={tabSx(activeTab === key)}>
+            {label} Plan
+          </Box>
+        ))}
+      </Box>
+
+      {/* ── Tab content ── */}
+      <Box sx={{ p: 1.5, display: "flex", flexDirection: "column", gap: 1.5 }}>
+
+        {/* FREE */}
+        {activeTab === "FREE" && grouped.FREE.map(({ pkg, item }, idx) => (
+          <FreePackageCard key={idx} pkg={pkg} item={item} active={isItemActive(item)}
+            handleUpgrade={handleUpgrade} upgradeSectionRef={upgradeSectionRef} />
+        ))}
+
+        {/* LISTING */}
+        {activeTab === "LISTING" && grouped.LISTING.map(({ pkg, item }, idx) => (
+          <ListingPackageCard key={idx} pkg={pkg} item={item} active={isItemActive(item)}
+            handleUpgrade={handleUpgrade} formatDate={formatDate} upgradeSectionRef={upgradeSectionRef} />
+        ))}
+
+        {/* LEAD — with day sub-tabs */}
+        {activeTab === "LEAD" && leadItems.length > 0 && (
+          <Box>
+            {/* Day pill sub-tabs — only show if more than 1 lead plan */}
+            {leadItems.length > 1 && (
+              <Box sx={{
+                display: "flex",
+                flexWrap: "wrap",
+              
+                mb: 1.5,
+                pb: 1.5,
+                display: "flex",
+                justifyContent: "space-evenly",
+                borderBottom: `1px solid ${COLORS.border}`,
+              }}>
+                {leadItems.map(({ item }, idx) => {
+                  const isActive = activeLeadIdx === idx;
+                  const label = item.validity ? `${item.validity} Days` : `Plan ${idx + 1}`;
+                  return (
+                    <Box
+                      key={idx}
+                      onClick={() => setActiveLeadIdx(idx)}
+                      sx={{
+                        px: 1.5,
+                        py: 0.5,
+                        borderRadius: "20px",
+                        fontSize: "1.2rem",
+                        fontWeight: isActive ? 500 : 500,
+                        cursor: "pointer",
+                        border: `1.5px solid ${isActive ? COLORS.primary : COLORS.border}`,
+                        backgroundColor: isActive ? COLORS.primary : COLORS.white,
+                        color: isActive ? COLORS.white : COLORS.grey[600],
+                        transition: "all 0.15s",
+                        userSelect: "none",
+                    alignItems: "center",
+                        display: "flex",
+jusifyContent: "space-evenly",
+                      }}
+                    >
+                      {label}
+                    </Box>
+                  );
+                })}
+              </Box>
+            )}
+
+            {/* Active lead card */}
+            {(() => {
+              const { pkg, item } = leadItems[activeLeadIdx] || leadItems[0];
+              return (
+                <LeadPackageCard
+                  pkg={pkg}
+                  item={item}
+                  active={isItemActive(item)}
+                  handleUpgrade={handleUpgrade}
+                  formatDate={formatDate}
+                  openStatesDialog={openStatesDialog}
+                  upgradeSectionRef={upgradeSectionRef}
+                />
+              );
+            })()}
+          </Box>
+        )}
+      </Box>
+    </Box>
   );
 };
 
@@ -318,19 +560,22 @@ const ExistingPackageDisplay = ({
   INDIA_STATES = {},
   finalToken,
   expansionStates = [],
+  sectionExpanded,      // ← ADD THIS
+  onSectionChange,      // ← ADD THIS
+  allStates, 
 }) => {
-  const theme   = useTheme();
+  const theme    = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
-  const [dialog,              setDialog]              = useState({ open: false, states: [], label: "" });
-  const [upgradeDialog,       setUpgradeDialog]       = useState({ open: false, pkg: null, item: null });
-  const [openStateModal,      setOpenStateModal]      = useState(false);
-  const [currentEditingRange, setCurrentEditingRange] = useState(null);
-  const [blockedStates,       setBlockedStates]       = useState(new Set());
-  const [selectedStates,      setSelectedStates]      = useState(new Set());
-  const [stateSelections,     setStateSelections]     = useState({});
+  const [dialog,               setDialog]               = useState({ open: false, states: [], label: "" });
+  const [upgradeDialog,        setUpgradeDialog]        = useState({ open: false, pkg: null, item: null });
+  const [openStateModal,       setOpenStateModal]       = useState(false);
+  const [currentEditingRange,  setCurrentEditingRange]  = useState(null);
+  const [blockedStates,        setBlockedStates]        = useState(new Set());
+  const [selectedStates,       setSelectedStates]       = useState(new Set());
+  const [stateSelections,      setStateSelections]      = useState({});
   const [highlightExcludePlan, setHighlightExcludePlan] = useState(null);
-  const [currentRangeStates,  setCurrentRangeStates]  = useState([]);
+  const [currentRangeStates,   setCurrentRangeStates]   = useState([]);
 
   const liveSelectionsRef = useRef({});
 
@@ -379,7 +624,7 @@ const ExistingPackageDisplay = ({
   }, [data, allPlans]);
 
   const getBlockedStatesForRange = useCallback((currentPlanId, range) => {
-    const blocked  = new Set();
+    const blocked   = new Set();
     const rangeData = allPlanStatesByRange[range];
     if (!rangeData) return blocked;
     Object.entries(rangeData).forEach(([otherId, states]) => {
@@ -436,6 +681,10 @@ const ExistingPackageDisplay = ({
     } else if (packageType === "LISTING") {
       onUpgradeModeChange?.(true, pkg._id);
       onHighlightExcludePlan?.(item.packagesName || pkg.packagesName);
+      const brandListingElement = document.getElementById('brand-listing-section');
+  if (brandListingElement) {
+    brandListingElement.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
       sectionRef?.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     } else {
       onUpgradeModeChange?.(false, null);
@@ -467,10 +716,6 @@ const ExistingPackageDisplay = ({
     liveSelectionsRef.current = { ...liveSelectionsRef.current, [key]: statesToSave };
     setStateSelections((prev) => ({ ...prev, [key]: statesToSave }));
   }, [currentEditingRange]);
-
-  const scrollContainerRef = useRef(null);
-  const scrollLeft  = () => { if (scrollContainerRef.current) scrollContainerRef.current.scrollBy({ left: -370, behavior: "smooth" }); };
-  const scrollRight = () => { if (scrollContainerRef.current) scrollContainerRef.current.scrollBy({ left:  370, behavior: "smooth" }); };
 
   if (loading) return (
     <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
@@ -639,13 +884,14 @@ const ExistingPackageDisplay = ({
   /* ── render ── */
   return (
     <>
-      {/* ── Wrap entire section in mobile accordion ── */}
-      <SectionAccordion title="Current Active Plans" defaultExpanded>
+      <SectionAccordion   title=" CURRENT ACTIVE PLANS" defaultExpanded  expanded={sectionExpanded}          // ← add this
+  onChange={onSectionChange}>
         <Box sx={{
           display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
           width: "100%", mb: 5, px: { xs: 0, sm: 1, md: 1 },
         }}>
           <Typography variant="h4" sx={{
+            display: { xs: "none", sm: "block" },
             fontWeight: 700, color: COLORS.black, mb: 2,
             fontSize: { xs: "1.3rem", sm: "1.5rem", md: "1.9rem" },
             textAlign: "center",
@@ -656,7 +902,7 @@ const ExistingPackageDisplay = ({
           {!hasAnyPackages ? (
             <Paper elevation={0} sx={{
               p: 1, textAlign: "center", borderRadius: 2,
-              border: `1px dashed ${COLORS.border}`, backgroundColor: COLORS.grey[50],
+              border: `1px dashed ${COLORS.primary}`, backgroundColor: COLORS.grey[50],
               width: "100%", maxWidth: { xs: "100%", sm: "500px" },
             }}>
               <Typography fontSize={TEXT_SIZES.medium} color={COLORS.grey[500]}>No packages found</Typography>
@@ -667,7 +913,8 @@ const ExistingPackageDisplay = ({
               alignItems: "center", justifyContent: "center",
               width: "100%", maxWidth: { xs: "100%", sm: "600px", md: "1200px" },
             }}>
-              {/* Desktop View */}
+
+              {/* ── Desktop View ── */}
               {!isMobile && (
                 <>
                   {shouldShowFree && (
@@ -729,47 +976,25 @@ const ExistingPackageDisplay = ({
                 </>
               )}
 
-              {/* Mobile View */}
+              {/* ── Mobile View with tabs ── */}
               {isMobile && hasAnyPackages && (
-                <Box sx={{ position: "relative", width: "100%", px: 1 }}>
-                  <IconButton onClick={scrollLeft}
-                    sx={{ position: "absolute", left: -5, top: "50%", transform: "translateY(-60%)", zIndex: 2, backgroundColor: COLORS.white, boxShadow: "0 2px 8px rgba(0,0,0,0.15)", "&:hover": { backgroundColor: COLORS.primary, color: COLORS.white }, width: 28, height: 28, display: { xs: "flex", sm: "none" }, p: 0.5 }}>
-                    <ChevronLeftIcon sx={{ fontSize: 20 }} />
-                  </IconButton>
-
-                  <Box ref={scrollContainerRef}
-                    sx={{ width: "100%", overflowX: "auto", overflowY: "hidden", scrollbarWidth: "thin", "&::-webkit-scrollbar": { height: 4 }, "&::-webkit-scrollbar-track": { backgroundColor: COLORS.grey[200], borderRadius: 3 }, "&::-webkit-scrollbar-thumb": { backgroundColor: COLORS.primary, borderRadius: 3 }, scrollBehavior: "smooth" }}>
-                    <Box sx={{ display: "inline-flex", gap: 2, p: 0.5, minWidth: "min-content", alignItems: "stretch" }}>
-                      {shouldShowFree && grouped.FREE.map(({ pkg, item }, idx) => (
-                        <Box key={`free-${idx}`} sx={{ width: "350px", flexShrink: 0 }}>
-                          <FreePackageCard pkg={pkg} item={item} active={isItemActive(item)} handleUpgrade={handleUpgrade} upgradeSectionRef={upgradeSectionRef} />
-                        </Box>
-                      ))}
-                      {grouped.LISTING.map(({ pkg, item }, idx) => (
-                        <Box key={`listing-${idx}`} sx={{ width: "350px", flexShrink: 0 }}>
-                          <ListingPackageCard pkg={pkg} item={item} active={isItemActive(item)} handleUpgrade={handleUpgrade} formatDate={formatDate} upgradeSectionRef={upgradeSectionRef} />
-                        </Box>
-                      ))}
-                      {grouped.LEAD.map(({ pkg, item }, idx) => (
-                        <Box key={`lead-${idx}`} sx={{ width: "350px", flexShrink: 0 }}>
-                          <LeadPackageCard pkg={pkg} item={item} active={isItemActive(item)} handleUpgrade={handleUpgrade} formatDate={formatDate} openStatesDialog={openStatesDialog} upgradeSectionRef={upgradeSectionRef} />
-                        </Box>
-                      ))}
-                    </Box>
-                  </Box>
-
-                  <IconButton onClick={scrollRight}
-                    sx={{ position: "absolute", right: -5, top: "50%", transform: "translateY(-50%)", zIndex: 2, backgroundColor: COLORS.white, boxShadow: "0 2px 8px rgba(0,0,0,0.15)", "&:hover": { backgroundColor: COLORS.primary, color: COLORS.white }, width: 28, height: 28, display: { xs: "flex", sm: "none" }, p: 0.5 }}>
-                    <ChevronRightIcon sx={{ fontSize: 20 }} />
-                  </IconButton>
-                </Box>
+                <MobileTabView
+                  grouped={grouped}
+                  shouldShowFree={shouldShowFree}
+                  isItemActive={isItemActive}
+                  handleUpgrade={handleUpgrade}
+                  formatDate={formatDate}
+                  openStatesDialog={openStatesDialog}
+                  upgradeSectionRef={upgradeSectionRef}
+                />
               )}
+
             </Box>
           )}
         </Box>
       </SectionAccordion>
 
-      {/* ── States Dialog (unchanged) ── */}
+      {/* ── States Dialog ── */}
       <Dialog open={dialog.open} onClose={() => setDialog({ ...dialog, open: false })}
         PaperProps={{ sx: { borderRadius: 3, minWidth: { xs: "90%", sm: 380 }, maxWidth: 500, m: { xs: 2, sm: 0 }, p: 0, overflow: "hidden" } }}>
         <DialogTitle sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", pb: 1, backgroundColor: COLORS.grey[50], borderBottom: `1px solid ${COLORS.border}` }}>
@@ -799,7 +1024,7 @@ const ExistingPackageDisplay = ({
         </DialogContent>
       </Dialog>
 
-      {/* ── Upgrade Dialog (unchanged) ── */}
+      {/* ── Upgrade Dialog ── */}
       <UpgradeDialog
         key={upgradeDialog.pkg?._id || "upgrade"}
         open={upgradeDialog.open}
