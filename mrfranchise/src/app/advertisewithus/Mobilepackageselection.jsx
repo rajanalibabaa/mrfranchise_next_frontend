@@ -25,7 +25,7 @@ import {
   AccordionSummary,
   AccordionDetails,
 } from "@mui/material";
-import { useTheme } from "@mui/material/styles";
+import { useTheme,keyframes  } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import CalendarMonthRoundedIcon from "@mui/icons-material/CalendarMonthRounded";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
@@ -37,7 +37,14 @@ import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import WorkspacePremiumRoundedIcon from "@mui/icons-material/WorkspacePremiumRounded";
 import StarBorderRoundedIcon from "@mui/icons-material/StarBorderRounded";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 
+// Add this keyframe at the top of your file near bounceAnimation
+const pulseAnimation = keyframes`
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 153, 0, 0.7); }
+  70% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(255, 153, 0, 0); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 153, 0, 0); }
+`;
 // ─── Color palette ────────────────────────────────────────────────────────────
 const COLORS = {
   primary: "#FF9900",
@@ -70,6 +77,7 @@ const T = {
   md: "0.875rem",
   lg: "1rem",
   xl: "1.125rem",
+  
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -136,10 +144,12 @@ const SectionAccordion = ({
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [internalExpanded, setInternalExpanded] = useState(defaultExpanded);
+  const [sectionExpanded, setSectionExpanded] = useState("investor");
 
   const isControlled = controlledExpanded !== undefined;
   const isExpanded = isControlled ? controlledExpanded : internalExpanded;
 
+  
   const handleChange = (_, val) => {
     if (isControlled) controlledOnChange?.(val);
     else setInternalExpanded(val);
@@ -155,21 +165,46 @@ const SectionAccordion = ({
       elevation={0}
       sx={{
         mb: 1.5,
-        border: `1px solid ${COLORS.border}`,
+              border: `3px solid ${COLORS.primary}`,
         borderRadius: "12px !important",
         overflow: "hidden",
         "&:before": { display: "none" },
       }}
     >
-      <AccordionSummary
-        expandIcon={<ExpandMoreIcon sx={{ color: COLORS.primary }} />}
-        sx={{
-          backgroundColor: "#fff8ee",
-          minHeight: 52,
-          px: 2,
-          "& .MuiAccordionSummary-content": { my: 0 },
-        }}
-      >
+<AccordionSummary
+  expandIcon={
+    <Box
+      className="expand-icon-btn"
+      sx={{
+        width: 36,
+        height: 36,
+        borderRadius: "50%",
+        backgroundColor: COLORS.primary,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        transition: "all 0.25s ease",
+      }}
+    >
+      <ExpandMoreIcon sx={{ color: COLORS.white, fontSize: "1.5rem" }} />
+    </Box>
+  }
+  sx={{
+    backgroundColor: "#fff8ee",
+    minHeight: 52,
+    px: 2,
+    transition: "background-color 0.25s ease",
+    "& .MuiAccordionSummary-content": { my: 0 },
+    "&:hover": {
+      backgroundColor: "#ffe5b0",
+      "& .expand-icon-btn": {
+        animation: `${pulseAnimation} 0.8s ease infinite`,
+        backgroundColor: COLORS.secondary,
+        transform: "scale(1.15)",
+      },
+    },
+  }}
+>
         <Typography sx={{ fontWeight: 700,textAlign:"center", fontSize: fontSize, color: COLORS.black, ml:2 }}>
           {title}
         </Typography>
@@ -196,27 +231,27 @@ const LeadsStepper = ({ value, options, onChange }) => {
       boxShadow: "0 2px 8px rgba(255,153,0,0.15)",
     }}>
       <Box onClick={dec} sx={{
-        width: 24, height: 34, display: "flex", alignItems: "center", justifyContent: "center",
+        width: 44, height: 44, display: "flex", alignItems: "center", justifyContent: "center",
         cursor: idx <= 0 ? "not-allowed" : "pointer",
         transition: "background 0.2s",
         "&:active": { backgroundColor: idx <= 0 ? COLORS.secondary[100] : "rgba(255,153,0,0.2)" },
       }}>
-        <RemoveIcon sx={{ fontSize: 20, color: idx <= 0 ? COLORS.grey[400] : COLORS.primary, fontWeight: 900 }} />
+        <RemoveIcon sx={{ fontSize: 26, color: idx <= 0 ? COLORS.grey[400] : COLORS.secondary, fontWeight: 900 }} />
       </Box>
 
-      <Box sx={{ minWidth: 24, height: 34, display: "flex", alignItems: "center", justifyContent: "center", px: 1, backgroundColor: COLORS.white }}>
-        <Typography sx={{ fontSize: "1rem", fontWeight: 800, color: COLORS.primary, letterSpacing: "-0.01em", lineHeight: 1 }}>
+      <Box sx={{ minWidth: 44, height: 44, display: "flex", alignItems: "center", justifyContent: "center", px: 1, backgroundColor: COLORS.white }}>
+        <Typography sx={{ fontSize: "1.5rem", fontWeight: 800, color: COLORS.primary, letterSpacing: "-0.01em", lineHeight: 1 }}>
           {value}
         </Typography>
       </Box>
 
       <Box onClick={inc} sx={{
-        width: 24, height: 34, display: "flex", alignItems: "center", justifyContent: "center",
+        width: 44, height: 44, display: "flex", alignItems: "center", justifyContent: "center",
         cursor: idx >= options.length - 1 ? "not-allowed" : "pointer",
         transition: "background 0.2s",
         "&:active": { backgroundColor: idx >= options.length - 1 ? COLORS.grey[100] : "rgba(255,153,0,0.2)" },
       }}>
-        <AddIcon sx={{ fontSize: 20, color: idx >= options.length - 1 ? COLORS.grey[400] : COLORS.primary, fontWeight: 900 }} />
+        <AddIcon sx={{ fontSize: 26, color: idx >= options.length - 1 ? COLORS.grey[400] : COLORS.secondary, fontWeight: 900 }} />
       </Box>
     </Box>
   );
@@ -230,121 +265,100 @@ const RangeGroupCard = ({
   leadsKey, pricePerState,
 }) => {
   const currentLeads = getGroupLeads ? getGroupLeads(label) : 0;
-
+const lKey = `${planId}_${label}`;
+  const avail = leadsDropdownData ? (leadsDropdownData[lKey] || []) : [];
+  const minLeads = avail.length > 0 ? Math.min(...avail) : 1;
+  const divisor = minLeads > 0 ? minLeads : 1;
   const totalStatesCount = useMemo(() => {
     return getUniqueStatesForGroup(planId, label, items, statesByInvestmentRange).size;
   }, [planId, label, items, statesByInvestmentRange]);
 
   return (
-    <Box sx={{ border: `1px solid ${COLORS.border}`, borderRadius: 2.5, overflow: "hidden", mb: 1.5, backgroundColor: COLORS.white }}>
-      <Box
-        onClick={onToggle}
-        sx={{
-          display: "flex", alignItems: "center", justifyContent: "space-between",
-          px: 2, py: 1.4, cursor: "pointer", backgroundColor: "#fff0c5",
-          "&:active": { backgroundColor: "#ffe5a0" },
-        }}
-      >
-        <Typography sx={{ fontSize: T.lg, fontWeight: 700, color: COLORS.black }}>
-          {label}
-        </Typography>
+    <Box sx={{ border: `2px solid ${COLORS.primary}`, borderRadius: 2.5, overflow: "hidden", mb: 1.5, backgroundColor: COLORS.white }}>
+     <Box
+  onClick={onToggle}
+  sx={{
+    display: "flex", alignItems: "center", 
+    flexDirection: "column",  // ← stack children vertically
+    px: 2, py: 1.4, cursor: "pointer", backgroundColor: "#fff0c5",
+    "&:active": { backgroundColor: "#ffe5a0" },
+  }}
+>
+ {/* Row 1: Label + chevron */}
+<Box sx={{ display: "flex", alignItems: "flex-start",  width: "100%", position: "relative" }}>
+  <Typography sx={{ fontSize: T.xl, fontWeight: 700, color: COLORS.black }}>
+    {label}
+  </Typography>
+  <Box sx={{ position: "absolute", right: 0 }}>
+    {expanded
+      ? <KeyboardArrowUpIcon sx={{ fontSize: 25, color: COLORS.secondary[500] }} />
+      : <KeyboardArrowDownIcon sx={{ fontSize: 25, color: COLORS.secondary[500] }} />
+    }
+  </Box>
+</Box>
 
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          {availableLeads && availableLeads.length > 1 ? (
-            <LeadsStepper
-              value={currentLeads}
-              options={availableLeads}
-              onChange={(val) => handleLeadsChange(leadsKey, val)}
-            />
-          ) : (
-            <Box sx={{ display: "flex", gap: 0.5 }}>
-              {availableLeads?.map((opt) => {
-                const sel = currentLeads === opt;
-                return (
-                  <Box key={opt} onClick={(e) => { e.stopPropagation(); handleLeadsChange(leadsKey, opt); }}
-                    sx={{
-                      px: 1.5, py: 0.5, borderRadius: 1.5,
-                      border: `1px solid ${sel ? COLORS.secondary : COLORS.border}`,
-                      backgroundColor: sel ? COLORS.secondary : COLORS.white,
-                      color: sel ? COLORS.white : COLORS.black,
-                      fontSize: T.md, fontWeight: 700, cursor: "pointer",
-                    }}>
-                    {opt}
-                  </Box>
-                );
-              })}
+  {/* Row 2: Leads stepper / selector */}
+  <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 0.5 }}>
+    {availableLeads && availableLeads.length > 1 ? (
+      <LeadsStepper
+        value={currentLeads}
+        options={availableLeads}
+        onChange={(val) => handleLeadsChange(leadsKey, val)}
+      />
+    ) : (
+      <Box sx={{ display: "flex", gap: 0.5 }}>
+        {availableLeads?.map((opt) => {
+          const sel = currentLeads === opt;
+          return (
+            <Box key={opt} onClick={(e) => { e.stopPropagation(); handleLeadsChange(leadsKey, opt); }}
+              sx={{
+                px: 1.5, py: 0.5, borderRadius: 1.5,
+                border: `1px solid ${sel ? COLORS.secondary : COLORS.border}`,
+                backgroundColor: sel ? COLORS.secondary : COLORS.white,
+                color: sel ? COLORS.white : COLORS.black,
+                fontSize: T.xl, fontWeight: 700, cursor: "pointer",
+              }}>
+              {opt}
             </Box>
-          )}
-
-          {expanded
-            ? <KeyboardArrowUpIcon sx={{ fontSize: 18, color: COLORS.grey[500] }} />
-            : <KeyboardArrowDownIcon sx={{ fontSize: 18, color: COLORS.grey[500] }} />
-          }
-        </Box>
+          );
+        })}
       </Box>
+    )}
+  </Box>
+</Box>
 
       <Collapse in={expanded}>
-        <Box sx={{ backgroundColor: COLORS.grey[50], p: 1 }}>
-          {(() => {
-            const leads = currentLeads || 0;
-            const checkedUniqueStates = getUniqueStatesForCheckedItems(
-              planId, label, items, checkedItems, statesByInvestmentRange
-            );
-            const totalUniqueStates = checkedUniqueStates.size;
-            const lKey = `${planId}_${label}`;
-            const avail = leadsDropdownData ? (leadsDropdownData[lKey] || []) : [];
-            const minLeads = avail.length > 0 ? Math.min(...avail) : 1;
-            const divisor = minLeads > 0 ? minLeads : 1;
-            const groupTotalLeads = leads * totalUniqueStates;
-            const groupAmount = (pricePerState / divisor) * totalUniqueStates * leads;
+       <Box sx={{ backgroundColor: COLORS.grey[50], px: 0, pt: 0, pb: 0.5 }}>
+      {/* ✅ Headings Row - shown once */}
+    <Box sx={{
+      display: "flex",
+      // alignItems: "center",
+      justifyContent: "space-evenly",
+  //  gap:0.3,
+      mb: 1,
+      mt:1
+    }}>
+      <Typography sx={{
+        fontSize: T.md,
+        fontWeight: 600,
+        color: COLORS.black,
+        letterSpacing: "0.05em",
+      }}>
+       Investment Range
+      </Typography>
 
-            return (
-              <Box sx={{ display: "flex", gap: 0.5, mb: 2, borderRadius: 2, backgroundColor: COLORS.white }}>
-                <Box sx={{
-                  flex: 1, display: "flex", flexDirection: "column", alignItems: "center",
-                  backgroundColor: "rgba(255,153,0,0.06)", border: "1px solid rgba(255,153,0,0.18)",
-                  borderRadius: "10px", px: 0, py: 0.8,
-                }}>
-                  <Typography sx={{ fontSize: "0.75rem", color: COLORS.black[600], fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", lineHeight: 1, mb: 0.4, whiteSpace: "nowrap" }}>
-                    Per State
-                  </Typography>
-                  <Typography sx={{ fontSize: "0.85rem", fontWeight: 800, color: COLORS.primaryDark, lineHeight: 1 }}>
-                    {fmtINR(pricePerState || 0)}
-                  </Typography>
-                </Box>
+      <Typography sx={{
+        fontSize: T.md,
+        fontWeight: 600,
+        color: COLORS.black,
+        // textTransform: "uppercase",
+        letterSpacing: "0.05em",
+        ml:10
+      }}>
+         States
+      </Typography>
+    </Box>
 
-                <Box sx={{ width: "1px", backgroundColor: "rgba(255,153,0,0.15)", borderRadius: 1 }} />
-
-                <Box sx={{
-                  flex: 1, display: "flex", flexDirection: "column", alignItems: "center",
-                  backgroundColor: "rgba(76,176,79,0.06)", border: "1px solid rgba(76,176,79,0.18)",
-                  borderRadius: "10px", px: 1, py: 0.8,
-                }}>
-                  <Typography sx={{ fontSize: "0.75rem", color: COLORS.black[600], fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", lineHeight: 1, mb: 0.4, whiteSpace: "nowrap" }}>
-                    Total Leads
-                  </Typography>
-                  <Typography sx={{ fontSize: "0.85rem", fontWeight: 800, color: COLORS.secondary, lineHeight: 1 }}>
-                    {groupTotalLeads.toLocaleString("en-IN")}
-                  </Typography>
-                </Box>
-
-                <Box sx={{ width: "1px", backgroundColor: "rgba(255,153,0,0.15)", borderRadius: 1 }} />
-
-                <Box sx={{
-                  flex: 1, display: "flex", flexDirection: "column", alignItems: "center",
-                  backgroundColor: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.08)",
-                  borderRadius: "10px", px: 1, py: 0.8,
-                }}>
-                  <Typography sx={{ fontSize: "0.75rem", color: COLORS.black[600], fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", lineHeight: 1, mb: 0.4, whiteSpace: "nowrap" }}>
-                    Total Amount
-                  </Typography>
-                  <Typography sx={{ fontSize: "0.85rem", fontWeight: 800, color: COLORS.black, lineHeight: 1 }}>
-                    {fmtINR(groupAmount)}
-                  </Typography>
-                </Box>
-              </Box>
-            );
-          })()}
 
           {items.map((item, i) => {
             const id = `${planId}-${label}-${item.range}`;
@@ -374,10 +388,43 @@ const RangeGroupCard = ({
                       "&.Mui-disabled": { color: COLORS.secondary },
                     }}
                   />
-                  <Typography sx={{ fontSize: T.lg, fontWeight: 600, color: COLORS.black }}>
+                  <Typography sx={{ fontSize: T.xl, fontWeight: 600, color: COLORS.black }}>
                     {item.range}
                   </Typography>
-                </Box>
+
+                {/* {isChecked && !inPayment && (
+    <Chip
+      label="Active"
+      size="small"
+      sx={{
+        height: 20,
+        fontSize: '0.7rem',
+        fontWeight: 600,
+        backgroundColor: COLORS.secondary,
+        color: COLORS.white,
+        ml: 1,
+        '& .MuiChip-label': { px: 1, py: 0 }
+      }}
+    />
+  )} */}
+  
+  {/* Show "Added" badge when in payment */}
+  {/* {inPayment && (
+    <Chip
+      label="Added"
+      size="small"
+      sx={{
+        height: 20,
+        fontSize: '0.7rem',
+        fontWeight: 600,
+        backgroundColor: COLORS.primary,
+        color: COLORS.white,
+        ml: 1,
+        '& .MuiChip-label': { px: 1, py: 0 }
+      }}
+    />
+  )} */}
+</Box>
 
                 <Box sx={{
                   display: "flex", alignItems: "center", gap: 0.3,
@@ -393,6 +440,68 @@ const RangeGroupCard = ({
               </Box>
             );
           })}
+
+              {(() => {
+            const leads = currentLeads || 0;
+            const checkedUniqueStates = getUniqueStatesForCheckedItems(
+              planId, label, items, checkedItems, statesByInvestmentRange
+            );
+            const totalUniqueStates = checkedUniqueStates.size;
+            const lKey = `${planId}_${label}`;
+            const avail = leadsDropdownData ? (leadsDropdownData[lKey] || []) : [];
+            const minLeads = avail.length > 0 ? Math.min(...avail) : 1;
+            const divisor = minLeads > 0 ? minLeads : 1;
+            const groupTotalLeads = leads * totalUniqueStates;
+            const groupAmount = (pricePerState / divisor) * totalUniqueStates * leads;
+
+            return (
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5, mb: 1, mt: 2, borderRadius: 2, backgroundColor: COLORS.white,px: 1, py: 1 }}>
+  {/* Row 1: Per State + Total Leads */}
+  <Box sx={{ display: "flex", gap: 0.2 }}>
+    <Box sx={{
+      flex: 1, display: "flex", flexDirection: "column", alignItems: "center",
+      backgroundColor: "rgba(255,153,0,0.06)", border: `3px solid ${COLORS.border}`,
+      borderRadius: "10px", px: 0, py: 0.8,
+    }}>
+      <Typography sx={{ fontSize: "0.85rem", color: COLORS.black[600], fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", lineHeight: 1, mb: 0.4, whiteSpace: "nowrap" }}>
+        Per State
+      </Typography>
+<Typography sx={{ fontSize: "1.4rem", fontWeight: 800, color: COLORS.primaryDark, lineHeight: 1 }}>
+
+{fmtINR((pricePerState / divisor) * currentLeads)}</Typography>
+    </Box>
+
+
+    <Box sx={{
+      flex: 1, display: "flex", flexDirection: "column", alignItems: "center",
+      backgroundColor: "rgba(76,176,79,0.06)", border: `3px solid ${COLORS.border}`,
+      borderRadius: "10px", px: 1, py: 0.8,
+    }}>
+      <Typography sx={{ fontSize: "0.85rem", color: COLORS.black[600], fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", lineHeight: 1, mb: 0.4, whiteSpace: "nowrap" }}>
+        Total Leads
+      </Typography>
+      <Typography sx={{ fontSize: "1.4rem", fontWeight: 800, color: COLORS.secondary, lineHeight: 1 }}>
+        {groupTotalLeads.toLocaleString("en-IN")}
+      </Typography>
+    </Box>
+  </Box>
+
+  {/* Row 2: Total Amount (full width) */}
+  <Box sx={{
+    display: "flex", flexDirection: "column", alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.03)", border: `3px solid ${COLORS.border}`,
+    borderRadius: "10px", px: 1, py: 0.8,
+  }}>
+    <Typography sx={{ fontSize: "0.85rem", color: COLORS.black[600], fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", lineHeight: 1, mb: 0.4, whiteSpace: "nowrap" }}>
+      Total Amount
+    </Typography>
+    <Typography sx={{ fontSize: "1.4rem", fontWeight: 800, color: COLORS.secondary, lineHeight: 1 }}>
+      {fmtINR(groupAmount)}
+    </Typography>
+  </Box>
+</Box>
+            );
+          })()}
         </Box>
       </Collapse>
     </Box>
@@ -413,7 +522,7 @@ const ListingPlanDetail = ({
 
   return (
     <Box sx={{
-      border: `1.5px solid ${isAdded ? COLORS.primary : COLORS.border}`,
+      border: `2px solid ${isAdded ? COLORS.primary : COLORS.primary}`,
       borderRadius: 2.5,
       backgroundColor: "#fff0c5",
       p: 1,
@@ -429,19 +538,20 @@ const ListingPlanDetail = ({
           color: "#fff", px: 3, py: 0.4, fontSize: "0.65rem", fontWeight: 700,
           textAlign: "center", width: 110,
           boxShadow: "0 2px 4px rgba(0,0,0,0.1)", zIndex: 1,
+          display: { xs: "none", sm: "block" }
         }}>
          Popular
         </Box>
       )}
 
-      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", mb: 2, gap:0.5 }}>
+      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", mb: 2, gap:0.5, }}>
         <Box>
           <Typography sx={{ fontWeight: 700, fontSize: T.lg, color: COLORS.black , ml:0.8}}>
             {plan.planName}
           </Typography>
           <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mt: 0.5, ml:0.6 }}>
-            <CalendarMonthRoundedIcon sx={{ fontSize: 16  , color: COLORS.black[500] }} />
-            <Typography sx={{ fontSize: T.md, color: COLORS.black[600] }}>
+            <CalendarMonthRoundedIcon sx={{ fontSize: 26  , color: COLORS.primary[500] }} />
+            <Typography sx={{ fontSize: "1.5rem", color: COLORS.primary[600] }}>
               {pkg.validityDays} Days 
             </Typography>
           </Box>
@@ -461,7 +571,7 @@ const ListingPlanDetail = ({
           else onAdd();
         }}
         sx={{
-          fontSize: T.md, fontWeight: 700, textTransform: "none",
+          fontSize: T.xl, fontWeight: 700, textTransform: "none",
           borderRadius: 2, boxShadow: "none", py: 1.2, color: COLORS.white,
           background: isAlreadyActive
             ? "linear-gradient(135deg,#4cb04f 0%,#2e7d32 100%)"
@@ -535,6 +645,7 @@ const MobilePackageSelection = ({
 }) => {
   const [expandedGroup, setExpandedGroup] = useState(null);
   const [snack, setSnack] = useState({ open: false, msg: "", sev: "info" });
+  
 
   // ── Active listing tab state ──────────────────────────────────────────────
   const listingPlans = useMemo(
@@ -589,6 +700,12 @@ const MobilePackageSelection = ({
     return map;
   }, [profilePackages]);
 
+  useEffect(() => {
+  const firstLabel = Object.keys(groupedPackages)[0];
+  if (firstLabel && expandedGroup === null) {
+    setExpandedGroup(firstLabel);
+  }
+}, [groupedPackages]);
   const availableLeads = useMemo(() => {
     if (!selectedPlan) return [];
     return [
@@ -764,8 +881,10 @@ const MobilePackageSelection = ({
 
   // ── Render ────────────────────────────────────────────────────────────────────
   return (
-    <Box sx={{ width: "100%" }}>
-
+    <Box sx={{ width: "100%",mt:3 }}>
+<Typography sx={{ fontSize: "1.3rem", fontWeight: 700, color: COLORS.black, mb: 2, textAlign: "center" }}>
+ SELECT NEW PLAN
+</Typography>
       {/* ── INVESTOR LEAD PLANS ── */}
  <SectionAccordion 
   title="INVESTOR LEAD PLANS" 
@@ -777,39 +896,29 @@ const MobilePackageSelection = ({
           {/* <Typography sx={{ fontSize: "1.4rem", fontWeight: 700, color: COLORS.black, mb: 0.5 }}>
             INVESTOR LEAD PLANS
           </Typography> */}
-          <Typography sx={{ fontSize: T.lg, color: COLORS.grey[600], mb: 2 }}>
+          <Typography sx={{ fontSize: T.lg, color: COLORS.black[600], mb: 2 }}>
             Franchise | Dealer and Distributor | Channel Partner | Agent and Association
           </Typography>
 
-          <Box sx={{ mb: 3 }}>
-            <Button
-              variant="outlined"
-              startIcon={<AddCircleOutlineIcon />}
-              fullWidth
-              onClick={() => setOpenConfirmDialog(true)}
-              sx={{
-                mb: 2.5, borderRadius: 2, textTransform: "none", fontWeight: 700,
-                fontSize: T.md, borderColor: COLORS.secondary, color: COLORS.secondary,
-                "&:hover": { backgroundColor: COLORS.lightGreen, borderColor: COLORS.secondaryDark },
-              }}
-            >
-              Add New Investment Range
-            </Button>
 
-            <Box sx={{ mb: 1.5 }}>
-              <Typography sx={{ fontSize: T.md, fontWeight: 700, color: COLORS.black, mb: 0.3 }}>
-                Select Campaign Period
+          {selectedPlan && (
+            <>
+
+              <Box sx={{ mb: 1.5 }}>
+              <Typography sx={{ fontSize: T.xl, fontWeight: 700, color: COLORS.black, mb: 0.3,  }}>
+               SELECT CAMPAIGN PERIOD
               </Typography>
             </Box>
 
             {/* ── Campaign period pill tabs ── */}
-            <Box sx={{ display: "flex", backgroundColor: COLORS.grey[100], borderRadius: 4, p: 0.5, position: "relative" }}>
+            <Box sx={{ display: "flex", backgroundColor: COLORS.grey[100], borderRadius: 4, p: 0.5, position: "relative" ,}}>
+              
               <Box sx={{
-                position: "absolute", height: "calc(100% - 8px)", top: 4,
+                position: "absolute", height: "calc(100% - 10px)", top: 4,
                 width: `${100 / filteredPlans.length}%`,
                 left: `${(filteredPlans.findIndex((p) => p._id === selectedGroup) || 0) * (100 / filteredPlans.length)}%`,
                 backgroundColor: COLORS.primary, borderRadius: 3,
-                transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)", zIndex: 0,
+                transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)", zIndex: 0,  
               }} />
 
               {filteredPlans.map((plan) => {
@@ -818,7 +927,8 @@ const MobilePackageSelection = ({
                 return (
                   <Box key={plan._id} onClick={() => setSelectedGroup(plan._id)} sx={{
                     flex: 1, textAlign: "center", py: 1.5, px: 1,
-                    borderRadius: 3, cursor: "pointer", position: "relative", zIndex: 1, transition: "all 0.2s ease",
+                    borderRadius: 3, cursor: "pointer", position: "relative", zIndex: 1, transition: "all 0.2s ease",  
+
                   }}>
                     <Typography sx={{ fontSize: T.xl, fontWeight: 900, color: isSelected ? COLORS.white : COLORS.grey[600], transition: "color 0.2s ease" }}>
                       {days}
@@ -830,17 +940,37 @@ const MobilePackageSelection = ({
                 );
               })}
             </Box>
+               <Typography sx={{ fontSize: T.xl, fontWeight: 700, color: COLORS.black, mb: 1 ,mt:2}}>
+                SELECT INVESTMENT RANGES
+              </Typography>
+              
+          <Box>
+            <Button
+              variant="outlined"
+              startIcon={<AddCircleOutlineIcon />}
+              fullWidth
+              onClick={() => setOpenConfirmDialog(true)}
+              sx={{
+                mb: 2.5, borderRadius: 2, textTransform: "none", fontWeight: 700,
+                fontSize: T.xl, borderColor: COLORS.secondary, color: COLORS.secondary,
+                "&:hover": { backgroundColor: COLORS.lightGreen, borderColor: COLORS.secondaryDark },
+              }}
+            >
+              Add New Investment Range
+            </Button>
+
+          
           </Box>
 
-          {selectedPlan && (
-            <>
+
               {Object.keys(groupedPackages).map((label) => {
                 const { pkg, items } = groupedPackages[label];
                 const leadsKey = leadsKeyForGroup(label);
                 const { price, totalLeads, uniqueStatesCount } = getGroupTotals(label, items, pkg);
 
                 return (
-                  <Box key={label} sx={{ mb: 2 }}>
+                  <Box key={label} sx={{ mb: 2 ,}}>
+                 
                     <RangeGroupCard
                       label={label}
                       items={items}
@@ -864,19 +994,19 @@ const MobilePackageSelection = ({
                 );
               })}
 
-              <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1.5, mb: 4 }}>
+              <Box sx={{ display: "grid",  gap: 1.5, mb: 4 }}>
                 <Button
                   variant="outlined"
                   onClick={handleAddToCart}
                   sx={{
-                    height: 48, borderRadius: 2, textTransform: "none", fontWeight: 700,
-                    fontSize: T.xl, borderColor: COLORS.border, color: COLORS.black,
+                    height: 48, borderRadius: 3, textTransform: "none", fontWeight: 700,
+                    fontSize: T.xl, borderColor: COLORS.secondary, color: COLORS.black, borderWidth: 3,
                     backgroundColor: COLORS.white, "&:hover": { backgroundColor: COLORS.grey[100] },
                   }}
                 >
                   Add to Plan
                 </Button>
-                <Button
+                {/* <Button
                   variant="contained"
                   onClick={scrollToPaymentSummary}
                   sx={{
@@ -886,7 +1016,7 @@ const MobilePackageSelection = ({
                   }}
                 >
                   View Summary
-                </Button>
+                </Button> */}
               </Box>
             </>
           )}
@@ -905,7 +1035,7 @@ const MobilePackageSelection = ({
             {/* <Typography sx={{ fontSize: "1.4rem", fontWeight: 700, color: COLORS.black, mb: 0.5, textAlign: "center" }}>
               BRAND LISTING PLANS
             </Typography> */}
-            <Typography sx={{ fontSize: T.lg, color: COLORS.grey[600], mb: 2, textAlign: "center" }}>
+            <Typography sx={{ fontSize: T.xl, color: COLORS.black[600], mb: 2, textAlign: "center" }}>
               List your Brand to increase its Digital Visibility
             </Typography>
 
@@ -945,8 +1075,8 @@ const MobilePackageSelection = ({
                       px: 1.4,
                       py: 0.5,
                       borderRadius: "24px",
-                      fontSize: T.xl,
-                      fontWeight: isActive ? 700 : 500,
+                      fontSize: "1.3rem",
+                      fontWeight: isActive ? 700 : 700,
                       cursor: "pointer",
                       // whiteSpace: "nowrap",
                       border: `1.5px solid ${isActive ? COLORS.primary : isAdded ? COLORS.secondary : COLORS.border}`,

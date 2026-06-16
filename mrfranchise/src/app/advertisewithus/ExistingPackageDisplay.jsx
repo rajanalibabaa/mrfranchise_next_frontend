@@ -4,9 +4,10 @@ import {
   Paper, Button, Dialog, DialogTitle, DialogContent,
   IconButton, Table, TableBody, TableCell, TableContainer,
   TableHead, TableRow, Tooltip, Divider,
-  Card, CardContent, useMediaQuery, useTheme,
+  Card, CardContent, useMediaQuery, 
   Accordion, AccordionSummary, AccordionDetails,
 } from "@mui/material";
+import { useTheme, keyframes } from "@mui/material/styles";
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import CloseIcon from "@mui/icons-material/Close";
 import UpgradeIcon from "@mui/icons-material/Upgrade";
@@ -18,6 +19,11 @@ import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import UpgradeDialog from "./UpgradeDialog";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
+const pulseAnimation = keyframes`
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 153, 0, 0.7); }
+  70% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(255, 153, 0, 0); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 153, 0, 0); }
+`;
 const COLORS = {
   primary: "#FF9900",
   primaryDark: "#E68A00",
@@ -80,15 +86,40 @@ const SectionAccordion = ({
         "&:before": { display: "none" },
       }}
     >
-      <AccordionSummary
-        expandIcon={<ExpandMoreIcon sx={{ color: COLORS.primary }} />}
-        sx={{
-          backgroundColor: "#fff8ee",
-          minHeight: 52,
-          px: 2,
-          "& .MuiAccordionSummary-content": { my: 0 },
-        }}
-      >
+    <AccordionSummary
+  expandIcon={
+    <Box
+      className="expand-icon-btn"
+      sx={{
+        width: 36,
+        height: 36,
+        borderRadius: "50%",
+        backgroundColor: COLORS.primary,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        transition: "all 0.25s ease",
+      }}
+    >
+      <ExpandMoreIcon sx={{ color: COLORS.white, fontSize: "1.5rem" }} />
+    </Box>
+  }
+  sx={{
+    backgroundColor: "#fff8ee",
+    minHeight: 52,
+    px: 2,
+    transition: "background-color 0.25s ease",
+    "& .MuiAccordionSummary-content": { my: 0 },
+    "&:hover": {
+      backgroundColor: "#ffe5b0",
+      "& .expand-icon-btn": {
+        animation: `${pulseAnimation} 0.8s ease infinite`,
+        backgroundColor: COLORS.secondary,
+        transform: "scale(1.15)",
+      },
+    },
+  }}
+>
      <Typography sx={{ fontWeight: 700,textAlign:"center", fontSize: fontSize, color: COLORS.black , ml:2}}>
   {title}
 </Typography>
@@ -529,6 +560,9 @@ const ExistingPackageDisplay = ({
   INDIA_STATES = {},
   finalToken,
   expansionStates = [],
+  sectionExpanded,      // ← ADD THIS
+  onSectionChange,      // ← ADD THIS
+  allStates, 
 }) => {
   const theme    = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
@@ -850,7 +884,8 @@ const ExistingPackageDisplay = ({
   /* ── render ── */
   return (
     <>
-      <SectionAccordion   title=" CURRENT ACTIVE PLANS" defaultExpanded>
+      <SectionAccordion   title=" CURRENT ACTIVE PLANS" defaultExpanded  expanded={sectionExpanded}          // ← add this
+  onChange={onSectionChange}>
         <Box sx={{
           display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
           width: "100%", mb: 5, px: { xs: 0, sm: 1, md: 1 },

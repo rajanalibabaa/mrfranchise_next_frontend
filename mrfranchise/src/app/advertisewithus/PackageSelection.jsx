@@ -638,7 +638,7 @@ useEffect(() => {
           const availableLeads = leadsDropdownData[leadsDataKey] || [];
           const minLeads = availableLeads.length > 0 ? Math.min(...availableLeads) : 1;
           const divisor = minLeads > 0 ? minLeads : 1;
-          
+            
           const itemAmount = (group.pricePerState / divisor) * (states || []).length * (item.selectedLeads || 0);
 
           return {
@@ -2346,6 +2346,9 @@ return allStates.length;
     justifyContent: { xs: "center", md: "flex-end" },
     alignItems: { xs: "center", md: "center" },
     gap: { xs: 1, md: 2 },
+    backgroundColor: {xs:COLORS.grey[100], md: COLORS.white},
+ border: { xs: `2px solid ${COLORS.secondary}`, md: 'none' },
+     borderRadius: 2,
     mb: 3,
     pb: 2,
     px: { xs: 0, md: 4 },
@@ -3902,15 +3905,11 @@ background: "linear-gradient(135deg, #4cb04f 0%, #2e7d32 100%)",
     }}
   >
     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-      <Typography
-        sx={{
-          fontSize: TEXT_SIZES.xl,
-          fontWeight: 700,
-          color: COLORS.black,
-        }}
-      >
-        ₹{(pricePerState ).toLocaleString("en-IN")}
-      </Typography>
+  <Typography sx={{ fontSize: TEXT_SIZES.xl, fontWeight: 700, color: COLORS.black }}>
+  ₹{uniqueGroupStatesCount > 0 
+      ? (groupTotalAmount / uniqueGroupStatesCount).toLocaleString("en-IN") 
+      : (0).toLocaleString("en-IN")}
+</Typography>
       <Typography
         sx={{
           fontSize: TEXT_SIZES.xs,
