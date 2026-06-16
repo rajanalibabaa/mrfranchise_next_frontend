@@ -1,7 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
-import Link from "next/link";
+import React, {
+  useState,
+  useEffect,
+} from "react";
+
 import {
   Box,
   Drawer,
@@ -11,6 +14,7 @@ import {
   AppBar,
   Toolbar,
   Typography,
+  Divider,
 } from "@mui/material";
 
 import MenuIcon from "@mui/icons-material/Menu";
@@ -21,128 +25,281 @@ import SupportAgentIcon from "@mui/icons-material/SupportAgent";
 import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 
-const drawerWidth = 240;
+const DESKTOP_DRAWER_WIDTH = 250;
+const MOBILE_DRAWER_WIDTH = 280;
 
-export default function BrandDashboardLayout() {
+export default function Sidebar({
+  activePage,
+  setActivePage,
+}) {
   const theme = useTheme();
-  const isMobileOrTablet = useMediaQuery(theme.breakpoints.down("md"));
-  const [mobileOpen, setMobileOpen] = useState(false);
 
-  const handleDrawerToggle = () => setMobileOpen(prev => !prev);
+  const isMobileOrTablet =
+    useMediaQuery(
+      theme.breakpoints.down("md")
+    );
 
-  const navLinkStyle = {
-    display: "flex",
-    alignItems: "center",
-    gap: 1,
-    textDecoration: "none",
-    color: "#333",
-    padding: "10px 12px",
-    borderRadius: "8px",
-    backgroundColor: "#f9f9f9",
-    transition: "0.25s",
-    "&:hover": {
-      backgroundColor: "#e9e9e9",
-      transform: "translateX(6px)",
-    },
+  const [mobileOpen, setMobileOpen] =
+    useState(false);
+
+  useEffect(() => {
+    if (!isMobileOrTablet) {
+      setMobileOpen(false);
+    }
+  }, [isMobileOrTablet]);
+
+  const handleDrawerToggle = () => {
+    setMobileOpen((prev) => !prev);
   };
 
-  const SidebarLinks = () => (
-    <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-      <Box sx={{ textAlign: "center", mb: 2 }}>
-        <Link href="/" onClick={() => isMobileOrTablet && setMobileOpen(false)}>
-          <img
-            src="/brandLogo.jpg"
-            alt="Brand Logo"
-            style={{ maxWidth: 180, width: "100%" }}
-          />
-        </Link>
-      </Box>
-
-      <Link href="/brandDashboard" style={navLinkStyle} onClick={() => setMobileOpen(false)}>
-        <SpaceDashboardIcon /> Dashboard
-      </Link>
-
-      <Link href="/brandDashboard/brand_listing_controller" style={navLinkStyle} onClick={() => setMobileOpen(false)}>
-        <ViewListIcon /> Edit Brand Listing
-      </Link>
-
-      <Link href="/brandDashboard/brandsearchus" style={navLinkStyle} onClick={() => setMobileOpen(false)}>
-        <SupportAgentIcon /> Reach Us
-      </Link>
-
-      <Link href="/brandDashboard/brandrequesthandle" style={navLinkStyle} onClick={() => setMobileOpen(false)}>
-        <ManageAccountsIcon /> Action Manager
-      </Link>
-
-      <Link href="/brandDashboard/paymentpackageupgrade" style={navLinkStyle} onClick={() => setMobileOpen(false)}>
-        <TrendingUpIcon /> Package Upgrade
-      </Link>
-    </Box>
-  );
+  const menuItems = [
+    {
+      key: "dashboard",
+      label: "Dashboard",
+      icon: <SpaceDashboardIcon />,
+    },
+    {
+      key: "brandListing",
+      label: "Edit Brand Listing",
+      icon: <ViewListIcon />,
+    },
+    {
+      key: "reachUs",
+      label: "Reach Us",
+      icon: <SupportAgentIcon />,
+    },
+    {
+      key: "actionManager",
+      label: "Action Manager",
+      icon: <ManageAccountsIcon />,
+    },
+    {
+      key: "ContactMappingForLeads",
+      label: "Contact Mapping for Leads",
+      icon: <TrendingUpIcon />,
+    },
+    // {
+    //   key: "packageUpgrade",
+    //   label: "Package Upgrade",
+    //   icon: <TrendingUpIcon />,
+    // },
+  ];
 
   const drawerContent = (
     <Box
       sx={{
-        width: drawerWidth,
         height: "100%",
-        p: 2,
         display: "flex",
         flexDirection: "column",
-        justifyContent: "space-between",
+        backgroundColor: "#fff",
       }}
     >
-      <SidebarLinks />
+      {/* Logo */}
+      <Box
+        sx={{
+          textAlign: "center",
+          py: 3,
+          px: 2,
+        }}
+      >
+        <img
+          src="/brandLogo.jpg"
+          alt="Brand Logo"
+          style={{
+            width: "100%",
+            maxWidth: "160px",
+            height: "auto",
+            objectFit: "contain",
+          }}
+        />
+      </Box>
 
+      <Divider />
+
+      {/* Menu */}
+      <Box
+        sx={{
+          flex: 1,
+          px: 2,
+          py: 2,
+          display: "flex",
+          flexDirection: "column",
+          gap: 1.5,
+        }}
+      >
+        {menuItems.map((item) => (
+          <Box
+            key={item.key}
+            onClick={() => {
+              setActivePage(item.key);
+
+              if (isMobileOrTablet) {
+                setMobileOpen(false);
+              }
+            }}
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 2,
+              px: 2,
+              py: 1.8,
+              borderRadius: 2,
+              cursor: "pointer",
+
+              backgroundColor:
+                activePage === item.key
+                  ? "#d48c28"
+                  : "#fff",
+
+              color:
+                activePage === item.key
+                  ? "#fff"
+                  : "#333",
+
+              border:
+                activePage === item.key
+                  ? "none"
+                  : "1px solid #e5e5e5",
+
+              transition:
+                "all .2s ease",
+
+              "&:hover": {
+                backgroundColor:
+                  activePage === item.key
+                    ? "#d48c28"
+                    : "#f5f5f5",
+              },
+            }}
+          >
+            {item.icon}
+
+            <Typography
+              sx={{
+                fontSize: "1rem",
+                fontWeight: 500,
+              }}
+            >
+              {item.label}
+            </Typography>
+          </Box>
+        ))}
+      </Box>
+
+      {/* Mobile Close */}
       {isMobileOrTablet && (
-        <IconButton aria-label="close" onClick={handleDrawerToggle} sx={{ alignSelf: "center", mt: 2 }}>
-          <CloseIcon />
-        </IconButton>
+        <>
+          <Divider />
+
+          <Box
+            sx={{
+              p: 2,
+              display: "flex",
+              justifyContent: "center",
+            }}
+          >
+            <IconButton
+              onClick={handleDrawerToggle}
+              sx={{
+                border:
+                  "1px solid #ddd",
+              }}
+            >
+              <CloseIcon />
+            </IconButton>
+          </Box>
+        </>
       )}
     </Box>
   );
 
   return (
-    <Box sx={{ display: "flex", minHeight: isMobileOrTablet ? "10vh" : "auto" }}>
-      {/* AppBar - Mobile & Tablet */}
+    <>
+      {/* Mobile / Tablet Header */}
       {isMobileOrTablet && (
-        <AppBar position="fixed" color="default" elevation={1}>
-          <Toolbar sx={{ justifyContent: "space-around" }}>
-            <IconButton aria-label="open drawer" edge="start" onClick={handleDrawerToggle}>
+        <AppBar
+          position="fixed"
+          color="default"
+          elevation={1}
+          sx={{
+            zIndex:
+              theme.zIndex.drawer + 1,
+          }}
+        >
+          <Toolbar>
+            <IconButton
+              edge="start"
+              onClick={
+                handleDrawerToggle
+              }
+            >
               <MenuIcon />
             </IconButton>
 
-            <Link href="/">
-              <img src="/mrfranchise_logo.avif" alt="Logo" height={36} />
-            </Link>
-
+            <Typography
+              variant="h6"
+              sx={{
+                ml: 2,
+                fontWeight: 600,
+              }}
+            >
+              Brand Dashboard
+            </Typography>
           </Toolbar>
         </AppBar>
       )}
 
-      {/* Sidebar - Desktop */}
+      {/* Desktop Sidebar */}
       {!isMobileOrTablet && (
         <Box
-         
+          sx={{
+            width:
+              DESKTOP_DRAWER_WIDTH,
+            minHeight: "100vh",
+            borderRight:
+              "1px solid #e5e5e5",
+            backgroundColor:
+              "#fff",
+            position: "sticky",
+            top: 0,
+            flexShrink: 0,
+          }}
         >
           {drawerContent}
         </Box>
       )}
 
-      {/* Drawer - Mobile */}
+      {/* Mobile / Tablet Drawer */}
       <Drawer
-        open={mobileOpen}
-        onClose={handleDrawerToggle}
-        variant="temporary"
-        ModalProps={{ keepMounted: true }}
+        anchor="left"
+        open={
+          isMobileOrTablet &&
+          mobileOpen
+        }
+        onClose={
+          handleDrawerToggle
+        }
+        ModalProps={{
+          keepMounted: true,
+        }}
         sx={{
+          display: {
+            xs: "block",
+            md: "none",
+          },
+
           "& .MuiDrawer-paper": {
-            width: drawerWidth,
+            width:
+              MOBILE_DRAWER_WIDTH,
+            maxWidth: "85vw",
+            mt: "56px",
+            boxSizing:
+              "border-box",
           },
         }}
       >
         {drawerContent}
       </Drawer>
-
-    </Box>
+    </>
   );
 }
