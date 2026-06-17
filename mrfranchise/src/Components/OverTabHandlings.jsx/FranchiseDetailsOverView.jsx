@@ -180,8 +180,8 @@ height: 30,
 
 
   const columns = [
-  { label: "Model", key: "model" },
-  { label: "Type", key: "type" },
+  { label: "Business Model", key: "model" },
+  { label: "Business Type", key: "type" },
   { label: "Investment", key: "investment" },
   { label: "Area", key: "area" },
   { label: "Agreement", key: "agreement" },

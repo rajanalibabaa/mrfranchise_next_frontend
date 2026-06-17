@@ -17,6 +17,7 @@ import {
   CardContent,
   useMediaQuery,
   useTheme,
+  keyframes ,
   Collapse,
   Accordion,
   AccordionSummary,
@@ -30,38 +31,85 @@ import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
+const pulseAnimation = keyframes`
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 153, 0, 0.7); }
+  70% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(255, 153, 0, 0); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 153, 0, 0); }
+`;
+
 // ─── Mobile-only Section Accordion ───────────────────────────────────────────
-const SectionAccordion = ({ title, children, defaultExpanded = false, COLORS }) => {
+const SectionAccordion = ({ 
+  title, 
+    fontSize="1.3rem",
+  children, 
+  defaultExpanded = false, 
+  COLORS,
+  expanded: controlledExpanded,       // ← new
+  onChange: controlledOnChange,       // ← new
+}) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  const [expanded, setExpanded] = useState(defaultExpanded);
+  const [internalExpanded, setInternalExpanded] = useState(defaultExpanded);
+
+  const isControlled = controlledExpanded !== undefined;
+  const isExpanded = isControlled ? controlledExpanded : internalExpanded;
+
+  const handleChange = (_, val) => {
+    if (isControlled) controlledOnChange?.(val);
+    else setInternalExpanded(val);
+  };
 
   if (!isMobile) return <>{children}</>;
 
   return (
     <Accordion
-      expanded={expanded}
-      onChange={(_, val) => setExpanded(val)}
+      expanded={isExpanded}
+      onChange={handleChange}
       disableGutters
       elevation={0}
       sx={{
         mb: 0,
-        border: `1px solid ${COLORS.border}`,
+               border: `3px solid ${COLORS.primary}`,
         borderRadius: "12px !important",
         overflow: "hidden",
         "&:before": { display: "none" },
       }}
     >
-      <AccordionSummary
-        expandIcon={<ExpandMoreIcon sx={{ color: COLORS.primary }} />}
-        sx={{
-          backgroundColor: "#fff8ee",
-          minHeight: 52,
-          px: 2,
-          "& .MuiAccordionSummary-content": { my: 0 },
-        }}
-      >
-        <Typography sx={{ fontWeight: 700, fontSize: "1rem", color: COLORS.black }}>
+   <AccordionSummary
+  expandIcon={
+    <Box
+      className="expand-icon-btn"
+      sx={{
+        width: 36,
+        height: 36,
+        borderRadius: "50%",
+        backgroundColor: COLORS.primary,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        transition: "all 0.25s ease",
+      }}
+    >
+      <ExpandMoreIcon sx={{ color: COLORS.white, fontSize: "1.5rem" }} />
+    </Box>
+  }
+  sx={{
+    backgroundColor: "#fff8ee",
+    minHeight: 52,
+    px: 2,
+    transition: "background-color 0.25s ease",
+    "& .MuiAccordionSummary-content": { my: 0 },
+    "&:hover": {
+      backgroundColor: "#ffe5b0",
+      "& .expand-icon-btn": {
+        animation: `${pulseAnimation} 0.8s ease infinite`,
+        backgroundColor: COLORS.secondary,
+        transform: "scale(1.15)",
+      },
+    },
+  }}
+>
+        <Typography sx={{ fontWeight: 700,textAlign:"center", fontSize: fontSize, color: COLORS.black }}>
           {title}
         </Typography>
       </AccordionSummary>
@@ -80,6 +128,8 @@ const PaymentSummaryTable = ({
   handleShowStates,
   setItemToRemove,
   setOpenRemoveConfirmDialog,
+  sectionExpanded,       
+  onSectionChange,  
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -145,7 +195,6 @@ const PaymentSummaryTable = ({
     groupedByPlan[group.planId].byRange = byRange;
   });
 
-  // ─── SHARED CELL STYLES ──────────────────────────────────────────────
   const headerCellSx = {
     fontWeight: 700,
     fontSize: TEXT_SIZES.small,
@@ -259,17 +308,17 @@ const PaymentSummaryTable = ({
           key={planId}
           elevation={0}
           sx={{
-            mb: 2,
-            border: `1px solid ${COLORS.border}`,
-            borderRadius: 3,
-            boxShadow: `0 2px 12px ${COLORS.shadow}`,
+           p:1,
+            border: `2px solid ${COLORS.secondary}`,
+            borderRadius:2,
+            // boxShadow: `0 2px 12px ${COLORS.shadow}`,
             overflow: "hidden",
           }}
         >
           <Box
             onClick={() => togglePlan(planId)}
             sx={{
-              background: `linear-gradient(135deg, ${COLORS.secondary} 0%, ${COLORS.secondaryDark} 100%)`,
+              // background: `linear-gradient(135deg, ${COLORS.secondary} 0%, ${COLORS.secondaryDark} 100%)`,
               px: 2,
               py: 1,
               cursor: "pointer",
@@ -277,53 +326,77 @@ const PaymentSummaryTable = ({
               "&:active": { opacity: 0.95 },
             }}
           >
-            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1 }}>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 0.5, flexDirection:"column" }}>
+              {/* <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
                 <Typography sx={{
-                  fontSize: "0.95rem",
+                  fontSize: "1.3rem",
                   fontWeight: 600,
-                  color: COLORS.white,
-                  px: 1.5,
+                  color: COLORS.black,
+                  px: 0.3,
                   py: 0.5,
                   borderRadius: 2,
                 }}>
                   {planData.validityDays} Days Plan
                 </Typography>
-              </Box>
+              </Box> */}
 
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                {!isListingPlan && (
-                  <Box
-                    sx={{
-                      backgroundColor: "rgba(255,255,255,0.15)",
-                      borderRadius: 2,
-                      px: 1.5,
-                      py: 0.75,
-                      textAlign: "center",
-                      minWidth: 72,
-                      flexShrink: 0,
-                    }}
-                  >
-                    <Typography sx={{ fontSize: "0.6rem", color: COLORS.white, opacity: 0.85, letterSpacing: 0.3 }}>
-                      TOTAL LEADS
-                    </Typography>
-                    <Typography sx={{ fontSize: "1rem", fontWeight: 800, color: COLORS.white, lineHeight: 1.2 }}>
-                      {typeof planData.totalPlanLeads === "number"
-                        ? planData.totalPlanLeads.toLocaleString("en-IN")
-                        : planData.totalPlanLeads}
-                    </Typography>
-                    <Typography sx={{ fontSize: "0.58rem", color: COLORS.white, opacity: 0.7 }}>
-                      {planData.lastSelectedLeads} × {planData.totalPlanStates}
-                    </Typography>
-                  </Box>
-                )}
+         
 
-                {isExpanded ? (
-                  <KeyboardArrowUpIcon sx={{ fontSize: 24, color: COLORS.white }} />
-                ) : (
-                  <KeyboardArrowDownIcon sx={{ fontSize: 24, color: COLORS.white }} />
-                )}
-              </Box>
+<Box
+  onClick={() => togglePlan(planId)}
+  sx={{
+    px: 0,
+    py: 0,
+    cursor: "pointer",
+    transition: "all 0.2s ease",
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+    width: "100%",
+    "&:active": { opacity: 0.95 },
+  }}
+>
+  {/* Left: Plan name + Leads info stacked */}
+  <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", }}>
+    <Typography sx={{ fontSize: "1.5rem", fontWeight: 600, color: COLORS.primary }}>
+      {planData.validityDays} Days Plan
+    </Typography>
+
+    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+      <Typography variant="caption" sx={{ fontWeight: 500, letterSpacing: 0.5 }}>
+        TOTAL LEADS =
+      </Typography>
+      <Typography variant="subtitle1" sx={{ fontWeight: 800 }}>
+        {typeof planData.totalPlanLeads === "number"
+          ? planData.totalPlanLeads.toLocaleString("en-IN")
+          : planData.totalPlanLeads}
+      </Typography>
+    </Box>
+
+    <Typography  sx={{fontSize: "0.9rem", fontWeight: 600, color: "text.secondary" ,textAlign:"center"}}>
+      ({planData.lastSelectedLeads} × {planData.totalPlanStates})
+    </Typography>
+  </Box>
+
+  {/* Arrow: pushed to far right */}
+  <Box
+    sx={{
+      width: 32,
+      height: 32,
+      borderRadius: "50%",
+      backgroundColor: COLORS.primary,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      transition: "transform 0.25s ease",
+      transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)",
+      flexShrink: 0,
+      marginLeft: "auto",  // ← this is the key
+    }}
+  >
+    <KeyboardArrowDownIcon sx={{ color: COLORS.white, fontSize: "1.4rem" }} />
+  </Box>
+</Box>
             </Box>
           </Box>
 
@@ -341,13 +414,14 @@ const PaymentSummaryTable = ({
                         backgroundColor: COLORS.grey[100],
                         borderBottom: `1px solid ${COLORS.border}`,
                         borderTop: `1px solid ${COLORS.border}`,
+                        
                       }}
                     >
                       <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                        <Typography sx={{ fontSize: "0.85rem", fontWeight: 700, color: COLORS.black }}>
+                        <Typography sx={{ fontSize: "1.2rem", fontWeight: 700, color: COLORS.black }}>
                           {label}
                         </Typography>
-                        <Typography sx={{ fontSize: "0.85rem", fontWeight: 700, color: COLORS.secondaryDark }}>
+                        <Typography sx={{ fontSize: "1.2rem", fontWeight: 700, color: COLORS.secondaryDark }}>
                           ₹{groupSubtotal.toLocaleString("en-IN")}
                         </Typography>
                       </Box>
@@ -357,90 +431,123 @@ const PaymentSummaryTable = ({
                       const isLastInGroup = idx === ranges.length - 1;
 
                       return (
-                        <Box
-                          key={`${planId}-${rangeGroup.range}-${idx}`}
-                          sx={{
-                            px: 2.5,
-                            py: 1.75,
-                            borderBottom: isLastInGroup ? `1px solid ${COLORS.border}` : "none",
-                            backgroundColor: idx % 2 !== 0 ? `${COLORS.lightOrange}40` : COLORS.white,
-                          }}
-                        >
-                          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1.5 }}>
-                            <Chip
-                              label={rangeGroup.range}
-                              size="small"
-                              sx={{
-                                fontSize: "0.7rem",
-                                height: 26,
-                                backgroundColor: COLORS.lightOrange,
-                                color: COLORS.black,
-                                fontWeight: 600,
-                              }}
-                            />
+                    <Box
+  key={`${planId}-${rangeGroup.range}-${idx}`}
+  sx={{
+    px: 1,
+    py: 1.25,
+    borderBottom: !isLastInGroup ? `1px solid ${COLORS.primary}` : "none",
+    backgroundColor: idx % 2 !== 0 ? `${COLORS.lightOrange}40` : COLORS.white,
+  }}
+>
+  {/* Table Header - only on first row */}
+  {idx === 0 && (
+    <Box
+      sx={{
+        display: "grid",
+        gridTemplateColumns: "1fr 1fr 48px",
+        px: 0.5,
+        pb: 0.75,
+        mb: 0.5,
+      }}
+    >
+      <Typography sx={{ fontSize: "0.65rem", fontWeight: 700, color: COLORS.grey[500], textTransform: "uppercase", letterSpacing: 0.5 }}>
+        Investment Range
+      </Typography>
+      <Typography sx={{ fontSize: "0.65rem", fontWeight: 700, color: COLORS.grey[500], textTransform: "uppercase", letterSpacing: 0.5, textAlign: "center" }}>
+        States
+      </Typography>
+      <Typography sx={{ fontSize: "0.65rem", fontWeight: 700, color: COLORS.grey[500], textTransform: "uppercase", letterSpacing: 0.5, textAlign: "center" }}>
+        Action
+      </Typography>
+    </Box>
+  )}
 
-                            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                              <Typography sx={{ fontSize: "0.62rem", color: COLORS.grey[500], fontWeight: 500, textTransform: "uppercase", letterSpacing: 0.4 }}>
-                                States
-                              </Typography>
-                              {rangeGroup.items[0]?.isListingPlan ? (
-                                <Typography sx={{ fontSize: "0.78rem", fontWeight: 700, color: COLORS.black }}>
-                                  All States
-                                </Typography>
-                              ) : (
-                                <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                                  <Typography sx={{ fontSize: "1rem", fontWeight: 200, color: COLORS.black, lineHeight: 1 }}>
-                                    {rangeGroup.totalStates}
-                                  </Typography>
-                                  <IconButton
-                                    size="small"
-                                    onClick={(e) => {
-                                      const allStatesList = [
-                                        ...new Set(rangeGroup.items.flatMap((item) => item.states || [])),
-                                      ];
-                                      handleShowStates(e, allStatesList);
-                                    }}
-                                    sx={{
-                                      p: 0.4,
-                                      backgroundColor: `${COLORS.primary}12`,
-                                      borderRadius: 1,
-                                      "&:hover": { backgroundColor: `${COLORS.primary}25` },
-                                    }}
-                                  >
-                                    <VisibilityIcon sx={{ fontSize: "0.82rem", color: COLORS.primary }} />
-                                  </IconButton>
-                                </Box>
-                              )}
-                            </Box>
+  {/* Table Row */}
+  <Box
+    sx={{
+      display: "grid",
+      gridTemplateColumns: "1fr 1fr 48px",
+      alignItems: "center",
+      px: 0.5,
+    }}
+  >
+    {/* Investment Range */}
+    <Chip
+      label={rangeGroup.range}
+      size="small"
+      sx={{
+        fontSize: "0.78rem",
+        height: 26,
+        backgroundColor: COLORS.lightOrange,
+        color: COLORS.black,
+        fontWeight: 600,
+        width: "fit-content",
+      }}
+    />
 
-                            <IconButton
-                              onClick={() => {
-                                setItemToRemove({
-                                  planName: planData.planName,
-                                  range: rangeGroup.range,
-                                  investmentRangeLabel: rangeGroup.investmentRangeLabel,
-                                  items: rangeGroup.items,
-                                });
-                                setOpenRemoveConfirmDialog(true);
-                              }}
-                              sx={{
-                                width: 36,
-                                height: 36,
-                                borderRadius: 2,
-                                color: COLORS.grey[500],
-                                border: `1px solid ${COLORS.border}`,
-                                flexShrink: 0,
-                                "&:hover": {
-                                  color: COLORS.primary,
-                                  backgroundColor: COLORS.lightOrange,
-                                  borderColor: COLORS.primary,
-                                },
-                              }}
-                            >
-                              <DeleteIcon sx={{ fontSize: 17 }} />
-                            </IconButton>
-                          </Box>
-                        </Box>
+    {/* States */}
+    <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 0.5 }}>
+      {rangeGroup.items[0]?.isListingPlan ? (
+        <Typography sx={{ fontSize: "0.78rem", fontWeight: 700, color: COLORS.black }}>
+          All States
+        </Typography>
+      ) : (
+        <>
+          <Typography sx={{ fontSize: "1rem", fontWeight: 700, color: COLORS.black, lineHeight: 1 }}>
+            {rangeGroup.totalStates}
+          </Typography>
+          <IconButton
+            size="small"
+            onClick={(e) => {
+              const allStatesList = [
+                ...new Set(rangeGroup.items.flatMap((item) => item.states || [])),
+              ];
+              handleShowStates(e, allStatesList);
+            }}
+            sx={{
+              p: 0.4,
+              borderRadius: 1,
+              "&:hover": { backgroundColor: `${COLORS.primary}25` },
+            }}
+          >
+            <VisibilityIcon sx={{ fontSize: "1rem", color: COLORS.primary }} />
+          </IconButton>
+        </>
+      )}
+    </Box>
+
+    {/* Action */}
+    <Box sx={{ display: "flex", justifyContent: "center" }}>
+      <IconButton
+        onClick={() => {
+          setItemToRemove({
+            planName: planData.planName,
+            range: rangeGroup.range,
+            investmentRangeLabel: rangeGroup.investmentRangeLabel,
+            items: rangeGroup.items,
+          });
+          setOpenRemoveConfirmDialog(true);
+        }}
+        sx={{
+          width: 32,
+          height: 32,
+          borderRadius: 2,
+          color: COLORS.grey[500],
+          border: `1px solid ${COLORS.border}`,
+          flexShrink: 0,
+          "&:hover": {
+            color: COLORS.primary,
+            backgroundColor: COLORS.lightOrange,
+            borderColor: COLORS.primary,
+          },
+        }}
+      >
+        <DeleteIcon sx={{ fontSize: 16 }} />
+      </IconButton>
+    </Box>
+  </Box>
+</Box>
                       );
                     })}
                   </Box>
@@ -730,17 +837,21 @@ const PaymentSummaryTable = ({
           px: { xs: 0, sm: 2 },
         }}
       >
+<Typography sx={{ fontSize: "1.3rem", fontWeight: 700, color: COLORS.black, mb: 2, textAlign: "center" }}>
+          SUMMARY
+        </Typography>
         {/* ── Wrap entire summary in mobile accordion ── */}
-        <SectionAccordion title="Summary" defaultExpanded COLORS={COLORS}>
+        <SectionAccordion title="SELECTED PLAN SUMMARY" defaultExpanded COLORS={COLORS} expanded={sectionExpanded}
+  onChange={onSectionChange}>
           {/* Header */}
           <Box sx={{ mb: 2, pt: { xs: 1, sm: 0 } }}>
             <Typography
               variant="h5"
-              sx={{ fontWeight: 700, color: COLORS.black, mb: 1, fontSize: TEXT_SIZES.xl, ml:{xs:1,sm:0} }}
+              sx={{ fontWeight: 700, color: COLORS.black, mb: 1, fontSize: TEXT_SIZES.xl, ml:{xs:1,sm:0} ,display: { xs: "none", sm: "block" }, }}
             >
               Selected Plan Summary
             </Typography>
-            <Divider sx={{ borderColor: COLORS.secondary, borderWidth: 2, width: 100, mb: 2 }} />
+            <Divider sx={{ borderColor: COLORS.secondary, borderWidth: 2, width: 100, mb: 2,display: { xs: "none", sm: "block" } }} />
           </Box>
 
           {/* Responsive: accordion on mobile, table on desktop */}

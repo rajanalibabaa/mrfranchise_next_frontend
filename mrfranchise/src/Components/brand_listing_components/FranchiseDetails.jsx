@@ -225,6 +225,9 @@ const FranchiseDetails = ({ data = {}, errors = {}, onChange = () => {} }) => {
         ...prev,
         [name]: value,
       };
+      if (name === "franchiseModel") {
+    updated.franchiseType = "";
+  }
       // If ROI is being changed, calculate Payback Period
       if (name === "roi" && !noFees.roi) {
         const roi = parseFloat(value);
@@ -474,23 +477,29 @@ const FranchiseDetails = ({ data = {}, errors = {}, onChange = () => {} }) => {
     onChange({ fico: updatedFico });
     setSavedFicoModels(updatedFico);
   };
-  const franchiseTypes = [
-    "Single Unit",
-    "Multi Unit ",
-    "Master Franchise",
-    "City Franchise",
-    "Area Franchise",
-    "District Franchise",
-    "State Franchise",
-  ];
+const franchiseTypes = {
+  "FRANCHISE": {
+    "KIOSK": ["KIOSK"],
+    "CLOUD KITCHEN": ["CLOUD KITCHEN"],
+    "SHOP IN SHOP": ["SHOP IN SHOP"],
+    "FOFO": ["FOFO - Single Unit", "FOFO - Multi Unit", "FOFO - Master Franchise", "FOFO - City Franchise", "FOFO - Area Franchise", "FOFO - District Franchise", "FOFO - State Franchise"],
+    "FICO": ["FICO - Single Unit", "FICO - Multi Unit", "FICO - Master Franchise", "FICO - City Franchise", "FICO - Area Franchise", "FICO - District Franchise", "FICO - State Franchise"],
+    "COCO": ["COCO - Single Unit", "COCO - Multi Unit", "COCO - Master Franchise", "COCO - City Franchise", "COCO - Area Franchise", "COCO - District Franchise", "COCO - State Franchise"],
+    "COFO": ["COFO - Single Unit", "COFO - Multi Unit", "COFO - Master Franchise", "COFO - City Franchise", "COFO - Area Franchise", "COFO - District Franchise", "COFO - State Franchise"],
+    "FOCO": ["FOCO - Single Unit", "FOCO - Multi Unit", "FOCO - Master Franchise", "FOCO - City Franchise", "FOCO - Area Franchise", "FOCO - District Franchise", "FOCO - State Franchise"],
+  },
+  "DEALERS & DISTRIBUTORS": {
+    "STOCKIST": ["STOCKIST", "STOCKIST - Area", "STOCKIST - City", "STOCKIST - District", "STOCKIST - State"],
+    "DEALER": ["DEALER", "DEALER - Area", "DEALER - City", "DEALER - District", "DEALER - State"],
+    "DISTRIBUTOR": ["DISTRIBUTOR", "DISTRIBUTOR - Area", "DISTRIBUTOR - City", "DISTRIBUTOR - District", "DISTRIBUTOR - State"],
+    "WHOLESALE SELLER": ["WHOLESALE SELLER", "WHOLESALE SELLER - Area", "WHOLESALE SELLER - City", "WHOLESALE SELLER - District", "WHOLESALE SELLER - State"],
+  },
+  "CHANNEL PARTNERS": {
+    "CHANNEL PARTNERS": ["CHANNEL PARTNERS", "CHANNEL PARTNERS - Area", "CHANNEL PARTNERS - City", "CHANNEL PARTNERS - District", "CHANNEL PARTNERS - State"],
+  },
+};
   const franchiseModels = [
-    "FOFO ",
-    "FOCO ",
-    "FICO ",
-    "COCO ",
-    "KIOSK",
-    "SHOP IN SHOP",
-    "CLOUD KITCHEN",
+    "FRANCHISE",
     "DEALERS & DISTRIBUTORS",
     "CHANNEL PARTNERS",
   ];
@@ -1681,7 +1690,7 @@ Franchise Tags
         fontWeight={700}
         sx={{ mb: 3, color: "#ff9800" }}
       >
-        Establishment & Franchise year Details
+        Establishment & Business Year Details
       </Typography>
       <Grid
         container
@@ -1840,7 +1849,7 @@ Franchise Tags
       </Grid>
       {/* Franchise Network */}
       <Typography variant="h6" fontWeight={700} sx={{ color: "#ff9800" }}>
-        Franchise Network
+        Business Network
       </Typography>
       <Grid
         container
@@ -1902,7 +1911,7 @@ Franchise Tags
         fontWeight={700}
         sx={{ mt: 2, color: "#ff9800" }}
       >
-        Franchise Business Models
+       Business Investment Details
       </Typography>
       {errors.fico && typeof errors.fico === "string" && (
         <Typography color="error" sx={{ mb: 2 }}>
@@ -1929,7 +1938,7 @@ Franchise Tags
             required
             size="medium"
           >
-            <InputLabel>Franchise Model</InputLabel>
+            <InputLabel>Business Network</InputLabel>
             <Select
               value={currentFicoModel.franchiseModel}
               onChange={handleFicoChange}
@@ -1947,32 +1956,55 @@ Franchise Tags
             )}
           </FormControl>
         </Grid>
-        {/* Column 2 - Franchise Type */}
-        <Grid item>
-          <FormControl
-            fullWidth
-            error={!!errors.franchiseType}
-            required
-            size="medium"
-          >
-            <InputLabel>Franchise Type</InputLabel>
-            <Select
-              value={currentFicoModel.franchiseType}
-              onChange={handleFicoChange}
-              name="franchiseType"
-              label="Franchise Type*"
+   
+    {/* Column 2 - Franchise Type */}
+<Grid item>
+  <FormControl
+    fullWidth
+    error={!!errors.franchiseType}
+    required
+    size="medium"
+  >
+    <InputLabel>Business Model & Type</InputLabel>
+    <Select
+      value={currentFicoModel.franchiseType}
+      onChange={handleFicoChange}
+      name="franchiseType"
+      label="Business Model & Type"
+    >
+      {currentFicoModel.franchiseModel &&
+        franchiseTypes[currentFicoModel.franchiseModel] &&
+        Object.entries(franchiseTypes[currentFicoModel.franchiseModel]).flatMap(
+          ([groupLabel, items]) => [
+            <MenuItem
+              key={`group-${groupLabel}`}
+              disabled
+              sx={{
+                fontWeight: 700,
+                fontSize: "0.75rem",
+                color: "#ff9800 !important",
+                backgroundColor: "#fff8e1",
+                letterSpacing: 1,
+                opacity: "1 !important",
+                pointerEvents: "none",
+                mt: 0.5,
+              }}
             >
-              {franchiseTypes.map((type) => (
-                <MenuItem key={type} value={type}>
-                  {type}
-                </MenuItem>
-              ))}
-            </Select>
-            {errors.franchiseType && (
-              <FormHelperText error>{errors.franchiseType}</FormHelperText>
-            )}
-          </FormControl>
-        </Grid>
+              ── {groupLabel} ──
+            </MenuItem>,
+            ...items.map((type) => (
+              <MenuItem key={type} value={type} sx={{ pl: 3 }}>
+                {type}
+              </MenuItem>
+            )),
+          ]
+        )}
+    </Select>
+    {errors.franchiseType && (
+      <FormHelperText error>{errors.franchiseType}</FormHelperText>
+    )}
+  </FormControl>
+</Grid>
         {/* Column 3 - Investment Range */}
         <Grid item>
           <FormControl
