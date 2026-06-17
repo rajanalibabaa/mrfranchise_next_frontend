@@ -4,9 +4,13 @@
   "private": true,
   "scripts": {
     "dev": "next dev ",
+        "generate:sitemap":"node scripts/generate-brand-sitemap.js",
+"prebuild":"npm run generate:sitemap",
+
     "build": "next build",
     "start": "next start",
     "lint": "eslint"
+    
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
