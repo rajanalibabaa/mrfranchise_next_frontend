@@ -1,111 +1,84 @@
+// app/sitemap.js
+
 const SITE_URL = "https://mrfranchise.in";
 
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL ||
-  "https://mrfranchisebackend.mrfranchise.in";
-
-function slugify(text = "") {
-  return text
-    .toString()
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, "")
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-");
-}
-
-// Fetch all pages
-async function getAllBrands() {
-  let allBrands = [];
-
-  let page = 1;
-
-  let totalPages = 1;
-
-  try {
-    while (page <= totalPages) {
-      const res = await fetch(
-        `${API_BASE}/api/v1/overAllPlatformOnlyMainCategory?page=${page}&limit=20`,
-        {
-          next: {
-            revalidate: 86400,
-          },
-        },
-      );
-
-      const json = await res.json();
-
-      const data = json?.data || {};
-
-      const brands = Array.isArray(data)
-        ? data
-        : data?.brands || data?.data || data?.results || [];
-
-      allBrands.push(...brands);
-
-      totalPages =
-        json?.pagination?.totalPages || data?.pagination?.totalPages || 1;
-
-      console.log(`Sitemap page ${page}/${totalPages} : ${brands.length}`);
-
-      page++;
-    }
-
-    console.log("TOTAL BRANDS:", allBrands.length);
-
-    return allBrands;
-  } catch (error) {
-    console.log("SITEMAP ERROR", error);
-
-    return [];
-  }
-}
-
-export default async function sitemap() {
-  const brands = await getAllBrands();
-
-  const brandUrls = brands
-    .map((brand) => {
-      const name =
-        brand?.brandDetails?.brandName ||
-        brand?.brandDetails?.companyName ||
-        brand?.brandName ||
-        brand?.companyName ||
-        brand?.name;
-
-      if (!name) {
-        console.log("NAME NOT FOUND", brand);
-
-        return null;
-      }
-
-      const slugName = slugify(name);
-
-      const slug = `start-your-${slugName}-franchise-business-opportunity_${slugName}`;
-
-      return {
-        url: `${SITE_URL}/franchise-brands/${slug}`,
-
-        lastModified: new Date(),
-
-        changeFrequency: "weekly",
-
-        priority: 0.8,
-      };
-    })
-    .filter(Boolean);
+export default function sitemap() {
+  const now = new Date().toISOString();
 
   return [
+    // ─── Priority 1.0 ───────────────────────────
     {
-      url: SITE_URL,
-
-      lastModified: new Date(),
-
+      url: `${SITE_URL}/`,
+      lastModified: now,
       changeFrequency: "daily",
-
-      priority: 1,
+      priority: 1.0,
     },
 
-    ...brandUrls,
+    // ─── Priority 0.9 ───────────────────────────
+    {
+      url: `${SITE_URL}/all-franchise-brands`,
+      lastModified: now,
+      changeFrequency: "daily",
+      priority: 0.9,
+    },
+    {
+      url: `${SITE_URL}/expandyourbrand`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
+    {
+      url: `${SITE_URL}/investfranchise`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
+    
+
+    // ─── Priority 0.8 ───────────────────────────
+    {
+      url: `${SITE_URL}/advertisewithus`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
+    {
+      url: `${SITE_URL}/invester_register`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
+
+    // ─── Priority 0.7 ───────────────────────────
+    {
+      url: `${SITE_URL}/aboutpage`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.7,
+    },
+    {
+      url: `${SITE_URL}/contactus`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.7,
+    },
+    {
+      url: `${SITE_URL}/faq`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.7,
+    },
+    {
+      url: `${SITE_URL}/help`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.6,
+    },
+    {
+      url: `${SITE_URL}/termsandconditions`,
+      lastModified: now,
+      changeFrequency: "yearly",
+      priority: 0.3,
+    },
   ];
 }

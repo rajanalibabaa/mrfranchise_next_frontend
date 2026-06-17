@@ -1289,12 +1289,12 @@ const ExistingPackageDisplay = ({
         stateSelections={stateSelections}
         setStateSelections={setStateSelections}
         onUpgrade={(data) => {
-          console.log("✅ onUpgrade received:", data);
+          // console.log("✅ onUpgrade received:", data);
           onAddToPaymentSummary?.({ ...data });
           setUpgradeDialog({ open: false, pkg: null, item: null });
         }}
         onViewSummary={(data) => {
-          console.log("✅ onViewSummary received:", data);
+          // console.log("✅ onViewSummary received:", data);
           onAddToPaymentSummary?.({ ...data });
           setUpgradeDialog({ open: false, pkg: null, item: null });
         }}
