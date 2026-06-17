@@ -2198,92 +2198,89 @@ return allStates.length;
         gap: 1,
       }}
     >
-      {availableStates.map((state) => {
-        const isDisabled = alreadySelectedStates.has(state);
-        const isChecked = selectedStates.has(state);
+     {availableStates.map((state) => {
+  const isDisabled = alreadySelectedStates.has(state);
+  const isChecked = selectedStates.has(state);
 
-        // Get tooltip message
-        let tooltipMessage = "";
-        if (isDisabled) {
-          tooltipMessage =
-            "This state is already used in investment range and cannot be selected again";
-        }
-
-        return (
-          <Tooltip
-            key={state}
-            title={tooltipMessage}
-            arrow
-            placement="top"
+  return (
+    <FormControlLabel
+      key={state}
+      control={
+        <Checkbox
+          checked={isChecked}
+          onChange={() => {
+            if (!isDisabled) {
+              handleStateCheckboxChange(state);
+            } else {
+              openSnack(
+                "This state is already used in investment range and cannot be selected again",
+                "warning",
+              );
+            }
+          }}
+          disabled={isDisabled}
+          sx={{
+            color: COLORS.primary,
+            "&.Mui-checked": {
+              color: COLORS.secondary,
+            },
+            "&.Mui-disabled": {
+              color: COLORS.grey[400],
+            },
+          }}
+        />
+      }
+      label={
+        <Box sx={{ display: "flex", flexDirection: "column" }}>
+          <Typography
+            sx={{
+              fontSize: TEXT_SIZES.medium,
+              color: isDisabled ? COLORS.grey[500] : COLORS.black,
+              fontWeight: isChecked ? 600 : 400,
+              textDecoration: isDisabled ? "line-through" : "none",
+            }}
           >
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={isChecked}
-                  onChange={() => {
-                    if (!isDisabled) {
-                      handleStateCheckboxChange(state);
-                    } else {
-                      openSnack(tooltipMessage, "warning");
-                    }
-                  }}
-                  disabled={isDisabled}
-                  sx={{
-                    color: COLORS.primary,
-                    "&.Mui-checked": {
-                      color: COLORS.secondary,
-                    },
-                    "&.Mui-disabled": {
-                      color: COLORS.grey[400],
-                    },
-                  }}
-                />
-              }
-              label={
-                <Typography
-                  sx={{
-                    fontSize: TEXT_SIZES.medium,
-                    color: isDisabled ? COLORS.grey[500] : COLORS.black,
-                    fontWeight: isChecked ? 600 : 400,
-                    textDecoration: isDisabled
-                      ? "line-through"
-                      : "none",
-                  }}
-                >
-                  {state}
-                </Typography>
-              }
+            {state}
+          </Typography>
+          {isDisabled && (
+            <Typography
               sx={{
-                display: "flex",
-                flexDirection: "row",
-                alignItems: "center",
-                margin: 0,
-                py: 0.5,
-                px: 1,
-                borderRadius: 1.5,
-                transition: "all 0.2s ease",
-                backgroundColor: isChecked
-                  ? COLORS.lightGreen
-                  : "transparent",
-                width: "100%",
-                opacity: isDisabled ? 0.6 : 1,
-                "&:hover": {
-                  backgroundColor:
-                    !isDisabled &&
-                    (isChecked
-                      ? COLORS.lightGreen
-                      : COLORS.lightOrange),
-                },
-                "& .MuiFormControlLabel-label": {
-                  width: "calc(100% - 35px)",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                },
+                fontSize: "0.65rem",
+                color: COLORS.grey[500],
+                lineHeight: 1.2,
+                mt: 0.2,
               }}
-            />
-          </Tooltip>
-        );
-      })}
+            >
+              This state is already used in investment range and cannot be selected again
+            </Typography>
+          )}
+        </Box>
+      }
+      sx={{
+        display: "flex",
+        flexDirection: "row",
+        alignItems: "center",
+        margin: 0,
+        py: 0.5,
+        px: 1,
+        borderRadius: 1.5,
+        transition: "all 0.2s ease",
+        backgroundColor: isChecked ? COLORS.lightGreen : "transparent",
+        width: "100%",
+        opacity: isDisabled ? 0.6 : 1,
+        "&:hover": {
+          backgroundColor:
+            !isDisabled &&
+            (isChecked ? COLORS.lightGreen : COLORS.lightOrange),
+        },
+        "& .MuiFormControlLabel-label": {
+          width: "calc(100% - 35px)",
+          overflow: "hidden",
+        },
+      }}
+    />
+  );
+})}
     </Box>
   </AccordionDetails>
 </Accordion>
@@ -2358,7 +2355,7 @@ return allStates.length;
   {/* Brand Name */}
   {(data?.brandDetails?.brandName || data?.brandName || getBrandName()) && (
     <Box sx={{ display: "flex", alignItems: "center" }}>
-      <Typography sx={{ fontSize:{xs:TEXT_SIZES.large,sm: TEXT_SIZES.small}, color: COLORS.black , display: { xs: "none", md: "block" } }}>
+      <Typography sx={{ fontSize:{xs:TEXT_SIZES.large,sm: TEXT_SIZES.medium}, color: COLORS.black , display: { xs: "none", md: "block" } }}>
         Brand Name:
       </Typography>
       <Typography
@@ -2376,7 +2373,7 @@ return allStates.length;
   {/* Industry */}
   {(data?.brandDetails?.industry || data?.industry) && (
     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-      <Typography sx={{ fontSize:{xs:TEXT_SIZES.large,sm: TEXT_SIZES.small}, color: COLORS.black , display: { xs: "none", md: "block" } }}>
+      <Typography sx={{ fontSize:{xs:TEXT_SIZES.large,sm: TEXT_SIZES.medium}, color: COLORS.black , display: { xs: "none", md: "block" } }}>
         Industry:
       </Typography>
       <Typography
@@ -2394,7 +2391,7 @@ return allStates.length;
   {/* Category */}
   {(data?.brandDetails?.category || data?.category) && (
     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-      <Typography sx={{ fontSize:{xs:TEXT_SIZES.large,sm: TEXT_SIZES.small}, color: COLORS.black,display: { xs: "none", md: "block" } }}>
+      <Typography sx={{ fontSize:{xs:TEXT_SIZES.large,sm: TEXT_SIZES.medium}, color: COLORS.black,display: { xs: "none", md: "block" } }}>
         Category:
       </Typography>
       <Typography
@@ -2796,28 +2793,35 @@ return allStates.length;
       : () => handleAddListingPlan(plan, pkg)
   }
   disabled={isExistingPlan || isAlreadyActive}
-  sx={{
-    minWidth: 145,
-    height: 46,
-    borderRadius: 2.5,
-    textTransform: "none",
-    fontWeight: 700,
-    fontSize: TEXT_SIZES.medium,
+sx={{
+  minWidth: 145,
+  height: 46,
+  borderRadius: 2.5,
+  textTransform: "none",
+  fontWeight: 700,
+  fontSize: TEXT_SIZES.medium,
+  boxShadow: "none",
+ color: "#FFFFFF !important",
+
+  "& .MuiTypography-root": {
+    color: "#FFFFFF !important",
+  },
+
+
+  opacity: (isExistingPlan || isAlreadyActive) ? 0.75 : 1,
+  background: isAlreadyActive
+    ? "linear-gradient(135deg, #4cb04f 0%, #2e7d32 100%)"
+    : index === 1
+    ? "linear-gradient(135deg,#ff9800 0%,#ff6f00 100%)"
+    : `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryDark} 100%)`,
+  "&:hover": {
     boxShadow: "none",
-    opacity: (isExistingPlan || isAlreadyActive) ? 0.75 : 1,
-    background: isAlreadyActive
-      ? "linear-gradient(135deg, #4cb04f 0%, #2e7d32 100%)" 
-      : index === 1
-      ? "linear-gradient(135deg,#ff9800 0%,#ff6f00 100%)"
-      : `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryDark} 100%)`,
-    "&:hover": {
-      boxShadow: "none",
-      opacity: (isExistingPlan || isAlreadyActive) ? 0.75 : 0.95,
-    },
-  }}
+    opacity: (isExistingPlan || isAlreadyActive) ? 0.75 : 0.95,
+  },
+}}
 >
   {isAlreadyActive
-    ? "✓ Already Active"
+    ? "Active Plan"
     : isExistingPlan
     ? "Already in Profile"
     : isAdded
@@ -2849,15 +2853,15 @@ return allStates.length;
                                 >
                                   <CalendarMonthRoundedIcon
                                     sx={{
-                                      fontSize: 18,
-                                      color: COLORS.grey[600],
+                                      fontSize: 25,
+                                      color: COLORS.black[600],
                                     }}
                                   />
 
                                   <Typography
                                     sx={{
                                       fontWeight: 500,
-                                      color: COLORS.grey[700],
+                                      color: COLORS.black[700],
                                     }}
                                   >
                                     {pkg.validityDays} Days
@@ -2867,7 +2871,7 @@ return allStates.length;
                                 <Typography
                                   sx={{
                                     fontWeight: 800,
-                                    fontSize: TEXT_SIZES.large,
+                                    fontSize: TEXT_SIZES.xxl,
                                     color:
                                       index === 1 ? "#ff9800" : COLORS.primary,
                                   }}
@@ -4136,7 +4140,7 @@ background: "linear-gradient(135deg, #4cb04f 0%, #2e7d32 100%)",
       </Button>
 
       {/* View Summary Button */}
-      <Button
+      {/* <Button
         variant="outlined"
         onClick={() => {
           if (paymentSummaryRef && paymentSummaryRef.current) {
@@ -4173,7 +4177,7 @@ background: "linear-gradient(135deg, #4cb04f 0%, #2e7d32 100%)",
       >
         <span>View</span>
         <span>Summary</span>
-      </Button>
+      </Button> */}
     </Box>
   </TableCell>
 )}
