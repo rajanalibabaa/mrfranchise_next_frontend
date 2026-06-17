@@ -143,7 +143,7 @@ const Search = ({ handleClose }) => {
       
       const brandSlug = selectedData?.brandName;
       if (typeof window !== "undefined") {
-        window.open(`/franchise-opportunity/${brandSlug}`, "_blank", "noopener,noreferrer");
+        window.open(`/franchise-business-opportunity/${brandSlug}`, "_blank", "noopener,noreferrer");
       }
       return;
     }

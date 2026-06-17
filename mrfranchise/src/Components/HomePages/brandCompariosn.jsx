@@ -139,7 +139,7 @@ const BrandComparison = ({
     
     postView(brand?.uuid);
     // dispatch(openBrandDialog(brand));
-      window.open(`/franchise-opportunity/${brand?.uuid}`, "_blank");
+      window.open(`/franchise-business-opportunity/${brand?.uuid}`, "_blank");
   };
 
   const loadImages = (element) => {

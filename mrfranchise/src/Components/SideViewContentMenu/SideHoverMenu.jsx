@@ -537,7 +537,7 @@ const handleIndustryHover = useCallback(
   // Navigate to brand detail page
   if (brandId) {
     const encodedBrandName = encodeURIComponent(brandName);
-    navigate(`/franchise-opportunity/${brandId}?name=${encodedBrandName}`);
+    navigate(`/franchise-business-opportunity/${brandId}?name=${encodedBrandName}`);
   }
   
   // Also call the original onBrandClick if provided

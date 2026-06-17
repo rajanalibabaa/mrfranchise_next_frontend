@@ -174,7 +174,7 @@ export async function generateMetadata({ params }) {
 
   const logo = brand?.uploads?.logo || "/default.jpg";
 
-  const url = `${SITE_URL}/franchise-opportunity/${slug}`;
+  const url = `${SITE_URL}/franchise-business-opportunity/${slug}`;
 
   const title = `Start your ${name} franchise business opportunity | Mr Franchise`;
 

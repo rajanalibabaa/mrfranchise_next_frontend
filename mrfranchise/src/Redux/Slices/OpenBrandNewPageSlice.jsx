@@ -132,7 +132,7 @@ export const openBrandDialog = (brand, openInNewTab = true) => async (dispatch) 
   const state = clean(fullBrand?.brandDetails?.state);
 
   // 🔥 FINAL SEO URL
-  const brandUrl = `/franchise-opportunity/${slug}`;
+  const brandUrl = `/franchise-business-opportunity/${slug}`;
 
   // 🔥 STORE DATA
   if (typeof window !== "undefined") {

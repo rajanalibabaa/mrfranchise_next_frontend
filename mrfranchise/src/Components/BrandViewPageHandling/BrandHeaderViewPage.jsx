@@ -20,7 +20,7 @@ import {
 } from "@mui/material";
 import { Phone, Favorite, ShareOutlined } from "@mui/icons-material";
 import { motion } from "framer-motion";
-import ShareDialogActions from "@/app/franchise-opportunity/ShareDialogActions";
+import ShareDialogActions from "@/app/franchise-business-opportunity/ShareDialogActions";
 import { RiBookmark3Fill } from "react-icons/ri";
 import { useRef, useState } from "react";
 import confetti from "canvas-confetti";

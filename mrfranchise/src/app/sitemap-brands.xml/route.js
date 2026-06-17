@@ -330,7 +330,7 @@ export async function GET() {
     seen.add(slug);
 
     entries.push({
-      loc: `${SITE_URL}/franchise-opportunity/${slug}`,
+      loc: `${SITE_URL}/franchise-business-opportunity/${slug}`,
       lastmod: now,
       changefreq: "weekly",
       priority: "0.8",
