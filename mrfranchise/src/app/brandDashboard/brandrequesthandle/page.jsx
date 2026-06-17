@@ -10,7 +10,7 @@ const Dashboard = () => {
   return (
     <>
     <Box sx={{ display: "flex" }}>
-    <BrandDashboardLayout/>
+   
     <Container maxWidth="md" sx={{ py: 4 }}>
       <CreateRequestForm />
       <RequestList />

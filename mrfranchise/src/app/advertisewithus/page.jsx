@@ -57,9 +57,22 @@ const AdvertisingPage = () => {
         />
       </Box>
 
+<<<<<<< HEAD
       <Dialog open={openModal} onClose={handleCloseModal} maxWidth="600" fullWidth scroll="paper">
         <DialogTitle sx={{ backgroundColor: '#f8f9fa', m: 0, p: 2, pr: 6 }}>
           You Are Adding a New Franchise Business Model For This Investment Range — {investmentRangeData?.range}
+=======
+      <Dialog
+        open={openModal}
+        onClose={handleCloseModal}
+        maxWidth="600"
+        fullWidth
+        scroll="paper"
+      >
+        <DialogTitle sx={{ backgroundColor: "#f8f9fa", m: 0, p: 2, pr: 6 }}>
+          You Are Adding a New Franchise Business Model For This Investment
+          Range — {investmentRangeData?.range}
+>>>>>>> 4a0123617cf2fd52d3bf7bb1d2d34f8da6c5b99c
           <Typography variant="subtitle2" color="textSecondary">
             (By adding Franchise Business Model, Your brand view page will display this Investment Range to all Franchise Investors.)
           </Typography>

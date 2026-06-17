@@ -477,6 +477,7 @@ const FranchiseDetails = ({ data = {}, errors = {}, onChange = () => {} }) => {
     onChange({ fico: updatedFico });
     setSavedFicoModels(updatedFico);
   };
+<<<<<<< HEAD
 const franchiseTypes = {
   "FRANCHISE": {
     "KIOSK": ["KIOSK"],
@@ -498,6 +499,17 @@ const franchiseTypes = {
     "CHANNEL PARTNERS": ["CHANNEL PARTNERS", "CHANNEL PARTNERS - Area", "CHANNEL PARTNERS - City", "CHANNEL PARTNERS - District", "CHANNEL PARTNERS - State"],
   },
 };
+=======
+  const franchiseTypes = [
+    "Single Unit",
+    "Multi Unit",
+    "Master Franchise",
+    "City Franchise",
+    "Area Franchise",
+    "District Franchise",
+    "State Franchise",
+  ];
+>>>>>>> 4a0123617cf2fd52d3bf7bb1d2d34f8da6c5b99c
   const franchiseModels = [
     "FRANCHISE",
     "DEALERS & DISTRIBUTORS",
