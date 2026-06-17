@@ -98,39 +98,39 @@ async function fetchTopBrands(maxPages = 3) {
 // Static URL generation
 // ---------------------------------------------
 
-export async function generateStaticParams() {
-  const brands = await fetchTopBrands(3);
+// export async function generateStaticParams() {
+//   const brands = await fetchTopBrands(3);
 
-  const paths = [];
+//   const paths = [];
 
-  const seen = new Set();
+//   const seen = new Set();
 
-  for (const brand of brands) {
-    const name =
-      brand?.brandDetails?.brandName ||
-      brand?.brandDetails?.companyName ||
-      brand?.brandName ||
-      brand?.companyName;
+//   for (const brand of brands) {
+//     const name =
+//       brand?.brandDetails?.brandName ||
+//       brand?.brandDetails?.companyName ||
+//       brand?.brandName ||
+//       brand?.companyName;
 
-    if (!name) continue;
+//     if (!name) continue;
 
-    const slugName = slugify(name);
+//     const slugName = slugify(name);
 
-    const slug = `start-your-${slugName}-franchise-business-opportunity_${slugName}`;
+//     const slug = `start-your-${slugName}-franchise-business-opportunity_${slugName}`;
 
-    if (seen.has(slug)) continue;
+//     if (seen.has(slug)) continue;
 
-    paths.push({
-      slug,
-    });
+//     paths.push({
+//       slug,
+//     });
 
-    seen.add(slug);
-  }
+//     seen.add(slug);
+//   }
 
-  console.log("STATIC GENERATED:", paths);
+//   console.log("STATIC GENERATED:", paths);
 
-  return paths;
-}
+//   return paths;
+// }
 
 // ---------------------------------------------
 // Metadata
@@ -174,7 +174,7 @@ export async function generateMetadata({ params }) {
 
   const logo = brand?.uploads?.logo || "/default.jpg";
 
-  const url = `${SITE_URL}/franchise-brands/${slug}`;
+  const url = `${SITE_URL}/franchise-opportunity/${slug}`;
 
   const title = `Start your ${name} franchise business opportunity | Mr Franchise`;
 

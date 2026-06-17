@@ -301,7 +301,7 @@ const PaymentBottomBar = ({
         >
           <Typography
             sx={{
-              fontSize: { xs: "0.75rem", sm: "0.65rem", md: "0.7rem" },
+              fontSize: { xs: "1rem", sm: "0.65rem", md: "0.7rem" },
               color: "#777",
               fontWeight: 600,
               letterSpacing: "0.03em",
@@ -313,7 +313,7 @@ const PaymentBottomBar = ({
           </Typography>
           <Typography
             sx={{
-              fontSize: { xs: "1rem", sm: "1.4rem", md: "2rem", lg: "2.4rem" },
+              fontSize: { xs: "1.5rem", sm: "1.4rem", md: "2rem", lg: "2.4rem" },
               fontWeight: 900,
               color: "#2e7d32",
               lineHeight: 1,

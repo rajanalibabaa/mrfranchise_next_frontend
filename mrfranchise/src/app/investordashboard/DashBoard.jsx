@@ -329,7 +329,7 @@ const Dashboard = () => {
         brand?.originalItem?.brandDetails?.uuid;
 
       if (brandId) {
-        navigate.push(`/franchise-brands/${brandId}`);
+        navigate.push(`/franchise-opportunity/${brandId}`);
       } else {
         console.error("Brand ID not found:", brand);
       }

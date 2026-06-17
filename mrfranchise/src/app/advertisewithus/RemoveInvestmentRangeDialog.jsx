@@ -107,7 +107,7 @@ const RemoveInvestmentRangeDialog = ({
           >
             <Typography
               sx={{
-                fontSize: TEXT_SIZES.small,
+                fontSize: TEXT_SIZES.medium,
                 color: COLORS.black,
               }}
             >
@@ -116,7 +116,7 @@ const RemoveInvestmentRangeDialog = ({
 
             <Typography
               sx={{
-                fontSize: TEXT_SIZES.small,
+                fontSize: TEXT_SIZES.medium,
                 color: COLORS.black,
                 mt: 0.5,
               }}
@@ -127,7 +127,7 @@ const RemoveInvestmentRangeDialog = ({
 
             <Typography
               sx={{
-                fontSize: TEXT_SIZES.small,
+                fontSize: TEXT_SIZES.medium,
                 color: COLORS.black,
                 mt: 0.5,
               }}

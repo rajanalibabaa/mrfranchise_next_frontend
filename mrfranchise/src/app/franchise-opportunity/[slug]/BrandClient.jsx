@@ -4,7 +4,7 @@ import { useParams } from "next/navigation.js";
 import { CircularProgress, Box } from "@mui/material";
 import axios from "axios";
 import { getUserId } from "@/Utils/autherId.jsx";
-import BrandDetails from "../BrandDetail.jsx";
+import BrandDetails from "../BrandDetail";
 
 const userId = getUserId();
 
