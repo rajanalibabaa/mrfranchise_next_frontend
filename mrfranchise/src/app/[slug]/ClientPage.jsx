@@ -18,10 +18,7 @@ const BrandListNew = dynamic(
 
 
 export default function BrandCategoryViewPage({ slug, subslug, maincat, subcat, brands }) {
-  
-   console.log("frommaincat", maincat);
-   console.log("fromsubcat", subcat);
-   
+
 
 
  

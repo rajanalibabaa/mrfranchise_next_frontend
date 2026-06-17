@@ -70,13 +70,13 @@ async function getAllBrands() {
 
     allBrands.push(...brands);
 
-    console.log(`✅ Page ${page}: ${brands.length}`);
+    // console.log(`✅ Page ${page}: ${brands.length}`);
 
     if (!pagination?.hasNext) break;
     page++;
   }
 
-  console.log("🔥 TOTAL BRANDS:", allBrands.length);
+  // console.log("🔥 TOTAL BRANDS:", allBrands.length);
   return allBrands;
 }
 
@@ -115,58 +115,58 @@ async function getCategoryBrands(category, subcategory) {
    🔥 GENERATE STATIC PARAMS
    MAIN + SUB BOTH IN THIS FILE
    =============================== */
-export async function generateStaticParams() {
-  const brands = await getAllBrands();
+// export async function generateStaticParams() {
+//   const brands = await getAllBrands();
 
-  // ─── STEP 1: MAIN CATEGORY PARAMS ───
-  const mainSet = new Set();
+//   // ─── STEP 1: MAIN CATEGORY PARAMS ───
+//   const mainSet = new Set();
 
-  brands.forEach((b) => {
-    const main = b?.brandCategories?.main;
-    if (main) mainSet.add(main);
-  });
+//   brands.forEach((b) => {
+//     const main = b?.brandCategories?.main;
+//     if (main) mainSet.add(main);
+//   });
 
-  const mainParams = Array.from(mainSet).map((cat) => ({
-    slug: slugifyCategory(cat),
-  }));
+//   const mainParams = Array.from(mainSet).map((cat) => ({
+//     slug: slugifyCategory(cat),
+//   }));
 
-  console.log("🔥 MAIN PARAMS COUNT:", mainParams.length);
+//   console.log("🔥 MAIN PARAMS COUNT:", mainParams.length);
 
-  // ─── STEP 2: SUB CATEGORY PARAMS ───
-  // Use "main||sub" key to avoid duplicates
-  const subSet = new Set();
+//   // ─── STEP 2: SUB CATEGORY PARAMS ───
+//   // Use "main||sub" key to avoid duplicates
+//   const subSet = new Set();
 
-  brands.forEach((b) => {
-    const main = b?.brandCategories?.main;
-    const subs = b?.brandCategories?.sub;
+//   brands.forEach((b) => {
+//     const main = b?.brandCategories?.main;
+//     const subs = b?.brandCategories?.sub;
 
-    if (!main) return;
+//     if (!main) return;
 
-    // sub can be array or single string — handle both
-    const subList = Array.isArray(subs) ? subs : subs ? [subs] : [];
+//     // sub can be array or single string — handle both
+//     const subList = Array.isArray(subs) ? subs : subs ? [subs] : [];
 
-    subList.forEach((sub) => {
-      if (sub) subSet.add(`${main}||${sub}`);
-    });
-  });
+//     subList.forEach((sub) => {
+//       if (sub) subSet.add(`${main}||${sub}`);
+//     });
+//   });
 
-  const subParams = Array.from(subSet).map((key) => {
-    const [main, sub] = key.split("||");
-    return {
-      slug: slugifyCategory(main),       // same main slug
-      subslug: slugifySubCategory(sub),  // extra sub slug
-    };
-  });
+//   const subParams = Array.from(subSet).map((key) => {
+//     const [main, sub] = key.split("||");
+//     return {
+//       slug: slugifyCategory(main),       // same main slug
+//       subslug: slugifySubCategory(sub),  // extra sub slug
+//     };
+//   });
 
-  console.log("🔥 SUB PARAMS COUNT:", subParams.length);
+//   console.log("🔥 SUB PARAMS COUNT:", subParams.length);
 
-  // ─── STEP 3: MERGE BOTH ───
-  const allParams = [...mainParams, ...subParams];
+//   // ─── STEP 3: MERGE BOTH ───
+//   const allParams = [...mainParams, ...subParams];
 
-  console.log("🔥 TOTAL STATIC PARAMS:", allParams.length);
+//   console.log("🔥 TOTAL STATIC PARAMS:", allParams.length);
 
-  return allParams;
-}
+//   return allParams;
+// }
 
 /* ===============================
    🔥 SEO METADATA
@@ -221,7 +221,7 @@ export default async function Page({ params }) {
   const mainName = deslugifyCategory(slug);
   const subName = subslug ? deslugifySubCategory(subslug) : null;
 
-  console.log("🔥 MAIN:", mainName, "| SUB:", subName ?? "NONE");
+  // console.log("🔥 MAIN:", mainName, "| SUB:", subName ?? "NONE");
 
   // 🔥 Fetch brands — pass sub only if exists
   const brands = await getCategoryBrands(mainName, subName);

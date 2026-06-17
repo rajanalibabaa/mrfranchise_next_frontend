@@ -113,47 +113,47 @@ async function getSubCategoryBrands(mainCategory, subCategory) {
    🔥 GENERATE STATIC PARAMS
    SUB CATEGORIES ONLY
    =============================== */
-export async function generateStaticParams() {
-  const brands = await getAllBrands();
+// export async function generateStaticParams() {
+//   const brands = await getAllBrands();
 
-  // ✅ Use Set to avoid duplicate main+sub combos
-  const subSet = new Set();
+//   // ✅ Use Set to avoid duplicate main+sub combos
+//   const subSet = new Set();
 
-  brands.forEach((b) => {
-    const main = b?.brandCategories?.main;
-    const subs = b?.brandCategories?.sub;
+//   brands.forEach((b) => {
+//     const main = b?.brandCategories?.main;
+//     const subs = b?.brandCategories?.sub;
 
-    if (!main) return;
+//     if (!main) return;
 
-    // ✅ Handle sub as array or single string
-    const subList = Array.isArray(subs)
-      ? subs
-      : subs
-      ? [subs]
-      : [];
+//     // ✅ Handle sub as array or single string
+//     const subList = Array.isArray(subs)
+//       ? subs
+//       : subs
+//       ? [subs]
+//       : [];
 
-    subList.forEach((sub) => {
-      if (sub) subSet.add(`${main}||${sub}`);
-    });
-  });
+//     subList.forEach((sub) => {
+//       if (sub) subSet.add(`${main}||${sub}`);
+//     });
+//   });
 
-  const params = Array.from(subSet).map((key) => {
-    const [main, sub] = key.split("||");
-    return {
-      slug: slugifyCategory(main),
-      subslug: slugifySubCategory(sub),
-    };
-  });
+//   const params = Array.from(subSet).map((key) => {
+//     const [main, sub] = key.split("||");
+//     return {
+//       slug: slugifyCategory(main),
+//       subslug: slugifySubCategory(sub),
+//     };
+//   });
 
-//   console.log("🔥 TOTAL SUB STATIC PARAMS:", params.length);
+// //   console.log("🔥 TOTAL SUB STATIC PARAMS:", params.length);
 
-  // ✅ Output will look like:
-  // { slug: "food-and-beverages-franchise-opportunities", subslug: "pizza-franchise" }
-  // { slug: "food-and-beverages-franchise-opportunities", subslug: "burger-franchise" }
-  // { slug: "retail-franchise-opportunities", subslug: "clothing-franchise" }
+//   // ✅ Output will look like:
+//   // { slug: "food-and-beverages-franchise-opportunities", subslug: "pizza-franchise" }
+//   // { slug: "food-and-beverages-franchise-opportunities", subslug: "burger-franchise" }
+//   // { slug: "retail-franchise-opportunities", subslug: "clothing-franchise" }
 
-  return params;
-}
+//   return params;
+// }
 
 /* ===============================
    🔥 SEO METADATA

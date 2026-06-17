@@ -260,8 +260,6 @@ function BrandList({ maincat, subcat, slug, subslug }) {
   const resolvedMaincat = maincat || (slug ? deslugifyMain(slug) : "");
   const resolvedSubcat = subcat || (subslug ? deslugifySub(subslug) : "");
 
-  console.log("🔥 RESOLVED MAINCAT:", resolvedMaincat);
-  console.log("🔥 RESOLVED SUBCAT:", resolvedSubcat);
 
   // ============================================
   // REFS
@@ -411,8 +409,7 @@ function BrandList({ maincat, subcat, slug, subslug }) {
     const currentMaincat = resolvedMaincatRef.current;
     const currentSubcat = resolvedSubcatRef.current;
 
-    console.log("🔥 INIT currentMaincat:", currentMaincat);
-    console.log("🔥 INIT currentSubcat:", resolvedSubcatRef.current);
+    
 
     const initialFilters = {};
 
