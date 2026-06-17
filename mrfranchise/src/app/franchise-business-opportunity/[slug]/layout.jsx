@@ -120,7 +120,7 @@ function generateStructuredData(brand, slug) {
     "name": brandName,
     "image": logo,
     "description": generateSEODescription(brandName),
-    "url": `${SITE_URL}/franchise-opportunity/${slug}`,
+    "url": `${SITE_URL}/franchise-business-opportunity/${slug}`,
     "logo": logo,
     "address": {
       "@type": "PostalAddress",
