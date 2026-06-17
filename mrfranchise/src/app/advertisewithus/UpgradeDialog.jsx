@@ -774,14 +774,17 @@ const UpgradeDialog = ({
             flexShrink: 0,
           }}
         >
-          <Box>
+          <Box >
             <Typography fontWeight={700} fontSize={isMobile ? "0.9rem" : "1rem"} color="#111">
               Upgrade Lead Package
             </Typography>
             {clickedRangeLabel && (
-              <Typography fontSize="0.7rem" color="#757575">
-                Investment Range: {clickedRangeLabel}
+              <Box sx={{display:"flex",flexDirection:"row",mt:1}}>
+              <Typography fontSize="1rem" color="black">
+                Investment Range: 
               </Typography>
+              <Typography fontSize="1rem" color="#fb8c00" fontWeight={600} >{clickedRangeLabel}</Typography>
+              </Box>
             )}
           </Box>
           <IconButton size="small" onClick={onClose}>
@@ -812,7 +815,7 @@ const UpgradeDialog = ({
                       { label: "Total\nAmount", w: "10%", sx: greenHeaderSx },
                       { label: "Action", w: "12%", sx: greenHeaderSx },
                     ].map(({ label, w, sx }) => (
-                      <th key={label} style={{ width: w, ...sx, padding: "12px 8px", fontSize: "0.7rem", color: "#fff", whiteSpace: "pre-line", lineHeight: 1.5, background: sx.background }}>
+                      <th key={label} style={{ width: w, ...sx, padding: "12px 8px", fontSize: "1rem", color: "#fff", whiteSpace: "pre-line", lineHeight: 1.5, background: sx.background }}>
                         {label}
                       </th>
                     ))}
@@ -839,14 +842,14 @@ const UpgradeDialog = ({
                               minWidth: 90, fontWeight: 700, fontSize: "0.75rem",
                               textTransform: "none", borderRadius: 2,
                               flexDirection: "column", lineHeight: 1.4,
-                              backgroundColor: isActive ? "#e65100" : "#fb8c00",
+                              backgroundColor: isActive ? "#2e7d32" : "#fb8c00",
                               color: "#fff",
                               outline: isActive ? "2px solid #111" : "none",
                               outlineOffset: 2,
-                              "&:hover": { backgroundColor: "#e65100" },
+                              "&:hover": { backgroundColor: "#2e7d32" },
                             }}
                           >
-                            <Typography fontSize="0.8rem" fontWeight={1000} color="#fff" lineHeight={1.3}>{row.validityDays} Days</Typography>
+                            <Typography fontSize="1rem" fontWeight={700} color="#fff" lineHeight={1.3}>{row.validityDays} Days</Typography>
                             <Typography fontSize="0.75rem" fontWeight={700} color="#fff" lineHeight={1.3}>{row.planName}</Typography>
                           </Button>
                         </td>
@@ -855,13 +858,13 @@ const UpgradeDialog = ({
                             <td rowSpan={rows.length} style={{ padding: "12px 8px", textAlign: "center", backgroundColor: "#fff8f0", borderRight: "1px solid #e0e0e0", verticalAlign: "middle" }}>
                               {activePlan && (
                                 <>
-                                  <Typography fontSize="0.7rem" color="#1565c0" fontWeight={600} mb={0.5}>{activePlan.rangeLabel}</Typography>
-                                  <Box sx={{ display: "flex", gap: 0.75, justifyContent: "center", flexWrap: "wrap" }}>
+                                  <Typography fontSize="1rem" color="#fb8c00" fontWeight={600} mb={0.5}>{activePlan.rangeLabel}</Typography>
+                                  <Box sx={{ display: "flex", gap: 0.75, justifyContent: "center", flexWrap: "wrap", mt:1 }}>
                                     {activePlan.leadOptions.map((lead) => {
                                       const active = (selectedLeads[activePlan.id] ?? activePlan.leadOptions[0]) === lead;
                                       return (
                                         <Chip key={lead} label={lead} size="small" onClick={() => setLead(activePlan.id, lead)}
-                                          sx={{ height: 26, minWidth: 34, fontWeight: 700, fontSize: "0.75rem", cursor: "pointer", backgroundColor: active ? "#4caf50" : "#fff", color: active ? "#fff" : "#111", border: `1px solid ${active ? "#4caf50" : "#bdbdbd"}` }} />
+                                          sx={{ height: 26, minWidth: 34, fontWeight: 700, fontSize: "1rem", cursor: "pointer", backgroundColor: active ? "#4caf50" : "#fff", color: active ? "#fff" : "#111", border: `1px solid ${active ? "#4caf50" : "#bdbdbd"}` }} />
                                       );
                                     })}
                                   </Box>
@@ -879,9 +882,9 @@ const UpgradeDialog = ({
                                     return (
                                       <Box key={range} sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
                                         <Checkbox size="small" checked={isChecked} onChange={() => toggleRange(activePlan.id, range)} sx={{ p: 0.25, color: "#fb8c00", "&.Mui-checked": { color: "#fb8c00" } }} />
-                                        <Typography fontSize="0.7rem" color="#111" flex={1} noWrap>{range}</Typography>
+                                        <Typography fontSize="1rem" color="#111" flex={1} noWrap>{range}</Typography>
                                         <Box sx={{ display: "flex", alignItems: "center", gap: 0.25, ml: 0.5 }}>
-                                          <Typography fontSize="0.75rem" fontWeight={700} color="#111">{stateVal}</Typography>
+                                          <Typography fontSize="1rem" fontWeight={700} color="#111">{stateVal}</Typography>
                                           <EditIcon sx={{ fontSize: 11, color: "#e65100", cursor: "pointer" }} onClick={() => editStates(activePlan.id, range)} />
                                         </Box>
                                       </Box>
