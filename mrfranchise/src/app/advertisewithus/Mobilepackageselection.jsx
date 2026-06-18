@@ -1,12 +1,5 @@
 "use client";
-
-import React, {
-  useState,
-  useCallback,
-  useMemo,
-  useEffect,
-  useRef,
-} from "react";
+import React, { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import {
   Box,
   Typography,
@@ -83,7 +76,7 @@ const T = {
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 const fmtINR = (n) => "₹" + Math.round(n || 0).toLocaleString("en-IN");
 
-const getUniqueStatesForGroup = (planId, label, items, statesByInvestmentRange) => {
+const getUniqueStatesForGroup = (planId, label, items, statesByInvestmentRange, allStates = []) => {
   const set = new Set();
   items.forEach((item) => {
     const key = `${planId}__${label}__${item.range}`;
@@ -94,19 +87,18 @@ const getUniqueStatesForGroup = (planId, label, items, statesByInvestmentRange) 
     }
     const fallbackKey = Object.keys(statesByInvestmentRange).find((k) => {
       const parts = k.split("__");
-      return (
-        parts[parts.length - 1] === item.range &&
-        parts[parts.length - 2] === label
-      );
+      return parts[parts.length - 1] === item.range && parts[parts.length - 2] === label;
     });
     if (fallbackKey) {
       statesByInvestmentRange[fallbackKey].forEach((s) => set.add(s));
+    } else {
+      allStates.forEach((s) => set.add(s)); // default when nothing recorded yet
     }
   });
   return set;
 };
 
-const getUniqueStatesForCheckedItems = (planId, label, items, checkedItems, statesByInvestmentRange) => {
+const getUniqueStatesForCheckedItems = (planId, label, items, checkedItems, statesByInvestmentRange, allStates = []) => {
   const set = new Set();
   items.forEach((item) => {
     const id = `${planId}-${label}-${item.range}`;
@@ -127,6 +119,8 @@ const getUniqueStatesForCheckedItems = (planId, label, items, checkedItems, stat
     });
     if (fallbackKey) {
       statesByInvestmentRange[fallbackKey].forEach((s) => set.add(s));
+    } else {
+      allStates.forEach((s) => set.add(s)); // default to all states until user customizes
     }
   });
   return set;
@@ -262,191 +256,223 @@ const RangeGroupCard = ({
   label, items, expanded, onToggle, checkedItems, onCheck, onEditStates,
   planId, statesByInvestmentRange, getStateCountForRange, inPaymentSet,
   availableLeads, getGroupLeads, handleLeadsChange, leadsDropdownData,
-  leadsKey, pricePerState,
+  leadsKey, pricePerState, allStates = [], 
 }) => {
   const currentLeads = getGroupLeads ? getGroupLeads(label) : 0;
-const lKey = `${planId}_${label}`;
+  const lKey = `${planId}_${label}`;
   const avail = leadsDropdownData ? (leadsDropdownData[lKey] || []) : [];
   const minLeads = avail.length > 0 ? Math.min(...avail) : 1;
   const divisor = minLeads > 0 ? minLeads : 1;
   const totalStatesCount = useMemo(() => {
-    return getUniqueStatesForGroup(planId, label, items, statesByInvestmentRange).size;
-  }, [planId, label, items, statesByInvestmentRange]);
+    return getUniqueStatesForGroup(planId, label, items, statesByInvestmentRange, allStates).size;
+  }, [planId, label, items, statesByInvestmentRange, allStates]);
+
+  // Reference for the scrollable container
+  const scrollContainerRef = useRef(null);
+
+  // Scroll to top when expanded
+  useEffect(() => {
+    if (expanded && scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = 0;
+    }
+  }, [expanded]);
 
   return (
     <Box sx={{ border: `2px solid ${COLORS.primary}`, borderRadius: 2.5, overflow: "hidden", mb: 1.5, backgroundColor: COLORS.white }}>
-     <Box
-  onClick={onToggle}
+      <Box
+        onClick={onToggle}
+        sx={{
+          display: "flex", 
+          alignItems: "center", 
+          flexDirection: "column",
+          px: 2, 
+          py: 1.4, 
+          cursor: "pointer", 
+          backgroundColor: "#fff0c5",
+          "&:active": { backgroundColor: "#ffe5a0" },
+        }}
+      >
+        <Box sx={{ display: "flex", alignItems: "flex-start", width: "100%", position: "relative" }}>
+          <Typography sx={{ fontSize: T.xl, fontWeight: 700, color: COLORS.black }}>
+            {label}
+          </Typography>
+          <Box sx={{ position: "absolute", right: 0 }}>
+            {expanded
+              ? <KeyboardArrowUpIcon sx={{ fontSize: 25, color: COLORS.grey[600] }} />
+              : <KeyboardArrowDownIcon sx={{ fontSize: 25, color: COLORS.grey[600] }} />
+            }
+          </Box>
+        </Box>
+
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 0.5 }}>
+          {availableLeads && availableLeads.length > 1 ? (
+            <LeadsStepper
+              value={currentLeads}
+              options={availableLeads}
+              onChange={(val) => handleLeadsChange(leadsKey, val)}
+            />
+          ) : (
+            <Box sx={{ display: "flex", gap: 0.5 }}>
+              {availableLeads?.map((opt) => {
+                const sel = currentLeads === opt;
+                return (
+                  <Box key={opt} onClick={(e) => { e.stopPropagation(); handleLeadsChange(leadsKey, opt); }}
+                    sx={{
+                      px: 1.5, py: 0.5, borderRadius: 1.5,
+                      border: `1px solid ${sel ? COLORS.secondary : COLORS.border}`,
+                      backgroundColor: sel ? COLORS.secondary : COLORS.white,
+                      color: sel ? COLORS.white : COLORS.black,
+                      fontSize: T.xl, fontWeight: 700, cursor: "pointer",
+                    }}>
+                    {opt}
+                  </Box>
+                );
+              })}
+            </Box>
+          )}
+        </Box>
+      </Box>
+
+    <Collapse 
+  in={expanded}
   sx={{
-    display: "flex", alignItems: "center", 
-    flexDirection: "column",  // ← stack children vertically
-    px: 2, py: 1.4, cursor: "pointer", backgroundColor: "#fff0c5",
-    "&:active": { backgroundColor: "#ffe5a0" },
+    '& .MuiCollapse-wrapper': {
+      overflow: 'visible',
+    },
+    '& .MuiCollapse-wrapperInner': {
+      overflow: 'visible',
+    }
   }}
 >
- {/* Row 1: Label + chevron */}
-<Box sx={{ display: "flex", alignItems: "flex-start",  width: "100%", position: "relative" }}>
-  <Typography sx={{ fontSize: T.xl, fontWeight: 700, color: COLORS.black }}>
-    {label}
-  </Typography>
-  <Box sx={{ position: "absolute", right: 0 }}>
-    {expanded
-      ? <KeyboardArrowUpIcon sx={{ fontSize: 25, color: COLORS.secondary[500] }} />
-      : <KeyboardArrowDownIcon sx={{ fontSize: 25, color: COLORS.secondary[500] }} />
-    }
-  </Box>
-</Box>
+        <Box sx={{ 
+          backgroundColor: COLORS.grey[50], 
+          px: 0, 
+          pt: 0, 
+          pb: 0.5,
+          // Remove any overflow restrictions at this level
+          overflow: 'visible',
+        }}>
+          {/* Headings - Fixed */}
+          <Box sx={{
+            display: "flex",
+            justifyContent: "space-evenly",
+            mb: 1,
+            mt: 1,
+            px: 1,
+          }}>
+            <Typography sx={{
+              fontSize: T.md,
+              fontWeight: 600,
+              color: COLORS.black,
+              letterSpacing: "0.05em",
+            }}>
+              Investment Range
+            </Typography>
 
-  {/* Row 2: Leads stepper / selector */}
-  <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 0.5 }}>
-    {availableLeads && availableLeads.length > 1 ? (
-      <LeadsStepper
-        value={currentLeads}
-        options={availableLeads}
-        onChange={(val) => handleLeadsChange(leadsKey, val)}
-      />
-    ) : (
-      <Box sx={{ display: "flex", gap: 0.5 }}>
-        {availableLeads?.map((opt) => {
-          const sel = currentLeads === opt;
-          return (
-            <Box key={opt} onClick={(e) => { e.stopPropagation(); handleLeadsChange(leadsKey, opt); }}
-              sx={{
-                px: 1.5, py: 0.5, borderRadius: 1.5,
-                border: `1px solid ${sel ? COLORS.secondary : COLORS.border}`,
-                backgroundColor: sel ? COLORS.secondary : COLORS.white,
-                color: sel ? COLORS.white : COLORS.black,
-                fontSize: T.xl, fontWeight: 700, cursor: "pointer",
-              }}>
-              {opt}
-            </Box>
-          );
-        })}
-      </Box>
-    )}
-  </Box>
-</Box>
+            <Typography sx={{
+              fontSize: T.md,
+              fontWeight: 600,
+              color: COLORS.black,
+              letterSpacing: "0.05em",
+              ml: 8,
+            }}>
+              States
+            </Typography>
+          </Box>
 
-      <Collapse in={expanded}>
-       <Box sx={{ backgroundColor: COLORS.grey[50], px: 0, pt: 0, pb: 0.5 }}>
-      {/* ✅ Headings Row - shown once */}
-    <Box sx={{
-      display: "flex",
-      // alignItems: "center",
-      justifyContent: "space-evenly",
-  //  gap:0.3,
-      mb: 1,
-      mt:1
-    }}>
-      <Typography sx={{
-        fontSize: T.md,
-        fontWeight: 600,
-        color: COLORS.black,
-        letterSpacing: "0.05em",
-      }}>
-       Investment Range
-      </Typography>
+          {/* Scrollable Container - FIXED */}
+          <Box 
+            ref={scrollContainerRef}
+            sx={{
+              maxHeight: expanded ? "150px" : "0px", // Only apply maxHeight when expanded
+              overflowY: "auto",
+              overflowX: "hidden",
+              px: 0.5,
+              pr: 1,
+              transition: "max-height 0.3s ease-in-out",
+              "&::-webkit-scrollbar": {
+                width: "4px",
+              },
+              "&::-webkit-scrollbar-track": {
+                backgroundColor: COLORS.grey[200],
+                borderRadius: "4px",
+              },
+              "&::-webkit-scrollbar-thumb": {
+                backgroundColor: COLORS.primary,
+                borderRadius: "4px",
+              },
+            }}
+          >
+            {items.map((item, i) => {
+              const id = `${planId}-${label}-${item.range}`;
+              const isChecked = checkedItems[id] || false;
+              const inPayment = inPaymentSet.has(id);
+              const stateCount = getStateCountForRange(label, item.range, planId);
 
-      <Typography sx={{
-        fontSize: T.md,
-        fontWeight: 600,
-        color: COLORS.black,
-        // textTransform: "uppercase",
-        letterSpacing: "0.05em",
-        ml:10
-      }}>
-         States
-      </Typography>
-    </Box>
-
-
-          {items.map((item, i) => {
-            const id = `${planId}-${label}-${item.range}`;
-            const isChecked = checkedItems[id] || false;
-            const inPayment = inPaymentSet.has(id);
-            const stateCount = getStateCountForRange(label, item.range, planId);
-
-            return (
-              <Box key={id} sx={{
-                display: "flex", alignItems: "center", justifyContent: "space-between",
-                borderRadius: 1.5,
-                mb: i < items.length - 1 ? 0.5 : 0,
-                border: `1px solid ${inPayment ? "rgba(76,176,79,0.35)" : isChecked ? "rgba(255,153,0,0.3)" : "transparent"}`,
-                backgroundColor: inPayment ? "rgba(76,176,79,0.06)" : isChecked ? "rgba(255,153,0,0.05)" : "transparent",
-                transition: "all 0.2s ease",
-                px: 0.5, py: 0.5,
-              }}>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                  <Checkbox
-                    size="small"
-                    checked={isChecked}
-                    disabled={inPayment}
-                    onChange={() => !inPayment && onCheck(id)}
-                    sx={{
-                      p: 0, color: COLORS.primary,
-                      "&.Mui-checked": { color: COLORS.secondary },
-                      "&.Mui-disabled": { color: COLORS.secondary },
-                    }}
-                  />
-                  <Typography sx={{ fontSize: T.xl, fontWeight: 600, color: COLORS.black }}>
-                    {item.range}
-                  </Typography>
-
-                {/* {isChecked && !inPayment && (
-    <Chip
-      label="Active"
-      size="small"
-      sx={{
-        height: 20,
-        fontSize: '0.7rem',
-        fontWeight: 600,
-        backgroundColor: COLORS.secondary,
-        color: COLORS.white,
-        ml: 1,
-        '& .MuiChip-label': { px: 1, py: 0 }
-      }}
-    />
-  )} */}
-  
-  {/* Show "Added" badge when in payment */}
-  {/* {inPayment && (
-    <Chip
-      label="Added"
-      size="small"
-      sx={{
-        height: 20,
-        fontSize: '0.7rem',
-        fontWeight: 600,
-        backgroundColor: COLORS.primary,
-        color: COLORS.white,
-        ml: 1,
-        '& .MuiChip-label': { px: 1, py: 0 }
-      }}
-    />
-  )} */}
-</Box>
-
-                <Box sx={{
-                  display: "flex", alignItems: "center", gap: 0.3,
-              px: 1, py: 0.3,
+              return (
+                <Box key={id} sx={{
+                  display: "flex", 
+                  alignItems: "center", 
+                  justifyContent: "space-between",
+                  borderRadius: 1.5,
+                  mb: i < items.length - 1 ? 0.5 : 0,
+                  border: `1px solid ${inPayment ? "rgba(76,176,79,0.35)" : isChecked ? "rgba(255,153,0,0.3)" : "transparent"}`,
+                  backgroundColor: inPayment ? "rgba(76,176,79,0.06)" : isChecked ? "rgba(255,153,0,0.05)" : "transparent",
+                  transition: "all 0.2s ease",
+                  px: 0.5, 
+                  py: 0.5,
                 }}>
-                  <Typography sx={{ fontSize: T.xl, fontWeight: 600, color: COLORS.black }}>
-                    {stateCount}
-                  </Typography>
-                  <IconButton size="small" onClick={(e) => { e.stopPropagation(); onEditStates(label, item.range, planId); }} sx={{ p: 0.2 }}>
-                    <EditIcon sx={{ fontSize: 16, color: COLORS.primary }} />
-                  </IconButton>
-                </Box>
-              </Box>
-            );
-          })}
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <Checkbox
+                      size="small"
+                      checked={isChecked}
+                      disabled={inPayment}
+                      onChange={() => !inPayment && onCheck(id)}
+                      sx={{
+                        p: 0, 
+                        color: COLORS.primary,
+                        "&.Mui-checked": { color: COLORS.secondary },
+                        "&.Mui-disabled": { color: COLORS.secondary },
+                      }}
+                    />
+                    <Typography sx={{ fontSize: T.xl, fontWeight: 600, color: COLORS.black }}>
+                      {item.range}
+                    </Typography>
+                  </Box>
 
-              {(() => {
+                  <Box sx={{
+                    display: "flex", 
+                    alignItems: "center", 
+                    gap: 0.3,
+                    px: 1, 
+                    py: 0.3,
+                  }}>
+                    <Typography sx={{ fontSize: T.xl, fontWeight: 600, color: COLORS.black }}>
+                      {stateCount}
+                    </Typography>
+                    <IconButton 
+                      size="small" 
+                      onClick={(e) => { 
+                        e.stopPropagation(); 
+                        onEditStates(label, item.range, planId); 
+                      }} 
+                      sx={{ p: 0.2 }}
+                    >
+                      <EditIcon sx={{ fontSize: 16, color: COLORS.primary }} />
+                    </IconButton>
+                  </Box>
+                </Box>
+              );
+            })}
+          </Box>
+
+          {/* Summary - Fixed */}
+          {(() => {
             const leads = currentLeads || 0;
-            const checkedUniqueStates = getUniqueStatesForCheckedItems(
-              planId, label, items, checkedItems, statesByInvestmentRange
-            );
-            const totalUniqueStates = checkedUniqueStates.size;
+         const checkedUniqueStates = getUniqueStatesForCheckedItems(
+  planId, label, items, checkedItems, statesByInvestmentRange, allStates
+);
+           const totalUniqueStates = checkedUniqueStates.size;
             const lKey = `${planId}_${label}`;
             const avail = leadsDropdownData ? (leadsDropdownData[lKey] || []) : [];
             const minLeads = avail.length > 0 ? Math.min(...avail) : 1;
@@ -455,51 +481,117 @@ const lKey = `${planId}_${label}`;
             const groupAmount = (pricePerState / divisor) * totalUniqueStates * leads;
 
             return (
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5, mb: 1, mt: 2, borderRadius: 2, backgroundColor: COLORS.white,px: 1, py: 1 }}>
-  {/* Row 1: Per State + Total Leads */}
-  <Box sx={{ display: "flex", gap: 0.2 }}>
-    <Box sx={{
-      flex: 1, display: "flex", flexDirection: "column", alignItems: "center",
-      backgroundColor: "rgba(255,153,0,0.06)", border: `3px solid ${COLORS.border}`,
-      borderRadius: "10px", px: 0, py: 0.8,
-    }}>
-      <Typography sx={{ fontSize: "0.85rem", color: COLORS.black[600], fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", lineHeight: 1, mb: 0.4, whiteSpace: "nowrap" }}>
-        Per State
-      </Typography>
-<Typography sx={{ fontSize: "1.4rem", fontWeight: 800, color: COLORS.primaryDark, lineHeight: 1 }}>
+              <Box sx={{ 
+                display: "flex", 
+                flexDirection: "column", 
+                gap: 0.5, 
+                mb: 1, 
+                mt: 2, 
+                borderRadius: 2, 
+                backgroundColor: COLORS.white, 
+                px: 1, 
+                py: 1 
+              }}>
+                <Box sx={{ display: "flex", gap: 0.2 }}>
+                  <Box sx={{
+                    flex: 1, 
+                    display: "flex", 
+                    flexDirection: "column", 
+                    alignItems: "center",
+                    backgroundColor: "rgba(255,153,0,0.06)", 
+                    border: `3px solid ${COLORS.border}`,
+                    borderRadius: "10px", 
+                    px: 0, 
+                    py: 0.8,
+                  }}>
+                    <Typography sx={{ 
+                      fontSize: "0.85rem", 
+                      color: COLORS.grey[600], 
+                      fontWeight: 600, 
+                      textTransform: "uppercase", 
+                      letterSpacing: "0.05em", 
+                      lineHeight: 1, 
+                      mb: 0.4, 
+                      whiteSpace: "nowrap" 
+                    }}>
+                      Per State
+                    </Typography>
+                    <Typography sx={{ 
+                      fontSize: "1.4rem", 
+                      fontWeight: 800, 
+                      color: COLORS.primaryDark, 
+                      lineHeight: 1 
+                    }}>
+                      {fmtINR((pricePerState / divisor) * currentLeads)}
+                    </Typography>
+                  </Box>
 
-{fmtINR((pricePerState / divisor) * currentLeads)}</Typography>
-    </Box>
+                  <Box sx={{
+                    flex: 1, 
+                    display: "flex", 
+                    flexDirection: "column", 
+                    alignItems: "center",
+                    backgroundColor: "rgba(76,176,79,0.06)", 
+                    border: `3px solid ${COLORS.border}`,
+                    borderRadius: "10px", 
+                    px: 1, 
+                    py: 0.8,
+                  }}>
+                    <Typography sx={{ 
+                      fontSize: "0.85rem", 
+                      color: COLORS.grey[600], 
+                      fontWeight: 600, 
+                      textTransform: "uppercase", 
+                      letterSpacing: "0.05em", 
+                      lineHeight: 1, 
+                      mb: 0.4, 
+                      whiteSpace: "nowrap" 
+                    }}>
+                      Total Leads
+                    </Typography>
+                    <Typography sx={{ 
+                      fontSize: "1.4rem", 
+                      fontWeight: 800, 
+                      color: COLORS.secondary, 
+                      lineHeight: 1 
+                    }}>
+                      {groupTotalLeads.toLocaleString("en-IN")}
+                    </Typography>
+                  </Box>
+                </Box>
 
-
-    <Box sx={{
-      flex: 1, display: "flex", flexDirection: "column", alignItems: "center",
-      backgroundColor: "rgba(76,176,79,0.06)", border: `3px solid ${COLORS.border}`,
-      borderRadius: "10px", px: 1, py: 0.8,
-    }}>
-      <Typography sx={{ fontSize: "0.85rem", color: COLORS.black[600], fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", lineHeight: 1, mb: 0.4, whiteSpace: "nowrap" }}>
-        Total Leads
-      </Typography>
-      <Typography sx={{ fontSize: "1.4rem", fontWeight: 800, color: COLORS.secondary, lineHeight: 1 }}>
-        {groupTotalLeads.toLocaleString("en-IN")}
-      </Typography>
-    </Box>
-  </Box>
-
-  {/* Row 2: Total Amount (full width) */}
-  <Box sx={{
-    display: "flex", flexDirection: "column", alignItems: "center",
-    backgroundColor: "rgba(0,0,0,0.03)", border: `3px solid ${COLORS.border}`,
-    borderRadius: "10px", px: 1, py: 0.8,
-  }}>
-    <Typography sx={{ fontSize: "0.85rem", color: COLORS.black[600], fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", lineHeight: 1, mb: 0.4, whiteSpace: "nowrap" }}>
-      Total Amount
-    </Typography>
-    <Typography sx={{ fontSize: "1.4rem", fontWeight: 800, color: COLORS.secondary, lineHeight: 1 }}>
-      {fmtINR(groupAmount)}
-    </Typography>
-  </Box>
-</Box>
+                <Box sx={{
+                  display: "flex", 
+                  flexDirection: "column", 
+                  alignItems: "center",
+                  backgroundColor: "rgba(0,0,0,0.03)", 
+                  border: `3px solid ${COLORS.border}`,
+                  borderRadius: "10px", 
+                  px: 1, 
+                  py: 0.8,
+                }}>
+                  <Typography sx={{ 
+                    fontSize: "0.85rem", 
+                    color: COLORS.grey[600], 
+                    fontWeight: 600, 
+                    textTransform: "uppercase", 
+                    letterSpacing: "0.05em", 
+                    lineHeight: 1, 
+                    mb: 0.4, 
+                    whiteSpace: "nowrap" 
+                  }}>
+                    Total Amount
+                  </Typography>
+                  <Typography sx={{ 
+                    fontSize: "1.4rem", 
+                    fontWeight: 800, 
+                    color: COLORS.secondary, 
+                    lineHeight: 1 
+                  }}>
+                    {fmtINR(groupAmount)}
+                  </Typography>
+                </Box>
+              </Box>
             );
           })()}
         </Box>
@@ -905,7 +997,7 @@ const MobilePackageSelection = ({
             <>
 
               <Box sx={{ mb: 1.5 }}>
-              <Typography sx={{ fontSize: T.xl, fontWeight: 700, color: COLORS.black, mb: 0.3,  }}>
+              <Typography sx={{ fontSize: T.xl, fontWeight: 700, color: COLORS.primary, mb: 0.3,  }}>
                SELECT CAMPAIGN PERIOD
               </Typography>
             </Box>
@@ -940,61 +1032,90 @@ const MobilePackageSelection = ({
                 );
               })}
             </Box>
-               <Typography sx={{ fontSize: T.xl, fontWeight: 700, color: COLORS.black, mb: 1 ,mt:2}}>
+               <Typography sx={{ fontSize: T.xl, fontWeight: 700, color: COLORS.primary, mb: 1 ,mt:2}}>
                 SELECT INVESTMENT RANGES
               </Typography>
               
-          <Box>
-            <Button
-              variant="outlined"
-              startIcon={<AddCircleOutlineIcon />}
-              fullWidth
-              onClick={() => setOpenConfirmDialog(true)}
-              sx={{
-                mb: 2.5, borderRadius: 2, textTransform: "none", fontWeight: 700,
-                fontSize: T.xl, borderColor: COLORS.secondary, color: COLORS.secondary,
-                "&:hover": { backgroundColor: COLORS.lightGreen, borderColor: COLORS.secondaryDark },
-              }}
-            >
-              Add New Investment Range
-            </Button>
-
-          
-          </Box>
+ 
 
 
-              {Object.keys(groupedPackages).map((label) => {
-                const { pkg, items } = groupedPackages[label];
-                const leadsKey = leadsKeyForGroup(label);
-                const { price, totalLeads, uniqueStatesCount } = getGroupTotals(label, items, pkg);
+         {/* Wrap the range-group list in a fixed-height scrollable box */}
+<Box
+  sx={{
+    maxHeight: "480px",          // adjust to taste
+    overflowY: "auto",
+    overflowX: "hidden",
+    pr: 0.5,
+    mb: 1,
+    "&::-webkit-scrollbar": { width: "5px" },
+    "&::-webkit-scrollbar-track": {
+      backgroundColor: COLORS.grey[200],
+      borderRadius: "4px",
+    },
+    "&::-webkit-scrollbar-thumb": {
+      backgroundColor: COLORS.primary,
+      borderRadius: "4px",
+    },
+  }}
+>
+  {Object.keys(groupedPackages).map((label) => {
+    const { pkg, items } = groupedPackages[label];
+    const leadsKey = leadsKeyForGroup(label);
+    const { price, totalLeads, uniqueStatesCount } = getGroupTotals(label, items, pkg);
 
-                return (
-                  <Box key={label} sx={{ mb: 2 ,}}>
-                 
-                    <RangeGroupCard
-                      label={label}
-                      items={items}
-                      expanded={expandedGroup === label}
-                      onToggle={() => toggleGroup(label)}
-                      checkedItems={checkedItems}
-                      onCheck={handleCheck}
-                      onEditStates={handleOpenStateModal}
-                      planId={selectedPlan._id}
-                      statesByInvestmentRange={statesByInvestmentRange}
-                      getStateCountForRange={getStateCountForRange}
-                      inPaymentSet={inPaymentSet}
-                      availableLeads={availableLeads}
-                      getGroupLeads={getGroupLeads}
-                      handleLeadsChange={handleLeadsChange}
-                      leadsKey={leadsKey}
-                      pricePerState={Number(pkg?.amount || 0)}
-                      leadsDropdownData={leadsDropdownData}
-                    />
-                  </Box>
-                );
-              })}
+    return (
+      <Box key={label} sx={{ mb: 2 }}>
+       <RangeGroupCard
+  label={label}
+  items={items}
+  expanded={expandedGroup === label}
+  onToggle={() => toggleGroup(label)}
+  checkedItems={checkedItems}
+  onCheck={handleCheck}
+  onEditStates={handleOpenStateModal}
+  planId={selectedPlan._id}
+  statesByInvestmentRange={statesByInvestmentRange}
+  getStateCountForRange={getStateCountForRange}
+  inPaymentSet={inPaymentSet}
+  availableLeads={availableLeads}
+  getGroupLeads={getGroupLeads}
+  handleLeadsChange={handleLeadsChange}
+  leadsKey={leadsKey}
+  pricePerState={Number(pkg?.amount || 0)}
+  leadsDropdownData={leadsDropdownData}
+  allStates={allStates}  
+/>
+      </Box>
+    );
+  })}
+</Box>
 
               <Box sx={{ display: "grid",  gap: 1.5, mb: 4 }}>
+                      {finalToken && (
+  <Box>
+    <Button
+      variant="outlined"
+      startIcon={<AddCircleOutlineIcon />}
+      fullWidth
+      onClick={() => setOpenConfirmDialog(true)}
+      sx={{
+        // mb: 2.5, 
+        borderRadius: 2, 
+        textTransform: "none", 
+        fontWeight: 700,
+        fontSize: T.xl, 
+        borderColor: COLORS.secondary, 
+        color: COLORS.white,
+       
+          backgroundColor: COLORS.secondaryDark, 
+          borderColor: COLORS.secondaryDark 
+       
+      }}
+    >
+      Add New Investment Range
+    </Button>
+  </Box>
+)}
                 <Button
                   variant="outlined"
                   onClick={handleAddToCart}

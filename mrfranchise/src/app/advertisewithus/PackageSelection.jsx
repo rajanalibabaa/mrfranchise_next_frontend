@@ -274,6 +274,7 @@ const [upgradePlanId, setUpgradePlanId] = useState(null);
   const [loadings, setLoadings] = useState(true);
   const [errors, setErrors] = useState("");
  
+
 const [brandOwnerId, setBrandOwnerId] = useState(null);
 
 useEffect(() => {
@@ -284,6 +285,7 @@ useEffect(() => {
     setBrandOwnerId(id);
   } else {
     console.warn("⚠️ No Brand Owner ID found in localStorage");
+    setLoadings(false); // <-- the one-line addition
   }
 }, []);
  
@@ -3106,43 +3108,43 @@ if (!states || states.length === 0) {
                   <>
 
                   
-                    <Box
-                      sx={{
-                        display: "flex",
-                        justifyContent: "flex-end",
-                        px: 2,
-                        py: 1.5,
-                        borderBottom: `1px solid ${COLORS.border}`,
-                      }}
-                    >
-                      <Button
-                        variant="outlined"
-                        size="small"
-                        startIcon={<AddIcon />}
-                        onClick={() => {
-                          setPendingSelection(null); // clear any previous selection
-                          setOpenConfirmDialog(true);
-                        }}
-                        sx={{
-                          // borderColor: COLORS.primary,
-                          color: COLORS.white,
-                          fontWeight: 700,
-                          fontSize: TEXT_SIZES.small,
-                          // borderWidth: 2,
-                          borderRadius: 2,
-                          textTransform: "none",
-                          px: 2,
-                          backgroundColor:"#4cb04f",
-                          "&:hover": {
-                            backgroundColor: "#517b52",
-                            borderColor: "none",
-                           
-                          },
-                        }}
-                      > 
-                        Add New Investment Range
-                      </Button>
-                    </Box>
+
+{/* Add this conditional rendering */}
+{finalToken && (
+  <Box
+    sx={{
+      display: "flex",
+      justifyContent: "flex-end",
+      px: 2,
+      py: 1.5,
+      borderBottom: `1px solid ${COLORS.border}`,
+    }}
+  >
+    <Button
+      variant="outlined"
+      size="small"
+      startIcon={<AddIcon />}
+      onClick={() => {
+        setPendingSelection(null); // clear any previous selection
+        setOpenConfirmDialog(true);
+      }}
+      sx={{
+        color: COLORS.white,
+        fontWeight: 700,
+        fontSize: TEXT_SIZES.small,
+        borderRadius: 2,
+        textTransform: "none",
+        px: 2,
+        backgroundColor: "#4cb04f",
+        "&:hover": {
+          backgroundColor: "#517b52",
+        },
+      }}
+    >
+      Add New Investment Range
+    </Button>
+  </Box>
+)}
                     {/* Unified Table */}
                     <TableContainer
                       component={Paper}

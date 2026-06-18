@@ -1092,6 +1092,7 @@ const ExistingPackageDisplay = ({
   const shouldShowFree = !hasActivePaidPackage && grouped.FREE.length > 0;
   const hasAnyPackages = grouped.FREE.length > 0 || grouped.LISTING.length > 0 || grouped.LEAD.length > 0;
 
+   if (!hasAnyPackages) return null;
   const allStatesForUpgrade = (() => {
     const set = new Set();
     (data?.packages || []).forEach((pkg) => {
@@ -1134,7 +1135,7 @@ const ExistingPackageDisplay = ({
             CURRENT ACTIVE PLANS
           </Typography>
 
-          {!hasAnyPackages ? (
+          {/* {!hasAnyPackages ? (
             <Paper elevation={0} sx={{
               p: 4, 
               textAlign: "center", 
@@ -1148,7 +1149,7 @@ const ExistingPackageDisplay = ({
                 No packages found
               </Typography>
             </Paper>
-          ) : (
+          ) : ( */}
             <Box sx={{
               display: "flex", 
               flexDirection: "column", 
@@ -1184,7 +1185,7 @@ const ExistingPackageDisplay = ({
                 />
               )}
             </Box>
-          )}
+          {/* )} */}
         </Box>
       </SectionAccordion>
 

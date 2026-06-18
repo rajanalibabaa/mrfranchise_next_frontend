@@ -651,10 +651,10 @@ const PaymentSummaryTable = ({
                       >
                         <Box>
                           <Typography sx={{
-                            fontSize: "0.75rem",
+                            fontSize: "1rem",
                             fontWeight: 600,
                             color: COLORS.black,
-                            backgroundColor: COLORS.lightOrange,
+                            // backgroundColor: COLORS.lightOrange,
                             px: 1,
                             py: 0.5,
                             borderRadius: 2,
@@ -676,16 +676,16 @@ const PaymentSummaryTable = ({
                             align="center"
                             sx={{ ...bodyCellSx, verticalAlign: "middle" }}
                           >
-                            <Chip
-                              label={lbl}
+                            <Typography
+                              
                               size="small"
                               sx={{
-                                fontSize: "0.68rem",
+                                fontSize: "0.86rem",
                                 height: 24,
                                 color: COLORS.black,
                                 fontWeight: 600,
                               }}
-                            />
+                            >{lbl}</Typography>
                           </TableCell>
                         );
                       })()}
