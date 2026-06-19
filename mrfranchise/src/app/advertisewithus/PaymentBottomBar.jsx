@@ -124,7 +124,7 @@ const getPositionStyles = () => {
       sx={{
         position: "fixed",
         ...getPositionStyles(),
-        width: { xs: "calc(100% - 30px)", sm: "92%", md: "85%", lg: "70%", xl: "45%" },
+        width: { xs: "calc(100% - 60px)", sm: "92%", md: "85%", lg: "70%", xl: "45%" },
         maxWidth: "1100px",
         zIndex: 1200,
         background:
@@ -150,8 +150,8 @@ const getPositionStyles = () => {
   onDoubleClick={handleDoubleClick}
   sx={{
    position: "absolute",
-  top: "3px",
-  left: { xs: "8px", sm: "50%" },
+  top: {xs:"27px",sm:"3px"},
+  left: { xs: "-10px", sm: "50%" },
   right: { xs: "auto", sm: "auto" },
   transform: { xs: "none", sm: "translateX(-50%)" },
     cursor: "grab",
@@ -171,7 +171,7 @@ const getPositionStyles = () => {
     },
   }}
 >
-  <DragIndicatorIcon sx={{ fontSize: { xs: 18, sm: 22 }, color: "#666" }} />
+  <DragIndicatorIcon sx={{ fontSize: { xs: 20, sm: 22 }, color: "#666" }} />
 </Box>
 
       {/* ── SINGLE ROW — always ── */}

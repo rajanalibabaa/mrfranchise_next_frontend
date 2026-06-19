@@ -58,6 +58,7 @@ const SectionAccordion = ({
   defaultExpanded = false,
   expanded: controlledExpanded,
   onChange: controlledOnChange,
+  COLORS: colors = COLORS,
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));

@@ -125,6 +125,104 @@ const getUniqueStatesForCheckedItems = (planId, label, items, checkedItems, stat
   });
   return set;
 };
+// ─── Custom Scrollable List with visible right-side scrollbar ─────────────────
+const ScrollableCardList = ({ children, maxHeight = 480 }) => {
+  const scrollAreaRef = useRef(null);
+  const thumbRef = useRef(null);
+  const trackRef = useRef(null);
+  const isDragging = useRef(false);
+  const dragStartY = useRef(0);
+  const dragStartTop = useRef(0);
+
+  const updateThumb = useCallback(() => {
+    const area = scrollAreaRef.current;
+    const thumb = thumbRef.current;
+    const track = trackRef.current;
+    if (!area || !thumb || !track) return;
+    const scrollable = area.scrollHeight - area.clientHeight;
+    if (scrollable <= 0) { thumb.style.display = "none"; return; }
+    thumb.style.display = "block";
+    const trackH = track.clientHeight;
+    const thumbH = Math.max(40, (area.clientHeight / area.scrollHeight) * trackH);
+    thumb.style.height = thumbH + "px";
+    const ratio = area.scrollTop / scrollable;
+    const maxTop = trackH - thumbH;
+    thumb.style.top = ratio * maxTop + "px";
+  }, []);
+
+  useEffect(() => {
+    const area = scrollAreaRef.current;
+    if (!area) return;
+    area.addEventListener("scroll", updateThumb);
+    const ro = new ResizeObserver(updateThumb);
+    ro.observe(area);
+    updateThumb();
+    return () => { area.removeEventListener("scroll", updateThumb); ro.disconnect(); };
+  }, [updateThumb]);
+
+  useEffect(() => {
+    const onMove = (e) => {
+      if (!isDragging.current) return;
+      const track = trackRef.current;
+      const thumb = thumbRef.current;
+      const area = scrollAreaRef.current;
+      if (!track || !thumb || !area) return;
+      const trackH = track.clientHeight;
+      const thumbH = thumb.clientHeight;
+      const maxTop = trackH - thumbH;
+      const newTop = Math.min(maxTop, Math.max(0, dragStartTop.current + (e.clientY - dragStartY.current)));
+      thumb.style.top = newTop + "px";
+      area.scrollTop = (newTop / maxTop) * (area.scrollHeight - area.clientHeight);
+    };
+    const onUp = () => { isDragging.current = false; };
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+    return () => { window.removeEventListener("mousemove", onMove); window.removeEventListener("mouseup", onUp); };
+  }, []);
+
+  return (
+    <Box sx={{ display: "flex", width: "100%", position: "relative" }}>
+      {/* Cards area — native scrollbar hidden */}
+      <Box
+        ref={scrollAreaRef}
+        sx={{
+          flex: 1,
+          maxHeight: `${maxHeight}px`,
+          overflowY: "scroll",
+          overflowX: "hidden",
+          scrollbarWidth: "none",
+          "&::-webkit-scrollbar": { display: "none" },
+          msOverflowStyle: "none",
+        }}
+      >
+        {children}
+      </Box>
+
+      {/* Single orange scrollbar strip on the right */}
+      <Box
+        ref={trackRef}
+        sx={{ width: "6px", flexShrink: 0, backgroundColor: COLORS.grey[200], borderRadius: "3px", position: "relative", my: 0.5, mr: 0.5 }}
+      >
+        <Box
+          ref={thumbRef}
+          onMouseDown={(e) => {
+            isDragging.current = true;
+            dragStartY.current = e.clientY;
+            dragStartTop.current = parseFloat(thumbRef.current.style.top) || 0;
+            e.preventDefault();
+          }}
+          sx={{
+            width: "6px", minHeight: "40px", backgroundColor: COLORS.primary,
+            borderRadius: "3px", position: "absolute", top: 0, left: 0,
+            cursor: "grab",
+            "&:active": { cursor: "grabbing", backgroundColor: COLORS.primaryDark },
+            "&:hover": { backgroundColor: COLORS.primaryDark },
+          }}
+        />
+      </Box>
+    </Box>
+  );
+};
 
 // ─── Mobile-only Section Accordion ───────────────────────────────────────────
 const SectionAccordion = ({ 
@@ -161,7 +259,7 @@ const SectionAccordion = ({
         mb: 1.5,
               border: `3px solid ${COLORS.primary}`,
         borderRadius: "12px !important",
-        overflow: "hidden",
+        // overflow: "hidden",
         "&:before": { display: "none" },
       }}
     >
@@ -278,8 +376,8 @@ const RangeGroupCard = ({
   }, [expanded]);
 
   return (
-    <Box sx={{ border: `2px solid ${COLORS.primary}`, borderRadius: 2.5, overflow: "hidden", mb: 1.5, backgroundColor: COLORS.white }}>
-      <Box
+// CHANGE BACK TO:
+<Box sx={{ border: `2px solid ${COLORS.primary}`, borderRadius: 2.5, overflow: "hidden", mb: 1.5, backgroundColor: COLORS.white }}>        <Box
         onClick={onToggle}
         sx={{
           display: "flex", 
@@ -333,25 +431,13 @@ const RangeGroupCard = ({
         </Box>
       </Box>
 
-    <Collapse 
-  in={expanded}
-  sx={{
-    '& .MuiCollapse-wrapper': {
-      overflow: 'visible',
-    },
-    '& .MuiCollapse-wrapperInner': {
-      overflow: 'visible',
-    }
-  }}
->
-        <Box sx={{ 
-          backgroundColor: COLORS.grey[50], 
-          px: 0, 
-          pt: 0, 
-          pb: 0.5,
-          // Remove any overflow restrictions at this level
-          overflow: 'visible',
-        }}>
+<Collapse in={expanded}>
+      <Box sx={{ 
+  backgroundColor: COLORS.grey[50], 
+  px: 0, 
+  pt: 0, 
+  pb: 0.5,
+}}>
           {/* Headings - Fixed */}
           <Box sx={{
             display: "flex",
@@ -381,28 +467,35 @@ const RangeGroupCard = ({
           </Box>
 
           {/* Scrollable Container - FIXED */}
-          <Box 
-            ref={scrollContainerRef}
-            sx={{
-              maxHeight: expanded ? "150px" : "0px", // Only apply maxHeight when expanded
-              overflowY: "auto",
-              overflowX: "hidden",
-              px: 0.5,
-              pr: 1,
-              transition: "max-height 0.3s ease-in-out",
-              "&::-webkit-scrollbar": {
-                width: "4px",
-              },
-              "&::-webkit-scrollbar-track": {
-                backgroundColor: COLORS.grey[200],
-                borderRadius: "4px",
-              },
-              "&::-webkit-scrollbar-thumb": {
-                backgroundColor: COLORS.primary,
-                borderRadius: "4px",
-              },
-            }}
-          >
+         <Box 
+  ref={scrollContainerRef}
+  sx={{
+    maxHeight: expanded ? "150px" : "0px",
+    overflowY: "scroll",
+    overflowX: "hidden",
+    pl: 0.5,
+    pr: 0,               // ← remove right padding so scrollbar sits flush on the edge
+    mr: 0,
+    transition: "max-height 0.3s ease-in-out",
+    "&::-webkit-scrollbar": {
+      width: "5px",
+    },
+    "&::-webkit-scrollbar-track": {
+      backgroundColor: COLORS.grey[200],
+      borderRadius: "0px",   // ← flat on right edge
+    },
+    "&::-webkit-scrollbar-thumb": {
+      backgroundColor: COLORS.primary,
+      borderRadius: "4px",
+      minHeight: "40px",
+    },
+    "&::-webkit-scrollbar-thumb:hover": {
+      backgroundColor: COLORS.primaryDark,
+    },
+    scrollbarWidth: "thin",
+    scrollbarColor: `${COLORS.primary} ${COLORS.grey[200]}`,
+  }}
+>
             {items.map((item, i) => {
               const id = `${planId}-${label}-${item.range}`;
               const isChecked = checkedItems[id] || false;
@@ -469,10 +562,15 @@ const RangeGroupCard = ({
           {/* Summary - Fixed */}
           {(() => {
             const leads = currentLeads || 0;
-         const checkedUniqueStates = getUniqueStatesForCheckedItems(
+const checkedUniqueStates = getUniqueStatesForCheckedItems(
   planId, label, items, checkedItems, statesByInvestmentRange, allStates
 );
-           const totalUniqueStates = checkedUniqueStates.size;
+const hasAnyChecked = items.some(
+  (item) => checkedItems[`${planId}-${label}-${item.range}`]
+);
+// Default to 1 state worth of pricing until the user actually checks a range
+const totalUniqueStates = hasAnyChecked ? checkedUniqueStates.size : 1;
+           
             const lKey = `${planId}_${label}`;
             const avail = leadsDropdownData ? (leadsDropdownData[lKey] || []) : [];
             const minLeads = avail.length > 0 ? Math.min(...avail) : 1;
@@ -984,7 +1082,7 @@ const MobilePackageSelection = ({
   expanded={sectionExpanded === "investor"}
   onChange={(isOpen) => onSectionChange?.("investor")(isOpen)}
 >
-        <Box sx={{ px: 2, textAlign: "center" }}>
+        <Box sx={{ px: 2, textAlign: "center", overflow: "visible" }}>
           {/* <Typography sx={{ fontSize: "1.4rem", fontWeight: 700, color: COLORS.black, mb: 0.5 }}>
             INVESTOR LEAD PLANS
           </Typography> */}
@@ -1003,35 +1101,67 @@ const MobilePackageSelection = ({
             </Box>
 
             {/* ── Campaign period pill tabs ── */}
-            <Box sx={{ display: "flex", backgroundColor: COLORS.grey[100], borderRadius: 4, p: 0.5, position: "relative" ,}}>
-              
-              <Box sx={{
-                position: "absolute", height: "calc(100% - 10px)", top: 4,
-                width: `${100 / filteredPlans.length}%`,
-                left: `${(filteredPlans.findIndex((p) => p._id === selectedGroup) || 0) * (100 / filteredPlans.length)}%`,
-                backgroundColor: COLORS.primary, borderRadius: 3,
-                transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)", zIndex: 0,  
-              }} />
-
-              {filteredPlans.map((plan) => {
-                const days = [...new Set(plan.packages?.map((p) => p.validityDays).filter(Boolean))][0];
-                const isSelected = selectedGroup === plan._id;
-                return (
-                  <Box key={plan._id} onClick={() => setSelectedGroup(plan._id)} sx={{
-                    flex: 1, textAlign: "center", py: 1.5, px: 1,
-                    borderRadius: 3, cursor: "pointer", position: "relative", zIndex: 1, transition: "all 0.2s ease",  
-
-                  }}>
-                    <Typography sx={{ fontSize: T.xl, fontWeight: 900, color: isSelected ? COLORS.white : COLORS.grey[600], transition: "color 0.2s ease" }}>
-                      {days}
-                    </Typography>
-                    <Typography sx={{ fontSize: T.xl, fontWeight: 700, color: isSelected ? "rgba(255,255,255,0.9)" : COLORS.grey[500], transition: "color 0.2s ease" }}>
-                      Days
-                    </Typography>
-                  </Box>  
-                );
-              })}
-            </Box>
+        <Box sx={{ 
+  display: "flex", 
+  gap: 1, // Add gap between boxes
+  borderRadius: 4, 
+  p: 0.5, 
+  position: "relative",
+}}>
+  {filteredPlans.map((plan) => {
+    const days = [...new Set(plan.packages?.map((p) => p.validityDays).filter(Boolean))][0];
+    const isSelected = selectedGroup === plan._id;
+    
+    return (
+      <Box 
+        key={plan._id} 
+        onClick={() => setSelectedGroup(plan._id)} 
+        sx={{
+          flex: 1,
+          textAlign: "center",
+          py: 1.5,
+          px: 1,
+          borderRadius: 3,
+          cursor: "pointer",
+          position: "relative",
+          zIndex: 1,
+          transition: "all 0.2s ease",
+          // Individual box styling
+          backgroundColor: isSelected ? COLORS.primary : COLORS.white,
+          border: `2px solid ${isSelected ? COLORS.primary : COLORS.primary}`,
+          boxShadow: isSelected 
+            ? `0 4px 12px ${COLORS.primary}40` // 40 is hex for 25% opacity
+            : "0 2px 4px rgba(0,0,0,0.05)",
+          transform: isSelected ? "scale(1.02)" : "scale(1)",
+          "&:hover": {
+            transform: "scale(1.02)",
+            boxShadow: `0 4px 12px ${isSelected ? COLORS.primary + '40' : 'rgba(0,0,0,0.1)'}`,
+          },
+        }}
+      >
+        <Typography sx={{ 
+          fontSize: T.xl, 
+          fontWeight: 900, 
+          color: isSelected ? COLORS.white : COLORS.grey[700],
+          transition: "color 0.2s ease",
+          lineHeight: 1.2,
+        }}>
+          {days}
+        </Typography>
+        <Typography sx={{ 
+          fontSize: T.md, // Slightly smaller for "Days" label
+          fontWeight: 600, 
+          color: isSelected ? "rgba(255,255,255,0.9)" : COLORS.grey[500],
+          transition: "color 0.2s ease",
+          textTransform: "uppercase",
+          letterSpacing: "0.5px",
+        }}>
+          Days
+        </Typography>
+      </Box>
+    );
+  })}
+</Box>
                <Typography sx={{ fontSize: T.xl, fontWeight: 700, color: COLORS.primary, mb: 1 ,mt:2}}>
                 SELECT INVESTMENT RANGES
               </Typography>
@@ -1039,58 +1169,55 @@ const MobilePackageSelection = ({
  
 
 
-         {/* Wrap the range-group list in a fixed-height scrollable box */}
-<Box
-  sx={{
-    maxHeight: "480px",          // adjust to taste
-    overflowY: "auto",
-    overflowX: "hidden",
-    pr: 0.5,
-    mb: 1,
-    "&::-webkit-scrollbar": { width: "5px" },
-    "&::-webkit-scrollbar-track": {
-      backgroundColor: COLORS.grey[200],
-      borderRadius: "4px",
-    },
-    "&::-webkit-scrollbar-thumb": {
-      backgroundColor: COLORS.primary,
-      borderRadius: "4px",
-    },
-  }}
->
-  {Object.keys(groupedPackages).map((label) => {
-    const { pkg, items } = groupedPackages[label];
-    const leadsKey = leadsKeyForGroup(label);
-    const { price, totalLeads, uniqueStatesCount } = getGroupTotals(label, items, pkg);
-
-    return (
-      <Box key={label} sx={{ mb: 2 }}>
-       <RangeGroupCard
-  label={label}
-  items={items}
-  expanded={expandedGroup === label}
-  onToggle={() => toggleGroup(label)}
-  checkedItems={checkedItems}
-  onCheck={handleCheck}
-  onEditStates={handleOpenStateModal}
-  planId={selectedPlan._id}
-  statesByInvestmentRange={statesByInvestmentRange}
-  getStateCountForRange={getStateCountForRange}
-  inPaymentSet={inPaymentSet}
-  availableLeads={availableLeads}
-  getGroupLeads={getGroupLeads}
-  handleLeadsChange={handleLeadsChange}
-  leadsKey={leadsKey}
-  pricePerState={Number(pkg?.amount || 0)}
-  leadsDropdownData={leadsDropdownData}
-  allStates={allStates}  
-/>
-      </Box>
-    );
-  })}
+{/* Single scrollbar using ScrollableCardList */}
+<Box sx={{ mx: -2, mb: 1 }}>
+  <ScrollableCardList maxHeight={480}>
+    <Box sx={{ px: 2 }}>
+      {Object.keys(groupedPackages).map((label) => {
+        const { pkg, items } = groupedPackages[label];
+        const leadsKey = leadsKeyForGroup(label);
+        const { price, totalLeads, uniqueStatesCount } = getGroupTotals(label, items, pkg);
+        return (
+          <Box key={label} sx={{ mb: 2 }}>
+            <RangeGroupCard
+              label={label}
+              items={items}
+              expanded={expandedGroup === label}
+              onToggle={() => toggleGroup(label)}
+              checkedItems={checkedItems}
+              onCheck={handleCheck}
+              onEditStates={handleOpenStateModal}
+              planId={selectedPlan._id}
+              statesByInvestmentRange={statesByInvestmentRange}
+              getStateCountForRange={getStateCountForRange}
+              inPaymentSet={inPaymentSet}
+              availableLeads={availableLeads}
+              getGroupLeads={getGroupLeads}
+              handleLeadsChange={handleLeadsChange}
+              leadsKey={leadsKey}
+              pricePerState={Number(pkg?.amount || 0)}
+              leadsDropdownData={leadsDropdownData}
+              allStates={allStates}
+            />
+          </Box>
+        );
+      })}
+    </Box>
+  </ScrollableCardList>
 </Box>
 
               <Box sx={{ display: "grid",  gap: 1.5, mb: 4 }}>
+                 <Button
+                  variant="outlined"
+                  onClick={handleAddToCart}
+                  sx={{
+                    height: 48, borderRadius: 3, textTransform: "none", fontWeight: 700,
+                    fontSize: T.xl, borderColor: COLORS.secondary, color: COLORS.black, borderWidth: 3,
+                    backgroundColor: COLORS.white, "&:hover": { backgroundColor: COLORS.grey[100] },
+                  }}
+                >
+                  Add to Plan
+                </Button>
                       {finalToken && (
   <Box>
     <Button
@@ -1116,17 +1243,7 @@ const MobilePackageSelection = ({
     </Button>
   </Box>
 )}
-                <Button
-                  variant="outlined"
-                  onClick={handleAddToCart}
-                  sx={{
-                    height: 48, borderRadius: 3, textTransform: "none", fontWeight: 700,
-                    fontSize: T.xl, borderColor: COLORS.secondary, color: COLORS.black, borderWidth: 3,
-                    backgroundColor: COLORS.white, "&:hover": { backgroundColor: COLORS.grey[100] },
-                  }}
-                >
-                  Add to Plan
-                </Button>
+               
                 {/* <Button
                   variant="contained"
                   onClick={scrollToPaymentSummary}
@@ -1169,17 +1286,25 @@ const MobilePackageSelection = ({
               pb: 1,
               // mb: 1,
               scrollbarWidth: "thin",
-              "&::-webkit-scrollbar": {
-                height: 4,
-              },
-              "&::-webkit-scrollbar-track": {
-                backgroundColor: COLORS.grey[200],
-                borderRadius: 4,
-              },
-              "&::-webkit-scrollbar-thumb": {
-                backgroundColor: COLORS.primary,
-                borderRadius: 4,
-              },
+             "&::-webkit-scrollbar": {
+  width: "6px",          // wider = more visible
+},
+"&::-webkit-scrollbar-track": {
+  backgroundColor: COLORS.grey[300],   // darker track
+  borderRadius: "6px",
+  margin: "2px 0",
+},
+"&::-webkit-scrollbar-thumb": {
+  backgroundColor: COLORS.primary,
+  borderRadius: "6px",
+  minHeight: "40px",     // prevents tiny thumb on long lists
+},
+"&::-webkit-scrollbar-thumb:hover": {
+  backgroundColor: COLORS.primaryDark,
+},
+// Firefox support
+scrollbarWidth: "thin",
+scrollbarColor: `${COLORS.primary} ${COLORS.grey[300]}`,
             }}>
               {listingPlans.map((plan) => {
                 const isActive = activeListingId === plan._id;

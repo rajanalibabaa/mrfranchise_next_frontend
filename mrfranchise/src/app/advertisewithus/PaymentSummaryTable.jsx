@@ -39,13 +39,13 @@ const pulseAnimation = keyframes`
 
 // ─── Mobile-only Section Accordion ───────────────────────────────────────────
 const SectionAccordion = ({ 
-  title, 
-    fontSize="1.3rem",
+   title, 
+  fontSize="1.3rem",
   children, 
-  defaultExpanded = false, 
-  COLORS,
-  expanded: controlledExpanded,       // ← new
-  onChange: controlledOnChange,       // ← new
+  defaultExpanded = false,
+  expanded: controlledExpanded,
+  onChange: controlledOnChange,
+  COLORS: colors,    
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -128,8 +128,8 @@ const PaymentSummaryTable = ({
   handleShowStates,
   setItemToRemove,
   setOpenRemoveConfirmDialog,
-  sectionExpanded,       
-  onSectionChange,  
+ sectionExpanded,  // ← Fix: use the same prop name
+  onSectionChange,
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -598,12 +598,12 @@ const PaymentSummaryTable = ({
             }}
           >
             {[
-              { label: "Selected Plan", align: "left" },
-              { label: "Investment Range Label", align: "center" },
-              { label: "Investment Range", align: "left" },
-              { label: "States", align: "center" },
-              { label: "Leads", align: "center" },
-              { label: "Subtotal (₹)", align: "right" },
+              { label: "Campaing Period", align: "center" },
+              { label: "Selected Investment Group", align: "center" },
+              { label: "Selected Investment Range", align: "center" },
+              { label: "Total States", align: "center" },
+              { label: "Total Leads", align: "center" },
+              { label: "Total (₹)", align: "center" },
               { label: "Actions", align: "center" },
             ].map(({ label, align }) => (
               <TableCell key={label} align={align} sx={headerCellSx}>
@@ -700,6 +700,7 @@ const PaymentSummaryTable = ({
                           backgroundColor: COLORS.lightOrange,
                           color: COLORS.black,
                           fontWeight: 600,
+                          alignItems:"center"
                         }}
                       />
                     </TableCell>
@@ -841,8 +842,13 @@ const PaymentSummaryTable = ({
           SUMMARY
         </Typography>
         {/* ── Wrap entire summary in mobile accordion ── */}
-        <SectionAccordion title="SELECTED PLAN SUMMARY" defaultExpanded COLORS={COLORS} expanded={sectionExpanded}
-  onChange={onSectionChange}>
+     <SectionAccordion 
+  title="SELECTED PLAN SUMMARY" 
+  defaultExpanded 
+  COLORS={COLORS} 
+  expanded={sectionExpanded}
+  onChange={onSectionChange}
+>
           {/* Header */}
           <Box sx={{ mb: 2, pt: { xs: 1, sm: 0 } }}>
             <Typography

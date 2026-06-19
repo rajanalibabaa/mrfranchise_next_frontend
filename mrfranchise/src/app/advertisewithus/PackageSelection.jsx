@@ -241,7 +241,7 @@ const upgradeSectionRef = useRef(null);
   const [isUpgradeMode, setIsUpgradeMode] = useState(false);
 const [upgradePlanId, setUpgradePlanId] = useState(null);
   const [showLogin, setShowLogin] = useState(false);
-  const [openSection, setOpenSection] = useState("investor");
+  const [openSection, setOpenSection] = useState("investor", "summary");
   const [snack, setSnack] = useState({
     open: false,
     message: "",
@@ -515,6 +515,8 @@ useEffect(() => {
   statesByInvestmentRangeRef.current = statesByInvestmentRange;
 }, [statesByInvestmentRange]);
 
+
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       console.log("💾 Saving payment summary to localStorage:", paymentSummary);
@@ -531,8 +533,19 @@ useEffect(() => {
   const openSnack = useCallback((message, severity = "info") => {
     setSnack({ open: true, message, severity });
   }, []);
-  const handleSectionChange = useCallback((sectionName) => (isOpen) => {
-  setOpenSection(isOpen ? sectionName : null);
+const handleSectionChange = useCallback((sectionName) => (isOpen) => {
+  setOpenSection(prev => {
+    if (isOpen) {
+      // Add section if not already present
+      if (!prev.includes(sectionName)) {
+        return [...prev, sectionName];
+      }
+      return prev;
+    } else {
+      // Remove section
+      return prev.filter(s => s !== sectionName);
+    }
+  });
 }, []);
 
   const closeSnack = useCallback(() => {
@@ -608,10 +621,14 @@ useEffect(() => {
 
 
 
-  const getStatesToDisplay = useCallback(() => {
-    // Only show states from API expansion locations, never fallback to all states
-    return allStates && allStates.length > 0 ? allStates : [];
-  }, [allStates]);
+const getStatesToDisplay = useCallback(() => {
+  if (finalToken) {
+    // Logged-in: ONLY show brand's expansion location states
+    return allStates.length > 0 ? allStates : [];
+  }
+  // Guest: show all India states (for IP detection fallback)
+  return ALL_INDIA_STATES;
+}, [allStates, finalToken]);
 
 useEffect(() => {
   if (Object.keys(leadsDropdownData).length === 0) return;
@@ -854,12 +871,18 @@ const savedStates = statesByInvestmentRange[key] || (() => {
 console.log("🔍 key:", key);
 console.log("🔍 savedStates found:", savedStates);
 
-let statesToPreselect =
-  committedStates ||
-  savedStates ||
-  (purchasedStatesForThisRange.length > 0 ? purchasedStatesForThisRange : null) ||
-  (!finalToken && detectedState ? [detectedState] : null) || // ← auto-select IP state for guests
-  [];
+let statesToPreselect;
+
+if (finalToken) {
+  // Logged-in: only show expansion location states, pre-select saved/committed ones
+  statesToPreselect = committedStates || savedStates || allStates;
+} else {
+  // Guest: fallback to detected state or nothing
+  statesToPreselect =
+    committedStates ||
+    savedStates ||
+    (detectedState ? [detectedState] : []);
+}
 
     if (!statesToPreselect || statesToPreselect.length === 0) {
       if (allStates.length > 0) {
@@ -995,27 +1018,29 @@ const handleSaveStates = useCallback(() => {
   // Only save if user has made changes
   // Check if selectedArray is different from API available states
   const allAvailableStates = allStates.length > 0 ? allStates : [];
-  const isAllStatesSelected = allAvailableStates.length > 0 && 
-    selectedArray.length === allAvailableStates.length &&
-    selectedArray.every(state => allAvailableStates.includes(state));
+ const isAllStatesSelected =
+  !!finalToken &&                              
+  allAvailableStates.length > 0 && 
+  selectedArray.length === allAvailableStates.length &&
+  selectedArray.every(state => allAvailableStates.includes(state));
 
-  if (isAllStatesSelected) {
-    // If user selected all states, we can remove from saved states (treat as default)
-    const updated = { ...statesByInvestmentRange };
-    delete updated[currentEditingRange];
-    setStatesByInvestmentRange(updated);
-    statesByInvestmentRangeRef.current = updated;
-    localStorage.setItem("investmentRangeStates", JSON.stringify(updated));
-  } else {
-    // Save only the user-selected states
-    const updated = {
-      ...statesByInvestmentRange,
-      [currentEditingRange]: selectedArray,
-    };
-    setStatesByInvestmentRange(updated);
-    localStorage.setItem("investmentRangeStates", JSON.stringify(updated));
-  }
-
+if (isAllStatesSelected) {
+  // Logged-in user selected all states → treat as default, no need to save override
+  const updated = { ...statesByInvestmentRange };
+  delete updated[currentEditingRange];
+  setStatesByInvestmentRange(updated);
+  statesByInvestmentRangeRef.current = updated;
+  localStorage.setItem("investmentRangeStates", JSON.stringify(updated));
+} else {
+  // Guests (and partial selections) always get an explicit saved override
+  const updated = {
+    ...statesByInvestmentRange,
+    [currentEditingRange]: selectedArray,
+  };
+  setStatesByInvestmentRange(updated);
+  statesByInvestmentRangeRef.current = updated;   // ✅ also missing here, add this
+  localStorage.setItem("investmentRangeStates", JSON.stringify(updated));
+}
   // Update paymentSummary if this range is already committed
   setPaymentSummary((prev) =>
     prev.map((group) => {
@@ -1352,11 +1377,12 @@ if (!states || states.length === 0) {
   }
 }
 
+// Replace the fallback block:
 if (!states || states.length === 0) {
   if (!finalToken && detectedState) {
     states = [detectedState];
   } else if (finalToken) {
-    states = allStates;
+    states = allStates;   // ← only expansion locations, not ALL_INDIA_STATES
   } else {
     states = [];
   }
@@ -1825,37 +1851,32 @@ if (!states || states.length === 0) {
     router,
     transformPaymentToAPIFormat,
   ]);
+  console.log("SAVE KEY:", currentEditingRange);
 const getStateCountForRange = useCallback(
   (investmentRangeLabel, range, planId = null) => {
     const key = getRangeKey(investmentRangeLabel, range, planId);
+console.log("READ KEY:", getRangeKey(investmentRangeLabel, range, planId));
 
-    // ✅ Check exact key first
     if (Object.prototype.hasOwnProperty.call(statesByInvestmentRange, key)) {
       return statesByInvestmentRange[key].length;
     }
 
- // ✅ Fallback: search by label+range in case planId differs
-const matchingKey = Object.keys(statesByInvestmentRange).find((k) => {
-  const parts = k.split("__");
-  return (
-    parts[parts.length - 1] === range &&
-    parts[parts.length - 2] === investmentRangeLabel
-  );
-});
-if (matchingKey) return statesByInvestmentRange[matchingKey].length;
+    const matchingKey = Object.keys(statesByInvestmentRange).find((k) => {
+      const parts = k.split("__");
+      return (
+        parts[parts.length - 1] === range &&
+        parts[parts.length - 2] === investmentRangeLabel
+      );
+    });
+    if (matchingKey) return statesByInvestmentRange[matchingKey].length;
 
-// ✅ Never fall back to ALL_INDIA_STATES
-if (!finalToken && detectedState) return 1;
-return allStates.length;
+    // Only fall back to 1 if there's truly no save yet AND no committed item
+    if (!finalToken && detectedState) return 1;
+    return allStates.length;
   },
-  [
-    getRangeKey,
-    statesByInvestmentRange,
-    finalToken,
-    detectedState,
-    allStates,
-  ],
+  [getRangeKey, statesByInvestmentRange, finalToken, detectedState, allStates],
 );
+
   const handleAddInvestmentRange = useCallback(
     (range, investmentRangeLabel) => {
       if (!finalToken) {
@@ -2345,8 +2366,8 @@ return allStates.length;
     justifyContent: { xs: "center", md: "flex-end" },
     alignItems: { xs: "center", md: "center" },
     gap: { xs: 1, md: 2 },
-    backgroundColor: {xs:COLORS.grey[100], md: COLORS.white},
- border: { xs: `2px solid ${COLORS.secondary}`, md: 'none' },
+    // backgroundColor: {xs:COLORS.grey[100], md: COLORS.white},
+ border: { xs: `4px solid ${COLORS.secondary}`, md: 'none' },
      borderRadius: 2,
     mb: 3,
     pb: 2,
@@ -4322,17 +4343,17 @@ background: "linear-gradient(135deg, #4cb04f 0%, #2e7d32 100%)",
               );
             })()}
 
-          <PaymentSummaryTable
-            paymentSummary={paymentSummary}
-            paymentSummaryRef={paymentSummaryRef}
-            COLORS={COLORS}
-            TEXT_SIZES={TEXT_SIZES}
-            handleShowStates={handleShowStates}
-            setItemToRemove={setItemToRemove}
-            setOpenRemoveConfirmDialog={setOpenRemoveConfirmDialog}
-              sectionExpanded={openSection === "summary"}
+        <PaymentSummaryTable
+  paymentSummary={paymentSummary}
+  paymentSummaryRef={paymentSummaryRef}
+  COLORS={COLORS}
+  TEXT_SIZES={TEXT_SIZES}
+  handleShowStates={handleShowStates}
+  setItemToRemove={setItemToRemove}
+  setOpenRemoveConfirmDialog={setOpenRemoveConfirmDialog}
+  sectionExpanded={openSection.includes("summary")}
   onSectionChange={handleSectionChange("summary")}
-          />
+/>
         </>
       )}
 
