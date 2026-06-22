@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, {
@@ -236,12 +237,12 @@ const upgradeSectionRef = useRef(null);
   const [allStates, setAllStates] = useState(ALL_INDIA_STATES);
   const [selectedStates, setSelectedStates] = useState(new Set());
   const [statesByInvestmentRange, setStatesByInvestmentRange] = useState({});
-  const statesByInvestmentRangeRef = useRef(statesByInvestmentRange); 
+  const statesByInvestmentRangeRef = useRef(statesByInvestmentRange);
   const [currentEditingRange, setCurrentEditingRange] = useState(null);
   const [isUpgradeMode, setIsUpgradeMode] = useState(false);
 const [upgradePlanId, setUpgradePlanId] = useState(null);
   const [showLogin, setShowLogin] = useState(false);
-  const [openSection, setOpenSection] = useState("investor");
+const [openSection, setOpenSection] = useState(["investor", "summary"]);
   const [snack, setSnack] = useState({
     open: false,
     message: "",
@@ -274,6 +275,7 @@ const [upgradePlanId, setUpgradePlanId] = useState(null);
   const [loadings, setLoadings] = useState(true);
   const [errors, setErrors] = useState("");
  
+
 const [brandOwnerId, setBrandOwnerId] = useState(null);
 
 useEffect(() => {
@@ -284,6 +286,7 @@ useEffect(() => {
     setBrandOwnerId(id);
   } else {
     console.warn("⚠️ No Brand Owner ID found in localStorage");
+    setLoadings(false); // <-- the one-line addition
   }
 }, []);
  
@@ -291,15 +294,15 @@ const fetchPackages = async () => {
   try {
     setLoadings(true);
     console.log("📡 Fetching packages for brandOwnerId:", brandOwnerId);
-    
+   
     const response = await axios.get(
       `https://mrfranchisebackend.mrfranchise.in/api/v1/brand-packages-plans/get/${brandOwnerId}`,
     );
-    
+   
     console.log("✅ API Response received");
     console.log("📦 Full response object:", response);
     console.log("📋 Response data:", response.data);
-    
+   
     const apiData = response.data.data || response.data;
     console.log("🎯 Extracted apiData:", apiData);
     console.log("📊 API Data structure:", {
@@ -308,41 +311,41 @@ const fetchPackages = async () => {
       brandOwnerId: apiData?.brandOwnerId,
       keys: Object.keys(apiData || {})
     });
-    
+   
     setData(apiData);
-    
+   
     // ===== EXTRACT STATES FROM API RESPONSE =====
     if (apiData && apiData.packages && Array.isArray(apiData.packages)) {
       const initialStatesByRange = {};
-      
+     
       console.log("🔍 Processing packages...");
-      
+     
       // Loop through each package
       apiData.packages.forEach((packageItem, pkgIndex) => {
         console.log(`\n📦 Package #${pkgIndex}:`, packageItem);
-        
+       
         // Check if investmetPackages exists
         if (packageItem.investmetPackages && Array.isArray(packageItem.investmetPackages)) {
           packageItem.investmetPackages.forEach((investPackage, invIndex) => {
             console.log(`  💰 Investment Package #${invIndex}:`, investPackage);
-            
+           
             // Get the planId
             const planId = apiData.brandOwnerId || "default";
             const investmentRangeLabel = "Investment Range";
-            
+           
             // Check if investmentranges exist
             if (investPackage.investmentranges && Array.isArray(investPackage.investmentranges)) {
               investPackage.investmentranges.forEach((range, rangeIndex) => {
                 console.log(`    💵 Range #${rangeIndex}:`, range);
-                
+               
                 const investmentRange = range.selectedPlanInvestmetrange;
-                
+               
                 // Extract states from selectedPlanStateAndDistrict
                 if (investPackage.selectedPlanStateAndDistrict && Array.isArray(investPackage.selectedPlanStateAndDistrict)) {
                   const states = investPackage.selectedPlanStateAndDistrict.map(item => item.state);
-                  
+                 
                   console.log(`      📍 States found for range "${investmentRange}":`, states);
-                  
+                 
                   if (states && states.length > 0) {
                     // Create the key matching your getRangeKey format
                     const key = `${planId}__${investmentRangeLabel}__${investmentRange}`;
@@ -359,9 +362,9 @@ const fetchPackages = async () => {
           console.warn(`⚠️ No investmetPackages found in package #${pkgIndex}`);
         }
       });
-      
+     
       console.log('✅ Final states to save:', initialStatesByRange);
-      
+     
       // Update statesByInvestmentRange
       if (Object.keys(initialStatesByRange).length > 0) {
         setStatesByInvestmentRange(initialStatesByRange);
@@ -378,7 +381,7 @@ const fetchPackages = async () => {
       });
     }
     // =============================================
-    
+   
   } catch (err) {
     console.error("❌ Error fetching packages:", err);
     console.error("   Response:", err?.response?.data);
@@ -415,13 +418,13 @@ useEffect(() => {
   useEffect(() => {
     if (typeof window !== "undefined") {
       console.log("📱 Component mounted: Loading from localStorage...");
-      
+     
       setLocalBrandUUID(localStorage.getItem("brandUUID"));
       setLocalAccessToken(localStorage.getItem("accessToken"));
-      
+     
       const savedStates = localStorage.getItem("investmentRangeStates");
       console.log("📍 Saved investment range states from localStorage:", savedStates);
-      
+     
       if (savedStates) {
         try {
           const parsedStates = JSON.parse(savedStates);
@@ -434,12 +437,12 @@ useEffect(() => {
 
       const savedSummary = localStorage.getItem("paymentSummaryDraft");
       console.log("💳 Saved payment summary from localStorage:", savedSummary);
-      
+     
       if (savedSummary) {
         try {
           const parsed = JSON.parse(savedSummary);
           console.log("✅ Successfully parsed saved payment summary:", parsed);
-          
+         
           if (Array.isArray(parsed) && parsed.length > 0) {
             setPaymentSummary(parsed);
 
@@ -513,6 +516,8 @@ useEffect(() => {
   statesByInvestmentRangeRef.current = statesByInvestmentRange;
 }, [statesByInvestmentRange]);
 
+
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       console.log("💾 Saving payment summary to localStorage:", paymentSummary);
@@ -529,8 +534,19 @@ useEffect(() => {
   const openSnack = useCallback((message, severity = "info") => {
     setSnack({ open: true, message, severity });
   }, []);
-  const handleSectionChange = useCallback((sectionName) => (isOpen) => {
-  setOpenSection(isOpen ? sectionName : null);
+const handleSectionChange = useCallback((sectionName) => (isOpen) => {
+  setOpenSection(prev => {
+    if (isOpen) {
+      // Add section if not already present
+      if (!prev.includes(sectionName)) {
+        return [...prev, sectionName];
+      }
+      return prev;
+    } else {
+      // Remove section
+      return prev.filter(s => s !== sectionName);
+    }
+  });
 }, []);
 
   const closeSnack = useCallback(() => {
@@ -606,14 +622,18 @@ useEffect(() => {
 
 
 
-  const getStatesToDisplay = useCallback(() => {
-    // Only show states from API expansion locations, never fallback to all states
-    return allStates && allStates.length > 0 ? allStates : [];
-  }, [allStates]);
+const getStatesToDisplay = useCallback(() => {
+  if (finalToken) {
+    // Logged-in: ONLY show brand's expansion location states
+    return allStates.length > 0 ? allStates : [];
+  }
+  // Guest: show all India states (for IP detection fallback)
+  return ALL_INDIA_STATES;
+}, [allStates, finalToken]);
 
 useEffect(() => {
   if (Object.keys(leadsDropdownData).length === 0) return;
-  
+ 
   if (paymentSummary.length > 0) {
     setPaymentSummary((prev) => {
       return prev.map((group) => {
@@ -638,7 +658,7 @@ useEffect(() => {
           const availableLeads = leadsDropdownData[leadsDataKey] || [];
           const minLeads = availableLeads.length > 0 ? Math.min(...availableLeads) : 1;
           const divisor = minLeads > 0 ? minLeads : 1;
-            
+           
           const itemAmount = (group.pricePerState / divisor) * (states || []).length * (item.selectedLeads || 0);
 
           return {
@@ -690,17 +710,17 @@ useEffect(() => {
 useEffect(() => {
   console.log('=== Loading states from API ===');
   console.log('Data from API:', data);
-  
+ 
   if (data && data.InvestmetPackages && Array.isArray(data.InvestmetPackages)) {
     const initialStatesByRange = {};
-    
+   
     // Loop through each plan in the InvestmetPackages array
     data.InvestmetPackages.forEach((planPackage) => {
       console.log('Processing plan package:', planPackage);
-      
+     
       // Get the plan ID
       const planId = planPackage.planUniqueId || planPackage.planId;
-      
+     
       // Check if this plan has InvestmetPackages array
       if (planPackage.InvestmetPackages && Array.isArray(planPackage.InvestmetPackages)) {
         planPackage.InvestmetPackages.forEach((pkg) => {
@@ -708,17 +728,17 @@ useEffect(() => {
           const investmentRangeLabel = pkg.InvestmentRangeLabel || pkg.PackageName;
           const investmentRange = pkg.InvestmentRange;
           const states = pkg.States || [];
-          
+         
           console.log('Package details:', {
             planId,
             investmentRangeLabel,
             investmentRange,
             states
           });
-          
+         
           // Create the key (same format as getRangeKey)
           const key = `${planId}__${investmentRangeLabel}__${investmentRange}`;
-          
+         
           // Only add if states exist and are not "ALL STATES"
           if (states && states.length > 0 && states[0] !== "ALL STATES") {
             initialStatesByRange[key] = states;
@@ -727,9 +747,9 @@ useEffect(() => {
         });
       }
     });
-    
+   
     console.log('Final initialStatesByRange:', initialStatesByRange);
-    
+   
     // Update statesByInvestmentRange
     if (Object.keys(initialStatesByRange).length > 0) {
       setStatesByInvestmentRange(prev => {
@@ -741,7 +761,7 @@ useEffect(() => {
     }
   } else {
     console.log('No InvestmetPackages found in data. Data structure:', data);
-    
+   
     // Try alternative data structures
     if (data && data.packages) {
       console.log('Trying alternative: data.packages');
@@ -852,12 +872,18 @@ const savedStates = statesByInvestmentRange[key] || (() => {
 console.log("🔍 key:", key);
 console.log("🔍 savedStates found:", savedStates);
 
-let statesToPreselect =
-  committedStates ||
-  savedStates ||
-  (purchasedStatesForThisRange.length > 0 ? purchasedStatesForThisRange : null) ||
-  (!finalToken && detectedState ? [detectedState] : null) || // ← auto-select IP state for guests
-  [];
+let statesToPreselect;
+
+if (finalToken) {
+  // Logged-in: only show expansion location states, pre-select saved/committed ones
+  statesToPreselect = committedStates || savedStates || allStates;
+} else {
+  // Guest: fallback to detected state or nothing
+  statesToPreselect =
+    committedStates ||
+    savedStates ||
+    (detectedState ? [detectedState] : []);
+}
 
     if (!statesToPreselect || statesToPreselect.length === 0) {
       if (allStates.length > 0) {
@@ -993,27 +1019,29 @@ const handleSaveStates = useCallback(() => {
   // Only save if user has made changes
   // Check if selectedArray is different from API available states
   const allAvailableStates = allStates.length > 0 ? allStates : [];
-  const isAllStatesSelected = allAvailableStates.length > 0 && 
-    selectedArray.length === allAvailableStates.length &&
-    selectedArray.every(state => allAvailableStates.includes(state));
+ const isAllStatesSelected =
+  !!finalToken &&                              
+  allAvailableStates.length > 0 &&
+  selectedArray.length === allAvailableStates.length &&
+  selectedArray.every(state => allAvailableStates.includes(state));
 
-  if (isAllStatesSelected) {
-    // If user selected all states, we can remove from saved states (treat as default)
-    const updated = { ...statesByInvestmentRange };
-    delete updated[currentEditingRange];
-    setStatesByInvestmentRange(updated);
-    statesByInvestmentRangeRef.current = updated;
-    localStorage.setItem("investmentRangeStates", JSON.stringify(updated));
-  } else {
-    // Save only the user-selected states
-    const updated = {
-      ...statesByInvestmentRange,
-      [currentEditingRange]: selectedArray,
-    };
-    setStatesByInvestmentRange(updated);
-    localStorage.setItem("investmentRangeStates", JSON.stringify(updated));
-  }
-
+if (isAllStatesSelected) {
+  // Logged-in user selected all states → treat as default, no need to save override
+  const updated = { ...statesByInvestmentRange };
+  delete updated[currentEditingRange];
+  setStatesByInvestmentRange(updated);
+  statesByInvestmentRangeRef.current = updated;
+  localStorage.setItem("investmentRangeStates", JSON.stringify(updated));
+} else {
+  // Guests (and partial selections) always get an explicit saved override
+  const updated = {
+    ...statesByInvestmentRange,
+    [currentEditingRange]: selectedArray,
+  };
+  setStatesByInvestmentRange(updated);
+  statesByInvestmentRangeRef.current = updated;   // ✅ also missing here, add this
+  localStorage.setItem("investmentRangeStates", JSON.stringify(updated));
+}
   // Update paymentSummary if this range is already committed
   setPaymentSummary((prev) =>
     prev.map((group) => {
@@ -1027,15 +1055,15 @@ const handleSaveStates = useCallback(() => {
         if (itemKey !== currentEditingRange) return item;
 
         groupHasRange = true;
-        
+       
         const statesToUse = isAllStatesSelected ? allAvailableStates : selectedArray;
-        
+       
         // Get leads data for calculation
         const leadsDataKey = `${group.planId}_${group.investmentRangeLabel}`;
         const availableLeads = leadsDropdownData[leadsDataKey] || [];
         const minLeads = availableLeads.length > 0 ? Math.min(...availableLeads) : 1;
         const divisor = minLeads > 0 ? minLeads : 1;
-        
+       
         // Calculate amount with divisor
         const itemAmount = (group.pricePerState / divisor) * statesToUse.length * (item.selectedLeads || 0);
 
@@ -1122,7 +1150,7 @@ return {
          setBrandOwnerId(brandData.brandOwnerId);
       } else if (brandData._id) {
         localStorage.setItem("brandOwnerId", brandData._id);
-         setBrandOwnerId(brandData._id); 
+         setBrandOwnerId(brandData._id);
       }
       const ficoData = Array.isArray(brandData?.franchiseDetails?.fico)
         ? brandData.franchiseDetails.fico
@@ -1192,7 +1220,7 @@ return {
   const fetchData = async () => {
     try {
       setLoading(true);
-      
+     
       const response = await fetch(`${API_URL}/api/v1/admin/plans/getAllPlans`);
       const json = await response.json();
       console.log("Full API Data:", json.data);
@@ -1350,11 +1378,12 @@ if (!states || states.length === 0) {
   }
 }
 
+// Replace the fallback block:
 if (!states || states.length === 0) {
   if (!finalToken && detectedState) {
     states = [detectedState];
   } else if (finalToken) {
-    states = allStates;
+    states = allStates;   // ← only expansion locations, not ALL_INDIA_STATES
   } else {
     states = [];
   }
@@ -1742,7 +1771,7 @@ if (!states || states.length === 0) {
           packagesName: group.planName,
           planUniqueId: group.planId,
           planPackageId: group.planPackageId,
-          
+         
           InvestmetPackages: [],
         });
       }
@@ -1823,37 +1852,32 @@ if (!states || states.length === 0) {
     router,
     transformPaymentToAPIFormat,
   ]);
+  console.log("SAVE KEY:", currentEditingRange);
 const getStateCountForRange = useCallback(
   (investmentRangeLabel, range, planId = null) => {
     const key = getRangeKey(investmentRangeLabel, range, planId);
+console.log("READ KEY:", getRangeKey(investmentRangeLabel, range, planId));
 
-    // ✅ Check exact key first
     if (Object.prototype.hasOwnProperty.call(statesByInvestmentRange, key)) {
       return statesByInvestmentRange[key].length;
     }
 
- // ✅ Fallback: search by label+range in case planId differs
-const matchingKey = Object.keys(statesByInvestmentRange).find((k) => {
-  const parts = k.split("__");
-  return (
-    parts[parts.length - 1] === range &&
-    parts[parts.length - 2] === investmentRangeLabel
-  );
-});
-if (matchingKey) return statesByInvestmentRange[matchingKey].length;
+    const matchingKey = Object.keys(statesByInvestmentRange).find((k) => {
+      const parts = k.split("__");
+      return (
+        parts[parts.length - 1] === range &&
+        parts[parts.length - 2] === investmentRangeLabel
+      );
+    });
+    if (matchingKey) return statesByInvestmentRange[matchingKey].length;
 
-// ✅ Never fall back to ALL_INDIA_STATES
-if (!finalToken && detectedState) return 1;
-return allStates.length;
+    // Only fall back to 1 if there's truly no save yet AND no committed item
+    if (!finalToken && detectedState) return 1;
+    return allStates.length;
   },
-  [
-    getRangeKey,
-    statesByInvestmentRange,
-    finalToken,
-    detectedState,
-    allStates,
-  ],
+  [getRangeKey, statesByInvestmentRange, finalToken, detectedState, allStates],
 );
+
   const handleAddInvestmentRange = useCallback(
     (range, investmentRangeLabel) => {
       if (!finalToken) {
@@ -2331,7 +2355,7 @@ return allStates.length;
         minHeight: "100vh",
       }}
     >
-      
+     
 {/* Top Header Bar with Brand Name, Category & Industry - All on Right Side */}
 {(data?.brandDetails?.brandName || data?.brandName || getBrandName() ||
   data?.brandDetails?.category || data?.category ||
@@ -2343,8 +2367,8 @@ return allStates.length;
     justifyContent: { xs: "center", md: "flex-end" },
     alignItems: { xs: "center", md: "center" },
     gap: { xs: 1, md: 2 },
-    backgroundColor: {xs:COLORS.grey[100], md: COLORS.white},
- border: { xs: `2px solid ${COLORS.secondary}`, md: 'none' },
+    // backgroundColor: {xs:COLORS.grey[100], md: COLORS.white},
+ border: { xs: `4px solid ${COLORS.secondary}`, md: 'none' },
      borderRadius: 2,
     mb: 3,
     pb: 2,
@@ -2580,7 +2604,7 @@ return allStates.length;
       openSnack("You already have this plan. Please upgrade to a different plan.", "warning");
       return;
     }
-    
+   
     const groupKey = `listing-${plan._id}`;
 
     // Check if any listing plan already exists in paymentSummary
@@ -2934,7 +2958,7 @@ sx={{
       </Typography>
     </Box>
   )}
-  
+ 
   {isMobile ? (
     <MobilePackageSelection
       filteredPlans={filteredPlans}
@@ -3105,44 +3129,44 @@ if (!states || states.length === 0) {
                 return (
                   <>
 
-                  
-                    <Box
-                      sx={{
-                        display: "flex",
-                        justifyContent: "flex-end",
-                        px: 2,
-                        py: 1.5,
-                        borderBottom: `1px solid ${COLORS.border}`,
-                      }}
-                    >
-                      <Button
-                        variant="outlined"
-                        size="small"
-                        startIcon={<AddIcon />}
-                        onClick={() => {
-                          setPendingSelection(null); // clear any previous selection
-                          setOpenConfirmDialog(true);
-                        }}
-                        sx={{
-                          // borderColor: COLORS.primary,
-                          color: COLORS.white,
-                          fontWeight: 700,
-                          fontSize: TEXT_SIZES.small,
-                          // borderWidth: 2,
-                          borderRadius: 2,
-                          textTransform: "none",
-                          px: 2,
-                          backgroundColor:"#4cb04f",
-                          "&:hover": {
-                            backgroundColor: "#517b52",
-                            borderColor: "none",
-                           
-                          },
-                        }}
-                      > 
-                        Add New Investment Range
-                      </Button>
-                    </Box>
+                 
+
+{/* Add this conditional rendering */}
+{finalToken && (
+  <Box
+    sx={{
+      display: "flex",
+      justifyContent: "flex-end",
+      px: 2,
+      py: 1.5,
+      borderBottom: `1px solid ${COLORS.border}`,
+    }}
+  >
+    <Button
+      variant="outlined"
+      size="small"
+      startIcon={<AddIcon />}
+      onClick={() => {
+        setPendingSelection(null); // clear any previous selection
+        setOpenConfirmDialog(true);
+      }}
+      sx={{
+        color: COLORS.white,
+        fontWeight: 700,
+        fontSize: TEXT_SIZES.small,
+        borderRadius: 2,
+        textTransform: "none",
+        px: 2,
+        backgroundColor: "#4cb04f",
+        "&:hover": {
+          backgroundColor: "#517b52",
+        },
+      }}
+    >
+      Add New Investment Range
+    </Button>
+  </Box>
+)}
                     {/* Unified Table */}
                     <TableContainer
                       component={Paper}
@@ -3752,7 +3776,7 @@ background: "linear-gradient(135deg, #4cb04f 0%, #2e7d32 100%)",
                                     </Tooltip>
                                   </TableCell> */}
 
-                                
+                               
                                 {/* Investment Range - now includes checkbox */}
 <TableCell
   sx={{
@@ -3910,8 +3934,8 @@ background: "linear-gradient(135deg, #4cb04f 0%, #2e7d32 100%)",
   >
     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
   <Typography sx={{ fontSize: TEXT_SIZES.xl, fontWeight: 700, color: COLORS.black }}>
-  ₹{uniqueGroupStatesCount > 0 
-      ? (groupTotalAmount / uniqueGroupStatesCount).toLocaleString("en-IN") 
+  ₹{uniqueGroupStatesCount > 0
+      ? (groupTotalAmount / uniqueGroupStatesCount).toLocaleString("en-IN")
       : (0).toLocaleString("en-IN")}
 </Typography>
       <Typography
@@ -3991,7 +4015,7 @@ background: "linear-gradient(135deg, #4cb04f 0%, #2e7d32 100%)",
                                           fontWeight: 700,
                                         }}
                                       >
-                                        
+                                       
                                        ₹ {groupTotalAmount.toLocaleString(
                                           "en-IN",
                                         )}
@@ -4023,10 +4047,10 @@ background: "linear-gradient(135deg, #4cb04f 0%, #2e7d32 100%)",
     }}
     align="center"  // ← Keep this for horizontal centering
   >
-    <Box 
-      sx={{ 
-        display: 'flex', 
-        flexDirection: 'column', 
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
         gap: 3,
         alignItems: 'center',  // ← ADD THIS: centers buttons horizontally
         justifyContent: 'center',  // ← ADD THIS: centers buttons vertically
@@ -4217,8 +4241,8 @@ background: "linear-gradient(135deg, #4cb04f 0%, #2e7d32 100%)",
           )}
       </Box>
 
-      
-  
+     
+ 
 
       {/* REACTIVE CHECKOUT & REDESIGNED TABLE PAYMENT SUMMARY SECTION */}
       {(paymentSummary.filter((g) => movedGroupKeys.includes(g.groupKey))
@@ -4320,17 +4344,17 @@ background: "linear-gradient(135deg, #4cb04f 0%, #2e7d32 100%)",
               );
             })()}
 
-          <PaymentSummaryTable
-            paymentSummary={paymentSummary}
-            paymentSummaryRef={paymentSummaryRef}
-            COLORS={COLORS}
-            TEXT_SIZES={TEXT_SIZES}
-            handleShowStates={handleShowStates}
-            setItemToRemove={setItemToRemove}
-            setOpenRemoveConfirmDialog={setOpenRemoveConfirmDialog}
-              sectionExpanded={openSection === "summary"}
+        <PaymentSummaryTable
+  paymentSummary={paymentSummary}
+  paymentSummaryRef={paymentSummaryRef}
+  COLORS={COLORS}
+  TEXT_SIZES={TEXT_SIZES}
+  handleShowStates={handleShowStates}
+  setItemToRemove={setItemToRemove}
+  setOpenRemoveConfirmDialog={setOpenRemoveConfirmDialog}
+  sectionExpanded={openSection.includes("summary")}
   onSectionChange={handleSectionChange("summary")}
-          />
+/>
         </>
       )}
 

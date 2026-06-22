@@ -27,6 +27,7 @@ const InvestorDashboard = () => {
   sx={{
     minHeight: "calc(100vh - 64px)",
     backgroundColor: COLORS.creamWhite
+    
   }}
 >
   <InvestorDashboardLayout>

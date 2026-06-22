@@ -556,6 +556,7 @@ https://mrfranchise.in`
           mx: "auto",
           my: isMobile ? 2 : 4,
           px: isMobile ? 1 : isTablet ? 3 : 4,
+          mt:16.7
         }}
       >
  

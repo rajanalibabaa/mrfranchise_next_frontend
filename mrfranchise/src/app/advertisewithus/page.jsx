@@ -32,10 +32,10 @@ const AdvertisingPage = () => {
   };
 
   return (
-    <Box>
+    <Box mt={13}>
       <Navbar />
 
-      <Box sx={{ p: { xs: 1, sm: 3, md: 4 }, pt: { xs: 3, sm: 4, md: 5 } }}>
+      <Box sx={{ p: { xs: 0, sm: 3, md: 4 }, pt: { xs: -3, sm: 4, md: 5 } }}>
 
         {/* Single PackageSelection — sections become accordions on mobile inside */}
         <PackageSelection
@@ -46,7 +46,7 @@ const AdvertisingPage = () => {
           }}
         />
 
-        <Box ref={sentinelRef} sx={{ mt: 2 }} />
+        <Box ref={sentinelRef} sx={{ mt: 1 }} />
 
         <PaymentBottomBar
           sentinelRef={sentinelRef}

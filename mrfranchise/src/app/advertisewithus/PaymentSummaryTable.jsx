@@ -37,15 +37,14 @@ const pulseAnimation = keyframes`
   100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 153, 0, 0); }
 `;
 
-// ─── Mobile-only Section Accordion ───────────────────────────────────────────
 const SectionAccordion = ({ 
   title, 
-    fontSize="1.3rem",
+  fontSize = "1.3rem",
   children, 
-  defaultExpanded = false, 
+  defaultExpanded = false,
+  expanded: controlledExpanded,
+  onChange: controlledOnChange,
   COLORS,
-  expanded: controlledExpanded,       // ← new
-  onChange: controlledOnChange,       // ← new
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -69,47 +68,46 @@ const SectionAccordion = ({
       elevation={0}
       sx={{
         mb: 0,
-               border: `3px solid ${COLORS.primary}`,
         borderRadius: "12px !important",
         overflow: "hidden",
         "&:before": { display: "none" },
       }}
     >
-   <AccordionSummary
-  expandIcon={
-    <Box
-      className="expand-icon-btn"
-      sx={{
-        width: 36,
-        height: 36,
-        borderRadius: "50%",
-        backgroundColor: COLORS.primary,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        transition: "all 0.25s ease",
-      }}
-    >
-      <ExpandMoreIcon sx={{ color: COLORS.white, fontSize: "1.5rem" }} />
-    </Box>
-  }
-  sx={{
-    backgroundColor: "#fff8ee",
-    minHeight: 52,
-    px: 2,
-    transition: "background-color 0.25s ease",
-    "& .MuiAccordionSummary-content": { my: 0 },
-    "&:hover": {
-      backgroundColor: "#ffe5b0",
-      "& .expand-icon-btn": {
-        animation: `${pulseAnimation} 0.8s ease infinite`,
-        backgroundColor: COLORS.secondary,
-        transform: "scale(1.15)",
-      },
-    },
-  }}
->
-        <Typography sx={{ fontWeight: 700,textAlign:"center", fontSize: fontSize, color: COLORS.black }}>
+      <AccordionSummary
+        expandIcon={
+          <Box
+            className="expand-icon-btn"
+            sx={{
+              width: 36,
+              height: 36,
+              borderRadius: "50%",
+              backgroundColor:COLORS.primary,  // ← use colors instead of COLORS
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              transition: "all 0.25s ease",
+            }}
+          >
+            <ExpandMoreIcon sx={{ color: COLORS.white, fontSize: "1.5rem" }} />  {/* ← use colors */}
+          </Box>
+        }
+        sx={{
+          backgroundColor: "#fff8ee",
+          minHeight: 52,
+          px: 2,
+          transition: "background-color 0.25s ease",
+          "& .MuiAccordionSummary-content": { my: 0 },
+          "&:hover": {
+            backgroundColor: "#ffe5b0",
+            "& .expand-icon-btn": {
+              animation: `${pulseAnimation} 0.8s ease infinite`,
+              backgroundColor:COLORS.secondary ,  // ← use colors
+              transform: "scale(1.15)",
+            },
+          },
+        }}
+      >
+        <Typography sx={{ fontWeight: 700, textAlign: "center", fontSize: fontSize, color:  COLORS.black}}>  {/* ← use colors */}
           {title}
         </Typography>
       </AccordionSummary>
@@ -128,72 +126,59 @@ const PaymentSummaryTable = ({
   handleShowStates,
   setItemToRemove,
   setOpenRemoveConfirmDialog,
-  sectionExpanded,       
-  onSectionChange,  
+ sectionExpanded,  // ← Fix: use the same prop name
+  onSectionChange,
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [expandedPlan, setExpandedPlan] = useState(null);
 
-  // ─── GROUP BY PLAN (unchanged logic) ────────────────────────────────
-  const groupedByPlan = {};
 
-  paymentSummary.forEach((group) => {
-    if (!group.items || group.items.length === 0) return;
+const groupedByPlan = {};
 
-    if (!groupedByPlan[group.planId]) {
-      groupedByPlan[group.planId] = {
-        planName: group.planName,
-        validityDays: group.validityDays,
-        items: [],
-        totalPlanAmount: 0,
-        totalPlanLeads: 0,
-        totalPlanStates: 0,
-      };
-    }
+paymentSummary.forEach((group) => {
+  if (!group.items || group.items.length === 0) return;
 
-    group.items.forEach((item) => {
-      groupedByPlan[group.planId].items.push({
-        ...item,
-        pricePerState: group.pricePerState,
-        validityDays: group.validityDays,
-      });
+  if (!groupedByPlan[group.planId]) {
+    groupedByPlan[group.planId] = {
+      planName: group.planName,
+      validityDays: group.validityDays,
+      items: [],
+      totalPlanAmount: 0,
+      totalPlanLeads: 0,
+      totalPlanStates: 0,
+    };
+  }
+
+  // ✅ Accumulate the correct group amount (not recalculated)
+  groupedByPlan[group.planId].totalPlanAmount += group.amount; // ← use group.amount
+
+  group.items.forEach((item) => {
+    groupedByPlan[group.planId].items.push({
+      ...item,
+      pricePerState: group.pricePerState,
+      groupAmount: group.amount,      // ← store group's total amount
+      validityDays: group.validityDays,
     });
-
-    const byRange = {};
-    groupedByPlan[group.planId].items.forEach((item) => {
-      if (!byRange[item.range]) {
-        byRange[item.range] = {
-          selectedLeads: item.selectedLeads || 0,
-          states: new Set(),
-          pricePerState: item.pricePerState,
-        };
-      }
-      (item.states || []).forEach((s) => byRange[item.range].states.add(s));
-    });
-
-    const globalUniqueStates = new Set();
-    Object.values(byRange).forEach(({ states }) => {
-      states.forEach((s) => globalUniqueStates.add(s));
-    });
-    const uniqueStateCount = globalUniqueStates.size;
-
-    const lastRange = Object.values(byRange)[Object.values(byRange).length - 1];
-    const lastSelectedLeads = lastRange ? lastRange.selectedLeads : 0;
-
-    const totalLeads = lastSelectedLeads * uniqueStateCount;
-    const totalAmount =
-      Object.values(byRange).reduce(
-        (sum, { pricePerState }) => sum + pricePerState,
-        0
-      ) * uniqueStateCount;
-
-    groupedByPlan[group.planId].totalPlanLeads = totalLeads;
-    groupedByPlan[group.planId].totalPlanAmount = totalAmount;
-    groupedByPlan[group.planId].totalPlanStates = uniqueStateCount;
-    groupedByPlan[group.planId].lastSelectedLeads = lastSelectedLeads;
-    groupedByPlan[group.planId].byRange = byRange;
   });
+});
+
+Object.entries(groupedByPlan).forEach(([planId, planData]) => {
+  const globalUniqueStates = new Set();
+  let lastSelectedLeads = 0;
+
+  planData.items.forEach((item) => {
+    (item.states || []).forEach((s) => globalUniqueStates.add(s));
+    lastSelectedLeads = item.selectedLeads || 0;
+  });
+
+  const uniqueStateCount = globalUniqueStates.size;
+
+  planData.totalPlanLeads = lastSelectedLeads * uniqueStateCount;
+  planData.totalPlanStates = uniqueStateCount;
+  planData.lastSelectedLeads = lastSelectedLeads;
+  // totalPlanAmount already set correctly in the forEach above via group.amount
+});
 
   const headerCellSx = {
     fontWeight: 700,
@@ -213,63 +198,57 @@ const PaymentSummaryTable = ({
   };
 
   // ─── BUILD SORTED RANGES (shared between mobile & desktop) ───────────
-  const buildSortedRanges = (planId, planData) => {
-    const groupedByRange = planData.items.reduce((acc, item) => {
-      const rangeKey = `${planId}_${item.investmentRangeLabel}_${item.range}`;
-      if (!acc[rangeKey]) {
-        acc[rangeKey] = {
-          range: item.range,
-          investmentRangeLabel: item.investmentRangeLabel,
-          planId,
-          items: [],
-          totalStates: 0,
-          totalLeads: 0,
-          totalAmount: 0,
-          selectedLeads: item.selectedLeads,
-          pricePerState: item.pricePerState,
-          validityDays: item.validityDays,
-        };
-      }
-      acc[rangeKey].items.push(item);
-      const uniqueStatesForRange = new Set();
-      acc[rangeKey].items.forEach((i) => {
-        (i.states || []).forEach((s) => uniqueStatesForRange.add(s));
-      });
-      const uniqueRangeStatesCount = uniqueStatesForRange.size;
-      acc[rangeKey].totalStates = uniqueRangeStatesCount;
-      acc[rangeKey].totalLeads = (item.selectedLeads || 0) * uniqueRangeStatesCount;
-      acc[rangeKey].totalAmount = (item.pricePerState || 0) * uniqueRangeStatesCount;
-      return acc;
-    }, {});
-
-    const labelGroupMap = {};
-    Object.values(groupedByRange).forEach((rg) => {
-      const lbl = rg.investmentRangeLabel || "—";
-      if (!labelGroupMap[lbl]) labelGroupMap[lbl] = [];
-      labelGroupMap[lbl].push(rg);
+ const buildSortedRanges = (planId, planData) => {
+  const groupedByRange = planData.items.reduce((acc, item) => {
+    const rangeKey = `${planId}_${item.investmentRangeLabel}_${item.range}`;
+    if (!acc[rangeKey]) {
+      acc[rangeKey] = {
+        range: item.range,
+        investmentRangeLabel: item.investmentRangeLabel,
+        planId,
+        items: [],
+        totalStates: 0,
+        totalLeads: 0,
+        totalAmount: 0,
+        selectedLeads: item.selectedLeads,
+        pricePerState: item.pricePerState,
+        validityDays: item.validityDays,
+      };
+    }
+    acc[rangeKey].items.push(item);
+    
+    // Calculate unique states for this range
+    const uniqueStatesForRange = new Set();
+    acc[rangeKey].items.forEach((i) => {
+      (i.states || []).forEach((s) => uniqueStatesForRange.add(s));
     });
+    const uniqueRangeStatesCount = uniqueStatesForRange.size;
+    
+    // ✅ Use the range's selectedLeads (not each item's)
+    acc[rangeKey].totalStates = uniqueRangeStatesCount;
+    acc[rangeKey].totalLeads = (acc[rangeKey].selectedLeads || 0) * uniqueRangeStatesCount;
+    acc[rangeKey].totalAmount = (acc[rangeKey].pricePerState || 0) * uniqueRangeStatesCount;
+    
+    return acc;
+  }, {});
 
-    const sortedRanges = Object.values(labelGroupMap).flat();
+  const labelGroupMap = {};
+  Object.values(groupedByRange).forEach((rg) => {
+    const lbl = rg.investmentRangeLabel || "—";
+    if (!labelGroupMap[lbl]) labelGroupMap[lbl] = [];
+    labelGroupMap[lbl].push(rg);
+  });
 
-    const labelSubtotalMap = {};
-    Object.entries(labelGroupMap).forEach(([lbl, ranges]) => {
-      const countedStates = new Set();
-      let labelTotal = 0;
-      ranges.forEach((rg) => {
-        const rangeUniqueStates = new Set();
-        rg.items.forEach((item) => {
-          (item.states || []).forEach((s) => {
-            if (!countedStates.has(s)) rangeUniqueStates.add(s);
-          });
-        });
-        rangeUniqueStates.forEach((s) => countedStates.add(s));
-        labelTotal += (rg.pricePerState || 0) * rangeUniqueStates.size;
-      });
-      labelSubtotalMap[lbl] = labelTotal;
-    });
+  const sortedRanges = Object.values(labelGroupMap).flat();
 
-    return { sortedRanges, labelSubtotalMap, labelGroupMap };
-  };
+const labelSubtotalMap = {};
+Object.entries(labelGroupMap).forEach(([lbl, ranges]) => {
+  // ✅ Use pre-calculated groupAmount instead of recalculating
+  labelSubtotalMap[lbl] = ranges[0]?.items[0]?.groupAmount || 0;
+});
+
+  return { sortedRanges, labelSubtotalMap, labelGroupMap };
+};
 
   const togglePlan = (planId) => {
     setExpandedPlan(expandedPlan === planId ? null : planId);
@@ -598,12 +577,12 @@ const PaymentSummaryTable = ({
             }}
           >
             {[
-              { label: "Selected Plan", align: "left" },
-              { label: "Investment Range Label", align: "center" },
-              { label: "Investment Range", align: "left" },
-              { label: "States", align: "center" },
-              { label: "Leads", align: "center" },
-              { label: "Subtotal (₹)", align: "right" },
+              { label: "Campaing Period", align: "center" },
+              { label: "Selected Investment Group", align: "center" },
+              { label: "Selected Investment Range", align: "center" },
+              { label: "Total States", align: "center" },
+              { label: "Total Leads", align: "center" },
+              { label: "Total (₹)", align: "center" },
               { label: "Actions", align: "center" },
             ].map(({ label, align }) => (
               <TableCell key={label} align={align} sx={headerCellSx}>
@@ -651,14 +630,15 @@ const PaymentSummaryTable = ({
                       >
                         <Box>
                           <Typography sx={{
-                            fontSize: "0.75rem",
+                            fontSize: "1.4rem",
                             fontWeight: 600,
-                            color: COLORS.black,
-                            backgroundColor: COLORS.lightOrange,
+                            color: COLORS.primary,
+                            // backgroundColor: COLORS.lightOrange,
                             px: 1,
                             py: 0.5,
                             borderRadius: 2,
-                            display: "inline-block",
+                            // display: "inline-block",
+                            textAlign:"center"
                           }}>
                             {planData.validityDays} Days
                           </Typography>
@@ -676,32 +656,32 @@ const PaymentSummaryTable = ({
                             align="center"
                             sx={{ ...bodyCellSx, verticalAlign: "middle" }}
                           >
-                            <Chip
-                              label={lbl}
+                            <Typography
+                              
                               size="small"
                               sx={{
-                                fontSize: "0.68rem",
+                                fontSize: "1rem",
                                 height: 24,
                                 color: COLORS.black,
                                 fontWeight: 600,
                               }}
-                            />
+                            >{lbl}</Typography>
                           </TableCell>
                         );
                       })()}
 
                     <TableCell sx={bodyCellSx}>
-                      <Chip
-                        label={rangeGroup.range}
-                        size="small"
-                        sx={{
-                          fontSize: "0.68rem",
+                      <Typography   sx={{
+                          fontSize: "1rem",
                           height: 24,
-                          backgroundColor: COLORS.lightOrange,
+                          textAlign:"center",
                           color: COLORS.black,
                           fontWeight: 600,
-                        }}
-                      />
+                          alignItems:"center"
+                        }}>
+          
+                       {rangeGroup.range}
+                </Typography>
                     </TableCell>
 
                     <TableCell align="center" sx={bodyCellSx}>
@@ -711,7 +691,7 @@ const PaymentSummaryTable = ({
                         </Typography>
                       ) : (
                         <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 0.3 }}>
-                          <Typography sx={{ fontSize: TEXT_SIZES.small, fontWeight: 700 }}>
+                          <Typography sx={{ fontSize: "1rem", fontWeight: 700 }}>
                             {rangeGroup.totalStates}
                           </Typography>
                           <Tooltip title="View states" arrow>
@@ -725,7 +705,7 @@ const PaymentSummaryTable = ({
                               }}
                               sx={{ p: 0.2 }}
                             >
-                              <VisibilityIcon sx={{ fontSize: "0.8rem", color: COLORS.primary }} />
+                              <VisibilityIcon sx={{ fontSize: "1rem", color: COLORS.primary }} />
                             </IconButton>
                           </Tooltip>
                         </Box>
@@ -739,15 +719,15 @@ const PaymentSummaryTable = ({
                         sx={{ ...bodyCellSx, verticalAlign: "middle" }}
                       >
                         {rangeGroup.items[0]?.isListingPlan ? (
-                          <Typography sx={{ fontSize: TEXT_SIZES.small, fontWeight: 700 }}>-</Typography>
+                          <Typography sx={{ fontSize:"1rem", fontWeight: 700 }}>-</Typography>
                         ) : (
                           <>
-                            <Typography sx={{ fontSize: TEXT_SIZES.small, fontWeight: 700 }}>
+                            <Typography sx={{ fontSize: "1rem", fontWeight: 700 }}>
                               {typeof planData.totalPlanLeads === "number"
                                 ? planData.totalPlanLeads.toLocaleString("en-IN")
                                 : planData.totalPlanLeads}
                             </Typography>
-                            <Typography sx={{ fontSize: "0.55rem", color: COLORS.grey[600], mt: 0.5 }}>
+                            <Typography sx={{ fontSize: "0.7rem", color: COLORS.grey[600], mt: 0.5 }}>
                               {planData.lastSelectedLeads} × {planData.totalPlanStates} ={" "}
                               {planData.totalPlanLeads.toLocaleString("en-IN")}
                             </Typography>
@@ -766,7 +746,7 @@ const PaymentSummaryTable = ({
                             rowSpan={labelRowSpanMap[lbl]}
                             sx={{ ...bodyCellSx, verticalAlign: "middle" }}
                           >
-                            <Typography sx={{ fontSize: TEXT_SIZES.small, fontWeight: 700, color: COLORS.secondaryDark, whiteSpace: "nowrap" }}>
+                            <Typography sx={{ fontSize: "1rem", fontWeight: 700, color: COLORS.secondaryDark, whiteSpace: "nowrap",textAlign:"center" }}>
                               ₹{(labelSubtotalMap[lbl] || 0).toLocaleString("en-IN")}
                             </Typography>
                           </TableCell>
@@ -792,7 +772,7 @@ const PaymentSummaryTable = ({
                             "&:hover": { color: COLORS.primary, backgroundColor: COLORS.lightOrange },
                           }}
                         >
-                          <DeleteIcon sx={{ fontSize: 18 }} />
+                          <DeleteIcon sx={{ fontSize: 22 }} />
                         </IconButton>
                       </Tooltip>
                     </TableCell>
@@ -837,22 +817,33 @@ const PaymentSummaryTable = ({
           px: { xs: 0, sm: 2 },
         }}
       >
-<Typography sx={{ fontSize: "1.3rem", fontWeight: 700, color: COLORS.black, mb: 2, textAlign: "center" }}>
-          SUMMARY
-        </Typography>
+<Typography sx={{ fontSize: "1.3rem", fontWeight: 700, color: COLORS.black, mb: 2, textAlign: "center", display: { xs: "block", sm: "none" } }}>
+  SUMMARY
+</Typography>
         {/* ── Wrap entire summary in mobile accordion ── */}
-        <SectionAccordion title="SELECTED PLAN SUMMARY" defaultExpanded COLORS={COLORS} expanded={sectionExpanded}
-  onChange={onSectionChange}>
+     <SectionAccordion 
+  title="SELECTED PLAN SUMMARY" 
+  defaultExpanded 
+  COLORS={COLORS} 
+  expanded={sectionExpanded}
+  onChange={onSectionChange}
+>
           {/* Header */}
-          <Box sx={{ mb: 2, pt: { xs: 1, sm: 0 } }}>
-            <Typography
-              variant="h5"
-              sx={{ fontWeight: 700, color: COLORS.black, mb: 1, fontSize: TEXT_SIZES.xl, ml:{xs:1,sm:0} ,display: { xs: "none", sm: "block" }, }}
-            >
-              Selected Plan Summary
-            </Typography>
-            <Divider sx={{ borderColor: COLORS.secondary, borderWidth: 2, width: 100, mb: 2,display: { xs: "none", sm: "block" } }} />
-          </Box>
+        <Box sx={{ mb: 2, pt: { xs: 1, sm: 0 }, display: { xs: "none", sm: "block" } }}>
+  <Typography
+   variant="h4"
+        sx={{
+          fontWeight: 700,
+          color: COLORS.black,
+          mb: 1,
+          fontSize: { xs: "1rem", md: "1.9rem" },
+          textAlign:"center"
+        }}
+  >
+   SELECTED PLAN SUMMARY 
+  </Typography>
+  {/* <Divider sx={{ borderColor: COLORS.secondary, borderWidth: 2, width: 100, mb: 2, mx: "auto" }} /> */}
+</Box>
 
           {/* Responsive: accordion on mobile, table on desktop */}
           {isMobile ? renderMobileAccordion() : renderDesktopTable()}
