@@ -134,69 +134,65 @@ const BrandComparison = ({
   };
 
   const handleApply = (brand) => {
+    console.log(brand, "brnad data");
 
-    console.log(brand,"brnad data");
-    
     postView(brand?.uuid);
     // dispatch(openBrandDialog(brand));
-      window.open(`/franchise-business-opportunity/${brand?.uuid}`, "_blank");
+    window.open(`/franchise-business-opportunity/${brand?.uuid}`, "_blank");
   };
 
+  const downloadPDF = async () => {
+    if (!tableRef.current) return;
 
-const downloadPDF = async () => {
-  if (!tableRef.current) return;
+    setPdfGenerating(true);
 
-  setPdfGenerating(true);
+    const element = tableRef.current;
 
-  const element = tableRef.current;
+    // 👉 store original width
+    const originalWidth = element.style.width;
 
-  // 👉 store original width
-  const originalWidth = element.style.width;
+    // 👉 force desktop width
+    element.style.width = "1400px";
 
-  // 👉 force desktop width
-  element.style.width = "1400px";
+    try {
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: "#ffffff",
+      });
 
-  try {
-    const canvas = await html2canvas(element, {
-      scale: 2,
-      useCORS: true,
-      backgroundColor: "#ffffff",
-    });
+      const imgData = canvas.toDataURL("image/png");
 
-    const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF("landscape", "mm", "a4");
 
-    const pdf = new jsPDF("landscape", "mm", "a4");
+      const pageWidth = 297;
+      const pageHeight = 210;
 
-    const pageWidth = 297;
-    const pageHeight = 210;
+      let imgWidth = pageWidth;
+      let imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-    let imgWidth = pageWidth;
-    let imgHeight = (canvas.height * imgWidth) / canvas.width;
+      if (imgHeight > pageHeight) {
+        const ratio = pageHeight / imgHeight;
+        imgHeight = pageHeight;
+        imgWidth = imgWidth * ratio;
+      }
 
-    if (imgHeight > pageHeight) {
-      const ratio = pageHeight / imgHeight;
-      imgHeight = pageHeight;
-      imgWidth = imgWidth * ratio;
+      const x = (pageWidth - imgWidth) / 2;
+      const y = (pageHeight - imgHeight) / 2;
+
+      pdf.addImage(imgData, "PNG", x, y, imgWidth, imgHeight);
+
+      pdf.save("MRFRANCHISE-brand-comparison.pdf");
+    } catch (error) {
+      console.error(error);
+    } finally {
+      // 👉 restore width
+      element.style.width = originalWidth;
+      setPdfGenerating(false);
     }
+  };
 
-    const x = (pageWidth - imgWidth) / 2;
-    const y = (pageHeight - imgHeight) / 2;
-
-    pdf.addImage(imgData, "PNG", x, y, imgWidth, imgHeight);
-
-    pdf.save("MRFRANCHISE-brand-comparison.pdf");
-
-  } catch (error) {
-    console.error(error);
-  } finally {
-    // 👉 restore width
-    element.style.width = originalWidth;
-    setPdfGenerating(false);
-  }
-};
- 
-
-const basicInfoFields = [
+  const basicInfoFields = [
     { label: "Brand Name", field: "brandDetails.brandName" },
     { label: "Company Name", field: "brandDetails.companyName" },
     {
@@ -253,7 +249,7 @@ const basicInfoFields = [
       <Dialog
         open={open}
         onClose={onClose}
-        maxWidth="lg"
+        maxWidth="xl"
         fullWidth
         scroll="paper"
         sx={{
@@ -275,10 +271,10 @@ const basicInfoFields = [
         >
           <Box
             display="flex"
-            justifyContent="space-between"
-            alignItems="center"
+            justifyContent="space-evenly"
+            // alignItems="center"
           >
-            <Typography variant="h6">
+            <Typography >
               Brand Comparison ({brandDetails.length})
             </Typography>
             <Box>
@@ -300,7 +296,11 @@ const basicInfoFields = [
                   )}
                 </Button>
               )}
-              <IconButton aria-label="close" onClick={onClose} sx={{ color: "black" }}>
+              <IconButton
+                aria-label="close"
+                onClick={onClose}
+                sx={{ color: "black" }}
+              >
                 <Close />
               </IconButton>
             </Box>
@@ -320,18 +320,40 @@ const basicInfoFields = [
               </Typography>
             </Box>
           ) : (
-            <TableContainer component={Paper} ref={tableRef}>
+            <TableContainer
+              component={Paper}
+              ref={tableRef}
+              sx={{
+                maxHeight: "600px",
+                overflow: "auto",
+              }}
+            >
               <Table size="small" stickyHeader>
-                <TableHead sx={{position:"fixed"}}>
+                <TableHead>
                   <TableRow sx={{ bgcolor: "#f5f5f5" }}>
-                    <TableCell sx={{ fontWeight: "bold", width: "200px" }}>
+                    <TableCell
+                      sx={{
+                        fontWeight: "bold",
+                        width: "200px",
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 5,
+                        bgcolor: "#f5f5f5",
+                      }}
+                    >
                       Feature
                     </TableCell>
                     {brandDetails.map((brand) => (
                       <TableCell
                         key={brand.uuid}
                         align="center"
-                        sx={{ width: `${80 / brandDetails.length}%` }}
+                        sx={{
+                          width: `${80 / brandDetails.length}%`,
+                          position: "sticky",
+                          top: 0,
+                          zIndex: 4,
+                          bgcolor: "#f5f5f5",
+                        }}
                       >
                         <Box
                           display="flex"
@@ -435,13 +457,20 @@ const basicInfoFields = [
                   </TableRow>
                 </TableHead>
 
-                <TableBody sx={{mt:"500px"}}>
+                <TableBody sx={{ mt: "500px" }}>
                   {basicInfoFields.map((field) => (
                     <TableRow key={field.label} hover>
                       <TableCell
                         component="th"
                         scope="row"
-                        sx={{ bgcolor: "#f9f9f9", fontWeight: "bold" }}
+                        sx={{
+                          bgcolor: "#f9f9f9",
+                          fontWeight: "bold",
+
+                          position: "sticky",
+                          left: 0,
+                          zIndex: 3,
+                        }}
                       >
                         <Typography variant="subtitle2">
                           {field.label}
