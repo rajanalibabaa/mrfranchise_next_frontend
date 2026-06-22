@@ -477,12 +477,12 @@ const FranchiseDetails = ({ data = {}, errors = {}, onChange = () => {} }) => {
     onChange({ fico: updatedFico });
     setSavedFicoModels(updatedFico);
   };
-<<<<<<< HEAD
 const franchiseTypes = {
   "FRANCHISE": {
     "KIOSK": ["KIOSK"],
     "CLOUD KITCHEN": ["CLOUD KITCHEN"],
     "SHOP IN SHOP": ["SHOP IN SHOP"],
+    "SERVICE PARTNERS": ["SERVICE PARTNERS", "SERVICE PARTNERS - Area", "SERVICE PARTNERS - City", "SERVICE PARTNERS - District", "SERVICE PARTNERS - State"],
     "FOFO": ["FOFO - Single Unit", "FOFO - Multi Unit", "FOFO - Master Franchise", "FOFO - City Franchise", "FOFO - Area Franchise", "FOFO - District Franchise", "FOFO - State Franchise"],
     "FICO": ["FICO - Single Unit", "FICO - Multi Unit", "FICO - Master Franchise", "FICO - City Franchise", "FICO - Area Franchise", "FICO - District Franchise", "FICO - State Franchise"],
     "COCO": ["COCO - Single Unit", "COCO - Multi Unit", "COCO - Master Franchise", "COCO - City Franchise", "COCO - Area Franchise", "COCO - District Franchise", "COCO - State Franchise"],
@@ -490,30 +490,22 @@ const franchiseTypes = {
     "FOCO": ["FOCO - Single Unit", "FOCO - Multi Unit", "FOCO - Master Franchise", "FOCO - City Franchise", "FOCO - Area Franchise", "FOCO - District Franchise", "FOCO - State Franchise"],
   },
   "DEALERS & DISTRIBUTORS": {
-    "STOCKIST": ["STOCKIST", "STOCKIST - Area", "STOCKIST - City", "STOCKIST - District", "STOCKIST - State"],
-    "DEALER": ["DEALER", "DEALER - Area", "DEALER - City", "DEALER - District", "DEALER - State"],
-    "DISTRIBUTOR": ["DISTRIBUTOR", "DISTRIBUTOR - Area", "DISTRIBUTOR - City", "DISTRIBUTOR - District", "DISTRIBUTOR - State"],
+    "C&F Agent": ["C&F Agent"],
+    "IMPORTER / EXPORTER": ["IMPORTER","EXPORTER"],
+    "STOCKIST": ["STOCKIST","SUPER STOCKIST", "STOCKIST - Area", "STOCKIST - City", "STOCKIST - District", "STOCKIST - State"],
+    "DEALER": ["DEALER","AUTHORIZED DEALER", "DEALER - Area", "DEALER - City", "DEALER - District", "DEALER - State",],
+    "DISTRIBUTOR": ["DISTRIBUTOR", "MASTER DISTRIBUTOR","RETAIL DISTRIBUTOR","REGIONAL DISTRIBUTOR","EXCLUSIVE DISTRIBUTOR","DISTRIBUTOR - Area", "DISTRIBUTOR - City", "DISTRIBUTOR - District", "DISTRIBUTOR - State"],
     "WHOLESALE SELLER": ["WHOLESALE SELLER", "WHOLESALE SELLER - Area", "WHOLESALE SELLER - City", "WHOLESALE SELLER - District", "WHOLESALE SELLER - State"],
   },
   "CHANNEL PARTNERS": {
-    "CHANNEL PARTNERS": ["CHANNEL PARTNERS", "CHANNEL PARTNERS - Area", "CHANNEL PARTNERS - City", "CHANNEL PARTNERS - District", "CHANNEL PARTNERS - State"],
+    "CHANNEL PARTNERS": ["AUTHORIZED CHANNEL PARTNER", "MASTER CHANNEL PARTNER", "REFERRAL CHANNEL PARTNER","IMPLEMENTATION PARTNER","VALUE-ADDED RESELLER (VAR)","STRATEGIC ALLIANCE PARTNER","CHANNEL PARTNERS","CHANNEL PARTNERS - Area", "CHANNEL PARTNERS - City", "CHANNEL PARTNERS - District", "CHANNEL PARTNERS - State"],
   },
+   
 };
-=======
-  const franchiseTypes = [
-    "Single Unit",
-    "Multi Unit",
-    "Master Franchise",
-    "City Franchise",
-    "Area Franchise",
-    "District Franchise",
-    "State Franchise",
-  ];
->>>>>>> 4a0123617cf2fd52d3bf7bb1d2d34f8da6c5b99c
   const franchiseModels = [
     "FRANCHISE",
     "DEALERS & DISTRIBUTORS",
-    "CHANNEL PARTNERS",
+    "CHANNEL PARTNERS",   
   ];
   // Service tag groups will be populated from API data
   const [serviceTagGroups, setServiceTagGroups] = useState({});
