@@ -2443,7 +2443,7 @@ console.log("READ KEY:", getRangeKey(investmentRangeLabel, range, planId));
   leadsDropdownData={leadsDropdownData}
   INDIA_STATES={INDIA_STATES}
   ALL_INDIA_STATES={ALL_INDIA_STATES}
-    sectionExpanded={openSection === "active"}
+   sectionExpanded={openSection.includes("active")}
   onSectionChange={handleSectionChange("active")}
   allStates={allStates}        
   finalToken={finalToken}
