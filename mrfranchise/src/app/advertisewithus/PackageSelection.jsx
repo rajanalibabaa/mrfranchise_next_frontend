@@ -45,7 +45,7 @@ import ExistingPackageDisplay from "./ExistingPackageDisplay";
 import ListingPlans from "./ListingPlans";
 import InvestorLeadPlans from "./Investorleadplans";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://mrfranchisebackend.mrfranchise.in";
 
 const COLORS = {
   primary: "#FF9900",
@@ -200,7 +200,7 @@ const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
   const fetchPackages = async () => {
     try {
       setLoadings(true);
-      const response = await axios.get(`http://localhost:5000/api/v1/brand-packages-plans/get/${brandOwnerId}`);
+      const response = await axios.get(`https://mrfranchisebackend.mrfranchise.in/api/v1/brand-packages-plans/get/${brandOwnerId}`);
       const apiData = response.data.data || response.data;
       setData(apiData);
       if (apiData && apiData.packages && Array.isArray(apiData.packages)) {
