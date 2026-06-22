@@ -135,11 +135,10 @@ const PaymentSummaryTable = ({
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [expandedPlan, setExpandedPlan] = useState(null);
 
-  // ─── GROUP BY PLAN (unchanged logic) ────────────────────────────────
-  const groupedByPlan = {};
+
+const groupedByPlan = {};
 
 paymentSummary.forEach((group) => {
-  
   if (!group.items || group.items.length === 0) return;
 
   if (!groupedByPlan[group.planId]) {
@@ -153,59 +152,34 @@ paymentSummary.forEach((group) => {
     };
   }
 
-group.items.forEach((item) => {
-  groupedByPlan[group.planId].items.push({
-    ...item,
-    pricePerState: group.pricePerState,
-    totalAmount: item.totalAmount,   // ✅ already on item
-    validityDays: group.validityDays,
+  // ✅ Accumulate the correct group amount (not recalculated)
+  groupedByPlan[group.planId].totalPlanAmount += group.amount; // ← use group.amount
+
+  group.items.forEach((item) => {
+    groupedByPlan[group.planId].items.push({
+      ...item,
+      pricePerState: group.pricePerState,
+      groupAmount: group.amount,      // ← store group's total amount
+      validityDays: group.validityDays,
+    });
   });
-});
 });
 
 Object.entries(groupedByPlan).forEach(([planId, planData]) => {
-  const byRange = {};
+  const globalUniqueStates = new Set();
+  let lastSelectedLeads = 0;
 
   planData.items.forEach((item) => {
-    if (!byRange[item.range]) {
-      byRange[item.range] = {
-        selectedLeads: item.selectedLeads || 0,
-        states: new Set(),
-        pricePerState: item.pricePerState,
-        totalAmount: item.totalAmount || 0,
-      };
-    }
-    (item.states || []).forEach((s) => byRange[item.range].states.add(s));
+    (item.states || []).forEach((s) => globalUniqueStates.add(s));
+    lastSelectedLeads = item.selectedLeads || 0;
   });
 
-  const globalUniqueStates = new Set();
-  Object.values(byRange).forEach(({ states }) => {
-    states.forEach((s) => globalUniqueStates.add(s));
-  });
   const uniqueStateCount = globalUniqueStates.size;
 
-  const lastRange = Object.values(byRange)[Object.values(byRange).length - 1];
-  const lastSelectedLeads = lastRange ? lastRange.selectedLeads : 0;
-
-  // ✅ avoid duplicate states across ranges
-  const countedStates = new Set();
-  let totalAmount = 0;
-  Object.values(byRange).forEach(({ pricePerState, states }) => {
-    const uniqueNewStates = new Set();
-    states.forEach((s) => {
-      if (!countedStates.has(s)) {
-        uniqueNewStates.add(s);
-        countedStates.add(s);
-      }
-    });
-    totalAmount += pricePerState * uniqueNewStates.size;
-  });
-
   planData.totalPlanLeads = lastSelectedLeads * uniqueStateCount;
-  planData.totalPlanAmount = totalAmount;
   planData.totalPlanStates = uniqueStateCount;
   planData.lastSelectedLeads = lastSelectedLeads;
-  planData.byRange = byRange;
+  // totalPlanAmount already set correctly in the forEach above via group.amount
 });
 
   const headerCellSx = {
@@ -226,66 +200,57 @@ Object.entries(groupedByPlan).forEach(([planId, planData]) => {
   };
 
   // ─── BUILD SORTED RANGES (shared between mobile & desktop) ───────────
-  const buildSortedRanges = (planId, planData) => {
-    const groupedByRange = planData.items.reduce((acc, item) => {
-      const rangeKey = `${planId}_${item.investmentRangeLabel}_${item.range}`;
-      if (!acc[rangeKey]) {
+ const buildSortedRanges = (planId, planData) => {
+  const groupedByRange = planData.items.reduce((acc, item) => {
+    const rangeKey = `${planId}_${item.investmentRangeLabel}_${item.range}`;
+    if (!acc[rangeKey]) {
       acc[rangeKey] = {
-  range: item.range,
-  investmentRangeLabel: item.investmentRangeLabel,
-  planId,
-  items: [],
-  totalStates: 0,
-  totalLeads: 0,
-  totalAmount: 0,
-  selectedLeads: item.selectedLeads,
-  pricePerState: item.pricePerState,  // ← already correct per selected leads
-  validityDays: item.validityDays,
-};
-      }
-      acc[rangeKey].items.push(item);
-      const uniqueStatesForRange = new Set();
-      acc[rangeKey].items.forEach((i) => {
-        (i.states || []).forEach((s) => uniqueStatesForRange.add(s));
-      });
-      const uniqueRangeStatesCount = uniqueStatesForRange.size;
-      acc[rangeKey].totalStates = uniqueRangeStatesCount;
-      acc[rangeKey].totalLeads = (item.selectedLeads || 0) * uniqueRangeStatesCount;
-      acc[rangeKey].totalAmount = (item.pricePerState || 0) * uniqueRangeStatesCount;
-      return acc;
-    }, {});
-
-    const labelGroupMap = {};
-    Object.values(groupedByRange).forEach((rg) => {
-      const lbl = rg.investmentRangeLabel || "—";
-      if (!labelGroupMap[lbl]) labelGroupMap[lbl] = [];
-      labelGroupMap[lbl].push(rg);
+        range: item.range,
+        investmentRangeLabel: item.investmentRangeLabel,
+        planId,
+        items: [],
+        totalStates: 0,
+        totalLeads: 0,
+        totalAmount: 0,
+        selectedLeads: item.selectedLeads,
+        pricePerState: item.pricePerState,
+        validityDays: item.validityDays,
+      };
+    }
+    acc[rangeKey].items.push(item);
+    
+    // Calculate unique states for this range
+    const uniqueStatesForRange = new Set();
+    acc[rangeKey].items.forEach((i) => {
+      (i.states || []).forEach((s) => uniqueStatesForRange.add(s));
     });
+    const uniqueRangeStatesCount = uniqueStatesForRange.size;
+    
+    // ✅ Use the range's selectedLeads (not each item's)
+    acc[rangeKey].totalStates = uniqueRangeStatesCount;
+    acc[rangeKey].totalLeads = (acc[rangeKey].selectedLeads || 0) * uniqueRangeStatesCount;
+    acc[rangeKey].totalAmount = (acc[rangeKey].pricePerState || 0) * uniqueRangeStatesCount;
+    
+    return acc;
+  }, {});
 
-    const sortedRanges = Object.values(labelGroupMap).flat();
+  const labelGroupMap = {};
+  Object.values(groupedByRange).forEach((rg) => {
+    const lbl = rg.investmentRangeLabel || "—";
+    if (!labelGroupMap[lbl]) labelGroupMap[lbl] = [];
+    labelGroupMap[lbl].push(rg);
+  });
+
+  const sortedRanges = Object.values(labelGroupMap).flat();
 
 const labelSubtotalMap = {};
 Object.entries(labelGroupMap).forEach(([lbl, ranges]) => {
-  const countedStates = new Set();  // ← track seen states across ranges
-  let labelTotal = 0;
-  ranges.forEach((rg) => {
-    const uniqueNewStates = new Set();
-    rg.items.forEach((item) => {
-      (item.states || []).forEach((s) => {
-        if (!countedStates.has(s)) {
-          uniqueNewStates.add(s);
-          countedStates.add(s);
-        }
-      });
-    });
-    // ✅ only charge for states not already counted
-    labelTotal += (rg.pricePerState || 0) * uniqueNewStates.size;
-  });
-  labelSubtotalMap[lbl] = labelTotal;
+  // ✅ Use pre-calculated groupAmount instead of recalculating
+  labelSubtotalMap[lbl] = ranges[0]?.items[0]?.groupAmount || 0;
 });
 
-    return { sortedRanges, labelSubtotalMap, labelGroupMap };
-  };
+  return { sortedRanges, labelSubtotalMap, labelGroupMap };
+};
 
   const togglePlan = (planId) => {
     setExpandedPlan(expandedPlan === planId ? null : planId);
