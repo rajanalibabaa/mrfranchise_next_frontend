@@ -236,7 +236,7 @@ const SectionAccordion = ({
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [internalExpanded, setInternalExpanded] = useState(defaultExpanded);
-  const [sectionExpanded, setSectionExpanded] = useState("investor");
+  // const [sectionExpanded, setSectionExpanded] = useState("investor");
 
   const isControlled = controlledExpanded !== undefined;
   const isExpanded = isControlled ? controlledExpanded : internalExpanded;
@@ -1076,11 +1076,22 @@ const MobilePackageSelection = ({
  SELECT NEW PLAN
 </Typography>
       {/* ── INVESTOR LEAD PLANS ── */}
- <SectionAccordion 
+<SectionAccordion 
   title="INVESTOR LEAD PLANS" 
   defaultExpanded
-  expanded={sectionExpanded === "investor"}
-  onChange={(isOpen) => onSectionChange?.("investor")(isOpen)}
+  expanded={sectionExpanded?.includes("investor")}
+  onChange={(isOpen) => {
+    // When investor section opens, close listing section
+    if (isOpen) {
+      onSectionChange?.("investor")(true);
+      // If listing was open, close it
+      if (sectionExpanded?.includes("listing")) {
+        onSectionChange?.("listing")(false);
+      }
+    } else {
+      onSectionChange?.("investor")(false);
+    }
+  }}
 >
         <Box sx={{ px: 2, textAlign: "center", overflow: "visible" }}>
           {/* <Typography sx={{ fontSize: "1.4rem", fontWeight: 700, color: COLORS.black, mb: 0.5 }}>
@@ -1262,13 +1273,24 @@ const MobilePackageSelection = ({
       </SectionAccordion>
 
       {/* ── BRAND LISTING PLANS ── */}
-      {!hideListingPlans && listingPlans.length > 0 && (
-          <Box id="brand-listing-section">
-     <SectionAccordion 
-  title="  BRAND LISTING PLANS"
-  expanded={sectionExpanded === "listing"}
-  onChange={(isOpen) => onSectionChange?.("listing")(isOpen)}
->
+    {!hideListingPlans && listingPlans.length > 0 && (
+  <Box id="brand-listing-section">
+    <SectionAccordion 
+      title="BRAND LISTING PLANS"
+      expanded={sectionExpanded?.includes("listing")}
+      onChange={(isOpen) => {
+        if (isOpen) {
+          // Close investor if it's open
+          if (sectionExpanded?.includes("investor")) {
+            onSectionChange?.("investor")(false);
+          }
+          // Open listing
+          onSectionChange?.("listing")(true);
+        } else {
+          onSectionChange?.("listing")(false);
+        }
+      }}
+    >
           <Box sx={{ px: 2, pb: 2 }}>
             {/* <Typography sx={{ fontSize: "1.4rem", fontWeight: 700, color: COLORS.black, mb: 0.5, textAlign: "center" }}>
               BRAND LISTING PLANS
