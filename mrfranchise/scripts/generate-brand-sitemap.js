@@ -1,7 +1,8 @@
 const fs = require("fs");
 
 
-const SITE_URL = "https://mrfranchise.in";
+const SITE_URL = "https://mrfranchise.in"||
+"http://localhost:5000";
 
 
 const API_BASE =
