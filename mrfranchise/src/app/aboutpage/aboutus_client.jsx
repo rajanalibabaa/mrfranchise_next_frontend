@@ -95,7 +95,7 @@ const AboutUs = () => {
         <Navbar />
       </Box>
 
-      <Box sx={{ mt: isMobile ? 10 : 25, pb: 8, backgroundColor: "white" }}>
+      <Box sx={{ mt: isMobile ? 15 : 20, pb: 8, backgroundColor: "white" }}>
         <Container>
           {/* Main Heading */}
           <motion.div

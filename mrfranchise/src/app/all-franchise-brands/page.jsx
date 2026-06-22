@@ -2,7 +2,6 @@
 
 import { Suspense } from "react";
 import { Box } from "@mui/material";
-import dynamic from "next/dynamic";
 import Navbar from "@/Components/Navbar/NavBar";
 import Footer from "@/Components/Footers/Footer";
 import Loading from "./loading";
@@ -72,7 +71,7 @@ export default  function BrandCategoryViewPage() {
       <Box
         component="main"
         sx={{
-          mt: { xs: "70px", sm: "12px" },
+          mt: { xs: "70px", sm: "12px",md:17 },
           mx: { xs: 1, md: 2 },
           minHeight: "calc(100vh - 64px)",
         }}

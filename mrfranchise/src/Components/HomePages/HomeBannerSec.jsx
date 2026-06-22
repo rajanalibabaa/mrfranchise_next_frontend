@@ -577,7 +577,7 @@ if (typeof window !== "undefined" && window.performance) {
   }, []);
 
   return (
-    <Box sx={{ minHeight: "100vh", bgcolor: "#fff" }}>
+    <Box sx={{ minHeight: "100vh", bgcolor: "#fff",mt:{xs:11,md:19,sm:10} }}>
       {/* Navbar */}
       <Navbar />
 

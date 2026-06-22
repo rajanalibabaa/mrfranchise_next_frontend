@@ -50,6 +50,9 @@ const UpgradeDialog = ({
   onSaveStates,
   scrollToPaymentSummary,
 }) => {
+
+  console.log("pkg",pkg);
+  
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
