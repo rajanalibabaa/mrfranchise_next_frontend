@@ -242,7 +242,7 @@ const upgradeSectionRef = useRef(null);
   const [isUpgradeMode, setIsUpgradeMode] = useState(false);
 const [upgradePlanId, setUpgradePlanId] = useState(null);
   const [showLogin, setShowLogin] = useState(false);
-  const [openSection, setOpenSection] = useState("investor", "summary");
+const [openSection, setOpenSection] = useState(["investor", "summary"]);
   const [snack, setSnack] = useState({
     open: false,
     message: "",

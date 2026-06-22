@@ -37,15 +37,14 @@ const pulseAnimation = keyframes`
   100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 153, 0, 0); }
 `;
 
-// ─── Mobile-only Section Accordion ───────────────────────────────────────────
 const SectionAccordion = ({ 
-   title, 
-  fontSize="1.3rem",
+  title, 
+  fontSize = "1.3rem",
   children, 
   defaultExpanded = false,
   expanded: controlledExpanded,
   onChange: controlledOnChange,
-  COLORS: colors,    
+  COLORS,
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -69,47 +68,46 @@ const SectionAccordion = ({
       elevation={0}
       sx={{
         mb: 0,
-// border: `3px solid ${COLORS.primary}`,
         borderRadius: "12px !important",
         overflow: "hidden",
         "&:before": { display: "none" },
       }}
     >
-   <AccordionSummary
-  expandIcon={
-    <Box
-      className="expand-icon-btn"
-      sx={{
-        width: 36,
-        height: 36,
-        borderRadius: "50%",
-        backgroundColor: COLORS.primary,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        transition: "all 0.25s ease",
-      }}
-    >
-      <ExpandMoreIcon sx={{ color: COLORS.white, fontSize: "1.5rem" }} />
-    </Box>
-  }
-  sx={{
-    backgroundColor: "#fff8ee",
-    minHeight: 52,
-    px: 2,
-    transition: "background-color 0.25s ease",
-    "& .MuiAccordionSummary-content": { my: 0 },
-    "&:hover": {
-      backgroundColor: "#ffe5b0",
-      "& .expand-icon-btn": {
-        animation: `${pulseAnimation} 0.8s ease infinite`,
-        backgroundColor: COLORS.secondary,
-        transform: "scale(1.15)",
-      },
-    },
-  }}
->
-        <Typography sx={{ fontWeight: 700,textAlign:"center", fontSize: fontSize, color: COLORS.black }}>
+      <AccordionSummary
+        expandIcon={
+          <Box
+            className="expand-icon-btn"
+            sx={{
+              width: 36,
+              height: 36,
+              borderRadius: "50%",
+              backgroundColor:COLORS.primary,  // ← use colors instead of COLORS
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              transition: "all 0.25s ease",
+            }}
+          >
+            <ExpandMoreIcon sx={{ color: COLORS.white, fontSize: "1.5rem" }} />  {/* ← use colors */}
+          </Box>
+        }
+        sx={{
+          backgroundColor: "#fff8ee",
+          minHeight: 52,
+          px: 2,
+          transition: "background-color 0.25s ease",
+          "& .MuiAccordionSummary-content": { my: 0 },
+          "&:hover": {
+            backgroundColor: "#ffe5b0",
+            "& .expand-icon-btn": {
+              animation: `${pulseAnimation} 0.8s ease infinite`,
+              backgroundColor:COLORS.secondary ,  // ← use colors
+              transform: "scale(1.15)",
+            },
+          },
+        }}
+      >
+        <Typography sx={{ fontWeight: 700, textAlign: "center", fontSize: fontSize, color:  COLORS.black}}>  {/* ← use colors */}
           {title}
         </Typography>
       </AccordionSummary>
