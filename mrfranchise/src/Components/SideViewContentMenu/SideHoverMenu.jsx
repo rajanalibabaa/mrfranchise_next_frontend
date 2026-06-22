@@ -32,7 +32,7 @@ import { openBrandDialog } from "@/Redux/Slices/OpenBrandNewPageSlice";
 import { ArrowBack } from "@mui/icons-material";
 
 const api = axios.create({
-  baseURL: "https://mrfranchisebackend.mrfranchise.in/api/v1/",
+  baseURL: "http://localhost:5000/api/v1/",
   headers: {
     "Content-Type": "application/json",
   },

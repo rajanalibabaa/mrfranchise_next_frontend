@@ -64,7 +64,7 @@ import PaymentBottomBar from "./PaymentBottomBar";
 import ExistingPackageDisplay from "./ExistingPackageDisplay";
 
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://mrfranchisebackend.mrfranchise.in";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 // Enhanced Color Palette
 const COLORS = {
@@ -296,7 +296,7 @@ const fetchPackages = async () => {
     console.log("📡 Fetching packages for brandOwnerId:", brandOwnerId);
    
     const response = await axios.get(
-      `https://mrfranchisebackend.mrfranchise.in/api/v1/brand-packages-plans/get/${brandOwnerId}`,
+      `http://localhost:5000/api/v1/brand-packages-plans/get/${brandOwnerId}`,
     );
    
     console.log("✅ API Response received");
