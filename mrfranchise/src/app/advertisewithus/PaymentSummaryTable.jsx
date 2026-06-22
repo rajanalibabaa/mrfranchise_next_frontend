@@ -138,62 +138,67 @@ const PaymentSummaryTable = ({
   // ─── GROUP BY PLAN (unchanged logic) ────────────────────────────────
   const groupedByPlan = {};
 
-  paymentSummary.forEach((group) => {
-    if (!group.items || group.items.length === 0) return;
+paymentSummary.forEach((group) => {
+  
+  if (!group.items || group.items.length === 0) return;
 
-    if (!groupedByPlan[group.planId]) {
-      groupedByPlan[group.planId] = {
-        planName: group.planName,
-        validityDays: group.validityDays,
-        items: [],
-        totalPlanAmount: 0,
-        totalPlanLeads: 0,
-        totalPlanStates: 0,
+  if (!groupedByPlan[group.planId]) {
+    groupedByPlan[group.planId] = {
+      planName: group.planName,
+      validityDays: group.validityDays,
+      items: [],
+      totalPlanAmount: 0,
+      totalPlanLeads: 0,
+      totalPlanStates: 0,
+    };
+  }
+
+group.items.forEach((item) => {
+  groupedByPlan[group.planId].items.push({
+    ...item,
+    pricePerState: group.pricePerState,
+    totalAmount: item.totalAmount,   // ✅ already on item
+    validityDays: group.validityDays,
+  });
+});
+});
+
+Object.entries(groupedByPlan).forEach(([planId, planData]) => {
+  const byRange = {};
+
+  planData.items.forEach((item) => {
+    if (!byRange[item.range]) {
+      byRange[item.range] = {
+        selectedLeads: item.selectedLeads || 0,
+        states: new Set(),
+        pricePerState: item.pricePerState,
+        totalAmount: item.totalAmount || 0,  // ✅ use pre-calculated amount
       };
     }
-
-    group.items.forEach((item) => {
-      groupedByPlan[group.planId].items.push({
-        ...item,
-        pricePerState: group.pricePerState,
-        validityDays: group.validityDays,
-      });
-    });
-
-    const byRange = {};
-    groupedByPlan[group.planId].items.forEach((item) => {
-      if (!byRange[item.range]) {
-        byRange[item.range] = {
-          selectedLeads: item.selectedLeads || 0,
-          states: new Set(),
-          pricePerState: item.pricePerState,
-        };
-      }
-      (item.states || []).forEach((s) => byRange[item.range].states.add(s));
-    });
-
-    const globalUniqueStates = new Set();
-    Object.values(byRange).forEach(({ states }) => {
-      states.forEach((s) => globalUniqueStates.add(s));
-    });
-    const uniqueStateCount = globalUniqueStates.size;
-
-    const lastRange = Object.values(byRange)[Object.values(byRange).length - 1];
-    const lastSelectedLeads = lastRange ? lastRange.selectedLeads : 0;
-
-    const totalLeads = lastSelectedLeads * uniqueStateCount;
-    const totalAmount =
-      Object.values(byRange).reduce(
-        (sum, { pricePerState }) => sum + pricePerState,
-        0
-      ) * uniqueStateCount;
-
-    groupedByPlan[group.planId].totalPlanLeads = totalLeads;
-    groupedByPlan[group.planId].totalPlanAmount = totalAmount;
-    groupedByPlan[group.planId].totalPlanStates = uniqueStateCount;
-    groupedByPlan[group.planId].lastSelectedLeads = lastSelectedLeads;
-    groupedByPlan[group.planId].byRange = byRange;
+    (item.states || []).forEach((s) => byRange[item.range].states.add(s));
   });
+
+  const globalUniqueStates = new Set();
+  Object.values(byRange).forEach(({ states }) => {
+    states.forEach((s) => globalUniqueStates.add(s));
+  });
+  const uniqueStateCount = globalUniqueStates.size;
+
+  const lastRange = Object.values(byRange)[Object.values(byRange).length - 1];
+  const lastSelectedLeads = lastRange ? lastRange.selectedLeads : 0;
+
+  // ✅ sum totalAmount directly from each range
+  let totalAmount = 0;
+  Object.values(byRange).forEach(({ totalAmount: rangeAmount }) => {
+    totalAmount += rangeAmount;
+  });
+
+  planData.totalPlanLeads = lastSelectedLeads * uniqueStateCount;
+  planData.totalPlanAmount = totalAmount;
+  planData.totalPlanStates = uniqueStateCount;
+  planData.lastSelectedLeads = lastSelectedLeads;
+  planData.byRange = byRange;
+});
 
   const headerCellSx = {
     fontWeight: 700,
@@ -217,18 +222,18 @@ const PaymentSummaryTable = ({
     const groupedByRange = planData.items.reduce((acc, item) => {
       const rangeKey = `${planId}_${item.investmentRangeLabel}_${item.range}`;
       if (!acc[rangeKey]) {
-        acc[rangeKey] = {
-          range: item.range,
-          investmentRangeLabel: item.investmentRangeLabel,
-          planId,
-          items: [],
-          totalStates: 0,
-          totalLeads: 0,
-          totalAmount: 0,
-          selectedLeads: item.selectedLeads,
-          pricePerState: item.pricePerState,
-          validityDays: item.validityDays,
-        };
+      acc[rangeKey] = {
+  range: item.range,
+  investmentRangeLabel: item.investmentRangeLabel,
+  planId,
+  items: [],
+  totalStates: 0,
+  totalLeads: 0,
+  totalAmount: 0,
+  selectedLeads: item.selectedLeads,
+  pricePerState: item.pricePerState,  // ← already correct per selected leads
+  validityDays: item.validityDays,
+};
       }
       acc[rangeKey].items.push(item);
       const uniqueStatesForRange = new Set();
@@ -251,22 +256,17 @@ const PaymentSummaryTable = ({
 
     const sortedRanges = Object.values(labelGroupMap).flat();
 
-    const labelSubtotalMap = {};
-    Object.entries(labelGroupMap).forEach(([lbl, ranges]) => {
-      const countedStates = new Set();
-      let labelTotal = 0;
-      ranges.forEach((rg) => {
-        const rangeUniqueStates = new Set();
-        rg.items.forEach((item) => {
-          (item.states || []).forEach((s) => {
-            if (!countedStates.has(s)) rangeUniqueStates.add(s);
-          });
-        });
-        rangeUniqueStates.forEach((s) => countedStates.add(s));
-        labelTotal += (rg.pricePerState || 0) * rangeUniqueStates.size;
-      });
-      labelSubtotalMap[lbl] = labelTotal;
+const labelSubtotalMap = {};
+Object.entries(labelGroupMap).forEach(([lbl, ranges]) => {
+  let labelTotal = 0;
+  ranges.forEach((rg) => {
+    // ✅ totalAmount is already correct from the server
+    rg.items.forEach((item) => {
+      labelTotal += item.totalAmount || 0;
     });
+  });
+  labelSubtotalMap[lbl] = labelTotal;
+});
 
     return { sortedRanges, labelSubtotalMap, labelGroupMap };
   };
@@ -651,14 +651,15 @@ const PaymentSummaryTable = ({
                       >
                         <Box>
                           <Typography sx={{
-                            fontSize: "1rem",
+                            fontSize: "1.4rem",
                             fontWeight: 600,
-                            color: COLORS.black,
+                            color: COLORS.primary,
                             // backgroundColor: COLORS.lightOrange,
                             px: 1,
                             py: 0.5,
                             borderRadius: 2,
-                            display: "inline-block",
+                            // display: "inline-block",
+                            textAlign:"center"
                           }}>
                             {planData.validityDays} Days
                           </Typography>
@@ -680,7 +681,7 @@ const PaymentSummaryTable = ({
                               
                               size="small"
                               sx={{
-                                fontSize: "0.86rem",
+                                fontSize: "1rem",
                                 height: 24,
                                 color: COLORS.black,
                                 fontWeight: 600,
@@ -691,18 +692,17 @@ const PaymentSummaryTable = ({
                       })()}
 
                     <TableCell sx={bodyCellSx}>
-                      <Chip
-                        label={rangeGroup.range}
-                        size="small"
-                        sx={{
-                          fontSize: "0.68rem",
+                      <Typography   sx={{
+                          fontSize: "1rem",
                           height: 24,
-                          backgroundColor: COLORS.lightOrange,
+                          textAlign:"center",
                           color: COLORS.black,
                           fontWeight: 600,
                           alignItems:"center"
-                        }}
-                      />
+                        }}>
+          
+                       {rangeGroup.range}
+                </Typography>
                     </TableCell>
 
                     <TableCell align="center" sx={bodyCellSx}>
@@ -712,7 +712,7 @@ const PaymentSummaryTable = ({
                         </Typography>
                       ) : (
                         <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 0.3 }}>
-                          <Typography sx={{ fontSize: TEXT_SIZES.small, fontWeight: 700 }}>
+                          <Typography sx={{ fontSize: "1rem", fontWeight: 700 }}>
                             {rangeGroup.totalStates}
                           </Typography>
                           <Tooltip title="View states" arrow>
@@ -726,7 +726,7 @@ const PaymentSummaryTable = ({
                               }}
                               sx={{ p: 0.2 }}
                             >
-                              <VisibilityIcon sx={{ fontSize: "0.8rem", color: COLORS.primary }} />
+                              <VisibilityIcon sx={{ fontSize: "1rem", color: COLORS.primary }} />
                             </IconButton>
                           </Tooltip>
                         </Box>
@@ -740,15 +740,15 @@ const PaymentSummaryTable = ({
                         sx={{ ...bodyCellSx, verticalAlign: "middle" }}
                       >
                         {rangeGroup.items[0]?.isListingPlan ? (
-                          <Typography sx={{ fontSize: TEXT_SIZES.small, fontWeight: 700 }}>-</Typography>
+                          <Typography sx={{ fontSize:"1rem", fontWeight: 700 }}>-</Typography>
                         ) : (
                           <>
-                            <Typography sx={{ fontSize: TEXT_SIZES.small, fontWeight: 700 }}>
+                            <Typography sx={{ fontSize: "1rem", fontWeight: 700 }}>
                               {typeof planData.totalPlanLeads === "number"
                                 ? planData.totalPlanLeads.toLocaleString("en-IN")
                                 : planData.totalPlanLeads}
                             </Typography>
-                            <Typography sx={{ fontSize: "0.55rem", color: COLORS.grey[600], mt: 0.5 }}>
+                            <Typography sx={{ fontSize: "0.7rem", color: COLORS.grey[600], mt: 0.5 }}>
                               {planData.lastSelectedLeads} × {planData.totalPlanStates} ={" "}
                               {planData.totalPlanLeads.toLocaleString("en-IN")}
                             </Typography>
@@ -767,7 +767,7 @@ const PaymentSummaryTable = ({
                             rowSpan={labelRowSpanMap[lbl]}
                             sx={{ ...bodyCellSx, verticalAlign: "middle" }}
                           >
-                            <Typography sx={{ fontSize: TEXT_SIZES.small, fontWeight: 700, color: COLORS.secondaryDark, whiteSpace: "nowrap" }}>
+                            <Typography sx={{ fontSize: "1rem", fontWeight: 700, color: COLORS.secondaryDark, whiteSpace: "nowrap",textAlign:"center" }}>
                               ₹{(labelSubtotalMap[lbl] || 0).toLocaleString("en-IN")}
                             </Typography>
                           </TableCell>
@@ -793,7 +793,7 @@ const PaymentSummaryTable = ({
                             "&:hover": { color: COLORS.primary, backgroundColor: COLORS.lightOrange },
                           }}
                         >
-                          <DeleteIcon sx={{ fontSize: 18 }} />
+                          <DeleteIcon sx={{ fontSize: 22 }} />
                         </IconButton>
                       </Tooltip>
                     </TableCell>
@@ -838,9 +838,9 @@ const PaymentSummaryTable = ({
           px: { xs: 0, sm: 2 },
         }}
       >
-<Typography sx={{ fontSize: "1.3rem", fontWeight: 700, color: COLORS.black, mb: 2, textAlign: "center" }}>
-          SUMMARY
-        </Typography>
+<Typography sx={{ fontSize: "1.3rem", fontWeight: 700, color: COLORS.black, mb: 2, textAlign: "center", display: { xs: "block", sm: "none" } }}>
+  SUMMARY
+</Typography>
         {/* ── Wrap entire summary in mobile accordion ── */}
      <SectionAccordion 
   title="SELECTED PLAN SUMMARY" 
@@ -850,15 +850,21 @@ const PaymentSummaryTable = ({
   onChange={onSectionChange}
 >
           {/* Header */}
-          <Box sx={{ mb: 2, pt: { xs: 1, sm: 0 } }}>
-            <Typography
-              variant="h5"
-              sx={{ fontWeight: 700, color: COLORS.black, mb: 1, fontSize: TEXT_SIZES.xl, ml:{xs:1,sm:0} ,display: { xs: "none", sm: "block" }, }}
-            >
-              Selected Plan Summary
-            </Typography>
-            <Divider sx={{ borderColor: COLORS.secondary, borderWidth: 2, width: 100, mb: 2,display: { xs: "none", sm: "block" } }} />
-          </Box>
+        <Box sx={{ mb: 2, pt: { xs: 1, sm: 0 }, display: { xs: "none", sm: "block" } }}>
+  <Typography
+   variant="h4"
+        sx={{
+          fontWeight: 700,
+          color: COLORS.black,
+          mb: 1,
+          fontSize: { xs: "1rem", md: "1.9rem" },
+          textAlign:"center"
+        }}
+  >
+   SELECTED PLAN SUMMARY 
+  </Typography>
+  {/* <Divider sx={{ borderColor: COLORS.secondary, borderWidth: 2, width: 100, mb: 2, mx: "auto" }} /> */}
+</Box>
 
           {/* Responsive: accordion on mobile, table on desktop */}
           {isMobile ? renderMobileAccordion() : renderDesktopTable()}
