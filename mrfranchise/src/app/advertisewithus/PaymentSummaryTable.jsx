@@ -69,7 +69,7 @@ const SectionAccordion = ({
       elevation={0}
       sx={{
         mb: 0,
-               border: `3px solid ${COLORS.primary}`,
+// border: `3px solid ${COLORS.primary}`,
         borderRadius: "12px !important",
         overflow: "hidden",
         "&:before": { display: "none" },
@@ -172,7 +172,7 @@ Object.entries(groupedByPlan).forEach(([planId, planData]) => {
         selectedLeads: item.selectedLeads || 0,
         states: new Set(),
         pricePerState: item.pricePerState,
-        totalAmount: item.totalAmount || 0,  // ✅ use pre-calculated amount
+        totalAmount: item.totalAmount || 0,
       };
     }
     (item.states || []).forEach((s) => byRange[item.range].states.add(s));
@@ -187,10 +187,18 @@ Object.entries(groupedByPlan).forEach(([planId, planData]) => {
   const lastRange = Object.values(byRange)[Object.values(byRange).length - 1];
   const lastSelectedLeads = lastRange ? lastRange.selectedLeads : 0;
 
-  // ✅ sum totalAmount directly from each range
+  // ✅ avoid duplicate states across ranges
+  const countedStates = new Set();
   let totalAmount = 0;
-  Object.values(byRange).forEach(({ totalAmount: rangeAmount }) => {
-    totalAmount += rangeAmount;
+  Object.values(byRange).forEach(({ pricePerState, states }) => {
+    const uniqueNewStates = new Set();
+    states.forEach((s) => {
+      if (!countedStates.has(s)) {
+        uniqueNewStates.add(s);
+        countedStates.add(s);
+      }
+    });
+    totalAmount += pricePerState * uniqueNewStates.size;
   });
 
   planData.totalPlanLeads = lastSelectedLeads * uniqueStateCount;
@@ -258,12 +266,20 @@ Object.entries(groupedByPlan).forEach(([planId, planData]) => {
 
 const labelSubtotalMap = {};
 Object.entries(labelGroupMap).forEach(([lbl, ranges]) => {
+  const countedStates = new Set();  // ← track seen states across ranges
   let labelTotal = 0;
   ranges.forEach((rg) => {
-    // ✅ totalAmount is already correct from the server
+    const uniqueNewStates = new Set();
     rg.items.forEach((item) => {
-      labelTotal += item.totalAmount || 0;
+      (item.states || []).forEach((s) => {
+        if (!countedStates.has(s)) {
+          uniqueNewStates.add(s);
+          countedStates.add(s);
+        }
+      });
     });
+    // ✅ only charge for states not already counted
+    labelTotal += (rg.pricePerState || 0) * uniqueNewStates.size;
   });
   labelSubtotalMap[lbl] = labelTotal;
 });
