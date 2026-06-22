@@ -171,7 +171,7 @@ const getPositionStyles = () => {
     },
   }}
 >
-  <DragIndicatorIcon sx={{ fontSize: { xs: 20, sm: 22 }, color: "#666" }} />
+  <DragIndicatorIcon sx={{ fontSize: { xs: 22, sm: 22 }, color: "#666" }} />
 </Box>
 
       {/* ── SINGLE ROW — always ── */}
@@ -207,10 +207,10 @@ const getPositionStyles = () => {
                   background: "linear-gradient(180deg,#ffffff,#f8f8f8)",
                   border: "1px solid #ececec",
                   borderRadius: { xs: "12px", sm: "16px", md: "18px" },
-                  px: { xs: 1, sm: 1.5, md: 2 },
+                  px: { xs: 0.5, sm: 1.5, md: 2 },
                   py: { xs: 0.6, sm: 1, md: 1.3 },
                   textAlign: "center",
-                  minWidth: { xs: 56, sm: 80, md: 100 },
+                  minWidth: { xs: 30, sm: 80, md: 100 },
                   transition: "0.3s ease",
                   "&:hover": {
                     transform: "translateY(-2px)",
