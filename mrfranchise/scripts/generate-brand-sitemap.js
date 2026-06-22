@@ -5,8 +5,7 @@ const SITE_URL = "https://mrfranchise.in";
 
 
 const API_BASE =
-process.env.NEXT_PUBLIC_API_URL ||
-"https://mrfranchisebackend.mrfranchise.in";
+process.env.NEXT_PUBLIC_API_URL;
 
 
 
