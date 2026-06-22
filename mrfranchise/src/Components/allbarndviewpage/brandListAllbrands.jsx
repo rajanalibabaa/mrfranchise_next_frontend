@@ -21,13 +21,9 @@ import Fade from "@mui/material/Fade";
 import Skeleton from "@mui/material/Skeleton";
 import Drawer from "@mui/material/Drawer";
 import IconButton from "@mui/material/IconButton";
-import Tooltip from "@mui/material/Tooltip";
 import Pagination from "@mui/material/Pagination";
 
 import Close from "@mui/icons-material/Close";
-import FilterAlt from "@mui/icons-material/FilterAlt";
-import { motion } from "framer-motion";
-
 
 import dynamic from "next/dynamic";
 import { useDispatch, useSelector, shallowEqual } from "react-redux";
@@ -159,7 +155,7 @@ const BrandCard = dynamic(
       console.error("Failed to load BrandCard:", err);
       return { default: () => <BrandCardSkeleton /> };
     }),
-  { loading: () => <BrandCardSkeleton />, ssr: false }
+  { loading: () => <BrandCardSkeleton />, ssr: false },
 );
 
 const FilterPanel = dynamic(
@@ -168,7 +164,7 @@ const FilterPanel = dynamic(
       console.error("Failed to load FilterPanel:", err);
       return { default: () => <FilterPanelSkeleton /> };
     }),
-  { loading: () => <FilterPanelSkeleton />, ssr: false }
+  { loading: () => <FilterPanelSkeleton />, ssr: false },
 );
 
 const BrandComparison = dynamic(
@@ -176,7 +172,7 @@ const BrandComparison = dynamic(
     import("@/Components/HomePages/brandCompariosn").catch(() => ({
       default: () => null,
     })),
-  { ssr: false }
+  { ssr: false },
 );
 
 const LoginPage = dynamic(
@@ -184,7 +180,7 @@ const LoginPage = dynamic(
     import("@/Components/LoginPage/LoginPage").catch(() => ({
       default: () => null,
     })),
-  { ssr: false }
+  { ssr: false },
 );
 
 // ============================================
@@ -204,7 +200,7 @@ const useIntersectionObserver = () => {
           observer.disconnect();
         }
       },
-      { threshold: 0.1, rootMargin: "200px" }
+      { threshold: 0.1, rootMargin: "200px" },
     );
     observer.observe(currentRef);
     return () => observer.disconnect();
@@ -279,42 +275,36 @@ function BrandList({ maincat, subcat, slug, subslug }) {
   const [isFilterSticky, setIsFilterSticky] = useState(false);
 
   const [windowSize, setWindowSize] = useState({
-  width: 0,
-  height: 0,
-});
-
-useEffect(() => {
-
-  setWindowSize({
-    width: window.innerWidth,
-    height: window.innerHeight,
+    width: 0,
+    height: 0,
   });
 
-
-  const handleResize = () => {
+  useEffect(() => {
     setWindowSize({
       width: window.innerWidth,
       height: window.innerHeight,
     });
-  };
 
+    const handleResize = () => {
+      setWindowSize({
+        width: window.innerWidth,
+        height: window.innerHeight,
+      });
+    };
 
-  window.addEventListener("resize", handleResize);
+    window.addEventListener("resize", handleResize);
 
-
-  return () => {
-    window.removeEventListener("resize", handleResize);
-  };
-
-}, []);
-
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
 
   // ============================================
   // REDUX SELECTORS
   // ============================================
   const { brands, loading, error, filters, pagination } = useSelector(
     (state) => state.filterBrands,
-    shallowEqual
+    shallowEqual,
   );
 
   useEffect(() => {
@@ -382,7 +372,7 @@ useEffect(() => {
       },
       gap: 2,
     }),
-    []
+    [],
   );
 
   const containerStyles = useMemo(
@@ -395,7 +385,7 @@ useEffect(() => {
       minHeight: "87vh",
       width: "100%",
     }),
-    []
+    [],
   );
 
   // ============================================
@@ -412,7 +402,7 @@ useEffect(() => {
       dispatch(fetchFilteredBrands(filtersToFetch));
       if (isFirstLoad) setIsFirstLoad(false);
     },
-    [dispatch, isFirstLoad]
+    [dispatch, isFirstLoad],
   );
 
   // ============================================
@@ -458,7 +448,7 @@ useEffect(() => {
         fetchFilterOptions({
           main: initialFilters.maincat,
           sub: initialFilters.subcat,
-        })
+        }),
       );
     } else if (initialFilters.maincat) {
       dispatch(fetchFilterOptions({ main: initialFilters.maincat }));
@@ -505,7 +495,7 @@ useEffect(() => {
             fetchFilterOptions({
               sub: value,
               main: filtersRef.current?.maincat,
-            })
+            }),
           );
       } else if (name === "state") {
         if (value) dispatch(fetchFilterOptions({ state: value }));
@@ -516,7 +506,7 @@ useEffect(() => {
             fetchFilterOptions({
               district: value,
               state: filtersRef.current?.state,
-            })
+            }),
           );
       }
       if (name === "subcat" && value) {
@@ -537,12 +527,12 @@ useEffect(() => {
         }
       }
     },
-    [dispatch, pathname, router]
+    [dispatch, pathname, router],
   );
 
   const handleMobileFilterChange = useCallback(
     (name, value) => handleFilterChange(name, value),
-    [handleFilterChange]
+    [handleFilterChange],
   );
 
   const handleApplyMobileFilters = useCallback(() => {
@@ -563,7 +553,7 @@ useEffect(() => {
       dispatch(setPage(page));
       window.scrollTo({ top: 0, behavior: "smooth" });
     },
-    [dispatch]
+    [dispatch],
   );
 
   const handleLikeClick = useCallback(
@@ -583,7 +573,7 @@ useEffect(() => {
         setLikeProcessing((prev) => ({ ...prev, [brandId]: false }));
       }
     },
-    [likeProcessing, isAuthenticated, filters, fetchBrands]
+    [likeProcessing, isAuthenticated, filters, fetchBrands],
   );
 
   const toggleBrandComparison = useCallback((brand) => {
@@ -743,7 +733,7 @@ useEffect(() => {
                 likeProcessing={likeProcessing}
                 enableComparison={enableComparison}
                 isSelectedForComparison={selectedForComparison.some(
-                  (b) => b.uuid === brand.uuid
+                  (b) => b.uuid === brand.uuid,
                 )}
                 onToggleBrandComparison={toggleBrandComparison}
                 maxComparisonReached={
@@ -796,8 +786,10 @@ useEffect(() => {
   return (
     <Container maxWidth="xl" sx={containerStyles}>
       {/* ── Compare Button (fixed right, all screens) ── */}
-    <CompareFloatingButton    selectedForComparison ={selectedForComparison}
-  handleCompareClick={handleCompareClick}/>
+      <CompareFloatingButton
+        selectedForComparison={selectedForComparison}
+        handleCompareClick={handleCompareClick}
+      />
       {/* ── 🔥 STICKY FILTER BAR (mobile only, appears on scroll) ── */}
       {isMobile && isFilterSticky && (
         <Fade in={isFilterSticky} timeout={250}>
@@ -865,10 +857,7 @@ useEffect(() => {
 
         {/* ── 🔥 MOBILE: Normal Filter Button (in flow) ── */}
         {isMobile && (
-          <Box
-            ref={filterButtonRef}
-            sx={{ mb: 2, mt: 1 }}
-          >
+          <Box ref={filterButtonRef} sx={{ mb: 2, mt: 1 }}>
             <FilterButtonContent />
           </Box>
         )}
@@ -984,7 +973,7 @@ useEffect(() => {
             selectedBrands={selectedForComparison}
             onRemoveFromComparison={(uuid) =>
               setSelectedForComparison((prev) =>
-                prev.filter((b) => b.uuid !== uuid)
+                prev.filter((b) => b.uuid !== uuid),
               )
             }
           />

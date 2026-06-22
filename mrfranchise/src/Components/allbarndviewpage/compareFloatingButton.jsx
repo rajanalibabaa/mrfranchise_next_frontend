@@ -32,17 +32,17 @@ const CompareFloatingButton = ({
   const x = useMotionValue(
     typeof window !== "undefined"
       ? isMobile
-        ? window.innerWidth - 55   // right side on mobile
-        : window.innerWidth - 120  // right side on desktop
-      : 0
+        ? window.innerWidth - 55 // right side on mobile
+        : window.innerWidth - 145 // right side on desktop
+      : 0,
   );
 
   const y = useMotionValue(
     typeof window !== "undefined"
       ? isMobile
         ? window.innerHeight * 0.35 // 35% from top on mobile
-        : window.innerHeight * 0.2  // 20% from top on desktop
-      : 150
+        : window.innerHeight * 0.2 // 20% from top on desktop
+      : 150,
   );
 
   const handleClick = (e) => {
@@ -60,9 +60,7 @@ const CompareFloatingButton = ({
       dragConstraints={{
         top: 0,
         left: 0,
-        right: windowSize.width
-          ? windowSize.width - (isMobile ? 50 : 55)
-          : 0,
+        right: windowSize.width ? windowSize.width - (isMobile ? 50 : 55) : 0,
         bottom: windowSize.height
           ? windowSize.height - (isMobile ? 130 : 140)
           : 0,
@@ -73,7 +71,8 @@ const CompareFloatingButton = ({
       }}
       onDrag={(_, info) => {
         // ✅ Track how far user dragged to distinguish from tap
-        dragDistance.current = Math.abs(info.offset.x) + Math.abs(info.offset.y);
+        dragDistance.current =
+          Math.abs(info.offset.x) + Math.abs(info.offset.y);
       }}
       onDragEnd={() => {
         // ✅ Reset after short delay so click doesn't fire
@@ -119,8 +118,12 @@ const CompareFloatingButton = ({
           {/* ✅ Wrapper div handles rotation — button stays unrotated internally */}
           <div
             style={{
-              transform: "rotate(-90deg)",
-              transformOrigin: "center center",
+              transform: isMobile ? "none" : "rotate(-90deg)",
+              transformOrigin: "center",
+
+              width: isMobile ? "auto" : "115px",
+              height: isMobile ? "auto" : "42px",
+
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -129,31 +132,30 @@ const CompareFloatingButton = ({
             <Button
               variant="contained"
               startIcon={!isMobile && <Compare />}
-              // ✅ Use onPointerUp for reliable mobile click detection
               onPointerUp={handleClick}
               sx={{
-                borderRadius: 2,
-                boxShadow: 3,
+                borderRadius: "22px",
+
+                width: isMobile ? "95px" : "115px",
+
+                minWidth: isMobile ? "95px" : "115px",
+
+                height: isMobile ? "38px" : "42px",
+
+                padding: isMobile ? "0 12px" : "0 20px",
+
                 bgcolor: "#ff9800",
-                fontSize: isMobile ? "11px" : "13px",
+
+                color: "#fff",
+
                 fontWeight: 700,
-                height: isMobile ? "110px" : "120px",
-                width: isMobile ? "42px" : "100px",
-                // minWidth: "unset",
-                // padding: "8px 4px",
-                lineHeight: 1.2,
-                letterSpacing: "0.5px",
-                // ✅ Prevent text selection on drag
-                userSelect: "none",
-                WebkitUserSelect: "none",
-                // ✅ Ensure button pointer events work
-                pointerEvents: "auto",
+
+                fontSize: isMobile ? "12px" : "14px",
+
+                boxShadow: "0 8px 25px rgba(255,152,0,.45)",
+
                 "&:hover": {
                   bgcolor: "#fb8c00",
-                },
-                "&:active": {
-                  bgcolor: "#f57c00",
-                  transform: "scale(0.97)",
                 },
               }}
             >
