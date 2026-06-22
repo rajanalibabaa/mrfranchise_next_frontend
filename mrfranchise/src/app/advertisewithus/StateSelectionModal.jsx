@@ -111,17 +111,17 @@ const StateSelectionModal = ({
               <Typography fontWeight={700} fontSize={TEXT_SIZES.small} color={COLORS.black}>
                 {region}
               </Typography>
-              <Chip
-                label={`${selectedCount}/${availableStates.length} selected`}
-                size="small"
-                sx={{
-                  height: 24,
-                  fontSize: TEXT_SIZES.xs,
-                  backgroundColor: selectedCount > 0 ? COLORS.lightOrange : COLORS.grey[200],
-                  color: selectedCount > 0 ? COLORS.primaryDark : COLORS.grey[600],
-                  fontWeight: 600
-                }}
-              />
+             <Chip
+  label={`${selectedCount}/${availableStates.length} selected`}
+  size="small"
+  sx={{
+    height: 24,
+    fontSize: TEXT_SIZES.xs,
+    backgroundColor: selectedCount > 0 ? "#4cb04f" : COLORS.grey[200],
+    color: selectedCount > 0 ? COLORS.black : COLORS.grey[600],
+    fontWeight: 600
+  }}
+/>
             </Box>
           </AccordionSummary>
           

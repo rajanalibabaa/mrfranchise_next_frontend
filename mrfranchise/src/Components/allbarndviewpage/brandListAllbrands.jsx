@@ -26,7 +26,8 @@ import Pagination from "@mui/material/Pagination";
 
 import Close from "@mui/icons-material/Close";
 import FilterAlt from "@mui/icons-material/FilterAlt";
-import Compare from "@mui/icons-material/Compare";
+import { motion } from "framer-motion";
+
 
 import dynamic from "next/dynamic";
 import { useDispatch, useSelector, shallowEqual } from "react-redux";
@@ -41,6 +42,7 @@ import { getLocalStorageData } from "@/Utils/localStorage";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import BrandTags from "./brandTags";
 import Navbar from "../Navbar/NavBar";
+import CompareFloatingButton from "./compareFloatingButton";
 
 // ============================================
 // FILTER KEYS
@@ -275,6 +277,37 @@ function BrandList({ maincat, subcat, slug, subslug }) {
   const [initialFiltersApplied, setInitialFiltersApplied] = useState(false);
   // 🔥 Track if filter button has scrolled out of view
   const [isFilterSticky, setIsFilterSticky] = useState(false);
+
+  const [windowSize, setWindowSize] = useState({
+  width: 0,
+  height: 0,
+});
+
+useEffect(() => {
+
+  setWindowSize({
+    width: window.innerWidth,
+    height: window.innerHeight,
+  });
+
+
+  const handleResize = () => {
+    setWindowSize({
+      width: window.innerWidth,
+      height: window.innerHeight,
+    });
+  };
+
+
+  window.addEventListener("resize", handleResize);
+
+
+  return () => {
+    window.removeEventListener("resize", handleResize);
+  };
+
+}, []);
+
 
   // ============================================
   // REDUX SELECTORS
@@ -763,28 +796,8 @@ function BrandList({ maincat, subcat, slug, subslug }) {
   return (
     <Container maxWidth="xl" sx={containerStyles}>
       {/* ── Compare Button (fixed right, all screens) ── */}
-      <Box sx={{ position: "fixed", top: "30%", right: 12, zIndex: 1000 }}>
-        <Badge badgeContent={selectedForComparison.length} color="primary">
-          <Tooltip title="Compare brands" placement="left" arrow>
-            <Button
-              variant="contained"
-              startIcon={<Compare />}
-              onClick={handleCompareClick}
-              sx={{
-                transform: "rotate(-90deg)",
-                transformOrigin: "right center",
-                borderRadius: 2,
-                boxShadow: 3,
-                bgcolor: "#ff9800",
-                "&:hover": { bgcolor: "#fb8c00" },
-              }}
-            >
-              Compare
-            </Button>
-          </Tooltip>
-        </Badge>
-      </Box>
-
+    <CompareFloatingButton    selectedForComparison ={selectedForComparison}
+  handleCompareClick={handleCompareClick}/>
       {/* ── 🔥 STICKY FILTER BAR (mobile only, appears on scroll) ── */}
       {isMobile && isFilterSticky && (
         <Fade in={isFilterSticky} timeout={250}>

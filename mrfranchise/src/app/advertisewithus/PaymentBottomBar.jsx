@@ -11,12 +11,11 @@ const PaymentBottomBar = ({
   loading = false,
   handleProceedToPayment,
 }) => {
-  const [bottomOffset, setBottomOffset] = useState(20);
-  const [position, setPosition] = useState({ x: 0, y: null }); // y: null means use bottom positioning
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-  const [startPosition, setStartPosition] = useState({ x: 0, y: 0 });
-  const barRef = useRef(null);
+const [bottomOffset, setBottomOffset] = useState(20);
+const [dragY, setDragY] = useState(null); // null = use default bottom positioning
+const [isDragging, setIsDragging] = useState(false);
+const [dragStartY, setDragStartY] = useState(0);
+const [startY, setStartY] = useState(0);  const barRef = useRef(null);
   const dragHandleRef = useRef(null);
   const theme = useTheme();
   const isXs = useMediaQuery(theme.breakpoints.only("xs"));
@@ -44,123 +43,79 @@ const PaymentBottomBar = ({
   }, [isXs, isDragging]);
 
   // Handle window resize to keep bar within bounds
-  useEffect(() => {
-    const handleResize = () => {
-      if (position.y !== null && barRef.current) {
-        const barRect = barRef.current.getBoundingClientRect();
-        const viewportHeight = window.innerHeight;
-        // Constrain Y position
-        const maxY = viewportHeight - barRect.height - 10;
-        const constrainedY = Math.max(10, Math.min(position.y, maxY));
-        if (constrainedY !== position.y) {
-          setPosition(prev => ({ ...prev, y: constrainedY }));
-        }
-      }
-    };
-
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, [position.y]);
-
-  const handleMouseDown = (e) => {
-    if (dragHandleRef.current && dragHandleRef.current.contains(e.target)) {
+useEffect(() => {
+  const handleResize = () => {
+    if (dragY !== null && barRef.current) {
       const barRect = barRef.current.getBoundingClientRect();
-      
-      // Get current position (convert bottom to top if needed)
-      let currentY = position.y;
-      if (currentY === null) {
-        // Convert from bottom positioning to top positioning
-        currentY = barRect.top;
-      }
-      
-      setStartPosition({
-        x: barRect.left,
-        y: currentY,
-      });
-      
-      setDragStart({
-        x: e.clientX,
-        y: e.clientY,
-      });
-      
-      setIsDragging(true);
-      e.preventDefault();
-    }
-  };
-
-  const handleMouseMove = (e) => {
-    if (isDragging && barRef.current) {
-      const deltaX = e.clientX - dragStart.x;
-      const deltaY = e.clientY - dragStart.y;
-      
-      let newX = startPosition.x + deltaX;
-      let newY = startPosition.y + deltaY;
-      
-      // Get viewport boundaries
-      const barRect = barRef.current.getBoundingClientRect();
-      const viewportWidth = window.innerWidth;
       const viewportHeight = window.innerHeight;
-      
-      // Constrain within viewport boundaries
-      const constrainedX = Math.max(10, Math.min(newX, viewportWidth - barRect.width - 10));
-      const constrainedY = Math.max(10, Math.min(newY, viewportHeight - barRect.height - 10));
-      
-      setPosition({ 
-        x: constrainedX, 
-        y: constrainedY 
-      });
+      const maxY = viewportHeight - barRect.height - 10;
+      const constrainedY = Math.max(10, Math.min(dragY, maxY));
+      if (constrainedY !== dragY) setDragY(constrainedY);
     }
   };
+  window.addEventListener("resize", handleResize);
+  return () => window.removeEventListener("resize", handleResize);
+}, [dragY]);
+
+const handleMouseDown = (e) => {
+  if (dragHandleRef.current && dragHandleRef.current.contains(e.target)) {
+    const barRect = barRef.current.getBoundingClientRect();
+    const currentY = dragY === null ? barRect.top : dragY;
+    setStartY(currentY);
+    setDragStartY(e.clientY);
+    setIsDragging(true);
+    e.preventDefault();
+  }
+};
+
+ const handleMouseMove = (e) => {
+  if (isDragging && barRef.current) {
+    const deltaY = e.clientY - dragStartY;
+    const newY = startY + deltaY;
+    const barRect = barRef.current.getBoundingClientRect();
+    const viewportHeight = window.innerHeight;
+    const constrainedY = Math.max(10, Math.min(newY, viewportHeight - barRect.height - 10));
+    setDragY(constrainedY);
+  }
+};
 
   const handleMouseUp = () => {
     setIsDragging(false);
   };
 
-  useEffect(() => {
-    if (isDragging) {
-      window.addEventListener("mousemove", handleMouseMove);
-      window.addEventListener("mouseup", handleMouseUp);
-      return () => {
-        window.removeEventListener("mousemove", handleMouseMove);
-        window.removeEventListener("mouseup", handleMouseUp);
-      };
-    }
-  }, [isDragging, dragStart, startPosition]);
+ useEffect(() => {
+  if (isDragging) {
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+  }
+}, [isDragging, dragStartY, startY]);
 
   // Reset to bottom position when double-clicking the drag handle
-  const handleDoubleClick = () => {
-    setPosition({ x: 0, y: null });
-  };
+const handleDoubleClick = () => {
+  setDragY(null);
+};
 
   if (statCards.length === 0 && totalAmount === 0) return null;
 
-  // Determine positioning styles
-  const getPositionStyles = () => {
-    if (position.y !== null && !isDragging && position.y !== undefined) {
-      // Use top positioning when dragged
-      return {
-        top: `${position.y}px`,
-        left: `${position.x}px`,
-        bottom: 'auto',
-        transform: 'none',
-      };
-    } else if (isDragging && position.y !== null) {
-      // During drag
-      return {
-        top: `${position.y}px`,
-        left: `${position.x}px`,
-        bottom: 'auto',
-        transform: 'none',
-      };
-    } else {
-      // Default bottom positioning
-      return {
-        bottom: `${bottomOffset}px`,
-        left: '50%',
-        transform: 'translateX(-50%)',
-      };
-    }
+const getPositionStyles = () => {
+  if (dragY !== null) {
+    return {
+      top: `${dragY}px`,
+      left: "50%",
+      bottom: "auto",
+      transform: "translateX(-50%)",
+    };
+  }
+  return {
+    bottom: `${bottomOffset}px`,
+    left: "50%",
+    transform: "translateX(-50%)",
   };
+};
 
   return (
     <Box
@@ -169,7 +124,7 @@ const PaymentBottomBar = ({
       sx={{
         position: "fixed",
         ...getPositionStyles(),
-        width: { xs: "calc(100% - 30px)", sm: "92%", md: "85%", lg: "70%", xl: "45%" },
+        width: { xs: "calc(100% - 60px)", sm: "92%", md: "85%", lg: "70%", xl: "45%" },
         maxWidth: "1100px",
         zIndex: 1200,
         background:
@@ -181,42 +136,43 @@ const PaymentBottomBar = ({
         py: { xs: 1, sm: 1.5, md: 2 },
         transition: isDragging ? "none" : "bottom 0.1s linear, box-shadow 0.3s ease, top 0.2s ease",
         cursor: isDragging ? "grabbing" : "default",
-        "&:hover": {
-          boxShadow: "0 28px 80px rgba(255,152,0,0.18)",
-          transform: position.y === null ? "translateX(-50%) translateY(-2px)" : "translateY(-2px)",
-        },
+      "&:hover": {
+  boxShadow: "0 28px 80px rgba(255,152,0,0.18)",
+  transform: "translateX(-50%) translateY(-2px)",
+},
         mb: { xs: -8, sm: 0 },
       }}
     >
-      {/* Drag Handle */}
-      <Box
-        ref={dragHandleRef}
-        onMouseDown={handleMouseDown}
-        onDoubleClick={handleDoubleClick}
-        sx={{
-          position: "absolute",
-          top: "8px",
-          left: "50%",
-          transform: "translateX(-50%)",
-          cursor: "grab",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          padding: "4px",
-          borderRadius: "12px",
-          backgroundColor: "rgba(0,0,0,0.05)",
-          transition: "all 0.2s ease",
-          zIndex: 10,
-          "&:hover": {
-            backgroundColor: "rgba(0,0,0,0.1)",
-          },
-          "&:active": {
-            cursor: "grabbing",
-          },
-        }}
-      >
-        <DragIndicatorIcon sx={{ fontSize: { xs: 16, sm: 20 }, color: "#666" }} />
-      </Box>
+    {/* Drag Handle */}
+<Box
+  ref={dragHandleRef}
+  onMouseDown={handleMouseDown}
+  onDoubleClick={handleDoubleClick}
+  sx={{
+   position: "absolute",
+  top: {xs:"27px",sm:"3px"},
+  left: { xs: "-10px", sm: "50%" },
+  right: { xs: "auto", sm: "auto" },
+  transform: { xs: "none", sm: "translateX(-50%)" },
+    cursor: "grab",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: "4px",
+    borderRadius: "12px",
+    backgroundColor: "rgba(0,0,0,0.05)",
+    transition: "all 0.2s ease",
+    zIndex: 10,
+    "&:hover": {
+      backgroundColor: "rgba(0,0,0,0.1)",
+    },
+    "&:active": {
+      cursor: "grabbing",
+    },
+  }}
+>
+  <DragIndicatorIcon sx={{ fontSize: { xs: 20, sm: 22 }, color: "#666" }} />
+</Box>
 
       {/* ── SINGLE ROW — always ── */}
       <Box
