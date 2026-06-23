@@ -137,6 +137,8 @@ const PaymentSummaryTable = ({
 const groupedByPlan = {};
 
 paymentSummary.forEach((group) => {
+  console.log("📦 Processing group:", group); // Debug log
+  
   if (!group.items || group.items.length === 0) return;
 
   if (!groupedByPlan[group.planId]) {
@@ -147,22 +149,63 @@ paymentSummary.forEach((group) => {
       totalPlanAmount: 0,
       totalPlanLeads: 0,
       totalPlanStates: 0,
+      lastSelectedLeads: 0,
     };
   }
 
-  // ✅ Accumulate the correct group amount (not recalculated)
-  groupedByPlan[group.planId].totalPlanAmount += group.amount; // ← use group.amount
-
+  const planData = groupedByPlan[group.planId];
+  
+  // ✅ Process each item and ensure states are preserved
   group.items.forEach((item) => {
-    groupedByPlan[group.planId].items.push({
+    const itemStates = item.states || [];
+    const itemStateCount = itemStates.length;
+    const itemSelectedLeads = item.selectedLeads || group.selectedLeads || 0;
+    
+    // ✅ Calculate if not already calculated
+    const calculatedTotalLeads = item.totalLeads || (itemSelectedLeads * itemStateCount);
+    const calculatedTotalAmount = item.totalAmount || 
+      ((group.pricePerState || 0) / (group.minLead || 1)) * itemStateCount * itemSelectedLeads;
+    
+    planData.items.push({
       ...item,
+      states: itemStates,
+      stateCount: itemStateCount,
+      selectedLeads: itemSelectedLeads,
+      totalLeads: calculatedTotalLeads,
+      totalAmount: calculatedTotalAmount,
       pricePerState: group.pricePerState,
-      groupAmount: group.amount,      // ← store group's total amount
+      groupAmount: group.amount || group.totalAmount || 0,
       validityDays: group.validityDays,
     });
   });
+
+  // ✅ Calculate plan totals from all items
+  const allStatesSet = new Set();
+  let totalLeads = 0;
+  let totalAmount = 0;
+  let lastSelectedLeads = 0;
+
+  planData.items.forEach((item) => {
+    const itemStates = item.states || [];
+    itemStates.forEach((s) => allStatesSet.add(s));
+    totalLeads += (item.totalLeads || 0);
+    totalAmount += (item.totalAmount || 0);
+    if (item.selectedLeads) lastSelectedLeads = item.selectedLeads;
+  });
+
+  planData.totalPlanStates = allStatesSet.size;
+  planData.totalPlanLeads = totalLeads;
+  planData.totalPlanAmount = totalAmount;
+  planData.lastSelectedLeads = lastSelectedLeads;
+  
+  console.log(`📊 Plan ${planData.planName} totals:`, {
+    totalPlanStates: planData.totalPlanStates,
+    totalPlanLeads: planData.totalPlanLeads,
+    totalPlanAmount: planData.totalPlanAmount
+  });
 });
 
+// This section is WRONG - it recalculates and overwrites the values
 Object.entries(groupedByPlan).forEach(([planId, planData]) => {
   const globalUniqueStates = new Set();
   let lastSelectedLeads = 0;
@@ -174,10 +217,9 @@ Object.entries(groupedByPlan).forEach(([planId, planData]) => {
 
   const uniqueStateCount = globalUniqueStates.size;
 
-  planData.totalPlanLeads = lastSelectedLeads * uniqueStateCount;
-  planData.totalPlanStates = uniqueStateCount;
+  planData.totalPlanLeads = lastSelectedLeads * uniqueStateCount;  // ← This overwrites!
+  planData.totalPlanStates = uniqueStateCount;  // ← This overwrites!
   planData.lastSelectedLeads = lastSelectedLeads;
-  // totalPlanAmount already set correctly in the forEach above via group.amount
 });
 
   const headerCellSx = {
@@ -197,40 +239,47 @@ Object.entries(groupedByPlan).forEach(([planId, planData]) => {
     verticalAlign: "middle",
   };
 
-  // ─── BUILD SORTED RANGES (shared between mobile & desktop) ───────────
- const buildSortedRanges = (planId, planData) => {
+const buildSortedRanges = (planId, planData) => {
+  console.log("🔍 Building ranges for plan:", planId, planData); // Debug log
+  
   const groupedByRange = planData.items.reduce((acc, item) => {
     const rangeKey = `${planId}_${item.investmentRangeLabel}_${item.range}`;
     if (!acc[rangeKey]) {
+      // ✅ Get states from the item
+      const itemStates = item.states || [];
+      const stateCount = itemStates.length;
+      
       acc[rangeKey] = {
         range: item.range,
         investmentRangeLabel: item.investmentRangeLabel,
-        planId,
+        planId: planId,
         items: [],
-        totalStates: 0,
-        totalLeads: 0,
-        totalAmount: 0,
-        selectedLeads: item.selectedLeads,
+        totalStates: stateCount,  // ✅ Use state count from item
+        totalLeads: item.totalLeads || 0,
+        totalAmount: item.totalAmount || item.groupAmount || 0,
+        selectedLeads: item.selectedLeads || 0,
         pricePerState: item.pricePerState,
         validityDays: item.validityDays,
+        states: itemStates,  // ✅ Store states for reference
       };
     }
     acc[rangeKey].items.push(item);
-    
-    // Calculate unique states for this range
-    const uniqueStatesForRange = new Set();
-    acc[rangeKey].items.forEach((i) => {
-      (i.states || []).forEach((s) => uniqueStatesForRange.add(s));
-    });
-    const uniqueRangeStatesCount = uniqueStatesForRange.size;
-    
-    // ✅ Use the range's selectedLeads (not each item's)
-    acc[rangeKey].totalStates = uniqueRangeStatesCount;
-    acc[rangeKey].totalLeads = (acc[rangeKey].selectedLeads || 0) * uniqueRangeStatesCount;
-    acc[rangeKey].totalAmount = (acc[rangeKey].pricePerState || 0) * uniqueRangeStatesCount;
-    
     return acc;
   }, {});
+
+  // ✅ Ensure totalStates is correct for each range
+  Object.values(groupedByRange).forEach((rg) => {
+    // If totalStates is 0 or not set, recalculate from items
+    if (rg.totalStates === 0) {
+      const allStatesSet = new Set();
+      rg.items.forEach((item) => {
+        const itemStates = item.states || [];
+        itemStates.forEach((s) => allStatesSet.add(s));
+      });
+      rg.totalStates = allStatesSet.size;
+      console.log(`📊 Range ${rg.range} recalculated states: ${rg.totalStates}`);
+    }
+  });
 
   const labelGroupMap = {};
   Object.values(groupedByRange).forEach((rg) => {
@@ -241,12 +290,12 @@ Object.entries(groupedByPlan).forEach(([planId, planData]) => {
 
   const sortedRanges = Object.values(labelGroupMap).flat();
 
-const labelSubtotalMap = {};
-Object.entries(labelGroupMap).forEach(([lbl, ranges]) => {
-  // ✅ Use pre-calculated groupAmount instead of recalculating
-  labelSubtotalMap[lbl] = ranges[0]?.items[0]?.groupAmount || 0;
-});
+  const labelSubtotalMap = {};
+  Object.entries(labelGroupMap).forEach(([lbl, ranges]) => {
+    labelSubtotalMap[lbl] = ranges.reduce((sum, rg) => sum + (rg.totalAmount || 0), 0);
+  });
 
+  console.log("✅ Sorted Ranges:", sortedRanges); // Debug log
   return { sortedRanges, labelSubtotalMap, labelGroupMap };
 };
 

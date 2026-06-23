@@ -376,54 +376,56 @@ const UpgradeDialog = ({
   const plans = allPlans.filter(
     (p) => p.packages?.length > 1 && p.planName?.toLowerCase() !== "free"
   );
+const rows = plans.map((plan) => {
+  const matchedPkg =
+    plan.packages.find((p) => p.investmentRangeLabel === clickedRangeLabel) ||
+    plan.packages[0];
+  const pkgObj = matchedPkg;
+  const rangeLabel = pkgObj?.investmentRangeLabel || "—";
+  const validityDays = pkgObj?.validityDays || "—";
+  const pricePerState = pkgObj?.amount || 0;
+  let investmentRanges = pkgObj?.investmentRange || [];
+  if (ficoInvestmentRanges.length > 0)
+    investmentRanges = investmentRanges.filter(isFicoInvestmentRange);
 
-  const rows = plans.map((plan) => {
-    const matchedPkg =
-      plan.packages.find((p) => p.investmentRangeLabel === clickedRangeLabel) ||
-      plan.packages[0];
-    const pkgObj = matchedPkg;
-    const rangeLabel = pkgObj?.investmentRangeLabel || "—";
-    const validityDays = pkgObj?.validityDays || "—";
-    const pricePerState = pkgObj?.amount || 0;
-    let investmentRanges = pkgObj?.investmentRange || [];
-    if (ficoInvestmentRanges.length > 0)
-      investmentRanges = investmentRanges.filter(isFicoInvestmentRange);
+  const leadOptions =
+    leadsDropdownData[`${plan._id}_${rangeLabel}`] ||
+    (pkgObj?.totalLeads
+      ? Array.isArray(pkgObj.totalLeads) ? pkgObj.totalLeads : [pkgObj.totalLeads]
+      : [20, 40, 60]);
 
-    const leadOptions =
-      leadsDropdownData[`${plan._id}_${rangeLabel}`] ||
-      (pkgObj?.totalLeads
-        ? Array.isArray(pkgObj.totalLeads) ? pkgObj.totalLeads : [pkgObj.totalLeads]
-        : [20, 40, 60]);
+  const currentLead = selectedLeads[plan._id] ?? leadOptions[0] ?? 20;
+  const checked = checkedRanges[plan._id] || new Set();
 
-    const currentLead = selectedLeads[plan._id] ?? leadOptions[0] ?? 20;
-    const checked = checkedRanges[plan._id] || new Set();
+  // ✅ FIX: Use plan._id and checked here
+  const checkedRangesList = [...checked];
+  const allSelectedStates = new Set();
+  checkedRangesList.forEach((range) => {
+    const key = `${plan._id}_${range}`;
+    
+    const states = 
+      liveSelectionsRef.current[key] ||
+      stateSelections[key] ||
+      (item?.investmentranges?.find(ir => ir.selectedPlanInvestmetrange === range)
+        ?.selectedPlanStateAndDistrict || [])
+        .map(s => typeof s === "object" ? s.state : s)
+        .filter(Boolean);
 
-    const allSelectedStates = new Set();
-    [...checked].forEach((r) => {
-      const key = `${plan._id}_${r}`;
-      let states = stateSelections[key];
-      if (!states) {
-        const matchingRange = item?.investmentranges?.find(
-          (ir) => ir.selectedPlanInvestmetrange === r
-        );
-        states = (matchingRange?.selectedPlanStateAndDistrict || [])
-          .map((s) => (typeof s === "object" ? s.state : s)).filter(Boolean);
-      }
-      states.forEach((s) => allSelectedStates.add(s));
-    });
-
-    const totalStates = allSelectedStates.size;
-    const minLeads = leadOptions.length > 0 ? Math.min(...leadOptions) : 1;
-    const divisor = minLeads > 0 ? minLeads : 1;
-
-    return {
-      id: plan._id, planName: plan.planName, validityDays,
-      pricePerState, leadOptions, currentLead,
-      investmentRanges, rangeLabel, checked, totalStates,
-      totalLeads: currentLead * totalStates,
-      totalAmount: (pricePerState / divisor) * totalStates * currentLead,
-    };
+    (states || []).forEach(s => allSelectedStates.add(s));
   });
+
+  const totalStates = allSelectedStates.size;
+  const minLeads = leadOptions.length > 0 ? Math.min(...leadOptions) : 1;
+  const divisor = minLeads > 0 ? minLeads : 1;
+
+  return {
+    id: plan._id, planName: plan.planName, validityDays,
+    pricePerState, leadOptions, currentLead,
+    investmentRanges, rangeLabel, checked, totalStates,
+    totalLeads: currentLead * totalStates,
+    totalAmount: (pricePerState / divisor) * totalStates * currentLead,
+  };
+});
 
   const defaultPlanId =
     rows.find((r) => r.planName?.toLowerCase() === (item?.packagesName || "").toLowerCase())?.id ??
@@ -496,34 +498,90 @@ const UpgradeDialog = ({
     return result;
   };
 
-  const handleAddToPlan = () => {
-    const checkedRangesList = [...activePlan.checked];
-    if (checkedRangesList.length === 0) {
-      setSnackbar({ open: true, message: "Please select at least one investment range." });
-      return;
-    }
-    const missingStates = checkedRangesList.filter((range) => {
-      const key = `${activePlan.id}_${range}`;
-      const states = stateSelections[key] ?? liveSelectionsRef.current[key] ??
-        (item?.investmentranges?.find((ir) => ir.selectedPlanInvestmetrange === range)
-          ?.selectedPlanStateAndDistrict || []);
-      return !states || states.length === 0;
-    });
-    if (missingStates.length > 0) {
-      setSnackbar({ open: true, message: `Please select states for: ${missingStates.join(", ")}` });
-      return;
-    }
-    onUpgrade?.({
-      planId: activePlan.id, planName: activePlan.planName,
-      leads: activePlan.currentLead, checkedRanges: checkedRangesList,
-      statesByRange: buildStatesByRange(activePlan.id, activePlan.checked),
-      totalLeads: activePlan.totalLeads, totalAmount: activePlan.totalAmount,
-      pricePerState: activePlan.pricePerState, validityDays: activePlan.validityDays,
-      investmentRangeLabel: activePlan.rangeLabel, rangeLabel: activePlan.rangeLabel,
-    });
-    onClose?.();
-    setTimeout(() => scrollToPaymentSummary?.(), 300);
-  };
+const handleAddToPlan = () => {
+  const currentPlanId = activePlanId || defaultPlanId;
+  const planRow = rows.find(r => r.id === currentPlanId);
+  if (!planRow) return;
+
+  const currentLead = selectedLeads[currentPlanId] ?? planRow.leadOptions[0] ?? 20;
+  
+  const minLead = planRow.leadOptions.length > 0 
+    ? Math.min(...planRow.leadOptions) 
+    : 1;
+
+  // ✅ FIX: Use currentPlanId, not plan._id
+  const currentCheckedRanges = checkedRanges[currentPlanId] || new Set();
+  const checkedRangesList = [...currentCheckedRanges];
+
+  const allSelectedStates = new Set();
+  checkedRangesList.forEach((range) => {
+    const key = `${currentPlanId}_${range}`; // ✅ Use currentPlanId
+    
+    const states = 
+      liveSelectionsRef.current[key] ||
+      stateSelections[key] ||
+      (item?.investmentranges?.find(ir => ir.selectedPlanInvestmetrange === range)
+        ?.selectedPlanStateAndDistrict || [])
+        .map(s => typeof s === "object" ? s.state : s)
+        .filter(Boolean);
+
+    (states || []).forEach(s => allSelectedStates.add(s));
+  });
+
+  const totalStates = allSelectedStates.size;
+
+  const missingStates = checkedRangesList.filter((range) => {
+    const key = `${currentPlanId}_${range}`;
+    const states = stateSelections[key] ?? liveSelectionsRef.current[key] ??
+      (item?.investmentranges?.find(ir => ir.selectedPlanInvestmetrange === range)
+        ?.selectedPlanStateAndDistrict || []);
+    return !states || states.length === 0;
+  });
+
+  if (missingStates.length > 0) {
+    setSnackbar({ open: true, message: `Please select states for: ${missingStates.join(", ")}` });
+    return;
+  }
+
+  const totalLeads = currentLead * totalStates;
+  const totalAmount = (planRow.pricePerState / minLead) * currentLead * totalStates;
+
+  const statesByRange = {};
+  checkedRangesList.forEach((range) => {
+    const key = `${currentPlanId}_${range}`;
+    
+    const states = 
+      liveSelectionsRef.current[key] ||
+      stateSelections[key] ||
+      (item?.investmentranges?.find(ir => ir.selectedPlanInvestmetrange === range)
+        ?.selectedPlanStateAndDistrict || [])
+        .map(s => typeof s === "object" ? s.state : s)
+        .filter(Boolean);
+    
+    statesByRange[range] = states;
+  });
+
+  onUpgrade?.({
+    planId: currentPlanId,
+    planName: planRow.planName,
+    leads: currentLead,
+    selectedLeads: currentLead,
+    checkedRanges: checkedRangesList,
+    statesByRange,
+    totalLeads,
+    totalAmount,
+    amount: totalAmount,
+    pricePerState: planRow.pricePerState,
+    minLead,
+    validityDays: planRow.validityDays,
+    investmentRangeLabel: planRow.rangeLabel,
+    rangeLabel: planRow.rangeLabel,
+    totalStates,
+  });
+
+  onClose?.();
+  setTimeout(() => scrollToPaymentSummary?.(), 300);
+};
 
   // ============================================================
   // MOBILE CARD LAYOUT — matches screenshot design

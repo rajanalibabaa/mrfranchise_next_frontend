@@ -1224,40 +1224,93 @@ const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
         finalToken={finalToken}
         ficoInvestmentRanges={ficoInvestmentRanges}
         onUpgradeModeChange={(isUpgrade, planId) => { setIsUpgradeMode(isUpgrade); setUpgradePlanId(planId); }}
-        onAddToPaymentSummary={(upgradeData) => {
-          const selectedItems = [];
-          (upgradeData.checkedRanges || []).forEach((range) => {
-            const states = upgradeData.statesByRange?.[range] || [];
-            if (states.length > 0) {
-              selectedItems.push({
-                id: `${upgradeData.planId}-${upgradeData.investmentRangeLabel}-${range}`,
-                investmentRangeLabel: upgradeData.investmentRangeLabel || "—",
-                range, states, stateCount: states.length,
-                selectedLeads: upgradeData.leads, totalLeads: upgradeData.leads * states.length,
-                totalAmount: upgradeData.pricePerState * states.length,
-              });
-            }
-          });
-          if (selectedItems.length === 0) return;
-          const groupKey = `${upgradeData.planId}__${upgradeData.investmentRangeLabel}`;
-          setPaymentSummary((prev) => {
-            const existingIndex = prev.findIndex((p) => p.groupKey === groupKey);
-            const newGroup = {
-              groupKey, planId: upgradeData.planId, planName: upgradeData.planName,
-              investmentRangeLabel: upgradeData.investmentRangeLabel, pricePerState: upgradeData.pricePerState,
-              validityDays: upgradeData.validityDays, items: selectedItems,
-              uniqueStates: [...new Set(selectedItems.flatMap((i) => i.states))],
-              totalStates: new Set(selectedItems.flatMap((i) => i.states)).size,
-              amount: upgradeData.pricePerState * new Set(selectedItems.flatMap((i) => i.states)).size,
-              totalLeads: upgradeData.leads * new Set(selectedItems.flatMap((i) => i.states)).size,
-              selectedLeads: upgradeData.leads,
-            };
-            if (existingIndex !== -1) { const updated = [...prev]; updated[existingIndex] = newGroup; return updated; }
-            return [...prev, newGroup];
-          });
-          setMovedGroupKeys((prev) => { if (!prev.includes(groupKey)) return [...prev, groupKey]; return prev; });
-          setTimeout(() => scrollToPaymentSummary(), 100);
-        }}
+onAddToPaymentSummary={(upgradeData) => {
+  console.log("📦 Upgrade Data received:", upgradeData); // Debug log
+  
+  const selectedItems = [];
+  const checkedRanges = upgradeData.checkedRanges || [];
+  
+  checkedRanges.forEach((range) => {
+    // ✅ Get states from statesByRange
+    const states = upgradeData.statesByRange?.[range] || [];
+    console.log(`📍 Range: ${range}, States:`, states); // Debug log
+    
+    if (states && states.length > 0) {
+      const selectedLeads = upgradeData.selectedLeads || upgradeData.leads || 0;
+      const minLead = upgradeData.minLead || 1;
+      const pricePerState = upgradeData.pricePerState || 0;
+      const stateCount = states.length;
+      const totalLeads = selectedLeads * stateCount;
+      const totalAmount = (pricePerState / minLead) * stateCount * selectedLeads;
+      
+      selectedItems.push({
+        id: `${upgradeData.planId}-${upgradeData.investmentRangeLabel}-${range}`,
+        investmentRangeLabel: upgradeData.investmentRangeLabel || "—",
+        range: range,
+        states: states,  // ✅ IMPORTANT: Store states array
+        stateCount: stateCount,
+        selectedLeads: selectedLeads,
+        totalLeads: totalLeads,
+        totalAmount: totalAmount,
+        // Preserve for debugging
+        _debug: { range, stateCount, selectedLeads, totalLeads, totalAmount }
+      });
+    } else {
+      console.warn(`⚠️ No states found for range: ${range}`);
+    }
+  });
+  
+  if (selectedItems.length === 0) {
+    console.warn("⚠️ No items selected to add to summary");
+    return;
+  }
+  
+  const groupKey = `${upgradeData.planId}__${upgradeData.investmentRangeLabel}`;
+  
+  setPaymentSummary((prev) => {
+    const existingIndex = prev.findIndex((p) => p.groupKey === groupKey);
+    
+    // Calculate unique states across all items
+    const allStatesSet = new Set();
+    selectedItems.forEach((item) => {
+      (item.states || []).forEach((state) => allStatesSet.add(state));
+    });
+    const totalUniqueStates = allStatesSet.size;
+    const totalGroupAmount = selectedItems.reduce((sum, item) => sum + (item.totalAmount || 0), 0);
+    const totalGroupLeads = selectedItems.reduce((sum, item) => sum + (item.totalLeads || 0), 0);
+    
+    const newGroup = {
+      groupKey: groupKey,
+      planId: upgradeData.planId,
+      planName: upgradeData.planName,
+      investmentRangeLabel: upgradeData.investmentRangeLabel || "—",
+      pricePerState: upgradeData.pricePerState || 0,
+      validityDays: upgradeData.validityDays || 0,
+      items: selectedItems,
+      uniqueStates: Array.from(allStatesSet),
+      totalStates: totalUniqueStates,
+      amount: totalGroupAmount,
+      totalLeads: totalGroupLeads,
+      selectedLeads: upgradeData.selectedLeads || upgradeData.leads || 0,
+    };
+    
+    console.log("✅ New Group:", newGroup); // Debug log
+    
+    if (existingIndex !== -1) {
+      const updated = [...prev];
+      updated[existingIndex] = newGroup;
+      return updated;
+    }
+    return [...prev, newGroup];
+  });
+  
+  setMovedGroupKeys((prev) => {
+    if (!prev.includes(groupKey)) return [...prev, groupKey];
+    return prev;
+  });
+  
+  setTimeout(() => scrollToPaymentSummary(), 100);
+}}
       />
 
       {/* Listing Plans - Desktop Only */}
