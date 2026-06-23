@@ -69,11 +69,7 @@ import {
 import confetti from "canvas-confetti";
 
 import { ShareOutlined } from "@mui/icons-material";
-<<<<<<< HEAD
 import ShareDialogActions from "@/app/franchise-business-opportunity/ShareDialogActions";
-=======
-// import ShareDialogActions from "@/app/franchise-brands/[slug]";
->>>>>>> 46fc36e07a3d9aad2e7215570a9fb91a021015b7
 import { toggleSimilarBrandLike, toggleSimilarBrandShortList } from "@/Redux/Slices/SideMenuHoverBrandSlices";
 
 const token = getToken();
