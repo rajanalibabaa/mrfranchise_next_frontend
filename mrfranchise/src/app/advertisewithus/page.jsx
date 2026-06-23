@@ -4,9 +4,9 @@ import { useState, useRef } from 'react';
 import Box from '@mui/material/Box';
 import Navbar from '@/Components/Navbar/NavBar';
 import Footer from '@/Components/Footers/Footer';
-import PaymentBrandUpdate from './PaymentBrandUpdate';
-import PackageSelection from './PackageSelection';
-import PaymentBottomBar from './PaymentBottomBar';
+import PaymentBrandUpdate from '../../Components/PackageSelection/PaymentBrandUpdate';
+import PackageSelection from '../../Components/PackageSelection/PackageSelection';
+import PaymentBottomBar from '../../Components/PackageSelection/PaymentBottomBar';
 import {
   Dialog, DialogTitle, DialogContent,
   DialogActions, Button, IconButton, Typography,
