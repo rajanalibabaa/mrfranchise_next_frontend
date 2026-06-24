@@ -43,8 +43,14 @@ import Toolbar from "@mui/material/Toolbar";
 import Stack from "@mui/material/Stack";
 import Collapse from "@mui/material/Collapse";
 import CloseIcon from "@mui/icons-material/Close";
-import { Delete as DeleteIcon, Edit as EditIcon, InfoOutlined, ExpandMore, ExpandLess } from "@mui/icons-material";
-import AddIcon from '@mui/icons-material/Add';
+import {
+  Delete as DeleteIcon,
+  Edit as EditIcon,
+  InfoOutlined,
+  ExpandMore,
+  ExpandLess,
+} from "@mui/icons-material";
+import AddIcon from "@mui/icons-material/Add";
 
 const FranchiseDetailsEdit = ({
   data = {},
@@ -69,15 +75,14 @@ const FranchiseDetailsEdit = ({
     { value: "No Fee", label: "No Fee" },
   ];
 
-
   // console.log("")
 
   // State for API data
-  const [industries, setIndustries] = useState([]);
+  const [industriesWithHeadings, setIndustriesWithHeadings] = useState([]); // NEW
   const [industryData, setIndustryData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [loadingIndustryDetails, setLoadingIndustryDetails] = useState(false);
-  
+
   // State for FICO model
   const [currentFicoModel, setCurrentFicoModel] = useState({
     investmentRange: "",
@@ -116,7 +121,7 @@ const FranchiseDetailsEdit = ({
   const [editIndex, setEditIndex] = useState(null);
   const [deleteIndex, setDeleteIndex] = useState(null);
   const [currentUSP, setCurrentUSP] = useState("");
-  
+
   // States for product and service tags
   const [showSelectedBar, setShowSelectedBar] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -124,10 +129,10 @@ const FranchiseDetailsEdit = ({
   const [tempProductTags, setTempProductTags] = useState([]);
   const [tempServiceTags, setTempServiceTags] = useState([]);
   const [showSelectedServiceTags, setShowSelectedServiceTags] = useState(false);
-  
+
   // Service tag groups will be populated from API data
   const [serviceTagGroups, setServiceTagGroups] = useState({});
-  
+
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
 
   // Fetch industries on component mount
@@ -140,14 +145,16 @@ const FranchiseDetailsEdit = ({
   const fetchIndustries = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/getIndustryByIndustryName`);
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/getIndustryByIndustryName`,
+      );
       const result = await response.json();
-   
-      if (result.success && result.data.Industry) {
-        setIndustries(result.data.Industry);
+
+      if (result.success && result.data?.Industry) {
+        setIndustriesWithHeadings(result.data.Industry); // ← Store grouped data
       }
     } catch (error) {
-      console.error('Error fetching industries:', error);
+      console.error("Error fetching industries:", error);
     } finally {
       setLoading(false);
     }
@@ -155,31 +162,81 @@ const FranchiseDetailsEdit = ({
 
   // Fetch industry details when an industry is selected
   const fetchIndustryDetails = async (industryName) => {
-    // if (!industryName) return;
-    const  industry =  industryName || data.brandCategories.main
-    // console.log("industry",industry)
- 
+    if (!industryName) return;
+
     try {
       setLoadingIndustryDetails(true);
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/getIndustryByIndustryName?industry=${encodeURIComponent(industry)}`
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/getIndustryByIndustryName?industry=${encodeURIComponent(industryName)}`,
       );
       const result = await response.json();
-   
+
       if (result.success && result.data) {
-        setIndustryData(result.data);
-        
-        // Update service tag groups
-        if (result.data.serviceTags) {
-          const groups = {};
-          result.data.serviceTags.forEach((serviceTagGroup) => {
-            groups[serviceTagGroup.parent] = serviceTagGroup.tags;
-          });
-          setServiceTagGroups(groups);
+        const apiData = result.data;
+
+        // Normalize categories (extract string values)
+        let normalizedCategories = [];
+        if (Array.isArray(apiData.categories)) {
+          normalizedCategories = apiData.categories
+            .map((cat) => cat?.category || cat) // handle both object and string
+            .filter(Boolean);
         }
+
+        // Normalize productTags
+        const normalizedProductTags = Array.isArray(apiData.productTags)
+          ? apiData.productTags
+              .map((pt) => ({
+                parent: pt?.parent || "",
+                tags: Array.isArray(pt?.tags)
+                  ? pt.tags.map((t) => t?.tag || t).filter(Boolean)
+                  : [],
+                id: pt?.id,
+              }))
+              .filter((pt) => pt.parent)
+          : [];
+
+        // Normalize serviceTags
+        const normalizedServiceTags = Array.isArray(apiData.serviceTags)
+          ? apiData.serviceTags
+              .map((st) => ({
+                parent: st?.parent || "",
+                tags: Array.isArray(st?.tags)
+                  ? st.tags.map((t) => t?.tag || t).filter(Boolean)
+                  : [],
+                id: st?.id,
+              }))
+              .filter((st) => st.parent)
+          : [];
+
+        setIndustryData({
+          ...apiData,
+          categories: normalizedCategories,
+          productTags: normalizedProductTags,
+          serviceTags: normalizedServiceTags,
+        });
+
+        // Reset selected category
+        const newCategory = {
+          groupId: "",
+          main: apiData.industry || industryName,
+          sub: "",
+          productTags: [],
+          serviceTags: [],
+        };
+
+        setSelectedCategory(newCategory);
+
+        onChange({
+          brandCategories: { ...newCategory, child: "" },
+          franchiseTags: {},
+        });
+      } else {
+        console.error("API returned no data");
+        setIndustryData(null);
       }
     } catch (error) {
-      console.error('Error fetching industry details:', error);
+      console.error("Error fetching industry details:", error);
+      setIndustryData(null);
     } finally {
       setLoadingIndustryDetails(false);
     }
@@ -195,8 +252,14 @@ const FranchiseDetailsEdit = ({
   });
 
   // Calculate totals for display
-  const totalProductTags = selectedCategory.productTags.reduce((acc, curr) => acc + curr.tags.length, 0);
-  const totalServiceTags = selectedCategory.serviceTags.reduce((acc, curr) => acc + curr.tags.length, 0);
+  const totalProductTags = selectedCategory.productTags.reduce(
+    (acc, curr) => acc + curr.tags.length,
+    0,
+  );
+  const totalServiceTags = selectedCategory.serviceTags.reduce(
+    (acc, curr) => acc + curr.tags.length,
+    0,
+  );
 
   // Update service tag groups when industry data changes
   useEffect(() => {
@@ -210,24 +273,122 @@ const FranchiseDetailsEdit = ({
   }, [industryData]);
 
   // Franchise types and models
-  const franchiseTypes = [
-    "Single Unit",
-    "Multi Unit",
-    "Master Franchise",
-    "City Franchise",
-    "Area Franchise",
-    "District Franchise",
-    "State Franchise",
-  ];
-
+  const franchiseTypes = {
+    FRANCHISE: {
+      KIOSK: ["KIOSK"],
+      "CLOUD KITCHEN": ["CLOUD KITCHEN"],
+      "SHOP IN SHOP": ["SHOP IN SHOP"],
+      "SERVICE PARTNERS": [
+        "SERVICE PARTNERS",
+        "SERVICE PARTNERS - Area",
+        "SERVICE PARTNERS - City",
+        "SERVICE PARTNERS - District",
+        "SERVICE PARTNERS - State",
+      ],
+      FOFO: [
+        "FOFO - Single Unit",
+        "FOFO - Multi Unit",
+        "FOFO - Master Franchise",
+        "FOFO - City Franchise",
+        "FOFO - Area Franchise",
+        "FOFO - District Franchise",
+        "FOFO - State Franchise",
+      ],
+      FICO: [
+        "FICO - Single Unit",
+        "FICO - Multi Unit",
+        "FICO - Master Franchise",
+        "FICO - City Franchise",
+        "FICO - Area Franchise",
+        "FICO - District Franchise",
+        "FICO - State Franchise",
+      ],
+      COCO: [
+        "COCO - Single Unit",
+        "COCO - Multi Unit",
+        "COCO - Master Franchise",
+        "COCO - City Franchise",
+        "COCO - Area Franchise",
+        "COCO - District Franchise",
+        "COCO - State Franchise",
+      ],
+      COFO: [
+        "COFO - Single Unit",
+        "COFO - Multi Unit",
+        "COFO - Master Franchise",
+        "COFO - City Franchise",
+        "COFO - Area Franchise",
+        "COFO - District Franchise",
+        "COFO - State Franchise",
+      ],
+      FOCO: [
+        "FOCO - Single Unit",
+        "FOCO - Multi Unit",
+        "FOCO - Master Franchise",
+        "FOCO - City Franchise",
+        "FOCO - Area Franchise",
+        "FOCO - District Franchise",
+        "FOCO - State Franchise",
+      ],
+    },
+    "DEALERS & DISTRIBUTORS": {
+      "C&F Agent": ["C&F Agent"],
+      "IMPORTER / EXPORTER": ["IMPORTER", "EXPORTER"],
+      STOCKIST: [
+        "STOCKIST",
+        "SUPER STOCKIST",
+        "STOCKIST - Area",
+        "STOCKIST - City",
+        "STOCKIST - District",
+        "STOCKIST - State",
+      ],
+      DEALER: [
+        "DEALER",
+        "AUTHORIZED DEALER",
+        "DEALER - Area",
+        "DEALER - City",
+        "DEALER - District",
+        "DEALER - State",
+      ],
+      DISTRIBUTOR: [
+        "DISTRIBUTOR",
+        "MASTER DISTRIBUTOR",
+        "RETAIL DISTRIBUTOR",
+        "REGIONAL DISTRIBUTOR",
+        "EXCLUSIVE DISTRIBUTOR",
+        "DISTRIBUTOR - Area",
+        "DISTRIBUTOR - City",
+        "DISTRIBUTOR - District",
+        "DISTRIBUTOR - State",
+      ],
+      "WHOLESALE SELLER": [
+        "WHOLESALE SELLER",
+        "WHOLESALE SELLER - Area",
+        "WHOLESALE SELLER - City",
+        "WHOLESALE SELLER - District",
+        "WHOLESALE SELLER - State",
+      ],
+    },
+    "CHANNEL PARTNERS": {
+      "CHANNEL PARTNERS": [
+        "AUTHORIZED CHANNEL PARTNER",
+        "MASTER CHANNEL PARTNER",
+        "REFERRAL CHANNEL PARTNER",
+        "IMPLEMENTATION PARTNER",
+        "VALUE-ADDED RESELLER (VAR)",
+        "STRATEGIC ALLIANCE PARTNER",
+        "CHANNEL PARTNERS",
+        "CHANNEL PARTNERS - Area",
+        "CHANNEL PARTNERS - City",
+        "CHANNEL PARTNERS - District",
+        "CHANNEL PARTNERS - State",
+      ],
+    },
+  };
   const franchiseModels = [
-    "FOFO",
-    "FOCO",
-    "FICO",
-    "COCO",
-    "KIOSK",
-    "SHOP IN SHOP",
-    "CLOUD KITCHEN",
+    "FRANCHISE",
+    "DEALERS & DISTRIBUTORS",
+    "CHANNEL PARTNERS",
   ];
 
   const investmentRanges = [
@@ -259,42 +420,44 @@ const FranchiseDetailsEdit = ({
         franchiseFeeUnit: model.franchiseFee?.includes("No Fee")
           ? "No Fee"
           : model.franchiseFee?.match(/%|000|00000/)
-          ? model.franchiseFee?.match(/%|000|00000/)[0]
-          : "select",
+            ? model.franchiseFee?.match(/%|000|00000/)[0]
+            : "select",
         royaltyFee: model.royaltyFee?.replace(/[^0-9.]/g, "") || "",
         royaltyFeeUnit: model.royaltyFee?.includes("No Fee")
           ? "No Fee"
           : model.royaltyFee?.match(/%|000|00000/)
-          ? model.royaltyFee?.match(/%|000|00000/)[0]
-          : "select",
+            ? model.royaltyFee?.match(/%|000|00000/)[0]
+            : "select",
         interiorCost: model.interiorCost?.replace(/[^0-9.]/g, "") || "",
         interiorCostUnit: model.interiorCost?.includes("No Fee")
           ? "No Fee"
           : model.interiorCost?.match(/000|00000/)
-          ? model.interiorCost?.match(/000|00000/)[0]
-          : "select",
+            ? model.interiorCost?.match(/000|00000/)[0]
+            : "select",
         stockInvestment: model.stockInvestment?.replace(/[^0-9.]/g, "") || "",
         stockInvestmentUnit: model.stockInvestment?.includes("No Fee")
           ? "No Fee"
           : model.stockInvestment?.match(/000|00000/)
-          ? model.stockInvestment?.match(/000|00000/)[0]
-          : "select",
+            ? model.stockInvestment?.match(/000|00000/)[0]
+            : "select",
         otherCost: model.otherCost?.replace(/[^0-9.]/g, "") || "",
         otherCostUnit: model.otherCost?.includes("No Fee")
           ? "No Fee"
           : model.otherCost?.match(/000|00000/)
-          ? model.otherCost?.match(/000|00000/)[0]
-          : "select",
+            ? model.otherCost?.match(/000|00000/)[0]
+            : "select",
         roi: model.roi?.replace(/[^0-9.]/g, "") || "",
         payBackPeriod: model.payBackPeriod || "",
         breakEven: model.breakEven || "",
         requireWorkingCapital:
           model.requireWorkingCapital?.replace(/[^0-9.]/g, "") || "",
-        requireWorkingCapitalUnit: model.requireWorkingCapital?.includes("No Fee")
+        requireWorkingCapitalUnit: model.requireWorkingCapital?.includes(
+          "No Fee",
+        )
           ? "No Fee"
           : model.requireWorkingCapital?.match(/000|00000/)
-          ? model.requireWorkingCapital?.match(/000|00000/)[0]
-          : "select",
+            ? model.requireWorkingCapital?.match(/000|00000/)[0]
+            : "select",
         marginOnSales: model.marginOnSales?.replace(/[^0-9.]/g, "") || "",
         agreementPeriod: model.agreementPeriod || "",
       });
@@ -491,7 +654,7 @@ const FranchiseDetailsEdit = ({
       alert(validationError);
       return;
     }
-    
+
     const formattedFicoModel = {
       ...currentFicoModel,
       franchiseFee: noFees.franchiseFee
@@ -539,7 +702,7 @@ const FranchiseDetailsEdit = ({
       roi: noFees.roi ? "No Fee" : currentFicoModel.roi,
       payBackPeriod: noFees.roi ? "No Fee" : currentFicoModel.payBackPeriod,
     };
-    
+
     let updatedFico;
     if (editIndex !== null) {
       updatedFico = [...(data.fico || [])];
@@ -547,7 +710,7 @@ const FranchiseDetailsEdit = ({
     } else {
       updatedFico = [...(data.fico || []), formattedFicoModel];
     }
-    
+
     onArrayChange("fico", updatedFico);
     resetFicoForm();
   };
@@ -612,26 +775,37 @@ const FranchiseDetailsEdit = ({
 
   // Handlers for brand categories
   const handleMainCategoryChange = (e) => {
-    const mainCategory = e.target.value;
-    
-    // Fetch industry details when an industry is selected
-    fetchIndustryDetails(mainCategory);
-    
+    const selectedIndustry = e.target.value;
+    console.log("Selected Industry:", selectedIndustry); // Debugging line
+
+    if (!selectedIndustry) return;
+
+    fetchIndustryDetails(selectedIndustry); // ← Fetch details for the actual industry
+
     const newCategory = {
       groupId: "",
-      main: mainCategory,
+      main: selectedIndustry,
       sub: "",
       productTags: [],
       serviceTags: [],
     };
+
     setSelectedCategory(newCategory);
-    onObjectChange("brandCategories", newCategory);
+    setTempProductTags([]);
+    setTempServiceTags([]);
+    setServiceTagGroups({});
+
+    onChange({
+      brandCategories: { ...newCategory, child: "" },
+      franchiseTags: {},
+    });
+
+    if (errors.mainCategory) errors.mainCategory = "";
   };
 
-  
   const handleSubCategoryChange = (e) => {
     const subCategory = e.target.value;
-    
+
     const newCategory = {
       groupId: "",
       main: selectedCategory.main,
@@ -640,7 +814,28 @@ const FranchiseDetailsEdit = ({
       serviceTags: selectedCategory.serviceTags,
     };
     setSelectedCategory(newCategory);
-    onObjectChange("brandCategories", newCategory);
+
+    // Transform existing data for validation
+    const allProductTags = selectedCategory.productTags.flatMap((g) => g.tags);
+    const childString = allProductTags.join(", ");
+
+    const franchiseTags = {};
+    selectedCategory.serviceTags.forEach(({ parent, tags }) => {
+      const key = Object.keys(reverseMap).find((k) => reverseMap[k] === parent);
+      if (key) {
+        franchiseTags[key] = tags;
+      }
+    });
+
+    onChange({
+      brandCategories: {
+        ...newCategory,
+        child: childString,
+      },
+      franchiseTags: franchiseTags,
+    });
+
+    errors.subCategory = "";
   };
 
   // Drawer handlers for product tags
@@ -739,7 +934,7 @@ const FranchiseDetailsEdit = ({
     const trimmedUSP = currentUSP.trim();
     if (!trimmedUSP) return;
     const existingUSPs = (data.uniqueSellingPoints || []).map((usp) =>
-      usp.toLowerCase().trim()
+      usp.toLowerCase().trim(),
     );
     if (existingUSPs.includes(trimmedUSP.toLowerCase())) {
       return;
@@ -787,7 +982,11 @@ const FranchiseDetailsEdit = ({
       </Dialog>
 
       {/* Brand Categories Section */}
-      <Typography variant="h6" fontWeight={700} sx={{ mb: 3, color: "#ff9800" }}>
+      <Typography
+        variant="h6"
+        fontWeight={700}
+        sx={{ mb: 3, color: "#ff9800" }}
+      >
         Brand Categories
       </Typography>
       <Grid
@@ -802,7 +1001,11 @@ const FranchiseDetailsEdit = ({
         }}
       >
         <Grid item xs={12} sm={4}>
-          <FormControl fullWidth size="medium" error={Boolean(errors.mainCategory)}>
+          <FormControl
+            fullWidth
+            size="medium"
+            error={Boolean(errors.mainCategory)}
+          >
             <InputLabel id="industries-label">Industries</InputLabel>
             <Select
               labelId="industries-label"
@@ -812,18 +1015,48 @@ const FranchiseDetailsEdit = ({
               onChange={handleMainCategoryChange}
               sx={{ minHeight: 56 }}
               MenuProps={{
-                PaperProps: { sx: { maxHeight: 320 } },
+                PaperProps: { sx: { maxHeight: 400 } },
               }}
-              disabled={!isEditing || loading}
+              disabled={loading}
             >
               {loading ? (
-                <MenuItem value="" disabled>Loading industries...</MenuItem>
+                <MenuItem value="" disabled>
+                  Loading industries...
+                </MenuItem>
+              ) : industriesWithHeadings.length === 0 ? (
+                <MenuItem value="" disabled>
+                  No industries available
+                </MenuItem>
               ) : (
-                industries.map((industry) => (
-                  <MenuItem key={industry} value={industry}>
-                    {industry}
-                  </MenuItem>
-                ))
+                industriesWithHeadings.flatMap((group, groupIndex) => [
+                  // Disabled Heading
+                  <MenuItem
+                    key={`heading-${groupIndex}`}
+                    sx={{
+                      fontWeight: 700,
+                      backgroundColor: "#f8f8f8",
+                      color: "#ff9800",
+                      fontSize: "0.95rem",
+                      pointerEvents: "none",
+                      cursor: "default",
+                      mt: groupIndex > 0 ? 1 : 0,
+                      opacity: 1,
+                    }}
+                  >
+                  {group.heading}
+                  </MenuItem>,
+
+                  // Industries under this heading
+                  ...(group.industries || []).map((industryName, idx) => (
+                    <MenuItem
+                      key={`industry-${groupIndex}-${idx}`}
+                      value={industryName}
+                      sx={{ pl: 3 }}
+                    >
+                      {industryName}
+                    </MenuItem>
+                  )),
+                ])
               )}
             </Select>
             {errors.mainCategory && (
@@ -832,25 +1065,29 @@ const FranchiseDetailsEdit = ({
           </FormControl>
         </Grid>
         <Grid item xs={12} sm={4}>
-          <FormControl fullWidth size="medium" error={Boolean(errors.subCategory)}>
+          <FormControl
+            fullWidth
+            size="medium"
+            error={Boolean(errors.subCategory)}
+          >
             <InputLabel id="main-cat-label">Main Category</InputLabel>
             <Select
-              labelId="main-cat-label"
-              id="main-cat-select"
               value={selectedCategory.sub || ""}
               label="Main Category"
               onChange={handleSubCategoryChange}
-              disabled={!isEditing || !selectedCategory.main || loadingIndustryDetails}
-              sx={{ minHeight: 56 }}
-              MenuProps={{
-                PaperProps: { sx: { maxHeight: 320 } },
-              }}
+              disabled={!selectedCategory.main || loadingIndustryDetails}
             >
               {loadingIndustryDetails ? (
-                <MenuItem value="" disabled>Loading categories...</MenuItem>
+                <MenuItem value="" disabled>
+                  Loading categories...
+                </MenuItem>
+              ) : !industryData?.categories?.length ? (
+                <MenuItem value="" disabled>
+                  No categories available
+                </MenuItem>
               ) : (
-                industryData?.categories?.map((category) => (
-                  <MenuItem key={category} value={category}>
+                industryData.categories.map((category, index) => (
+                  <MenuItem key={`${category}-${index}`} value={category}>
                     {category}
                   </MenuItem>
                 ))
@@ -877,7 +1114,8 @@ const FranchiseDetailsEdit = ({
               textTransform: "none",
             }}
           >
-            <AddIcon sx={{ mr: 1 }} /> {totalProductTags
+            <AddIcon sx={{ mr: 1 }} />{" "}
+            {totalProductTags
               ? `${totalProductTags} Tags selected`
               : " Select Product Tags"}
           </Button>
@@ -901,7 +1139,8 @@ const FranchiseDetailsEdit = ({
               textTransform: "none",
             }}
           >
-            <AddIcon sx={{ mr: 1 }} /> {totalServiceTags
+            <AddIcon sx={{ mr: 1 }} />{" "}
+            {totalServiceTags
               ? `${totalServiceTags} Tags selected`
               : "Select Service Tags"}
           </Button>
@@ -936,29 +1175,30 @@ const FranchiseDetailsEdit = ({
           </Box>
           <Collapse in={showSelectedBar}>
             <Box sx={{ px: 2, py: 2 }}>
-              {selectedCategory.productTags.map(({ parent, tags }) => (
-                tags.length > 0 && (
-                  <Box key={parent} sx={{ mb: 2 }}>
-                    <Typography
-                      variant="subtitle2"
-                      fontWeight={600}
-                      sx={{ color: "#ff9800", mb: 1 }}
-                    >
-                      {parent}:
-                    </Typography>
-                    <Stack direction="row" flexWrap="wrap" gap={1}>
-                      {tags.map((tag) => (
-                        <Chip
-                          key={tag}
-                          label={tag}
-                          size="small"
-                          variant="outlined"
-                        />
-                      ))}
-                    </Stack>
-                  </Box>
-                )
-              ))}
+              {selectedCategory.productTags.map(
+                ({ parent, tags }) =>
+                  tags.length > 0 && (
+                    <Box key={parent} sx={{ mb: 2 }}>
+                      <Typography
+                        variant="subtitle2"
+                        fontWeight={600}
+                        sx={{ color: "#ff9800", mb: 1 }}
+                      >
+                        {parent}:
+                      </Typography>
+                      <Stack direction="row" flexWrap="wrap" gap={1}>
+                        {tags.map((tag) => (
+                          <Chip
+                            key={tag}
+                            label={tag}
+                            size="small"
+                            variant="outlined"
+                          />
+                        ))}
+                      </Stack>
+                    </Box>
+                  ),
+              )}
             </Box>
           </Collapse>
         </Box>
@@ -989,29 +1229,30 @@ const FranchiseDetailsEdit = ({
           </Box>
           <Collapse in={showSelectedServiceTags}>
             <Box sx={{ px: 2, py: 2 }}>
-              {selectedCategory.serviceTags.map(({ parent, tags }) => (
-                tags.length > 0 && (
-                  <Box key={parent} sx={{ mb: 2 }}>
-                    <Typography
-                      variant="subtitle2"
-                      fontWeight={600}
-                      sx={{ color: "#ff9800", mb: 1 }}
-                    >
-                      {parent}:
-                    </Typography>
-                    <Stack direction="row" flexWrap="wrap" gap={1}>
-                      {tags.map((tag) => (
-                        <Chip
-                          key={tag}
-                          label={tag}
-                          size="small"
-                          variant="outlined"
-                        />
-                      ))}
-                    </Stack>
-                  </Box>
-                )
-              ))}
+              {selectedCategory.serviceTags.map(
+                ({ parent, tags }) =>
+                  tags.length > 0 && (
+                    <Box key={parent} sx={{ mb: 2 }}>
+                      <Typography
+                        variant="subtitle2"
+                        fontWeight={600}
+                        sx={{ color: "#ff9800", mb: 1 }}
+                      >
+                        {parent}:
+                      </Typography>
+                      <Stack direction="row" flexWrap="wrap" gap={1}>
+                        {tags.map((tag) => (
+                          <Chip
+                            key={tag}
+                            label={tag}
+                            size="small"
+                            variant="outlined"
+                          />
+                        ))}
+                      </Stack>
+                    </Box>
+                  ),
+              )}
             </Box>
           </Collapse>
         </Box>
@@ -1050,7 +1291,7 @@ const FranchiseDetailsEdit = ({
                 {selectedCategory.main} - {selectedCategory.sub}
               </Typography>
               {industryData.productTags
-                .filter(pt => pt.parent)
+                .filter((pt) => pt.parent)
                 .map((productTagGroup) => (
                   <Box key={productTagGroup.parent} sx={{ mb: 3, ml: 2 }}>
                     <Typography
@@ -1067,14 +1308,22 @@ const FranchiseDetailsEdit = ({
                     </Typography>
                     <Grid container spacing={1} sx={{ ml: 1 }}>
                       {productTagGroup.tags?.map((tag) => {
-                        const isChecked = tempProductTags.find(g => g.parent === productTagGroup.parent)?.tags.includes(tag) || false;
+                        const isChecked =
+                          tempProductTags
+                            .find((g) => g.parent === productTagGroup.parent)
+                            ?.tags.includes(tag) || false;
                         return (
                           <Grid item xs={12} sm={6} md={4} lg={3} key={tag}>
                             <FormControlLabel
                               control={
                                 <Checkbox
                                   checked={isChecked}
-                                  onChange={() => handleChildToggle(productTagGroup.parent, tag)}
+                                  onChange={() =>
+                                    handleChildToggle(
+                                      productTagGroup.parent,
+                                      tag,
+                                    )
+                                  }
                                   color="primary"
                                 />
                               }
@@ -1094,7 +1343,7 @@ const FranchiseDetailsEdit = ({
                 ))}
             </Box>
           ) : (
-            <Typography sx={{ textAlign: 'center', py: 4 }}>
+            <Typography sx={{ textAlign: "center", py: 4 }}>
               No product tags available. Please select a main category first.
             </Typography>
           )}
@@ -1112,7 +1361,8 @@ const FranchiseDetailsEdit = ({
           }}
         >
           <Typography variant="body1" fontWeight={500}>
-            {tempProductTags.reduce((acc, g) => acc + g.tags.length, 0)} tag(s) selected
+            {tempProductTags.reduce((acc, g) => acc + g.tags.length, 0)} tag(s)
+            selected
           </Typography>
           <Box>
             <Button
@@ -1145,7 +1395,10 @@ const FranchiseDetailsEdit = ({
             <Typography variant="h6" sx={{ color: "#ff9800" }}>
               All Service Tags
             </Typography>
-            <IconButton aria-label="close" onClick={() => setServiceTagDrawerOpen(false)}>
+            <IconButton
+              aria-label="close"
+              onClick={() => setServiceTagDrawerOpen(false)}
+            >
               <CloseIcon />
             </IconButton>
           </Toolbar>
@@ -1162,14 +1415,19 @@ const FranchiseDetailsEdit = ({
                 </Typography>
                 <Grid container spacing={1}>
                   {options.map((opt) => {
-                    const isChecked = tempServiceTags.find(g => g.parent === groupLabel)?.tags.includes(opt) || false;
+                    const isChecked =
+                      tempServiceTags
+                        .find((g) => g.parent === groupLabel)
+                        ?.tags.includes(opt) || false;
                     return (
                       <Grid item xs={12} sm={6} md={3} key={opt}>
                         <FormControlLabel
                           control={
                             <Checkbox
                               checked={isChecked}
-                              onChange={() => handleServiceTagToggle(groupLabel, opt)}
+                              onChange={() =>
+                                handleServiceTagToggle(groupLabel, opt)
+                              }
                               color="primary"
                             />
                           }
@@ -1189,7 +1447,7 @@ const FranchiseDetailsEdit = ({
               </Box>
             ))
           ) : (
-            <Typography sx={{ textAlign: 'center', py: 4 }}>
+            <Typography sx={{ textAlign: "center", py: 4 }}>
               No service tags available. Please select an industry first.
             </Typography>
           )}
@@ -1206,7 +1464,8 @@ const FranchiseDetailsEdit = ({
           }}
         >
           <Typography>
-            {tempServiceTags.reduce((acc, g) => acc + g.tags.length, 0)} tag(s) selected
+            {tempServiceTags.reduce((acc, g) => acc + g.tags.length, 0)} tag(s)
+            selected
           </Typography>
           <Box>
             <Button
@@ -1228,7 +1487,11 @@ const FranchiseDetailsEdit = ({
       </Drawer>
 
       {/* Establishment & Franchise year Details */}
-      <Typography variant="h6" fontWeight={700} sx={{ mb: 3, color: "#ff9800" }}>
+      <Typography
+        variant="h6"
+        fontWeight={700}
+        sx={{ mb: 3, color: "#ff9800" }}
+      >
         Establishment & Franchise year Details
       </Typography>
       <Grid
@@ -1243,7 +1506,7 @@ const FranchiseDetailsEdit = ({
           <Autocomplete
             freeSolo
             options={Array.from({ length: 226 }, (_, i) =>
-              String(new Date().getFullYear() - i)
+              String(new Date().getFullYear() - i),
             )}
             value={data.establishedYear ? String(data.establishedYear) : null}
             getOptionLabel={(option) => option}
@@ -1311,7 +1574,7 @@ const FranchiseDetailsEdit = ({
           <Autocomplete
             freeSolo
             options={Array.from({ length: 226 }, (_, i) =>
-              String(new Date().getFullYear() - i)
+              String(new Date().getFullYear() - i),
             )}
             value={
               data.franchiseSinceYear ? String(data.franchiseSinceYear) : null
@@ -1439,7 +1702,11 @@ const FranchiseDetailsEdit = ({
       </Grid>
 
       {/* Franchise Business Models */}
-      <Typography variant="h6" fontWeight={700} sx={{ mt: 2, color: "#ff9800" }}>
+      <Typography
+        variant="h6"
+        fontWeight={700}
+        sx={{ mt: 2, color: "#ff9800" }}
+      >
         Franchise Business Models
       </Typography>
       {errors.fico && typeof errors.fico === "string" && (
@@ -1464,8 +1731,13 @@ const FranchiseDetailsEdit = ({
           >
             {/* Column 1 - Franchise Model */}
             <Grid item>
-              <FormControl fullWidth error={!!errors.franchiseModel} required size="medium">
-                <InputLabel>Franchise Model</InputLabel>
+              <FormControl
+                fullWidth
+                error={!!errors.franchiseModel}
+                required
+                size="medium"
+              >
+                <InputLabel>Business Network</InputLabel>
                 <Select
                   value={currentFicoModel.franchiseModel}
                   onChange={handleFicoChange}
@@ -1485,19 +1757,46 @@ const FranchiseDetailsEdit = ({
             </Grid>
             {/* Column 2 - Franchise Type */}
             <Grid item>
-              <FormControl fullWidth error={!!errors.franchiseType} required size="medium">
-                <InputLabel>Franchise Type</InputLabel>
+              <FormControl
+                fullWidth
+                error={!!errors.franchiseType}
+                required
+                size="medium"
+              >
+                <InputLabel>Business Model & Type</InputLabel>
                 <Select
                   value={currentFicoModel.franchiseType}
                   onChange={handleFicoChange}
                   name="franchiseType"
                   label="Franchise Type*"
                 >
-                  {franchiseTypes.map((type) => (
-                    <MenuItem key={type} value={type}>
-                      {type}
-                    </MenuItem>
-                  ))}
+                  {currentFicoModel.franchiseModel &&
+                    franchiseTypes[currentFicoModel.franchiseModel] &&
+                    Object.entries(
+                      franchiseTypes[currentFicoModel.franchiseModel],
+                    ).flatMap(([groupLabel, items]) => [
+                      <MenuItem
+                        key={`group-${groupLabel}`}
+                        disabled
+                        sx={{
+                          fontWeight: 700,
+                          fontSize: "0.75rem",
+                          color: "#ff9800 !important",
+                          backgroundColor: "#fff8e1",
+                          letterSpacing: 1,
+                          opacity: "1 !important",
+                          pointerEvents: "none",
+                          mt: 0.5,
+                        }}
+                      >
+                        ── {groupLabel} ──
+                      </MenuItem>,
+                      ...items.map((type) => (
+                        <MenuItem key={type} value={type} sx={{ pl: 3 }}>
+                          {type}
+                        </MenuItem>
+                      )),
+                    ])}
                 </Select>
                 {errors.franchiseType && (
                   <FormHelperText error>{errors.franchiseType}</FormHelperText>
@@ -1506,7 +1805,12 @@ const FranchiseDetailsEdit = ({
             </Grid>
             {/* Column 3 - Investment Range */}
             <Grid item>
-              <FormControl fullWidth error={!!errors.investmentRange} required size="medium">
+              <FormControl
+                fullWidth
+                error={!!errors.investmentRange}
+                required
+                size="medium"
+              >
                 <InputLabel>Investment Range</InputLabel>
                 <Select
                   value={currentFicoModel.investmentRange}
@@ -1521,13 +1825,20 @@ const FranchiseDetailsEdit = ({
                   ))}
                 </Select>
                 {errors.investmentRange && (
-                  <FormHelperText error>{errors.investmentRange}</FormHelperText>
+                  <FormHelperText error>
+                    {errors.investmentRange}
+                  </FormHelperText>
                 )}
               </FormControl>
             </Grid>
             {/* Column 4 - Area Required */}
             <Grid item>
-              <FormControl fullWidth size="medium" required error={!!errors.areaRequired}>
+              <FormControl
+                fullWidth
+                size="medium"
+                required
+                error={!!errors.areaRequired}
+              >
                 <InputLabel>Area Required</InputLabel>
                 <Select
                   label="Area Required"
@@ -1540,16 +1851,32 @@ const FranchiseDetailsEdit = ({
                     </InputAdornment>
                   }
                 >
-                  <MenuItem value="No Space Required">No Space Required</MenuItem>
+                  <MenuItem value="No Space Required">
+                    No Space Required
+                  </MenuItem>
                   <MenuItem value="100 - 200 Sq. Ft.">100-200 Sq. Ft.</MenuItem>
                   <MenuItem value="200 - 500 Sq. Ft.">200-500 Sq. Ft.</MenuItem>
-                  <MenuItem value="500 - 1,000 Sq. Ft.">500-1,000 Sq. Ft.</MenuItem>
-                  <MenuItem value="1,000 - 2,000 Sq. Ft.">1,000-2,000 Sq. Ft.</MenuItem>
-                  <MenuItem value="2,000 - 3,000 Sq. Ft.">2,000-3,000 Sq. Ft.</MenuItem>
-                  <MenuItem value="3,000 - 5,000 Sq. Ft.">3,000-5,000 Sq. Ft.</MenuItem>
-                  <MenuItem value="5,000 - 7,000 Sq. Ft.">5,000-7,000 Sq. Ft.</MenuItem>
-                  <MenuItem value="7,000 - 10,000 Sq. Ft.">7,000-10,000 Sq. Ft.</MenuItem>
-                  <MenuItem value="10,000 - 15,000 Sq. Ft.">10,000-15,000 Sq. Ft.</MenuItem>
+                  <MenuItem value="500 - 1,000 Sq. Ft.">
+                    500-1,000 Sq. Ft.
+                  </MenuItem>
+                  <MenuItem value="1,000 - 2,000 Sq. Ft.">
+                    1,000-2,000 Sq. Ft.
+                  </MenuItem>
+                  <MenuItem value="2,000 - 3,000 Sq. Ft.">
+                    2,000-3,000 Sq. Ft.
+                  </MenuItem>
+                  <MenuItem value="3,000 - 5,000 Sq. Ft.">
+                    3,000-5,000 Sq. Ft.
+                  </MenuItem>
+                  <MenuItem value="5,000 - 7,000 Sq. Ft.">
+                    5,000-7,000 Sq. Ft.
+                  </MenuItem>
+                  <MenuItem value="7,000 - 10,000 Sq. Ft.">
+                    7,000-10,000 Sq. Ft.
+                  </MenuItem>
+                  <MenuItem value="10,000 - 15,000 Sq. Ft.">
+                    10,000-15,000 Sq. Ft.
+                  </MenuItem>
                 </Select>
                 {errors.areaRequired && (
                   <FormHelperText error>{errors.areaRequired}</FormHelperText>
@@ -1558,7 +1885,12 @@ const FranchiseDetailsEdit = ({
             </Grid>
             {/* Column 5 - Agreement Period */}
             <Grid item>
-              <FormControl fullWidth error={!!errors.agreementPeriod} required size="medium">
+              <FormControl
+                fullWidth
+                error={!!errors.agreementPeriod}
+                required
+                size="medium"
+              >
                 <InputLabel>Agreement Period</InputLabel>
                 <Select
                   label="Agreement Period"
@@ -1588,7 +1920,9 @@ const FranchiseDetailsEdit = ({
                   ))}
                 </Select>
                 {errors.agreementPeriod && (
-                  <FormHelperText error>{errors.agreementPeriod}</FormHelperText>
+                  <FormHelperText error>
+                    {errors.agreementPeriod}
+                  </FormHelperText>
                 )}
               </FormControl>
             </Grid>
@@ -1781,7 +2115,9 @@ const FranchiseDetailsEdit = ({
                       <InputAdornment position="end">
                         <Select
                           value={currentFicoModel.requireWorkingCapitalUnit}
-                          onChange={handleFeeUnitChange("requireWorkingCapital")}
+                          onChange={handleFeeUnitChange(
+                            "requireWorkingCapital",
+                          )}
                           sx={{
                             "& .MuiSelect-select": {
                               padding: "8px 8px",
@@ -1852,7 +2188,12 @@ const FranchiseDetailsEdit = ({
             </Grid>
             {/* Column 12 - Break Even */}
             <Grid item>
-              <FormControl fullWidth size="medium" required error={!!errors.breakEven}>
+              <FormControl
+                fullWidth
+                size="medium"
+                required
+                error={!!errors.breakEven}
+              >
                 <InputLabel>Break Even (months)</InputLabel>
                 <Select
                   label="Break Even (months)*"
@@ -1875,7 +2216,12 @@ const FranchiseDetailsEdit = ({
             </Grid>
             {/* Column 13 - ROI */}
             <Grid item>
-              <FormControl fullWidth size="medium" required error={!!errors.roi}>
+              <FormControl
+                fullWidth
+                size="medium"
+                required
+                error={!!errors.roi}
+              >
                 <InputLabel>ROI (%)</InputLabel>
                 <Select
                   label="ROI (%)"
@@ -1905,7 +2251,9 @@ const FranchiseDetailsEdit = ({
                     </MenuItem>
                   ))}
                 </Select>
-                {errors.roi && <FormHelperText error>{errors.roi}</FormHelperText>}
+                {errors.roi && (
+                  <FormHelperText error>{errors.roi}</FormHelperText>
+                )}
               </FormControl>
             </Grid>
             {/* Column 14 - PayBack Period */}
@@ -1928,7 +2276,12 @@ const FranchiseDetailsEdit = ({
             </Grid>
             {/* Column 15 - Margin on Sales */}
             <Grid item>
-              <FormControl fullWidth size="medium" required error={!!errors.marginOnSales}>
+              <FormControl
+                fullWidth
+                size="medium"
+                required
+                error={!!errors.marginOnSales}
+              >
                 <InputLabel>MarginOnSales (%)</InputLabel>
                 <Select
                   label="Margin ON Sales (%)"
@@ -1965,7 +2318,12 @@ const FranchiseDetailsEdit = ({
           </Grid>
 
           {/* Add/Update/Cancel Buttons */}
-          <Grid item xs={12} mt={1} sx={{ display: "flex", justifyContent: "space-evenly", gap: 2 }}>
+          <Grid
+            item
+            xs={12}
+            mt={1}
+            sx={{ display: "flex", justifyContent: "space-evenly", gap: 2 }}
+          >
             <Button
               variant="contained"
               onClick={handleAddOrUpdateFicoModel}
@@ -1996,7 +2354,8 @@ const FranchiseDetailsEdit = ({
       {/* Display saved FICO models - ALWAYS SHOW THE TABLE */}
       <Box sx={{ mt: 4 }}>
         <Typography variant="h5" sx={{ mb: 2, fontWeight: "bold" }}>
-          Saved Franchise Models {data.fico?.length > 0 && `(${data.fico.length})`}
+          Saved Franchise Models{" "}
+          {data.fico?.length > 0 && `(${data.fico.length})`}
         </Typography>
         <Box sx={{ width: "100%", overflowX: "auto", margin: "0 auto" }}>
           <TableContainer sx={{ maxHeight: 600 }}>
@@ -2061,11 +2420,19 @@ const FranchiseDetailsEdit = ({
                       <TableCell>{model.investmentRange || "N/A"}</TableCell>
                       <TableCell>{model.areaRequired || "N/A"}</TableCell>
                       <TableCell>{model.agreementPeriod || "N/A"}</TableCell>
-                      <TableCell>{formatCurrency(model.franchiseFee)}</TableCell>
-                      <TableCell>{formatCurrency(model.interiorCost)}</TableCell>
-                      <TableCell>{formatCurrency(model.stockInvestment)}</TableCell>
+                      <TableCell>
+                        {formatCurrency(model.franchiseFee)}
+                      </TableCell>
+                      <TableCell>
+                        {formatCurrency(model.interiorCost)}
+                      </TableCell>
+                      <TableCell>
+                        {formatCurrency(model.stockInvestment)}
+                      </TableCell>
                       <TableCell>{formatCurrency(model.otherCost)}</TableCell>
-                      <TableCell>{formatCurrency(model.requireWorkingCapital)}</TableCell>
+                      <TableCell>
+                        {formatCurrency(model.requireWorkingCapital)}
+                      </TableCell>
                       <TableCell>
                         {model.royaltyFee && model.royaltyFee !== "No Fee"
                           ? `${model.royaltyFee}${
@@ -2109,11 +2476,13 @@ const FranchiseDetailsEdit = ({
                       align="center"
                       sx={{
                         py: 4,
-                        color: 'text.secondary',
-                        fontStyle: 'italic'
+                        color: "text.secondary",
+                        fontStyle: "italic",
                       }}
                     >
-                      No franchise models added yet. {isEditing && "Use the form above to add your first franchise model."}
+                      No franchise models added yet.{" "}
+                      {isEditing &&
+                        "Use the form above to add your first franchise model."}
                     </TableCell>
                   </TableRow>
                 )}
@@ -2187,7 +2556,10 @@ const FranchiseDetailsEdit = ({
               </RadioGroup>
             </FormControl>
             {errors.aidFinancing && (
-              <FormHelperText error sx={{ ml: { md: 2 }, mt: { xs: 0, md: 0 } }}>
+              <FormHelperText
+                error
+                sx={{ ml: { md: 2 }, mt: { xs: 0, md: 0 } }}
+              >
                 {errors.aidFinancing}
               </FormHelperText>
             )}
@@ -2223,7 +2595,9 @@ const FranchiseDetailsEdit = ({
                 row
                 sx={{ display: "flex", ml: 5, gap: 15 }}
                 value={data.franchiseDevelopment || ""}
-                onChange={(e) => onChange("franchiseDevelopment", e.target.value)}
+                onChange={(e) =>
+                  onChange("franchiseDevelopment", e.target.value)
+                }
               >
                 {aidFinancingOptions.map((type) => (
                   <FormControlLabel
@@ -2231,7 +2605,9 @@ const FranchiseDetailsEdit = ({
                     value={type}
                     control={
                       <Radio
-                        color={errors.franchiseDevelopment ? "error" : "primary"}
+                        color={
+                          errors.franchiseDevelopment ? "error" : "primary"
+                        }
                         disabled={!isEditing}
                       />
                     }
@@ -2242,7 +2618,10 @@ const FranchiseDetailsEdit = ({
               </RadioGroup>
             </FormControl>
             {errors.franchiseDevelopment && (
-              <FormHelperText error sx={{ ml: { md: 2 }, mt: { xs: 0, md: 0 } }}>
+              <FormHelperText
+                error
+                sx={{ ml: { md: 2 }, mt: { xs: 0, md: 0 } }}
+              >
                 {errors.franchiseDevelopment}
               </FormHelperText>
             )}
@@ -2279,7 +2658,9 @@ const FranchiseDetailsEdit = ({
                 row
                 sx={{ display: "flex", ml: 5, gap: 15 }}
                 value={data.consultationOrAssistance || ""}
-                onChange={(e) => onChange("consultationOrAssistance", e.target.value)}
+                onChange={(e) =>
+                  onChange("consultationOrAssistance", e.target.value)
+                }
               >
                 {aidFinancingOptions.map((type) => (
                   <FormControlLabel
@@ -2287,7 +2668,9 @@ const FranchiseDetailsEdit = ({
                     value={type}
                     control={
                       <Radio
-                        color={errors.consultationOrAssistance ? "error" : "primary"}
+                        color={
+                          errors.consultationOrAssistance ? "error" : "primary"
+                        }
                         disabled={!isEditing}
                       />
                     }
@@ -2298,7 +2681,10 @@ const FranchiseDetailsEdit = ({
               </RadioGroup>
             </FormControl>
             {errors.consultationOrAssistance && (
-              <FormHelperText error sx={{ ml: { md: 2 }, mt: { xs: 0, md: 0 } }}>
+              <FormHelperText
+                error
+                sx={{ ml: { md: 2 }, mt: { xs: 0, md: 0 } }}
+              >
                 {errors.consultationOrAssistance}
               </FormHelperText>
             )}
@@ -2346,8 +2732,12 @@ const FranchiseDetailsEdit = ({
                     key={option}
                     control={
                       <Checkbox
-                        checked={data.trainingSupport?.includes(option) || false}
-                        onChange={(e) => handleTrainingSupportChange(option, e.target.checked)}
+                        checked={
+                          data.trainingSupport?.includes(option) || false
+                        }
+                        onChange={(e) =>
+                          handleTrainingSupportChange(option, e.target.checked)
+                        }
                         name="trainingSupport"
                         color="primary"
                         disabled={!isEditing}
@@ -2368,7 +2758,11 @@ const FranchiseDetailsEdit = ({
       </Grid>
 
       <Grid item xs={12}>
-        <Typography variant="h6" color="#ff9800" sx={{ mb: 2, mt: 4, fontWeight: "bold" }}>
+        <Typography
+          variant="h6"
+          color="#ff9800"
+          sx={{ mb: 2, mt: 4, fontWeight: "bold" }}
+        >
           Brand Description
         </Typography>
         <Grid item xs={12}>
@@ -2449,7 +2843,10 @@ const FranchiseDetailsEdit = ({
           {/* Display added USPs */}
           {data.uniqueSellingPoints?.length > 0 && (
             <Paper sx={{ p: 2, mb: 3, border: "1px solid #e0e0e0" }}>
-              <Typography variant="subtitle2" sx={{ fontWeight: "bold", mb: 1 }}>
+              <Typography
+                variant="subtitle2"
+                sx={{ fontWeight: "bold", mb: 1 }}
+              >
                 Added USPs:
               </Typography>
               <List dense sx={{ maxHeight: 200, overflow: "auto" }}>
