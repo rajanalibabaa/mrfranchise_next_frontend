@@ -19,7 +19,12 @@ export const fetchFilterOptions = createAsyncThunk(
       if (productTags) queryParams.append('productTags', productTags);
 
       const response = await axios.post(`${API_BASE_URL}filter/getAllBrandFiltersdata?${queryParams.toString()}`);
+      
+            console.log("responsefrom foilter dropdata",response);
+
       return response.data.data;
+
+      
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.message);
     }

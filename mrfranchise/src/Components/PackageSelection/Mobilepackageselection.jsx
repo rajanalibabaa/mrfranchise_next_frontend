@@ -431,101 +431,72 @@ const MobilePackageSelection = ({
               }
             }}
           >
-            <Box sx={{ px: 2, pb: 2 }}>
-              <Typography sx={{ fontSize: T.xl, color: COLORS.black[600], mb: 2, textAlign: "center" }}>
-                List your Brand to increase its Digital Visibility
-              </Typography>
+        <Box sx={{ px: 2, pb: 2 }}>
+  <Typography sx={{ fontSize: T.xl, color: COLORS.black[600], mb: 2, textAlign: "center" }}>
+    List your Brand to increase its Digital Visibility
+  </Typography>
 
-              {/* Listing plan tabs */}
-              <Box sx={{
-                display: "flex", overflowX: "auto", gap: 0.3, pb: 1,
-                "&::-webkit-scrollbar": { width: "6px" },
-                "&::-webkit-scrollbar-track": { backgroundColor: COLORS.grey[300], borderRadius: "6px", margin: "2px 0" },
-                "&::-webkit-scrollbar-thumb": { backgroundColor: COLORS.primary, borderRadius: "6px", minHeight: "40px" },
-                "&::-webkit-scrollbar-thumb:hover": { backgroundColor: COLORS.primaryDark },
-                scrollbarWidth: "thin",
-                scrollbarColor: `${COLORS.primary} ${COLORS.grey[300]}`,
-              }}>
-                {listingPlans.map((plan) => {
-                  const isActive = activeListingId === plan._id;
-                  const pkg = plan.packages?.[0] || {};
-                  const isAdded = paymentSummary.some((g) => g.groupKey === `listing-${plan._id}`);
-                  const isMostPopular = (pkg.amount || 0) === maxListingPrice && maxListingPrice > 0;
-                  return (
-                    <Box
-                      key={plan._id}
-                      onClick={() => setActiveListingId(plan._id)}
-                      sx={{
-                        flexShrink: 0, px: 1.4, py: 0.5, borderRadius: "24px",
-                        fontSize: "1.3rem", fontWeight: 700, cursor: "pointer",
-                        border: `1.5px solid ${isActive ? COLORS.primary : isAdded ? COLORS.secondary : COLORS.border}`,
-                        backgroundColor: isActive ? COLORS.primary : isAdded ? "rgba(76,176,79,0.08)" : COLORS.white,
-                        color: isActive ? COLORS.white : isAdded ? COLORS.secondary : COLORS.grey[700],
-                        transition: "all 0.2s ease",
-                        display: "flex", alignItems: "center",
-                        "&:hover": { transform: "translateY(-2px)", boxShadow: "0 2px 8px rgba(0,0,0,0.1)" },
-                      }}
-                    >
-                      {isMostPopular && <Typography component="span" sx={{ fontSize: "1rem" }}></Typography>}
-                      {plan.planName}
-                      {isAdded && <Typography component="span" sx={{ fontSize: "0.7rem", ml: 0.3 }}>✓</Typography>}
-                    </Box>
-                  );
-                })}
-              </Box>
+  {listingPlans.map((plan) => {
+    const pkg = plan.packages?.[0] || {};
+    const groupKey = `listing-${plan._id}`;
+    const isAdded = paymentSummary.some((g) => g.groupKey === groupKey);
+    const isAlreadyActive = (() => {
+      if (!data?.packages) return false;
+      return data.packages.some((p) => {
+        const type = (p.packagesType || "").toUpperCase();
+        if (type !== "LISTING") return false;
+        const inv = p.investmetPackages || p.InvestmetPackages || p.packages || [];
+        return inv.some(
+          (ip) =>
+            (ip.packagesName || "").toLowerCase() === plan.planName.toLowerCase() &&
+            ip.isActive && !ip.isPending
+        );
+      });
+    })();
+    const isExistingPlan = isUpgradeMode && upgradePlanId === plan._id;
+    const isMostPopular = (pkg.amount || 0) === maxListingPrice && maxListingPrice > 0;
 
-              {/* Selected listing plan detail */}
-              {activeListing && (() => {
-                const pkg = activeListing.packages?.[0] || {};
-                const groupKey = `listing-${activeListing._id}`;
-                const isAdded = paymentSummary.some((g) => g.groupKey === groupKey);
-                const isAlreadyActive = (() => {
-                  if (!data?.packages) return false;
-                  return data.packages.some((p) => {
-                    const type = (p.packagesType || "").toUpperCase();
-                    if (type !== "LISTING") return false;
-                    const inv = p.investmetPackages || p.InvestmetPackages || p.packages || [];
-                    return inv.some(
-                      (ip) =>
-                        (ip.packagesName || "").toLowerCase() === activeListing.planName.toLowerCase() &&
-                        ip.isActive && !ip.isPending
-                    );
-                  });
-                })();
-                const isExistingPlan = isUpgradeMode && upgradePlanId === activeListing._id;
-                const isMostPopular = (pkg.amount || 0) === maxListingPrice && maxListingPrice > 0;
+   const handleAddListingPlan = () => {
+  if (isExistingPlan) {
+    openSnack("You already have this plan. Please upgrade to a different plan.", "warning");
+    return;
+  }
+  const existingListingPlan = paymentSummary.some((g) => g.isListingPlan === true);
+if (existingListingPlan && !isUpgradeMode) {
+  openSnack("You can select only one listing plan at a time.", "warning");
+  return;
+}
+if (existingListingPlan && isUpgradeMode) {
+  // Remove the previously added listing plan first
+  const prevListing = paymentSummary.find((g) => g.isListingPlan === true);
+  if (prevListing) {
+    const prevPlanId = prevListing.groupKey?.replace("listing-", "");
+    handleRemoveListingPlan(prevPlanId);
+  }
+}
+if (handleAddListingPlanProp) {
+  handleAddListingPlanProp(plan, pkg);
+  setTimeout(() => scrollToPaymentSummary?.(), 300);
+} else {
+    openSnack("Add listing plan functionality not wired up", "info");
+  }
+};
 
-                const handleAddListingPlan = () => {
-                  if (isExistingPlan) {
-                    openSnack("You already have this plan. Please upgrade to a different plan.", "warning");
-                    return;
-                  }
-                  const existingListingPlan = paymentSummary.some((g) => g.isListingPlan === true);
-                  if (existingListingPlan) {
-                    openSnack("You can select only one listing plan at a time.", "warning");
-                    return;
-                  }
-                  if (handleAddListingPlanProp) {
-                    handleAddListingPlanProp(activeListing, pkg);
-                    setTimeout(() => scrollToPaymentSummary?.(), 300);
-                  } else {
-                    openSnack("Add listing plan functionality not wired up", "info");
-                  }
-                };
-
-                return (
-                  <ListingPlanDetail
-                    plan={activeListing}
-                    isAdded={isAdded}
-                    isAlreadyActive={isAlreadyActive}
-                    isExistingPlan={isExistingPlan}
-                    isMostPopular={isMostPopular}
-                    onAdd={handleAddListingPlan}
-                    onRemove={() => handleRemoveListingPlan(activeListing._id)}
-                  />
-                );
-              })()}
-            </Box>
+    return (
+      <Box key={plan._id} sx={{ mb: 2 }}>
+        <ListingPlanDetail
+          plan={plan}
+          isAdded={isAdded}
+          isAlreadyActive={isAlreadyActive}
+          isExistingPlan={isExistingPlan}
+          isMostPopular={isMostPopular}
+          onAdd={handleAddListingPlan}
+          onRemove={() => handleRemoveListingPlan(plan._id)}
+        />
+      </Box>
+    );
+  })}
+</Box>
           </SectionAccordion>
         </Box>
       )}

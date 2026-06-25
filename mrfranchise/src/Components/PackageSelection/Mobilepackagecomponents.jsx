@@ -474,22 +474,22 @@ export const ListingPlanDetail = ({
           Popular
         </Box>
       )}
-      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", mb: 2, gap: 0.5 }}>
-        <Box>
-          <Typography sx={{ fontWeight: 700, fontSize: T.lg, color: COLORS.black, ml: 0.8 }}>
-            {plan.planName}
-          </Typography>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mt: 0.5, ml: 0.6 }}>
-            <CalendarMonthRoundedIcon sx={{ fontSize: 26, color: COLORS.primary[500] }} />
-            <Typography sx={{ fontSize: "1.5rem", color: COLORS.primary[600] }}>
-              {pkg.validityDays} Days
-            </Typography>
-          </Box>
-        </Box>
-        <Typography sx={{ fontSize: "1.4rem", fontWeight: 800, color: isMostPopular ? "#ff9800" : COLORS.primary }}>
-          {fmtINR(pkg.amount)}
-        </Typography>
-      </Box>
+    <Box sx={{ mb: 2 }}>
+  <Typography sx={{ fontWeight: 700, fontSize: T.lg, color: COLORS.black, ml: 0.8 }}>
+    {plan.planName}
+  </Typography>
+  <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mt: 0.5, ml: 0.6 }}>
+    <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+      <CalendarMonthRoundedIcon sx={{ fontSize: 22, color: COLORS.primary }} />
+      <Typography sx={{ fontSize: "1.3rem", color: COLORS.primary, fontWeight: 600 }}>
+        {pkg.validityDays} Days
+      </Typography>
+    </Box>
+    <Typography sx={{ fontSize: "1.4rem", fontWeight: 800, color: isMostPopular ? "#ff9800" : COLORS.primary }}>
+      {fmtINR(pkg.amount)}
+    </Typography>
+  </Box>
+</Box>
       <Button
         variant="contained"
         fullWidth

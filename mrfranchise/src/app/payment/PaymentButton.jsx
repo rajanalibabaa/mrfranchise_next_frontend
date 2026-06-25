@@ -6,7 +6,13 @@ import { getUserId } from "@/Utils/autherId";
 import { toast } from "react-hot-toast"; // For notifications
 import { CircularProgress, Button } from "@mui/material";
 
-export default function PaymentButton({ amount, packageName, packageData, onSuccess }) {
+export default function PaymentButton({
+  amount,
+  packageName,
+  packageData,
+  onSuccess,
+  paymentMode = "online",
+}) {
   const [brandData, setBrandData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [paymentLoading, setPaymentLoading] = useState(false);
@@ -26,7 +32,7 @@ export default function PaymentButton({ amount, packageName, packageData, onSucc
       });
 
       const brand = data?.data;
-      
+
       if (!brand?.brandDetails) {
         throw new Error("Brand information not found");
       }
@@ -72,597 +78,267 @@ export default function PaymentButton({ amount, packageName, packageData, onSucc
 
   // ✅ Secure Payment Handler
   const handlePayment = useCallback(async () => {
-    // ✅ Validation
-    if (loading) {
-      toast.error("Please wait, loading your details...");
-      return;
-    }
+    try {
+      setPaymentLoading(true);
 
-    if (!brandData?.email || !brandData?.phone || !brandData?.name) {
-      toast.error("Complete your profile to proceed with payment");
-      return;
-    }
+      // ===============================
+      // OFFLINE FLOW
+      // ===============================
+      if (paymentMode === "offline") {
+        const packagePayload = {
+          brandOwnerId: uuid,
 
-    if (!amount || amount <= 0) {
-      toast.error("Invalid payment amount");
-      return;
-    }
+          packages: packageData.map((pkgGroup) => ({
+            packagesType: pkgGroup.packagesType,
 
-  try {
+            packagesName: pkgGroup.planName,
 
-setPaymentLoading(true);
+            planUniqueId: pkgGroup.planUniqueId,
 
+            InvestmetPackages: [
+              {
+                InvestmetRageLabel: pkgGroup.investmentRangeLabel,
 
-// ONLY ONLINE LOAD RAZORPAY
+                investmentranges:
+                  pkgGroup.items?.map((item) => ({
+                    selectedPlanInvestmetrange: item.range,
 
-if(paymentMode==="offline"){
+                    selectedPlanState: item.states || [],
+                  })) || [],
 
+                TotalLeads:
+                  pkgGroup.packagesType === "LISTING"
+                    ? 0
+                    : Number(pkgGroup.totalLeads || 0),
 
-const packagePayload = {
+                remainingLeads:
+                  pkgGroup.packagesType === "LISTING"
+                    ? 0
+                    : Number(pkgGroup.selectedLeads || 0),
 
-brandOwnerId:uuid,
+                TotalAmount: Number(pkgGroup.amount),
 
+                Validity: pkgGroup.validityDays || 30,
 
-packages: packageData.map((pkgGroup)=>({
+                PackageStartDate: new Date(),
 
-packagesType:
-pkgGroup.packagesType,
+                PackageEndDate: new Date(
+                  Date.now() + Number(pkgGroup.validityDays || 30) * 86400000,
+                ),
 
+                isActive: false,
 
-packagesName:
-pkgGroup.planName,
+                isPending: true,
 
+                // REMOVE THIS
+                // paymentId:data.data.paymentId
+                // orderId:data.data.orderId
+              },
+            ],
+          })),
+        };
 
-planUniqueId:
-pkgGroup.planUniqueId,
+        const response = await axios.patch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/v1/brand-packages-plans/create`,
 
+          packagePayload,
+        );
 
-InvestmetPackages:[{
+        toast.success("Offline payment submitted");
 
+        onSuccess?.({
+          package: response.data,
 
-InvestmetRageLabel:
-pkgGroup.investmentRangeLabel,
+          offline: true,
+        });
 
-
-investmentranges:
-pkgGroup.items?.map(item=>({
-
-selectedPlanInvestmetrange:
-item.range,
-
-
-selectedPlanState:
-item.states || []
-
-
-})) || [],
-
-
-
-TotalLeads:
-pkgGroup.packagesType==="LISTING"
-?
-0
-:
-Number(pkgGroup.totalLeads || 0),
-
-
-
-remainingLeads:
-pkgGroup.packagesType==="LISTING"
-?
-0
-:
-Number(pkgGroup.selectedLeads || 0),
-
-
-
-TotalAmount:
-pkgGroup.amount,
-
-
-Validity:
-pkgGroup.validityDays || 30,
-
-
-
-PackageStartDate:
-new Date(),
-
-
-
-PackageEndDate:
-new Date(
-Date.now()+
-(Number(pkgGroup.validityDays||30)
-*
-86400000)
-),
-
-
-
-CurrentDate:new Date(),
-
-
-
-RenewalEndDate:
-new Date(
-Date.now()+
-(Number(pkgGroup.validityDays||30)
-*
-86400000)
-),
-
-
-
-isPaused:false,
-
-pauseHistory:[],
-
-
-isExperied:false,
-
-
-isActive:true,
-
-
-isPending:false,
-
-
-
-paymentId:
-data.data.paymentId,
-
-
-orderId:
-data.data.orderId
-
-
-
-}]
-
-
-}))
-
-};
-
-
-
-
-const packageResponse =
-await axios.patch(
-
-`${process.env.NEXT_PUBLIC_API_URL}/api/v1/brand-packages-plans/create`,
-
-packagePayload,
-
-{
-
-headers:{
-"Content-Type":"application/json"
-}
-
-}
-
-);
-
-
-
-toast.success(
-"Offline payment submitted successfully"
-);
-
-
-
-onSuccess?.({
-
-payment:data.data,
-
-package:packageResponse.data,
-
-offline:true
-
-});
-
-
-
-return;
-
-
-}
-
-
-      const firstPackage = packageData?.[0];
-const firstItem = firstPackage?.items?.[0];
-
-const payload = {
-  brandOwnerId: uuid,
-paymentMode,
-
-
-manualPaymentAmount:
-paymentMode==="offline"
-?
-Number(offlineAmount)
-:
-0,
-
-
-manualPaymentDate:
-paymentMode==="offline"
-?
-new Date()
-:
-null,
-
-
-manualPaymentMessage:
-paymentMode==="offline"
-?
-offlineMessage
-:
-"",
-
-  email: brandData.email,
-  phone: brandData.phone,
-  name: brandData.name,
-  brandID: brandData.brandID,
-
-  // =========================
-  // TOTALS
-  // =========================
-  totalAmount: packageData.reduce(
-    (sum, pkg) => sum + Number(pkg.amount || 0),
-    0
-  ),
-
-  totalLeads: packageData.reduce(
-    (sum, pkg) => sum + Number(pkg.totalLeads || 0),
-    0
-  ),
-
-  // =========================
-  // ALL PACKAGES
-  // =========================
-  packages: packageData.map((pkg) => ({
-    groupKey: pkg.groupKey,
-
-    packagesType: pkg.packagesType,
-
-    packageName: pkg.planName,
-
-    planId: pkg.planId,
-
-    planPackageId: pkg.planPackageId,
-
-    planUniqueId: pkg.planUniqueId,
-
-    investmentRangeLabel:
-      pkg.investmentRangeLabel,
-
-    amount: Number(pkg.amount || 0),
-
-    totalLeads: Number(pkg.totalLeads || 0),
-
-    selectedLeads: Number(
-      pkg.selectedLeads || 0
-    ),
-
-    totalStates: Number(
-      pkg.totalStates || 0
-    ),
-
-    uniqueStates: pkg.uniqueStates || [],
-
-    validityDays:
-      Number(pkg.validityDays || 30),
-
-    pricePerState:
-      Number(pkg.pricePerState || 0),
-
-    // =========================
-    // ALL ITEMS
-    // =========================
-    items:
-      pkg.items?.map((item) => ({
-        id: item.id,
-
-        investmentRangeLabel:
-          item.investmentRangeLabel,
-
-        range: item.range,
-
-        selectedLeads: Number(
-          item.selectedLeads || 0
-        ),
-
-        states: Array.isArray(item.states)
-          ? item.states
-          : [],
-
-        amount: Number(item.amount || 0),
-      })) || [],
-  })),
-
-  // =========================
-  // GST
-  // =========================
-  billingState: "TN",
-  companyState: "TN",
-
-  gstNumber: "",
-  pan: "",
-};
-
-console.log("PAYLOAD:", payload);
-
-
-
-      // ✅ 2. Create Payment Order (Pass ALL required fields)
-      const orderResponse = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/payment/create`,payload,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            // Add client-side signature if implemented
-            // "X-Client-Signature": clientSignature,
-            // "X-Timestamp": Date.now(),
-          },
-          timeout: 15000,
-        }
-      );
-
-      const { data } = orderResponse;
-
-      if (!data.success) {
-        toast.error(data.message || "Failed to create payment order");
         return;
       }
 
-      const { orderId, key, currency, amount: orderAmount } = data.data;
+      // ===============================
+      // ONLINE FLOW START
+      // ===============================
 
-      // ✅ 3. Razorpay Checkout Options (Enhanced)
-      const options = {
-        key,
-        amount: orderAmount, // Always in paise from backend
-        currency,
-        name: "Mr Franchise",
-description: `Purchase: ${packageData.length} Package(s)`,
-        order_id: orderId,
-        image: "/logo.png", // Your logo
-        prefill: {
-          name: brandData.name,
-          email: brandData.email,
-          contact: brandData.phone.replace(/[^0-9]/g, ""), // Clean phone
-        },
-        theme: {
-          color: "#6366f1",
-        },
-        modal: {
-          ondismiss: async function () {
-            toast("Payment cancelled", { icon: "❌" });
-          },
-        },
-        handler: async function (response) {
-          try {
-            // ✅ 4. Verify Payment (Critical Security Step)
-            const verifyResponse = await axios.post(
-              `${process.env.NEXT_PUBLIC_API_URL}/api/v1/payment/verify`,
-              {
-                razorpay_order_id: response.razorpay_order_id,
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_signature: response.razorpay_signature,
-              },
-              { timeout: 10000 }
-            );
+      const payload = {
+        brandOwnerId: uuid,
 
-           if (verifyResponse.data.success) {
+        paymentMode: "online",
 
-  // =========================
-  // CREATE BRAND PACKAGE
-  // =========================
+        email: brandData.email,
 
-const packagePayload = {
-  brandOwnerId: uuid,
+        phone: brandData.phone,
 
-  packages: packageData.map(
-    (pkgGroup) => ({
-      packagesType:
-        pkgGroup?.packagesType,
+        name: brandData.name,
 
-      packagesName:
-        pkgGroup?.planName,
+        packages: packageData,
 
-      planUniqueId:
-        pkgGroup?.planUniqueId,
-
-      InvestmetPackages: [
-        {
-          // ✅ LABEL
-          InvestmetRageLabel:
-            pkgGroup?.investmentRangeLabel,
-
-          // ✅ RANGE + STATES
-          investmentranges:
-            pkgGroup?.items.map(
-              (item) => ({
-                selectedPlanInvestmetrange:
-                  item?.range || "",
-
-                selectedPlanState:
-                  Array.isArray(
-                    item?.states
-                  )
-                    ? item.states
-                    : [],
-              })
-            ) || [],
-
-          // ✅ TOTAL LEADS
-          TotalLeads:
-          pkgGroup?.packagesType ===
-          "LISTING"
-            ? 0
-            : Number(
-                pkgGroup?.totalLeads || 0
-              ),
-
-          // ✅ REMAINING LEADS
-         remainingLeads:
-          pkgGroup?.packagesType ===
-          "LISTING"
-            ? 0
-            : Number(
-                pkgGroup?.selectedLeads || 0
-              ),
-
-          // ✅ AMOUNT
-          TotalAmount:
-            pkgGroup?.amount || 0,
-
-          // ✅ VALIDITY
-          Validity:
-            pkgGroup?.validityDays ||
-            30,
-
-          // ✅ DATES
-          PackageStartDate:
-            new Date(),
-
-          PackageEndDate:
-            new Date(
-              Date.now() +
-                Number(
-                  pkgGroup?.validityDays ||
-                    30
-                ) *
-                  24 *
-                  60 *
-                  60 *
-                  1000
-            ),
-
-          CurrentDate:
-            new Date(),
-
-          RenewalEndDate:
-            new Date(
-              Date.now() +
-                Number(
-                  pkgGroup?.validityDays ||
-                    30
-                ) *
-                  24 *
-                  60 *
-                  60 *
-                  1000
-            ),
-
-          // ✅ STATUS
-          isPaused: false,
-
-          pauseHistory: [],
-
-          isExperied: false,
-
-          isActive: false,
-
-          isPending: false,
-
-          // ✅ PAYMENT
-          paymentId:
-            verifyResponse.data.data
-              .paymentId,
-
-          orderId:
-            verifyResponse.data.data
-              .orderId,
-        },
-      ],
-    })
-  ),
-};
-
-console.log(
-  "PACKAGE PAYLOAD:",
-  packagePayload
-);
-
-  
-  // =========================
-  // CREATE PACKAGE API
-  // =========================
-
-  const packageResponse =
-    await axios.patch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/brand-packages-plans/create`,
-      packagePayload,
-      {
-        headers: {
-          "Content-Type":
-            "application/json",
-        },
-      }
-    );
-
-  console.log(
-    "PACKAGE RESPONSE:",
-    packageResponse.data
-  );
-
-  // =========================
-  // SUCCESS
-  // =========================
-
-  toast.success(
-    "Payment Successful! 🎉"
-  );
-
-  onSuccess?.({
-    payment:
-      verifyResponse.data.data,
-
-    package:
-      packageResponse.data,
-  });
-}
-          } catch (verifyErr) {
-            toast.error("Payment verification failed. Please contact support.");
-            console.error("Verification Error:", verifyErr);
-          }
-        },
-        notes: {
-          packageName,
-          brandOwnerId: uuid,
-        },
+        totalAmount: amount,
       };
 
-      // ✅ 5. Open Razorpay Checkout
-      const rzp = new window.Razorpay(options);
-      rzp.open();
+      const orderResponse = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/payment/create`,
 
-    } catch (err) {
-      console.error("Payment Error:", err);
-      alert(err?.response?.data?.message);
-  console.log(
-    "BACKEND RESPONSE:",
-    err?.response?.data
-  );
+        payload,
+      );
 
-      // Enhanced Error Handling
-      if (err.code === "ECONNABORTED") {
-        toast.error("Payment request timed out. Please try again.");
-      } else if (err.response?.status === 400) {
-        toast.error(err.response.data.message || "Invalid payment details");
-      } else if (err.response?.status === 429) {
-        toast.error("Too many payment attempts. Please wait.");
-      } else {
-        toast.error("Payment failed. Please try again.");
+      const paymentData = orderResponse.data;
+
+      if (!paymentData.success) {
+        toast.error("Order creation failed");
+
+        return;
       }
+
+ const {
+  orderId,
+  key,
+  currency,
+  amount: orderAmount,
+} = paymentData.data;
+
+
+// Load Razorpay
+const loaded = await loadRazorpayScript();
+
+if (!loaded) {
+  toast.error("Razorpay SDK failed to load");
+  return;
+}
+
+
+// Open Razorpay Checkout
+
+const options = {
+
+  key: key,
+
+  amount: orderAmount,
+
+  currency: currency || "INR",
+
+  name: "Mr Franchise",
+
+  description: packageName || "Franchise Package",
+
+  order_id: orderId,
+
+
+  prefill: {
+
+    name: brandData.name,
+
+    email: brandData.email,
+
+    contact: brandData.phone,
+
+  },
+
+
+  theme: {
+
+    color:"#6366f1"
+
+  },
+
+
+  handler: async function(response){
+
+
+    console.log(
+      "RAZORPAY RESPONSE",
+      response
+    );
+
+
+    try {
+
+
+      const verifyResponse = await axios.post(
+
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/payment/verify`,
+
+        {
+
+          razorpay_order_id:
+          response.razorpay_order_id,
+
+
+          razorpay_payment_id:
+          response.razorpay_payment_id,
+
+
+          razorpay_signature:
+          response.razorpay_signature,
+
+        }
+
+      );
+
+
+      if(verifyResponse.data.success){
+
+
+        toast.success(
+          "Payment successful"
+        );
+
+
+        onSuccess?.(
+          verifyResponse.data
+        );
+
+
+      }
+
+
+    }
+    catch(err){
+
+      console.log(
+        "VERIFY ERROR",
+        err
+      );
+
+      toast.error(
+        "Payment verification failed"
+      );
+
+    }
+
+
+  },
+
+
+  modal: {
+
+    ondismiss:()=>{
+
+      toast.error(
+        "Payment cancelled"
+      );
+
+    }
+
+  }
+
+
+};
+
+
+const razorpay = new window.Razorpay(options);
+
+
+razorpay.open();
+
+      // Razorpay code here
+    } catch (error) {
+      console.log(error);
+
+      toast.error("Payment failed");
     } finally {
       setPaymentLoading(false);
     }
-  }, [brandData, amount, packageName, packageData, uuid, loading, loadRazorpayScript, onSuccess]);
+  }, [paymentMode, packageData, uuid, amount, brandData, onSuccess]);
 
   // ✅ Show loading state
   if (loading) {
@@ -683,44 +359,32 @@ console.log(
         minHeight: 56,
         fontSize: "16px",
         fontWeight: 700,
-        background: "linear-gradient(135deg, #6366f1, #ec4899)",
+        background: "linear-gradient(135deg, #ff9800, rgb(250, 163, 13))",
         color: "white",
         borderRadius: "14px",
         boxShadow: "0 20px 40px rgba(99,102,241,0.4)",
         textTransform: "none",
         "&:hover": {
-          background: "linear-gradient(135deg, #5855eb, #db2777)",
+          background: "linear-gradient(135deg, #ff99009d, #ff990081)",
           transform: "translateY(-2px)",
           boxShadow: "0 25px 50px rgba(236,72,153,0.5)",
         },
         "&:disabled": {
-          background: "rgba(99,102,241,0.4)",
+          background: "rgba(215, 216, 255, 0.4)",
           transform: "none",
         },
       }}
     >
       {paymentLoading ? (
-
-<>
-<CircularProgress size={20}/>
-Processing...
-</>
-
-)
-
-:
-
-(
-
-paymentMode==="offline"
-?
-"Submit Offline Payment"
-:
-`Pay ₹${amount?.toLocaleString()}`
-
-)
-
-}
+        <>
+          <CircularProgress size={20} />
+          Processing...
+        </>
+      ) : paymentMode === "offline" ? (
+        "Submit Offline Payment"
+      ) : (
+        `Pay ₹${amount?.toLocaleString()}`
+      )}
     </Button>
   );
 }
