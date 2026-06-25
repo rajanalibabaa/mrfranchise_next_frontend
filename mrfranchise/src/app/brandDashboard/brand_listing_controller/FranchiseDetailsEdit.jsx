@@ -43,15 +43,14 @@ import Toolbar from "@mui/material/Toolbar";
 import Stack from "@mui/material/Stack";
 import Collapse from "@mui/material/Collapse";
 import CloseIcon from "@mui/icons-material/Close";
-import {
-  Delete as DeleteIcon,
-  Edit as EditIcon,
-  InfoOutlined,
-  ExpandMore,
-  ExpandLess,
-} from "@mui/icons-material";
+import InputBase from "@mui/material/InputBase";
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
+import InfoOutlined from "@mui/icons-material/InfoOutlined";
+import ExpandMore from "@mui/icons-material/ExpandMore";
+import ExpandLess from "@mui/icons-material/ExpandLess";
 import AddIcon from "@mui/icons-material/Add";
-
+import SearchIcon from "@mui/icons-material/Search";
 const FranchiseDetailsEdit = ({
   data = {},
   errors = {},
@@ -129,7 +128,9 @@ const FranchiseDetailsEdit = ({
   const [tempProductTags, setTempProductTags] = useState([]);
   const [tempServiceTags, setTempServiceTags] = useState([]);
   const [showSelectedServiceTags, setShowSelectedServiceTags] = useState(false);
-
+   const [industrySearch, setIndustrySearch] = useState("");
+    const [categorySearch, setCategorySearch] = useState("");
+    const [franchiseTypeSearch, setFranchiseTypeSearch] = useState("");
   // Service tag groups will be populated from API data
   const [serviceTagGroups, setServiceTagGroups] = useState({});
 
@@ -274,119 +275,137 @@ const FranchiseDetailsEdit = ({
 
   // Franchise types and models
   const franchiseTypes = {
-    FRANCHISE: {
-      KIOSK: ["KIOSK"],
-      "CLOUD KITCHEN": ["CLOUD KITCHEN"],
-      "SHOP IN SHOP": ["SHOP IN SHOP"],
-      "SERVICE PARTNERS": [
-        "SERVICE PARTNERS",
-        "SERVICE PARTNERS - Area",
-        "SERVICE PARTNERS - City",
-        "SERVICE PARTNERS - District",
-        "SERVICE PARTNERS - State",
-      ],
-      FOFO: [
-        "FOFO - Single Unit",
-        "FOFO - Multi Unit",
-        "FOFO - Master Franchise",
-        "FOFO - City Franchise",
-        "FOFO - Area Franchise",
-        "FOFO - District Franchise",
-        "FOFO - State Franchise",
-      ],
-      FICO: [
-        "FICO - Single Unit",
-        "FICO - Multi Unit",
-        "FICO - Master Franchise",
-        "FICO - City Franchise",
-        "FICO - Area Franchise",
-        "FICO - District Franchise",
-        "FICO - State Franchise",
-      ],
-      COCO: [
-        "COCO - Single Unit",
-        "COCO - Multi Unit",
-        "COCO - Master Franchise",
-        "COCO - City Franchise",
-        "COCO - Area Franchise",
-        "COCO - District Franchise",
-        "COCO - State Franchise",
-      ],
-      COFO: [
-        "COFO - Single Unit",
-        "COFO - Multi Unit",
-        "COFO - Master Franchise",
-        "COFO - City Franchise",
-        "COFO - Area Franchise",
-        "COFO - District Franchise",
-        "COFO - State Franchise",
-      ],
-      FOCO: [
-        "FOCO - Single Unit",
-        "FOCO - Multi Unit",
-        "FOCO - Master Franchise",
-        "FOCO - City Franchise",
-        "FOCO - Area Franchise",
-        "FOCO - District Franchise",
-        "FOCO - State Franchise",
-      ],
-    },
-    "DEALERS & DISTRIBUTORS": {
-      "C&F Agent": ["C&F Agent"],
-      "IMPORTER / EXPORTER": ["IMPORTER", "EXPORTER"],
-      STOCKIST: [
-        "STOCKIST",
-        "SUPER STOCKIST",
-        "STOCKIST - Area",
-        "STOCKIST - City",
-        "STOCKIST - District",
-        "STOCKIST - State",
-      ],
-      DEALER: [
-        "DEALER",
-        "AUTHORIZED DEALER",
-        "DEALER - Area",
-        "DEALER - City",
-        "DEALER - District",
-        "DEALER - State",
-      ],
-      DISTRIBUTOR: [
-        "DISTRIBUTOR",
-        "MASTER DISTRIBUTOR",
-        "RETAIL DISTRIBUTOR",
-        "REGIONAL DISTRIBUTOR",
-        "EXCLUSIVE DISTRIBUTOR",
-        "DISTRIBUTOR - Area",
-        "DISTRIBUTOR - City",
-        "DISTRIBUTOR - District",
-        "DISTRIBUTOR - State",
-      ],
-      "WHOLESALE SELLER": [
-        "WHOLESALE SELLER",
-        "WHOLESALE SELLER - Area",
-        "WHOLESALE SELLER - City",
-        "WHOLESALE SELLER - District",
-        "WHOLESALE SELLER - State",
-      ],
-    },
-    "CHANNEL PARTNERS": {
-      "CHANNEL PARTNERS": [
-        "AUTHORIZED CHANNEL PARTNER",
-        "MASTER CHANNEL PARTNER",
-        "REFERRAL CHANNEL PARTNER",
-        "IMPLEMENTATION PARTNER",
-        "VALUE-ADDED RESELLER (VAR)",
-        "STRATEGIC ALLIANCE PARTNER",
-        "CHANNEL PARTNERS",
-        "CHANNEL PARTNERS - Area",
-        "CHANNEL PARTNERS - City",
-        "CHANNEL PARTNERS - District",
-        "CHANNEL PARTNERS - State",
-      ],
-    },
-  };
+  "CHANNEL PARTNERS": {
+    "CHANNEL PARTNERS": [
+      "AUTHORIZED CHANNEL PARTNER",
+      "CHANNEL PARTNERS",
+      "AREA CHANNEL PARTNERS",
+      "CITY CHANNEL PARTNERS",
+      "DISTRICT CHANNEL PARTNERS",
+      "STATE CHANNEL PARTNERS",
+      "IMPLEMENTATION PARTNER",
+      "MASTER CHANNEL PARTNER",
+      "REFERRAL CHANNEL PARTNER",
+      "STRATEGIC ALLIANCE PARTNER",
+      "VALUE-ADDED RESELLER (VAR)",
+    ],
+  },
+
+  "DEALERS & DISTRIBUTORS": {
+    "C&F Agent": ["C&F Agent"],
+
+    DEALER: [
+      "AUTHORIZED DEALER",
+      "DEALER",
+      "AREA DEALER",
+      "CITY DEALER",
+      "DISTRICT DEALER",
+      "STATE DEALER",
+    ],
+
+    DISTRIBUTOR: [
+      "DISTRIBUTOR",
+      "AREA DISTRIBUTOR",
+      "CITY DISTRIBUTOR",
+      "DISTRICT DISTRIBUTOR",
+      "STATE DISTRIBUTOR",
+      "EXCLUSIVE DISTRIBUTOR",
+      "MASTER DISTRIBUTOR",
+      "REGIONAL DISTRIBUTOR",
+      "RETAIL DISTRIBUTOR",
+    ],
+
+    "IMPORTER / EXPORTER": [
+      "EXPORTER",
+      "IMPORTER",
+    ],
+
+    STOCKIST: [
+      "STOCKIST",
+      "AREA STOCKIST",
+      "CITY STOCKIST",
+      "DISTRICT STOCKIST",
+      "STATE STOCKIST",
+      "SUPER STOCKIST",
+    ],
+
+    "WHOLESALE SELLER": [
+      "WHOLESALE SELLER",
+      "AREA WHOLESALE SELLER",
+      "CITY WHOLESALE SELLER",
+      "DISTRICT WHOLESALE SELLER",
+      "STATE WHOLESALE SELLER",
+    ],
+  },
+
+"FRANCHISE BUSINESS": {
+  "CLOUD KITCHEN": ["CLOUD KITCHEN"],
+
+  "COMPANY OWNED COMPANY OPERAT ED (COCO)": [
+    "COCO - Area Franchise",
+    "COCO - City Franchise",
+    "COCO - District Franchise",
+    "COCO - Master Franchise",
+    "COCO - Multi Unit",
+    "COCO - Single Unit",
+    "COCO - State Franchise",
+  ],
+
+  "COMPANY OWNED FRANCHISE OPERATED (COFO)": [
+    "COFO - Area Franchise",
+    "COFO - City Franchise",
+    "COFO - District Franchise",
+    "COFO - Master Franchise",
+    "COFO - Multi Unit",
+    "COFO - Single Unit",
+    "COFO - State Franchise",
+  ],
+
+  "FRANCHISE INVESTED COMPANY OPERATED (FICO)": [
+    "FICO - Area Franchise",
+    "FICO - City Franchise",
+    "FICO - District Franchise",
+    "FICO - Master Franchise",
+    "FICO - Multi Unit",
+    "FICO - Single Unit",
+    "FICO - State Franchise",
+  ],
+
+  "FRANCHISE OWNED COMPANY OPERATED (FOCO)": [
+    "FOCO - Area Franchise",
+    "FOCO - City Franchise",
+    "FOCO - District Franchise",
+    "FOCO - Master Franchise",
+    "FOCO - Multi Unit",
+    "FOCO - Single Unit",
+    "FOCO - State Franchise",
+  ],
+
+  "FRANCHISE OWNED FRANCHISE OPERATED (FOFO)": [
+    "FOFO - Area Franchise",
+    "FOFO - City Franchise",
+    "FOFO - District Franchise",
+    "FOFO - Master Franchise",
+    "FOFO - Multi Unit",
+    "FOFO - Single Unit",
+    "FOFO - State Franchise",
+  ],
+
+  KIOSK: ["KIOSK"],
+
+  "SERVICE PARTNERS": [
+    "SERVICE PARTNERS",
+    "SERVICE PARTNERS - Area Franchise",
+    "SERVICE PARTNERS - City Franchise",
+    "SERVICE PARTNERS - District Franchise",
+    "SERVICE PARTNERS - State Franchise",
+  ],
+
+  "SHOP IN SHOP": ["SHOP IN SHOP"],
+}
+};
   const franchiseModels = [
-    "FRANCHISE",
+    "FRANCHISE BUSINESS",
     "DEALERS & DISTRIBUTORS",
     "CHANNEL PARTNERS",
   ];
@@ -1016,9 +1035,49 @@ const FranchiseDetailsEdit = ({
               sx={{ minHeight: 56 }}
               MenuProps={{
                 PaperProps: { sx: { maxHeight: 400 } },
+                disableAutoFocusItem: true,
               }}
               disabled={loading}
+              onClose={() => setIndustrySearch("")}
             >
+              {/* Sticky Search Box */}
+              <Box
+                onKeyDown={(e) => e.stopPropagation()}
+                sx={{
+                  position: "sticky",
+                  top: 0,
+                  zIndex: 10,
+                  bgcolor: "background.paper",
+                  px: 1.5,
+                  py: 1,
+                  borderBottom: "1px solid",
+                  borderColor: "divider",
+                }}
+              >
+                <InputBase
+                  autoFocus
+                  fullWidth
+                  placeholder="Search industries…"
+                  value={industrySearch}
+                  onChange={(e) => setIndustrySearch(e.target.value)}
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onClick={(e) => e.stopPropagation()}
+                  startAdornment={
+                    <SearchIcon
+                      sx={{ mr: 1, color: "text.secondary", fontSize: 18 }}
+                    />
+                  }
+                  sx={{
+                    fontSize: "0.875rem",
+                    bgcolor: "grey.100",
+                    borderRadius: 1,
+                    px: 1,
+                    py: 0.5,
+                  }}
+                />
+              </Box>
+
+              {/* Menu Items */}
               {loading ? (
                 <MenuItem value="" disabled>
                   Loading industries...
@@ -1028,35 +1087,53 @@ const FranchiseDetailsEdit = ({
                   No industries available
                 </MenuItem>
               ) : (
-                industriesWithHeadings.flatMap((group, groupIndex) => [
-                  // Disabled Heading
-                  <MenuItem
-                    key={`heading-${groupIndex}`}
-                    sx={{
-                      fontWeight: 700,
-                      backgroundColor: "#f8f8f8",
-                      color: "#ff9800",
-                      fontSize: "0.95rem",
-                      pointerEvents: "none",
-                      cursor: "default",
-                      mt: groupIndex > 0 ? 1 : 0,
-                      opacity: 1,
-                    }}
-                  >
-                  {group.heading}
-                  </MenuItem>,
+                (() => {
+                  const lower = industrySearch.toLowerCase().trim();
+                  const filtered = industriesWithHeadings.flatMap(
+                    (group, groupIndex) => {
+                      const matchedIndustries = (group.industries || []).filter(
+                        (name) => name.toLowerCase().includes(lower),
+                      );
+                      if (lower && matchedIndustries.length === 0) return [];
+                      return [
+                        <MenuItem
+                          key={`heading-${groupIndex}`}
+                          sx={{
+                            fontWeight: 700,
+                            backgroundColor: "#f8f8f8",
+                            color: "#ff9800",
+                            fontSize: "0.95rem",
+                            pointerEvents: "none",
+                            cursor: "default",
+                            mt: groupIndex > 0 ? 1 : 0,
+                            opacity: 1,
+                          }}
+                        >
+                          {group.heading}
+                        </MenuItem>,
+                        ...matchedIndustries.map((industryName, idx) => (
+                          <MenuItem
+                            key={`industry-${groupIndex}-${idx}`}
+                            value={industryName}
+                            sx={{ pl: 3 }}
+                          >
+                            {industryName}
+                          </MenuItem>
+                        )),
+                      ];
+                    },
+                  );
 
-                  // Industries under this heading
-                  ...(group.industries || []).map((industryName, idx) => (
-                    <MenuItem
-                      key={`industry-${groupIndex}-${idx}`}
-                      value={industryName}
-                      sx={{ pl: 3 }}
-                    >
-                      {industryName}
+                  return filtered.length > 0 ? (
+                    filtered
+                  ) : (
+                    <MenuItem disabled>
+                      <Typography variant="body2" color="text.secondary">
+                        No results found
+                      </Typography>
                     </MenuItem>
-                  )),
-                ])
+                  );
+                })()
               )}
             </Select>
             {errors.mainCategory && (
@@ -1064,40 +1141,97 @@ const FranchiseDetailsEdit = ({
             )}
           </FormControl>
         </Grid>
-        <Grid item xs={12} sm={4}>
-          <FormControl
-            fullWidth
-            size="medium"
-            error={Boolean(errors.subCategory)}
-          >
-            <InputLabel id="main-cat-label">Main Category</InputLabel>
-            <Select
-              value={selectedCategory.sub || ""}
-              label="Main Category"
-              onChange={handleSubCategoryChange}
-              disabled={!selectedCategory.main || loadingIndustryDetails}
-            >
-              {loadingIndustryDetails ? (
-                <MenuItem value="" disabled>
-                  Loading categories...
-                </MenuItem>
-              ) : !industryData?.categories?.length ? (
-                <MenuItem value="" disabled>
-                  No categories available
-                </MenuItem>
-              ) : (
-                industryData.categories.map((category, index) => (
-                  <MenuItem key={`${category}-${index}`} value={category}>
-                    {category}
-                  </MenuItem>
-                ))
-              )}
-            </Select>
-            {errors.subCategory && (
-              <FormHelperText error>{errors.subCategory}</FormHelperText>
-            )}
-          </FormControl>
-        </Grid>
+       <Grid item xs={12} sm={4}>
+                <FormControl
+                  fullWidth
+                  size="medium"
+                  error={Boolean(errors.subCategory)}
+                >
+                  <InputLabel id="main-cat-label">Main Category</InputLabel>
+                  <Select
+                    value={selectedCategory.sub || ""}
+                    label="Main Category"
+                    onChange={handleSubCategoryChange}
+                    disabled={!selectedCategory.main || loadingIndustryDetails}
+                    MenuProps={{
+                      PaperProps: { sx: { maxHeight: 400 } },
+                      disableAutoFocusItem: true,
+                    }}
+                    onClose={() => setCategorySearch("")}
+                  >
+                    {/* Sticky Search Box */}
+                    <Box
+                      onKeyDown={(e) => e.stopPropagation()}
+                      sx={{
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 10,
+                        bgcolor: "background.paper",
+                        px: 1.5,
+                        py: 1,
+                        borderBottom: "1px solid",
+                        borderColor: "divider",
+                      }}
+                    >
+                      <InputBase
+                        autoFocus
+                        fullWidth
+                        placeholder="Search categories…"
+                        value={categorySearch}
+                        onChange={(e) => setCategorySearch(e.target.value)}
+                        onMouseDown={(e) => e.stopPropagation()}
+                        onClick={(e) => e.stopPropagation()}
+                        startAdornment={
+                          <SearchIcon
+                            sx={{ mr: 1, color: "text.secondary", fontSize: 18 }}
+                          />
+                        }
+                        sx={{
+                          fontSize: "0.875rem",
+                          bgcolor: "grey.100",
+                          borderRadius: 1,
+                          px: 1,
+                          py: 0.5,
+                        }}
+                      />
+                    </Box>
+      
+                    {/* Menu Items */}
+                    {loadingIndustryDetails ? (
+                      <MenuItem value="" disabled>
+                        Loading categories...
+                      </MenuItem>
+                    ) : !industryData?.categories?.length ? (
+                      <MenuItem value="" disabled>
+                        No categories available
+                      </MenuItem>
+                    ) : (
+                      (() => {
+                        const lower = categorySearch.toLowerCase().trim();
+                        const filtered = industryData.categories.filter((category) =>
+                          category.toLowerCase().includes(lower),
+                        );
+                        return filtered.length > 0 ? (
+                          filtered.map((category, index) => (
+                            <MenuItem key={`${category}-${index}`} value={category}>
+                              {category}
+                            </MenuItem>
+                          ))
+                        ) : (
+                          <MenuItem disabled>
+                            <Typography variant="body2" color="text.secondary">
+                              No results found
+                            </Typography>
+                          </MenuItem>
+                        );
+                      })()
+                    )}
+                  </Select>
+                  {errors.subCategory && (
+                    <FormHelperText error>{errors.subCategory}</FormHelperText>
+                  )}
+                </FormControl>
+              </Grid>
         <Grid item xs={12} sm={4}>
           <Button
             id="sub-cat-button"
@@ -1757,24 +1891,82 @@ const FranchiseDetailsEdit = ({
             </Grid>
             {/* Column 2 - Franchise Type */}
             <Grid item>
-              <FormControl
-                fullWidth
-                error={!!errors.franchiseType}
-                required
-                size="medium"
+          <FormControl
+            fullWidth
+            error={!!errors.franchiseType}
+            required
+            size="medium"
+          >
+            <InputLabel>Business Model & Type</InputLabel>
+            <Select
+              value={currentFicoModel.franchiseType}
+              onChange={handleFicoChange}
+              name="franchiseType"
+              label="Business Model & Type"
+              disabled={!currentFicoModel.franchiseModel}
+              MenuProps={{
+                PaperProps: { sx: { maxHeight: 400 } },
+                disableAutoFocusItem: true,
+              }}
+              onClose={() => setFranchiseTypeSearch("")}
+            >
+              {/* Sticky Search Box */}
+              <Box
+                onKeyDown={(e) => e.stopPropagation()}
+                sx={{
+                  position: "sticky",
+                  top: 0,
+                  zIndex: 10,
+                  bgcolor: "background.paper",
+                  px: 1.5,
+                  py: 1,
+                  borderBottom: "1px solid",
+                  borderColor: "divider",
+                }}
               >
-                <InputLabel>Business Model & Type</InputLabel>
-                <Select
-                  value={currentFicoModel.franchiseType}
-                  onChange={handleFicoChange}
-                  name="franchiseType"
-                  label="Franchise Type*"
-                >
-                  {currentFicoModel.franchiseModel &&
-                    franchiseTypes[currentFicoModel.franchiseModel] &&
-                    Object.entries(
-                      franchiseTypes[currentFicoModel.franchiseModel],
-                    ).flatMap(([groupLabel, items]) => [
+                <InputBase
+                  autoFocus
+                  fullWidth
+                  placeholder="Search model type…"
+                  value={franchiseTypeSearch}
+                  onChange={(e) => setFranchiseTypeSearch(e.target.value)}
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onClick={(e) => e.stopPropagation()}
+                  startAdornment={
+                    <SearchIcon
+                      sx={{ mr: 1, color: "text.secondary", fontSize: 18 }}
+                    />
+                  }
+                  sx={{
+                    fontSize: "0.875rem",
+                    bgcolor: "grey.100",
+                    borderRadius: 1,
+                    px: 1,
+                    py: 0.5,
+                  }}
+                />
+              </Box>
+
+              {/* Menu Items */}
+              {!currentFicoModel.franchiseModel ? (
+                <MenuItem disabled>
+                  <Typography variant="body2" color="text.secondary">
+                    Select a Business Network first
+                  </Typography>
+                </MenuItem>
+              ) : (
+                (() => {
+                  const lower = franchiseTypeSearch.toLowerCase().trim();
+                  const groups =
+                    franchiseTypes[currentFicoModel.franchiseModel] || {};
+                  const result = [];
+
+                  Object.entries(groups).forEach(([groupLabel, items]) => {
+                    const matchedItems = items.filter((type) =>
+                      type.toLowerCase().includes(lower),
+                    );
+                    if (lower && matchedItems.length === 0) return;
+                    result.push(
                       <MenuItem
                         key={`group-${groupLabel}`}
                         disabled
@@ -1791,18 +1983,33 @@ const FranchiseDetailsEdit = ({
                       >
                         ── {groupLabel} ──
                       </MenuItem>,
-                      ...items.map((type) => (
+                    );
+                    matchedItems.forEach((type) => {
+                      result.push(
                         <MenuItem key={type} value={type} sx={{ pl: 3 }}>
                           {type}
-                        </MenuItem>
-                      )),
-                    ])}
-                </Select>
-                {errors.franchiseType && (
-                  <FormHelperText error>{errors.franchiseType}</FormHelperText>
-                )}
-              </FormControl>
-            </Grid>
+                        </MenuItem>,
+                      );
+                    });
+                  });
+
+                  return result.length > 0 ? (
+                    result
+                  ) : (
+                    <MenuItem disabled>
+                      <Typography variant="body2" color="text.secondary">
+                        No results found
+                      </Typography>
+                    </MenuItem>
+                  );
+                })()
+              )}
+            </Select>
+            {errors.franchiseType && (
+              <FormHelperText error>{errors.franchiseType}</FormHelperText>
+            )}
+          </FormControl>
+        </Grid>
             {/* Column 3 - Investment Range */}
             <Grid item>
               <FormControl
