@@ -140,9 +140,10 @@ const PaymentSummaryTable = ({
       const itemSelectedLeads = item.selectedLeads || group.selectedLeads || 0;
 
       const calculatedTotalLeads = item.totalLeads || (itemSelectedLeads * itemStateCount);
-      const calculatedTotalAmount =
-        item.totalAmount ||
-        ((group.pricePerState || 0) / (group.minLead || 1)) * itemStateCount * itemSelectedLeads;
+   const calculatedTotalAmount =
+  (item.totalAmount && item.totalAmount > 0)
+    ? item.totalAmount
+    : ((group.pricePerState || 0) / (group.minLead > 0 ? group.minLead : 1)) * itemStateCount * itemSelectedLeads;
 
       planData.items.push({
         ...item,
@@ -171,20 +172,20 @@ const PaymentSummaryTable = ({
       if (item.selectedLeads) lastSelectedLeads = item.selectedLeads;
     });
 
-    planData.totalPlanStates = allStatesSet.size;
+planData.totalPlanStates = allStatesSet.size;
     planData.totalPlanLeads = totalLeads;
     planData.totalPlanAmount = totalAmount;
     planData.lastSelectedLeads = lastSelectedLeads;
   });
 
-  // NOTE: this section recalculates and overwrites the values above
+  // Recalculate using unique states across all items per plan
   Object.entries(groupedByPlan).forEach(([planId, planData]) => {
     const globalUniqueStates = new Set();
     let lastSelectedLeads = 0;
 
     planData.items.forEach((item) => {
       (item.states || []).forEach((s) => globalUniqueStates.add(s));
-      lastSelectedLeads = item.selectedLeads || 0;
+      if (item.selectedLeads) lastSelectedLeads = item.selectedLeads;
     });
 
     const uniqueStateCount = globalUniqueStates.size;
@@ -192,8 +193,8 @@ const PaymentSummaryTable = ({
     planData.totalPlanLeads = lastSelectedLeads * uniqueStateCount;
     planData.totalPlanStates = uniqueStateCount;
     planData.lastSelectedLeads = lastSelectedLeads;
+    planData.totalPlanAmount = planData.items.reduce((sum, item) => sum + (item.totalAmount || 0), 0);
   });
-
   const buildSortedRanges = (planId, planData) => {
     const groupedByRange = planData.items.reduce((acc, item) => {
       const rangeKey = `${planId}_${item.investmentRangeLabel}_${item.range}`;
@@ -201,27 +202,33 @@ const PaymentSummaryTable = ({
         const itemStates = item.states || [];
         const stateCount = itemStates.length;
 
-        acc[rangeKey] = {
-          range: item.range,
-          investmentRangeLabel: item.investmentRangeLabel,
-          planId: planId,
-          items: [],
-          totalStates: stateCount,
-          totalLeads: item.totalLeads || 0,
-          totalAmount: item.totalAmount || item.groupAmount || 0,
-          selectedLeads: item.selectedLeads || 0,
-          pricePerState: item.pricePerState,
-          validityDays: item.validityDays,
-          states: itemStates,
-        };
+     acc[rangeKey] = {
+  range: item.range,
+  investmentRangeLabel: item.investmentRangeLabel,
+  planId: planId,
+  items: [],
+  totalStates: stateCount,
+  totalLeads: item.totalLeads || 0,
+  totalAmount: 0, // ← will be summed below after all items pushed
+  selectedLeads: item.selectedLeads || 0,
+  pricePerState: item.pricePerState,
+  validityDays: item.validityDays,
+  states: itemStates,
+};
       }
       acc[rangeKey].items.push(item);
       return acc;
     }, {});
 
-    // Ensure totalStates is correct for each range
-    Object.values(groupedByRange).forEach((rg) => {
-      if (rg.totalStates === 0) {
+ // Recalculate totalAmount and totalStates for each range from all its items
+Object.values(groupedByRange).forEach((rg) => {
+  rg.totalAmount = rg.items.reduce((sum, item) => sum + (item.totalAmount || 0), 0);
+  rg.totalLeads = rg.items.reduce((sum, item) => sum + (item.totalLeads || 0), 0);
+});
+
+// Ensure totalStates is correct for each range
+Object.values(groupedByRange).forEach((rg) => {
+  if (rg.totalStates === 0) {
         const allStatesSet = new Set();
         rg.items.forEach((item) => {
           const itemStates = item.states || [];
@@ -256,7 +263,7 @@ const PaymentSummaryTable = ({
         sx={{
           mb: { xs: 2, sm: 9 },
           width: "100%",
-          maxWidth: "1350px",
+          maxWidth: "1400px",
           mt: { xs: -1, sm: 0 },
           px: { xs: 0, sm: 2 },
         }}
