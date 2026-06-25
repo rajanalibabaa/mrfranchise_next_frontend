@@ -88,21 +88,220 @@ export default function PaymentButton({ amount, packageName, packageData, onSucc
       return;
     }
 
-    try {
-      setPaymentLoading(true);
+  try {
 
-      // ✅ 1. Load Razorpay SDK
-      const razorpayLoaded = await loadRazorpayScript();
-      if (!razorpayLoaded) {
-        toast.error("Payment gateway failed to load. Please try again.");
-        return;
-      }
+setPaymentLoading(true);
+
+
+// ONLY ONLINE LOAD RAZORPAY
+
+if(paymentMode==="offline"){
+
+
+const packagePayload = {
+
+brandOwnerId:uuid,
+
+
+packages: packageData.map((pkgGroup)=>({
+
+packagesType:
+pkgGroup.packagesType,
+
+
+packagesName:
+pkgGroup.planName,
+
+
+planUniqueId:
+pkgGroup.planUniqueId,
+
+
+InvestmetPackages:[{
+
+
+InvestmetRageLabel:
+pkgGroup.investmentRangeLabel,
+
+
+investmentranges:
+pkgGroup.items?.map(item=>({
+
+selectedPlanInvestmetrange:
+item.range,
+
+
+selectedPlanState:
+item.states || []
+
+
+})) || [],
+
+
+
+TotalLeads:
+pkgGroup.packagesType==="LISTING"
+?
+0
+:
+Number(pkgGroup.totalLeads || 0),
+
+
+
+remainingLeads:
+pkgGroup.packagesType==="LISTING"
+?
+0
+:
+Number(pkgGroup.selectedLeads || 0),
+
+
+
+TotalAmount:
+pkgGroup.amount,
+
+
+Validity:
+pkgGroup.validityDays || 30,
+
+
+
+PackageStartDate:
+new Date(),
+
+
+
+PackageEndDate:
+new Date(
+Date.now()+
+(Number(pkgGroup.validityDays||30)
+*
+86400000)
+),
+
+
+
+CurrentDate:new Date(),
+
+
+
+RenewalEndDate:
+new Date(
+Date.now()+
+(Number(pkgGroup.validityDays||30)
+*
+86400000)
+),
+
+
+
+isPaused:false,
+
+pauseHistory:[],
+
+
+isExperied:false,
+
+
+isActive:true,
+
+
+isPending:false,
+
+
+
+paymentId:
+data.data.paymentId,
+
+
+orderId:
+data.data.orderId
+
+
+
+}]
+
+
+}))
+
+};
+
+
+
+
+const packageResponse =
+await axios.patch(
+
+`${process.env.NEXT_PUBLIC_API_URL}/api/v1/brand-packages-plans/create`,
+
+packagePayload,
+
+{
+
+headers:{
+"Content-Type":"application/json"
+}
+
+}
+
+);
+
+
+
+toast.success(
+"Offline payment submitted successfully"
+);
+
+
+
+onSuccess?.({
+
+payment:data.data,
+
+package:packageResponse.data,
+
+offline:true
+
+});
+
+
+
+return;
+
+
+}
+
 
       const firstPackage = packageData?.[0];
 const firstItem = firstPackage?.items?.[0];
 
 const payload = {
   brandOwnerId: uuid,
+paymentMode,
+
+
+manualPaymentAmount:
+paymentMode==="offline"
+?
+Number(offlineAmount)
+:
+0,
+
+
+manualPaymentDate:
+paymentMode==="offline"
+?
+new Date()
+:
+null,
+
+
+manualPaymentMessage:
+paymentMode==="offline"
+?
+offlineMessage
+:
+"",
 
   email: brandData.email,
   phone: brandData.phone,
@@ -501,13 +700,27 @@ console.log(
       }}
     >
       {paymentLoading ? (
-        <>
-          <CircularProgress size={20} sx={{ color: "white", mr: 1 }} />
-          Processing Payment...
-        </>
-      ) : (
-        `Pay ₹${amount?.toLocaleString()}`
-      )}
+
+<>
+<CircularProgress size={20}/>
+Processing...
+</>
+
+)
+
+:
+
+(
+
+paymentMode==="offline"
+?
+"Submit Offline Payment"
+:
+`Pay ₹${amount?.toLocaleString()}`
+
+)
+
+}
     </Button>
   );
 }

@@ -171,6 +171,7 @@ export default function PaymentPage() {
           minHeight: "100vh",
           bgcolor: "#f8f9fa",
           py: 4,
+          mt:{xs:0,sm:0,md:17}
         }}
       >
         <Container maxWidth="lg">
@@ -466,9 +467,24 @@ export default function PaymentPage() {
                         amount={finalAmount}
                         packageName={packagesNames}
                         packageData={paymentData}
+                        paymentMode="online"
                         onSuccess={handlePaymentSuccess}
                       />
+                      <Divider />
 
+<PaymentButton
+
+amount={finalAmount}
+
+packageName={packagesNames}
+
+packageData={paymentData}
+
+paymentMode="offline"
+
+onSuccess={handlePaymentSuccess}
+
+/>
                       {/* Payment Methods */}
                       <Box
                         sx={{
