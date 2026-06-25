@@ -2,12 +2,12 @@ const fs = require("fs");
 
 
 const SITE_URL = "https://mrfranchise.in"||
-"http://localhost:5000";
+"https://mrfranchisebackend.mrfranchise.in";
 
 
 const API_BASE =
 process.env.NEXT_PUBLIC_API_URL ||
-"http://localhost:5000";
+"https://mrfranchisebackend.mrfranchise.in";
 
 
 

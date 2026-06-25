@@ -467,11 +467,24 @@ export default function PaymentPage() {
                         amount={finalAmount}
                         packageName={packagesNames}
                         packageData={paymentData}
+                        paymentMode="online"
                         onSuccess={handlePaymentSuccess}
                       />
                       <Divider />
 
-<Button>Payment Done in Offline</Button>
+<PaymentButton
+
+amount={finalAmount}
+
+packageName={packagesNames}
+
+packageData={paymentData}
+
+paymentMode="offline"
+
+onSuccess={handlePaymentSuccess}
+
+/>
                       {/* Payment Methods */}
                       <Box
                         sx={{
