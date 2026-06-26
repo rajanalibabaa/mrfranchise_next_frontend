@@ -400,29 +400,47 @@ function Navbar() {
 </Box>
             </motion.div>
           </Box>
+
+
           <Link
-            href="https://consulting.mrfranchise.in"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {!isMobile && (
-              <Image
-                src="/Blue Modern Corporate Profile LinkedIn Article Cover Image (1).jpg"
-                alt="brand logo"
-                loading="lazy"
-                width={isMobile ? 120 : 900}
-                height={isMobile ? 50 : 90}
-                style={{
-                  objectFit: "contain",
-                  transition: "transform 0.3s ease",
-                  display: isMobile ? "bloack" : "block",
-                  marginLeft: "20px",
-                  borderRadius: "6px",
-                }}
-              />
-            )}
-          </Link>
-          <Box sx={{ flexGrow: isMobile ? 0 : 1 }} />
+  href="https://consulting.mrfranchise.in"
+  target="_blank"
+  rel="noopener noreferrer"
+>
+  {!isMobile && (
+    <Box
+      sx={{
+        display: {
+          sm: "none",
+          md: "block",
+          lg: "block",
+        },
+        width:{
+          md:180,
+          lg:350,
+          xl:500,
+        },
+        overflow:"hidden",
+      }}
+    >
+      <Image
+        src="/Blue Modern Corporate Profile LinkedIn Article Cover Image (1).jpg"
+        alt="brand logo"
+        width={500}
+        height={80}
+        loading="lazy"
+        style={{
+          width:"100%",
+          height:"auto",
+          objectFit:"contain",
+          borderRadius:"6px",
+        }}
+      />
+    </Box>
+  )}
+</Link>
+
+          {/* <Box sx={{ flexGrow: isMobile ? 0 : 1 }} /> */}
 
           <Box
             sx={{
@@ -458,7 +476,7 @@ function Navbar() {
                   margin: { xs: "5px" },
                   textTransform: "none",
                   fontSize: isMobile ? "0.1" : "1rem",
-                  fontWeight: 600,
+                  fontWeight: 400,
                   "&:hover": {
                     backgroundColor: "#7ad03a",
                   },
