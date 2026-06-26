@@ -122,6 +122,7 @@ const PaymentSummaryDesktopView = ({
 
               // Group ranges by their investment label
               const labelGroups = groupRangesByLabel(sortedRanges);
+console.log("paymet",paymentSummary);
 
               // total row count for this plan (for Campaign Period rowSpan)
               // each label group → ranges.length rows + 1 divider row (except last)
@@ -148,8 +149,11 @@ const PaymentSummaryDesktopView = ({
                 // price for this label group
                 const pricePerState =
                   groupRanges[0]?.items[0]?.pricePerState ?? 0;
-                const labelSubtotal = uniqueStates.size * pricePerState;
+                                                  console.log("labeltotoalleadssssssssss",pricePerState);
 
+const groupKey = `${planId}__${lbl}`;
+const matchedSummary = paymentSummary.find((p) => p.groupKey === groupKey);
+const labelSubtotal = matchedSummary?.amount ?? 0;
                 const isListing = groupRanges[0]?.items[0]?.isListingPlan;
 
                 // rowSpan for label-level cells

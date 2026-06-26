@@ -213,8 +213,9 @@ const PaymentSummaryMobileView = ({
 
                   const groupTotalStates = uniqueStates.size;
                   const groupTotalLeads = leadsPerState * groupTotalStates;
-                  const groupSubtotal = groupTotalStates * pricePerState;
-
+const groupKey = `${planId}__${label}`;
+const matchedSummary = paymentSummary.find((p) => p.groupKey === groupKey);
+const groupSubtotal = matchedSummary?.amount ?? 0;
                   return (
                     <Box key={label}>
                       {/* ── Investment Group Header ──────────────────────── */}
