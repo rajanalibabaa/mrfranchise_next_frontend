@@ -4,6 +4,7 @@ import {
   useMediaQuery,
   useTheme,
   ListSubheader,
+  InputBase,
 } from "@mui/material";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -14,14 +15,13 @@ import MenuItem from "@mui/material/MenuItem";
 import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
 import SearchIcon from "@mui/icons-material/Search";
-import { useRouter } from "next/navigation";
+import ClearIcon from "@mui/icons-material/Clear";
 import { useSelector, useDispatch } from "react-redux";
 import { fetchFilterOptions, clearErrors } from "@/Redux/Slices/filterDropdownData";
 
 const FilterDropdowns = ({ onFilterChange }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
-  const router = useRouter();
   const dispatch = useDispatch();
 
   const [filters, setFilters] = useState({
@@ -30,20 +30,23 @@ const FilterDropdowns = ({ onFilterChange }) => {
     selectedInvestmentRange: "",
   });
 
+  const [opened, setOpened] = useState({
+    selectedMainCategory: false,
+    selectedState: false,
+    selectedInvestmentRange: false,
+  });
+
+  const [industrySearch, setIndustrySearch] = useState("");
   const [isNavigating, setIsNavigating] = useState(false);
   const isMountedRef = useRef(true);
+  const searchInputRef = useRef(null);
 
   useEffect(() => {
     return () => { isMountedRef.current = false; };
   }, []);
 
-  const {
-    mainCategories, // now [{ heading, industries: [] }]
-    states,
-    investmentRanges,
-    loading,
-    error,
-  } = useSelector((state) => state.filterDropdown);
+  const { mainCategories, states, investmentRanges, loading, error } =
+    useSelector((state) => state.filterDropdown);
 
   useEffect(() => {
     dispatch(fetchFilterOptions());
@@ -80,6 +83,17 @@ const FilterDropdowns = ({ onFilterChange }) => {
     [dispatch, onFilterChange]
   );
 
+  const handleOpen = useCallback((name) => {
+    setOpened((prev) => ({ ...prev, [name]: true }));
+    if (name === "selectedMainCategory") {
+      setTimeout(() => searchInputRef.current?.focus(), 100);
+    }
+  }, []);
+
+  const handleIndustryClose = useCallback(() => {
+    setIndustrySearch("");
+  }, []);
+
   const formattedInvestmentRanges = useMemo(() => {
     if (!investmentRanges || investmentRanges.length === 0) {
       return [{ label: "All Ranges", value: "" }];
@@ -89,10 +103,10 @@ const FilterDropdowns = ({ onFilterChange }) => {
       if (range === "Rs. 50,000 - 2 L") return 50000;
       const match = range.match(/Rs\.?\s*([\d,\.]+)\s*(L|Cr|Crs)?/i);
       if (!match) return Number.MAX_SAFE_INTEGER;
-      const num = parseFloat(match[1].replace(/,/g, ''));
-      const unit = match[2] ? match[2].toLowerCase() : '';
-      if (unit === 'cr') return num * 10000000;
-      if (unit === 'l') return num * 100000;
+      const num = parseFloat(match[1].replace(/,/g, ""));
+      const unit = match[2] ? match[2].toLowerCase() : "";
+      if (unit === "cr") return num * 10000000;
+      if (unit === "l") return num * 100000;
       return num;
     };
     const sortedRanges = [...investmentRanges].sort(
@@ -104,13 +118,20 @@ const FilterDropdowns = ({ onFilterChange }) => {
     ];
   }, [investmentRanges]);
 
-  // Build grouped menu items from [{ heading, industries[] }]
+  // ✅ Filtered grouped items with InputBase search
   const industryMenuItems = useMemo(() => {
     if (!mainCategories || mainCategories.length === 0) return [];
 
+    const term = industrySearch.trim().toLowerCase();
     const items = [];
+
     for (const group of mainCategories) {
-      // Section header (not selectable)
+      const filtered = [...(group.industries || [])]
+        .filter((ind) => !term || ind.toLowerCase().includes(term))
+        .sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
+
+      if (filtered.length === 0) continue;
+
       items.push(
         <ListSubheader
           key={`heading-${group.heading}`}
@@ -120,33 +141,52 @@ const FilterDropdowns = ({ onFilterChange }) => {
             color: "text.secondary",
             textTransform: "uppercase",
             letterSpacing: "0.08em",
+            textAlign: "center",
             lineHeight: "2rem",
             backgroundColor: "#f5f5f5",
-            pointerEvents: "none", // not clickable
+            pointerEvents: "none",
           }}
         >
           {group.heading}
         </ListSubheader>
       );
 
-      // Industry options under this heading
-      const sorted = [...(group.industries || [])].sort((a, b) =>
-        a.localeCompare(b, undefined, { sensitivity: "base" })
-      );
-      for (const industry of sorted) {
+      for (const industry of filtered) {
         items.push(
-          <MenuItem key={industry} value={industry} sx={{ pl: 3 }}>
-            {industry}
+          <MenuItem key={industry} value={industry} sx={{ pl: 3, fontSize: "0.9rem" }}>
+            {term ? (
+              (() => {
+                const idx = industry.toLowerCase().indexOf(term);
+                if (idx === -1) return industry;
+                return (
+                  <>
+                    {industry.slice(0, idx)}
+                    <span style={{ fontWeight: 700, color: "#ff9800" }}>
+                      {industry.slice(idx, idx + term.length)}
+                    </span>
+                    {industry.slice(idx + term.length)}
+                  </>
+                );
+              })()
+            ) : industry}
           </MenuItem>
         );
       }
     }
+
+    if (items.length === 0) {
+      items.push(
+        <MenuItem key="no-results" disabled sx={{ fontStyle: "italic", color: "text.secondary" }}>
+          No industries found
+        </MenuItem>
+      );
+    }
+
     return items;
-  }, [mainCategories]);
+  }, [mainCategories, industrySearch]);
 
   const handleFindBrands = useCallback(() => {
     if (isNavigating) return;
-    setIsNavigating(true);
 
     const { selectedMainCategory, selectedState, selectedInvestmentRange } = filters;
     const queryParams = new URLSearchParams();
@@ -155,13 +195,12 @@ const FilterDropdowns = ({ onFilterChange }) => {
     if (selectedState) queryParams.append("state", selectedState);
     if (selectedInvestmentRange) queryParams.append("investmentRange", selectedInvestmentRange);
 
-    const hasAnyFilter = selectedMainCategory || selectedState || selectedInvestmentRange;
-    const url = hasAnyFilter
+    const url = queryParams.toString()
       ? `/all-franchise-brands?${queryParams.toString()}`
       : "/all-franchise-brands";
 
     window.open(url, "_blank", "noopener,noreferrer");
-
+    setIsNavigating(true);
     setTimeout(() => {
       if (isMountedRef.current) setIsNavigating(false);
     }, 500);
@@ -197,30 +236,117 @@ const FilterDropdowns = ({ onFilterChange }) => {
         boxShadow: 1,
       }}
     >
-      {/* Industry Filter — grouped by heading */}
+      {/* ✅ Industry Filter with InputBase Search */}
       <FormControl fullWidth sx={{ minWidth: 180 }}>
-        <InputLabel>Industry</InputLabel>
+        <InputLabel shrink={opened.selectedMainCategory || !!filters.selectedMainCategory}>
+          Industry
+        </InputLabel>
         <Select
           value={filters.selectedMainCategory}
-          onChange={(e) => handleFilterChange("selectedMainCategory", e.target.value)}
+          onChange={(e) => {
+            handleFilterChange("selectedMainCategory", e.target.value);
+            setIndustrySearch("");
+          }}
+          onOpen={() => handleOpen("selectedMainCategory")}
+          onClose={handleIndustryClose}
           label="Industry"
           aria-label="Select Industry"
-          MenuProps={{ PaperProps: { style: { maxHeight: 350 } } }}
+          displayEmpty
+          renderValue={(selected) => {
+            if (!opened.selectedMainCategory && !selected)
+              return <span style={{ color: "transparent" }}>.</span>;
+            return selected ? selected : "All Industries";
+          }}
+          MenuProps={{
+            PaperProps: { style: { maxHeight: 400 } },
+            disableAutoFocusItem: true,
+          }}
           sx={{ backgroundColor: "white", borderRadius: 1 }}
         >
-          <MenuItem value="">All Industries</MenuItem>
+          {/* ✅ Sticky InputBase search box */}
+          <ListSubheader
+            onClickCapture={(e) => e.stopPropagation()}
+            sx={{
+              p: "8px 12px",
+              backgroundColor: "white",
+              position: "sticky",
+              top: 0,
+              zIndex: 2,
+              borderBottom: "1px solid #f0f0f0",
+            }}
+          >
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 1,
+                px: 1,
+                py: 0.5,
+                border: "1.5px solid #ff9800",
+                borderRadius: "8px",
+                backgroundColor: "#fff",
+              }}
+            >
+              <SearchIcon sx={{ color: "#ff9800", fontSize: 18, flexShrink: 0 }} />
+              <InputBase
+                inputRef={searchInputRef}
+                placeholder="Search industry..."
+                value={industrySearch}
+                onChange={(e) => setIndustrySearch(e.target.value)}
+                // ✅ Critical — stop MUI Select swallowing keystrokes
+                onKeyDown={(e) => e.stopPropagation()}
+                sx={{
+                  flex: 1,
+                  fontSize: "0.875rem",
+                  "& input": { padding: 0 },
+                }}
+              />
+              {/* ✅ Clear button when search has text */}
+              {industrySearch && (
+                <ClearIcon
+                  onMouseDown={(e) => {
+                    e.preventDefault(); // prevent dropdown close
+                    setIndustrySearch("");
+                    searchInputRef.current?.focus();
+                  }}
+                  sx={{
+                    color: "#aaa",
+                    fontSize: 16,
+                    cursor: "pointer",
+                    flexShrink: 0,
+                    "&:hover": { color: "#ff9800" },
+                  }}
+                />
+              )}
+            </Box>
+          </ListSubheader>
+
+          {/* All Industries */}
+          <MenuItem value="" sx={{ fontStyle: "italic", color: "text.secondary" }}>
+            All Industries
+          </MenuItem>
+
           {industryMenuItems}
         </Select>
       </FormControl>
 
       {/* Investment Range Filter */}
       <FormControl fullWidth sx={{ minWidth: 180 }}>
-        <InputLabel>Investment Range</InputLabel>
+        <InputLabel shrink={opened.selectedInvestmentRange || !!filters.selectedInvestmentRange}>
+          Investment Range
+        </InputLabel>
         <Select
           value={filters.selectedInvestmentRange}
           onChange={(e) => handleFilterChange("selectedInvestmentRange", e.target.value)}
+          onOpen={() => handleOpen("selectedInvestmentRange")}
           label="Investment Range"
           aria-label="Select Investment Range"
+          displayEmpty
+          renderValue={(selected) => {
+            if (!opened.selectedInvestmentRange && !selected)
+              return <span style={{ color: "transparent" }}>.</span>;
+            return selected ? selected : "All Ranges";
+          }}
           MenuProps={{ PaperProps: { style: { maxHeight: 300 } } }}
           sx={{ backgroundColor: "white", borderRadius: 1 }}
         >
@@ -232,14 +358,23 @@ const FilterDropdowns = ({ onFilterChange }) => {
         </Select>
       </FormControl>
 
-      {/* State Filter */}
+      {/* Location Filter */}
       <FormControl fullWidth sx={{ minWidth: 180 }}>
-        <InputLabel>Location</InputLabel>
+        <InputLabel shrink={opened.selectedState || !!filters.selectedState}>
+          Location
+        </InputLabel>
         <Select
           value={filters.selectedState}
           onChange={(e) => handleFilterChange("selectedState", e.target.value)}
+          onOpen={() => handleOpen("selectedState")}
           label="Location"
           aria-label="Select Location"
+          displayEmpty
+          renderValue={(selected) => {
+            if (!opened.selectedState && !selected)
+              return <span style={{ color: "transparent" }}>.</span>;
+            return selected ? selected : "All Locations";
+          }}
           MenuProps={{ PaperProps: { style: { maxHeight: 300 } } }}
           sx={{ backgroundColor: "white", borderRadius: 1 }}
         >
@@ -269,9 +404,11 @@ const FilterDropdowns = ({ onFilterChange }) => {
           borderRadius: 1,
           boxShadow: "none",
         }}
-        disabled={loading}
+        disabled={loading || isNavigating}
       >
-        {loading ? <CircularProgress size={24} color="inherit" /> : "Find Brands"}
+        {loading || isNavigating ? (
+          <CircularProgress size={24} color="inherit" />
+        ) : "Find Brands"}
       </Button>
     </Box>
   );

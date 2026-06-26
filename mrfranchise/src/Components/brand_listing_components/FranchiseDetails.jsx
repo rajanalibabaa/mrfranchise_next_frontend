@@ -53,7 +53,66 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 
 
-
+// ✅ Reusable Search Box component to use inside all 3 dropdowns
+const DropdownSearchBox = ({ value, onChange, onClear, placeholder, inputRef }) => (
+  <Box
+    onKeyDown={(e) => e.stopPropagation()}
+    onMouseDown={(e) => e.stopPropagation()}
+    onClick={(e) => e.stopPropagation()}
+    sx={{
+      position: "sticky",
+      top: 0,
+      zIndex: 10,
+      bgcolor: "background.paper",
+      px: 1.5,
+      py: 1,
+      borderBottom: "1px solid #f0f0f0",
+    }}
+  >
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        border: "1.5px solid #ff9800",
+        borderRadius: "8px",
+        px: 1.2,
+        py: 0.6,
+        gap: 1,
+        backgroundColor: "#fff",
+      }}
+    >
+      <SearchIcon sx={{ color: "#ff9800", fontSize: 20, flexShrink: 0 }} />
+      <InputBase
+        inputRef={inputRef}
+        fullWidth
+        placeholder={placeholder}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        onKeyDown={(e) => e.stopPropagation()}
+        sx={{
+          fontSize: "0.9rem",
+          flex: 1,
+          "& input": { padding: 0 },
+        }}
+      />
+      {value && (
+        <Close
+          onMouseDown={(e) => {
+            e.preventDefault();
+            onClear();
+          }}
+          sx={{
+            color: "#aaa",
+            fontSize: 18,
+            cursor: "pointer",
+            flexShrink: 0,
+            "&:hover": { color: "#ff9800" },
+          }}
+        />
+      )}
+    </Box>
+  </Box>
+);
 
 const FranchiseDetails = ({ data = {}, errors = {}, onChange = () => {} }) => {
   // Define fee unit options
@@ -952,116 +1011,93 @@ const FranchiseDetails = ({ data = {}, errors = {}, onChange = () => {} }) => {
             error={Boolean(errors.mainCategory)}
           >
             <InputLabel id="industries-label">Industries</InputLabel>
-            <Select
-              labelId="industries-label"
-              id="industries-select"
-              value={selectedCategory.main || ""}
-              label="Industries"
-              onChange={handleMainCategoryChange}
-              sx={{ minHeight: 56 }}
-              MenuProps={{
-                PaperProps: { sx: { maxHeight: 400 } },
-                disableAutoFocusItem: true,
-              }}
-              disabled={loading}
-              onClose={() => setIndustrySearch("")}
+           <Select
+  labelId="industries-label"
+  id="industries-select"
+  value={selectedCategory.main || ""}
+  label="Industries"
+  onChange={handleMainCategoryChange}
+  sx={{ minHeight: 56 }}
+  MenuProps={{
+    PaperProps: { sx: { maxHeight: 400 } },
+    disableAutoFocusItem: true,
+  }}
+  disabled={loading}
+  onClose={() => setIndustrySearch("")}
+>
+  {/* ✅ Search Box */}
+  <DropdownSearchBox
+    value={industrySearch}
+    onChange={setIndustrySearch}
+    onClear={() => setIndustrySearch("")}
+    placeholder="Search industries…"
+  />
+
+  {/* Menu Items */}
+  {loading ? (
+    <MenuItem value="" disabled>Loading industries...</MenuItem>
+  ) : industriesWithHeadings.length === 0 ? (
+    <MenuItem value="" disabled>No industries available</MenuItem>
+  ) : (
+    (() => {
+      const lower = industrySearch.toLowerCase().trim();
+      const filtered = industriesWithHeadings.flatMap((group, groupIndex) => {
+        const matchedIndustries = (group.industries || []).filter(
+          (name) => name.toLowerCase().includes(lower)
+        );
+        if (lower && matchedIndustries.length === 0) return [];
+        return [
+          <MenuItem
+            key={`heading-${groupIndex}`}
+            sx={{
+              fontWeight: 700,
+              backgroundColor: "#f8f8f8",
+              color: "#ff9800",
+              fontSize: "0.75rem",
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              textAlign: "center",
+              justifyContent: "center",
+              pointerEvents: "none",
+              cursor: "default",
+              mt: groupIndex > 0 ? 1 : 0,
+              opacity: 1,
+            }}
+          >
+            {group.heading}
+          </MenuItem>,
+          ...matchedIndustries.map((industryName, idx) => (
+            <MenuItem
+              key={`industry-${groupIndex}-${idx}`}
+              value={industryName}
+              sx={{ pl: 3 }}
             >
-              {/* Sticky Search Box */}
-              <Box
-                onKeyDown={(e) => e.stopPropagation()}
-                sx={{
-                  position: "sticky",
-                  top: 0,
-                  zIndex: 10,
-                  bgcolor: "background.paper",
-                  px: 1.5,
-                  py: 1,
-                  borderBottom: "1px solid",
-                  borderColor: "divider",
-                }}
-              >
-                <InputBase
-                  autoFocus
-                  fullWidth
-                  placeholder="Search industries…"
-                  value={industrySearch}
-                  onChange={(e) => setIndustrySearch(e.target.value)}
-                  onMouseDown={(e) => e.stopPropagation()}
-                  onClick={(e) => e.stopPropagation()}
-                  startAdornment={
-                    <SearchIcon
-                      sx={{ mr: 1, color: "text.secondary", fontSize: 18 }}
-                    />
-                  }
-                  sx={{
-                    fontSize: "0.875rem",
-                    bgcolor: "grey.100",
-                    borderRadius: 1,
-                    px: 1,
-                    py: 0.5,
-                  }}
-                />
-              </Box>
-
-              {/* Menu Items */}
-              {loading ? (
-                <MenuItem value="" disabled>
-                  Loading industries...
-                </MenuItem>
-              ) : industriesWithHeadings.length === 0 ? (
-                <MenuItem value="" disabled>
-                  No industries available
-                </MenuItem>
-              ) : (
-                (() => {
-                  const lower = industrySearch.toLowerCase().trim();
-                  const filtered = industriesWithHeadings.flatMap(
-                    (group, groupIndex) => {
-                      const matchedIndustries = (group.industries || []).filter(
-                        (name) => name.toLowerCase().includes(lower),
-                      );
-                      if (lower && matchedIndustries.length === 0) return [];
-                      return [
-                        <MenuItem
-                          key={`heading-${groupIndex}`}
-                          sx={{
-                            fontWeight: 700,
-                            backgroundColor: "#f8f8f8",
-                            color: "#ff9800",
-                            fontSize: "0.95rem",
-                            pointerEvents: "none",
-                            cursor: "default",
-                            mt: groupIndex > 0 ? 1 : 0,
-                            opacity: 1,
-                          }}
-                        >
-                          {group.heading}
-                        </MenuItem>,
-                        ...matchedIndustries.map((industryName, idx) => (
-                          <MenuItem
-                            key={`industry-${groupIndex}-${idx}`}
-                            value={industryName}
-                            sx={{ pl: 3 }}
-                          >
-                            {industryName}
-                          </MenuItem>
-                        )),
-                      ];
-                    },
-                  );
-
-                  return filtered.length > 0 ? (
-                    filtered
-                  ) : (
-                    <MenuItem disabled>
-                      <Typography variant="body2" color="text.secondary">
-                        No results found
-                      </Typography>
-                    </MenuItem>
-                  );
-                })()
-              )}
-            </Select>
+              {/* ✅ Highlight matched text */}
+              {lower ? (() => {
+                const i = industryName.toLowerCase().indexOf(lower);
+                if (i === -1) return industryName;
+                return (
+                  <>
+                    {industryName.slice(0, i)}
+                    <span style={{ fontWeight: 700, color: "#ff9800" }}>
+                      {industryName.slice(i, i + lower.length)}
+                    </span>
+                    {industryName.slice(i + lower.length)}
+                  </>
+                );
+              })() : industryName}
+            </MenuItem>
+          )),
+        ];
+      });
+      return filtered.length > 0 ? filtered : (
+        <MenuItem disabled>
+          <Typography variant="body2" color="text.secondary">No results found</Typography>
+        </MenuItem>
+      );
+    })()
+  )}
+</Select>
             {errors.mainCategory && (
               <FormHelperText error>{errors.mainCategory}</FormHelperText>
             )}
@@ -1074,85 +1110,61 @@ const FranchiseDetails = ({ data = {}, errors = {}, onChange = () => {} }) => {
             error={Boolean(errors.subCategory)}
           >
             <InputLabel id="main-cat-label">Main Category</InputLabel>
-            <Select
-              value={selectedCategory.sub || ""}
-              label="Main Category"
-              onChange={handleSubCategoryChange}
-              disabled={!selectedCategory.main || loadingIndustryDetails}
-              MenuProps={{
-                PaperProps: { sx: { maxHeight: 400 } },
-                disableAutoFocusItem: true,
-              }}
-              onClose={() => setCategorySearch("")}
-            >
-              {/* Sticky Search Box */}
-              <Box
-                onKeyDown={(e) => e.stopPropagation()}
-                sx={{
-                  position: "sticky",
-                  top: 0,
-                  zIndex: 10,
-                  bgcolor: "background.paper",
-                  px: 1.5,
-                  py: 1,
-                  borderBottom: "1px solid",
-                  borderColor: "divider",
-                }}
-              >
-                <InputBase
-                  autoFocus
-                  fullWidth
-                  placeholder="Search categories…"
-                  value={categorySearch}
-                  onChange={(e) => setCategorySearch(e.target.value)}
-                  onMouseDown={(e) => e.stopPropagation()}
-                  onClick={(e) => e.stopPropagation()}
-                  startAdornment={
-                    <SearchIcon
-                      sx={{ mr: 1, color: "text.secondary", fontSize: 18 }}
-                    />
-                  }
-                  sx={{
-                    fontSize: "0.875rem",
-                    bgcolor: "grey.100",
-                    borderRadius: 1,
-                    px: 1,
-                    py: 0.5,
-                  }}
-                />
-              </Box>
+           <Select
+  value={selectedCategory.sub || ""}
+  label="Main Category"
+  onChange={handleSubCategoryChange}
+  disabled={!selectedCategory.main || loadingIndustryDetails}
+  MenuProps={{
+    PaperProps: { sx: { maxHeight: 400 } },
+    disableAutoFocusItem: true,
+  }}
+  onClose={() => setCategorySearch("")}
+>
+  {/* ✅ Search Box */}
+  <DropdownSearchBox
+    value={categorySearch}
+    onChange={setCategorySearch}
+    onClear={() => setCategorySearch("")}
+    placeholder="Search categories…"
+  />
 
-              {/* Menu Items */}
-              {loadingIndustryDetails ? (
-                <MenuItem value="" disabled>
-                  Loading categories...
-                </MenuItem>
-              ) : !industryData?.categories?.length ? (
-                <MenuItem value="" disabled>
-                  No categories available
-                </MenuItem>
-              ) : (
-                (() => {
-                  const lower = categorySearch.toLowerCase().trim();
-                  const filtered = industryData.categories.filter((category) =>
-                    category.toLowerCase().includes(lower),
-                  );
-                  return filtered.length > 0 ? (
-                    filtered.map((category, index) => (
-                      <MenuItem key={`${category}-${index}`} value={category}>
-                        {category}
-                      </MenuItem>
-                    ))
-                  ) : (
-                    <MenuItem disabled>
-                      <Typography variant="body2" color="text.secondary">
-                        No results found
-                      </Typography>
-                    </MenuItem>
-                  );
-                })()
-              )}
-            </Select>
+  {loadingIndustryDetails ? (
+    <MenuItem value="" disabled>Loading categories...</MenuItem>
+  ) : !industryData?.categories?.length ? (
+    <MenuItem value="" disabled>No categories available</MenuItem>
+  ) : (
+    (() => {
+      const lower = categorySearch.toLowerCase().trim();
+      const filtered = industryData.categories.filter((cat) =>
+        cat.toLowerCase().includes(lower)
+      );
+      return filtered.length > 0 ? (
+        filtered.map((category, index) => (
+          <MenuItem key={`${category}-${index}`} value={category}>
+            {lower ? (() => {
+              const i = category.toLowerCase().indexOf(lower);
+              if (i === -1) return category;
+              return (
+                <>
+                  {category.slice(0, i)}
+                  <span style={{ fontWeight: 700, color: "#ff9800" }}>
+                    {category.slice(i, i + lower.length)}
+                  </span>
+                  {category.slice(i + lower.length)}
+                </>
+              );
+            })() : category}
+          </MenuItem>
+        ))
+      ) : (
+        <MenuItem disabled>
+          <Typography variant="body2" color="text.secondary">No results found</Typography>
+        </MenuItem>
+      );
+    })()
+  )}
+</Select>
             {errors.subCategory && (
               <FormHelperText error>{errors.subCategory}</FormHelperText>
             )}
@@ -2293,112 +2305,94 @@ Franchise Tags
           >
             <InputLabel>Business Model & Type</InputLabel>
             <Select
-              value={currentFicoModel.franchiseType}
-              onChange={handleFicoChange}
-              name="franchiseType"
-              label="Business Model & Type"
-              disabled={!currentFicoModel.franchiseModel}
-              MenuProps={{
-                PaperProps: { sx: { maxHeight: 400 } },
-                disableAutoFocusItem: true,
-              }}
-              onClose={() => setFranchiseTypeSearch("")}
-            >
-              {/* Sticky Search Box */}
-              <Box
-                onKeyDown={(e) => e.stopPropagation()}
-                sx={{
-                  position: "sticky",
-                  top: 0,
-                  zIndex: 10,
-                  bgcolor: "background.paper",
-                  px: 1.5,
-                  py: 1,
-                  borderBottom: "1px solid",
-                  borderColor: "divider",
-                }}
-              >
-                <InputBase
-                  autoFocus
-                  fullWidth
-                  placeholder="Search model type…"
-                  value={franchiseTypeSearch}
-                  onChange={(e) => setFranchiseTypeSearch(e.target.value)}
-                  onMouseDown={(e) => e.stopPropagation()}
-                  onClick={(e) => e.stopPropagation()}
-                  startAdornment={
-                    <SearchIcon
-                      sx={{ mr: 1, color: "text.secondary", fontSize: 18 }}
-                    />
-                  }
-                  sx={{
-                    fontSize: "0.875rem",
-                    bgcolor: "grey.100",
-                    borderRadius: 1,
-                    px: 1,
-                    py: 0.5,
-                  }}
-                />
-              </Box>
+  value={currentFicoModel.franchiseType}
+  onChange={handleFicoChange}
+  name="franchiseType"
+  label="Business Model & Type"
+  disabled={!currentFicoModel.franchiseModel}
+  MenuProps={{
+    PaperProps: { sx: { maxHeight: 400 } },
+    disableAutoFocusItem: true,
+  }}
+  onClose={() => setFranchiseTypeSearch("")}
+>
+  {/* ✅ Search Box */}
+  <DropdownSearchBox
+    value={franchiseTypeSearch}
+    onChange={setFranchiseTypeSearch}
+    onClear={() => setFranchiseTypeSearch("")}
+    placeholder="Search model type…"
+  />
 
-              {/* Menu Items */}
-              {!currentFicoModel.franchiseModel ? (
-                <MenuItem disabled>
-                  <Typography variant="body2" color="text.secondary">
-                    Select a Business Network first
-                  </Typography>
-                </MenuItem>
-              ) : (
-                (() => {
-                  const lower = franchiseTypeSearch.toLowerCase().trim();
-                  const groups =
-                    franchiseTypes[currentFicoModel.franchiseModel] || {};
-                  const result = [];
+  {!currentFicoModel.franchiseModel ? (
+    <MenuItem disabled>
+      <Typography variant="body2" color="text.secondary">
+        Select a Business Network first
+      </Typography>
+    </MenuItem>
+  ) : (
+    (() => {
+      const lower = franchiseTypeSearch.toLowerCase().trim();
+      const groups = franchiseTypes[currentFicoModel.franchiseModel] || {};
+      const result = [];
 
-                  Object.entries(groups).forEach(([groupLabel, items]) => {
-                    const matchedItems = items.filter((type) =>
-                      type.toLowerCase().includes(lower),
-                    );
-                    if (lower && matchedItems.length === 0) return;
-                    result.push(
-                      <MenuItem
-                        key={`group-${groupLabel}`}
-                        disabled
-                        sx={{
-                          fontWeight: 700,
-                          fontSize: "0.75rem",
-                          color: "#ff9800 !important",
-                          backgroundColor: "#fff8e1",
-                          letterSpacing: 1,
-                          opacity: "1 !important",
-                          pointerEvents: "none",
-                          mt: 0.5,
-                        }}
-                      >
-                        ── {groupLabel} ──
-                      </MenuItem>,
-                    );
-                    matchedItems.forEach((type) => {
-                      result.push(
-                        <MenuItem key={type} value={type} sx={{ pl: 3 }}>
-                          {type}
-                        </MenuItem>,
-                      );
-                    });
-                  });
+      Object.entries(groups).forEach(([groupLabel, items]) => {
+        const matchedItems = items.filter((type) =>
+          type.toLowerCase().includes(lower)
+        );
+        if (lower && matchedItems.length === 0) return;
 
-                  return result.length > 0 ? (
-                    result
-                  ) : (
-                    <MenuItem disabled>
-                      <Typography variant="body2" color="text.secondary">
-                        No results found
-                      </Typography>
-                    </MenuItem>
-                  );
-                })()
-              )}
-            </Select>
+        result.push(
+          <MenuItem
+            key={`group-${groupLabel}`}
+            disabled
+            sx={{
+              fontWeight: 700,
+              fontSize: "0.75rem",
+              color: "#ff9800 !important",
+              backgroundColor: "#f8f8f8",
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              textAlign: "center",
+              justifyContent: "center",
+              opacity: "1 !important",
+              pointerEvents: "none",
+              mt: 0.5,
+            }}
+          >
+            {groupLabel}
+          </MenuItem>
+        );
+
+        matchedItems.forEach((type) => {
+          result.push(
+            <MenuItem key={type} value={type} sx={{ pl: 3 }}>
+              {lower ? (() => {
+                const i = type.toLowerCase().indexOf(lower);
+                if (i === -1) return type;
+                return (
+                  <>
+                    {type.slice(0, i)}
+                    <span style={{ fontWeight: 700, color: "#ff9800" }}>
+                      {type.slice(i, i + lower.length)}
+                    </span>
+                    {type.slice(i + lower.length)}
+                  </>
+                );
+              })() : type}
+            </MenuItem>
+          );
+        });
+      });
+
+      return result.length > 0 ? result : (
+        <MenuItem disabled>
+          <Typography variant="body2" color="text.secondary">No results found</Typography>
+        </MenuItem>
+      );
+    })()
+  )}
+</Select>
             {errors.franchiseType && (
               <FormHelperText error>{errors.franchiseType}</FormHelperText>
             )}
