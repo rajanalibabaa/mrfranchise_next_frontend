@@ -101,7 +101,8 @@ export default function InvestorDashboardLayout({ children }) {
   <Box
     sx={{
       display: isMobile ? 'block' : 'flex',
-      minHeight: '100vh'
+      minHeight: '100vh',
+  
     }}
   >
     {/* ✅ MOBILE TOP MENU */}
@@ -139,7 +140,7 @@ export default function InvestorDashboardLayout({ children }) {
           flexDirection: 'column',
           gap: 1,
           position: 'sticky',
-          top: 0,
+          top: 130,
           height: '100vh',
           bgcolor: 'background.paper'
         }}

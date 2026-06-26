@@ -1,9 +1,6 @@
-# *
 User-agent: *
+
 Allow: /
 
-# Host
-Host: https://mrfranchise.in
-
-# Sitemaps
 Sitemap: https://mrfranchise.in/sitemap.xml
+Sitemap: https://mrfranchise.in/sitemap-brands.xml

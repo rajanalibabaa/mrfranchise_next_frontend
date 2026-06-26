@@ -58,7 +58,7 @@ function RegisterHandleUser({boolean = true}) {
     <Navbar/>
     {/* {boolean && <Navbar/>} */}
     <Box
-    mt={isMobile ? 0 : 0}
+    mt={isMobile ? 0 : 14}
       sx={{
         height: "100vh",
         overflow: "hidden",
@@ -85,11 +85,11 @@ function RegisterHandleUser({boolean = true}) {
         <Box
           component="img"
           loading="lazy"
-          src='/Business_mrfranchise_logo.avif'
+          src='/Business_logo.png'
           alt="Business Logo"
           sx={{
             p: 50,
-            maxWidth: "100%",
+            maxWidth: "75%",
             height: "auto",
             borderRadius: 2,
             maxHeight: "100%",

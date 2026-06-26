@@ -114,7 +114,7 @@ export default function PaymentSuccessPage() {
         sx={{
           minHeight: "100vh",
           bgcolor: "#f8f9fa",
-          py: 6,
+          py: 18,
           position: "relative",
           zIndex: 2,
         }}

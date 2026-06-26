@@ -208,7 +208,7 @@ const FilterDropdowns = ({ onFilterChange }) => {
           MenuProps={{ PaperProps: { style: { maxHeight: 350 } } }}
           sx={{ backgroundColor: "white", borderRadius: 1 }}
         >
-         
+          <MenuItem value="">All Industries</MenuItem>
           {industryMenuItems}
         </Select>
       </FormControl>

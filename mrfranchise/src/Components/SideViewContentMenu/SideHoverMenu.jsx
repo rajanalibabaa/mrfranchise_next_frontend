@@ -3,10 +3,8 @@ import React, { useState, useEffect, useMemo, useCallback } from "react";
 import axios from "axios";
 import Drawer from "@mui/material/Drawer";
 import {
- 
   useMediaQuery,
   useTheme,
-  
 } from "@mui/material";
 import AppBar from "@mui/material/AppBar";
 import Tab from "@mui/material/Tab";
@@ -31,7 +29,8 @@ import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useDispatch } from "react-redux";
 import { openBrandDialog } from "@/Redux/Slices/OpenBrandNewPageSlice";
-// Create axios instance with base config
+import { ArrowBack } from "@mui/icons-material";
+
 const api = axios.create({
   baseURL: "https://mrfranchisebackend.mrfranchise.in/api/v1/",
   headers: {
@@ -39,43 +38,30 @@ const api = axios.create({
   },
 });
 
-// Memoized brand card component with optimized props
-// Memoized brand card component with optimized props
 const BrandCard = React.memo(
-  ({ brand, onClick, isMobile, onHoverLeave }) => { // Add onHoverLeave prop
+  ({ brand, onClick, isMobile, onHoverLeave }) => {
     const brandName = brand.brandDetails?.brandName || brand.brandname || "Unknown";
     const brandId = brand.uuid;
     const brandLogo = brand.uploads?.logo || brand.logo || "";
     const companyName = brand.brandDetails?.companyName || "";
     const initial = brandName[0]?.toUpperCase() || "B";
 
-    // const navigate = useRouter();
     const dispatch = useDispatch();
 
     const handleClick = (e) => {
       e.preventDefault();
       e.stopPropagation();
-      
-      // Close the drawer first
       if (onHoverLeave) {
         onHoverLeave();
       }
-      
-      // if (brandId) {
-      //   const encodedBrandName = encodeURIComponent(brandName);
-      //   navigate(`/brands/${brandId}?name=${encodedBrandName}`);
-      // }
-      
-      // Also call the parent onClick handler if provided
       if (onClick) {
-        // onClick(brand);
         dispatch(openBrandDialog(brand));
       }
     };
 
     return (
-      <motion.div 
-        whileHover={{ y: -4 }} 
+      <motion.div
+        whileHover={{ y: -4 }}
         whileTap={{ scale: 0.95 }}
         transition={{ duration: 0.2 }}
       >
@@ -83,13 +69,13 @@ const BrandCard = React.memo(
           onClick={handleClick}
           elevation={2}
           sx={{
-            width: isMobile ? 90 : 120,
+            width: isMobile ? 120 : 120,
             height: isMobile ? 120 : 140,
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
-            p: 1.5,
+            p: 2.5,
             borderRadius: 2,
             cursor: "pointer",
             transition: "all 0.3s ease",
@@ -118,10 +104,9 @@ const BrandCard = React.memo(
               src={brandLogo}
               alt={brandName}
               sx={{
-                objectFit: "contain",
+                objectFit: "cover",
                 width: "100%",
                 height: "100%",
-                // fontSize: isMobile ? 22 : 26,
                 bgcolor: "#ffe0b2",
                 color: "#ff6d00",
               }}
@@ -174,7 +159,6 @@ const BrandCard = React.memo(
   }
 );
 
-// Skeleton loader for brands
 const BrandCardSkeleton = ({ isMobile }) => (
   <Skeleton
     variant="square"
@@ -184,7 +168,6 @@ const BrandCardSkeleton = ({ isMobile }) => (
   />
 );
 
-// Skeleton loader for categories/subcategories
 const CategorySkeleton = () => (
   <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
     {Array.from({ length: 5 }).map((_, index) => (
@@ -198,11 +181,393 @@ const CategorySkeleton = () => (
   </Box>
 );
 
+// ─── MOBILE BRANDS PANEL ────────────────────────────────────────────────────
+// Separate component so it gets its own scroll container
+const MobileBrandsPanel = ({
+  brands,
+  loading,
+  error,
+  pagination,
+  activeIndustry,
+  activeSubCategory,
+  industries,
+  isTransitioning,
+  handleLoadMore,
+  handleBrandClick,
+  onHoverLeave,
+  isMobile,
+}) => {
+  if (isTransitioning || (loading.brands && brands.length === 0)) {
+    return (
+      <Box sx={{ p: 2 }}>
+        <Skeleton variant="text" width="40%" height={40} sx={{ mb: 2 }} />
+        <Grid container spacing={1}>
+          {Array.from({ length: 6 }).map((_, index) => (
+            <Grid item xs={6} key={`mob-skeleton-${index}`}>
+              <BrandCardSkeleton isMobile={isMobile} />
+            </Grid>
+          ))}
+        </Grid>
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          py: 6,
+          px: 3,
+          textAlign: "center",
+        }}
+      >
+        <ErrorIcon sx={{ fontSize: 48, color: "error.main", mb: 2 }} />
+        <Typography variant="h6" gutterBottom>
+          Oops! Brands Under Updating Process
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          Please try again later
+        </Typography>
+      </Box>
+    );
+  }
+
+  if (brands.length > 0) {
+    return (
+      <Box sx={{ p: 1, }}>
+        {/* Header */}
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            mb: 2,
+          }}
+        >
+          <Typography
+            variant="subtitle1"
+            fontWeight="bold"
+            sx={{
+              background: "linear-gradient(45deg, #ff9800 30%, #ff5722 90%)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              flex: 1,
+              mr: 1,
+            }}
+          >
+            {industries[activeIndustry] || "Industry"}
+            {activeSubCategory ? ` › ${activeSubCategory}` : ""}
+          </Typography>
+          <Chip
+            label={`${brands.length} brands`}
+            size="small"
+            color="warning"
+            variant="outlined"
+            sx={{ fontWeight: "bold", flexShrink: 0 }}
+          />
+        </Box>
+
+        {/* Brand Grid */}
+        <Grid container spacing={1.5}>
+          {brands.map((brand, index) => {
+            const uniqueKey = brand?.uuid
+              ? `mob-brand-${brand.uuid}-${index}`
+              : `mob-brand-fallback-${index}`;
+            return (
+              <Grid item xs={6} key={uniqueKey}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center",
+                  }}
+                >
+                  <BrandCard
+                    brand={brand}
+                    onClick={handleBrandClick}
+                    isMobile={isMobile}
+                    onHoverLeave={onHoverLeave}
+                  />
+                </Box>
+              </Grid>
+            );
+          })}
+
+          {loading.loadMore &&
+            Array.from({ length: 4 }).map((_, index) => (
+              <Grid item xs={6} key={`mob-loadmore-${index}`}>
+                <BrandCardSkeleton isMobile={isMobile} />
+              </Grid>
+            ))}
+        </Grid>
+
+        {/* Load More */}
+        {pagination.hasNext && (
+          <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
+            <Button
+              variant="outlined"
+              color="primary"
+              onClick={handleLoadMore}
+              disabled={loading.loadMore}
+              sx={{ px: 4, py: 1, borderRadius: 2, fontWeight: "bold" }}
+            >
+              {loading.loadMore ? "Loading..." : "Load More"}
+            </Button>
+          </Box>
+        )}
+      </Box>
+    );
+  }
+
+  return (
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        py: 6,
+        px: 3,
+        textAlign: "center",
+      }}
+    >
+      <Typography variant="h6" gutterBottom>
+        No brands found for "{activeSubCategory}"
+      </Typography>
+      <Typography variant="body2" color="text.secondary">
+        Try selecting a different subcategory
+      </Typography>
+    </Box>
+  );
+};
+
+// ─── MOBILE TAB: 0 – INDUSTRIES ─────────────────────────────────────────────
+const MobileIndustriesTab = ({
+  industries,
+  activeIndustry,
+  loading,
+  apiError,
+  theme,
+  onSelect,
+}) => (
+  <Box sx={{ p: 2 }}>
+    {loading.industries ? (
+      <CategorySkeleton />
+    ) : apiError ? (
+      <Box sx={{ textAlign: "center", py: 4 }}>
+        <ErrorIcon sx={{ fontSize: 48, color: "error.main", mb: 2 }} />
+        <Typography variant="body2" color="error">
+          Failed to load industries
+        </Typography>
+        <Typography variant="caption" color="text.secondary">
+          Please try again later
+        </Typography>
+      </Box>
+    ) : industries.length > 0 ? (
+      industries.map((industry, index) => (
+        <motion.div key={index} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+          <Box
+            onClick={() => onSelect(index, industry)}
+            sx={{
+              cursor: "pointer",
+              py: 1.5,
+              px: 1.5,
+              borderRadius: 2,
+              mb: 1,
+              color: activeIndustry === index ? "white" : "text.primary",
+              bgcolor:
+                activeIndustry === index ? "primary.main" : "background.paper",
+              fontWeight: "medium",
+              transition: "all 0.3s ease",
+              boxShadow: theme.shadows[1],
+              "&:hover": {
+                bgcolor:
+                  activeIndustry === index ? "primary.dark" : "action.hover",
+              },
+            }}
+          >
+            <Typography variant="subtitle1">{industry}</Typography>
+          </Box>
+        </motion.div>
+      ))
+    ) : (
+      <Typography
+        variant="body2"
+        color="text.secondary"
+        textAlign="center"
+        sx={{ py: 4 }}
+      >
+        No industries available
+      </Typography>
+    )}
+  </Box>
+);
+
+// ─── MOBILE TAB: 1 – SUBCATEGORIES ──────────────────────────────────────────
+const MobileSubCategoriesTab = ({
+  availableSubCategories,
+  activeSubCategory,
+  activeIndustry,
+  loading,
+  theme,
+  onBack,
+  onSelect,
+}) => (
+  <Box sx={{ p: 2 }}>
+    {/* Back button */}
+    <motion.div whileHover={{ x: -5 }} whileTap={{ scale: 0.98 }}>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          mb: 2,
+          cursor: "pointer",
+          p: 1,
+          borderRadius: 1,
+          "&:hover": { bgcolor: "action.hover" },
+        }}
+        onClick={onBack}
+      >
+        <IconButton size="small" sx={{ mr: 1 }} aria-label="back">
+          <ArrowBack color="red"/>
+        </IconButton>
+        <Typography variant="body2" color="text.secondary">
+          Back to Industries
+        </Typography>
+      </Box>
+    </motion.div>
+
+    {loading.subcategories ? (
+      <CategorySkeleton />
+    ) : availableSubCategories.length > 0 ? (
+      availableSubCategories.map((subCategory, idx) => (
+        <Grow in timeout={(idx + 1) * 150} key={idx}>
+          <motion.div whileHover={{ scale: 1.02 }}>
+            <Box
+              onClick={() => onSelect(subCategory)}
+              sx={{
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                py: 1.5,
+                px: 1.5,
+                borderRadius: 2,
+                gap: 1.5,
+                mb: 1,
+                bgcolor:
+                  activeSubCategory === subCategory
+                    ? "primary.light"
+                    : "background.paper",
+                color:
+                  activeSubCategory === subCategory
+                    ? "primary.contrastText"
+                    : "text.primary",
+                boxShadow: theme.shadows[1],
+                transition: "all 0.3s ease",
+                "&:hover": {
+                  bgcolor:
+                    activeSubCategory === subCategory
+                      ? "primary.main"
+                      : "action.hover",
+                },
+              }}
+            >
+              <Typography
+                fontWeight={activeSubCategory === subCategory ? "bold" : "medium"}
+              >
+                {subCategory}
+              </Typography>
+            </Box>
+          </motion.div>
+        </Grow>
+      ))
+    ) : (
+      <Typography
+        variant="body2"
+        color="text.secondary"
+        textAlign="center"
+        sx={{ py: 4 }}
+      >
+        {activeIndustry !== null
+          ? "No subcategories available"
+          : "Select an industry first"}
+      </Typography>
+    )}
+  </Box>
+);
+
+// ─── MOBILE TAB: 2 – BRANDS ─────────────────────────────────────────────────
+const MobileBrandsTab = ({
+  brands,
+  loading,
+  error,
+  pagination,
+  activeIndustry,
+  activeSubCategory,
+  industries,
+  isTransitioning,
+  handleLoadMore,
+  handleBrandClick,
+  onHoverLeave,
+  isMobile,
+  onBack,
+}) => (
+  <Box sx={{ p: 2, pb: 4 }}>
+    {/* Back button */}
+    <motion.div whileHover={{ x: -5 }} whileTap={{ scale: 0.98 }}>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          // mb: 2,
+          cursor: "pointer",
+          p: 1,
+          borderRadius: 1,
+          "&:hover": { bgcolor: "action.hover" },
+        }}
+        onClick={onBack}
+      >
+        <IconButton size="small" sx={{ mr: 1 }} aria-label="back">
+                    <ArrowBack color="red"/>
+
+        </IconButton>
+        <Typography variant="body2" color="text.secondary">
+          Back to Categories
+        </Typography>
+      </Box>
+    </motion.div>
+
+    <MobileBrandsPanel
+      brands={brands}
+      loading={loading}
+      error={error}
+      pagination={pagination}
+      activeIndustry={activeIndustry}
+      activeSubCategory={activeSubCategory}
+      industries={industries}
+      isTransitioning={isTransitioning}
+      handleLoadMore={handleLoadMore}
+      handleBrandClick={handleBrandClick}
+      onHoverLeave={onHoverLeave}
+      isMobile={isMobile}
+    />
+  </Box>
+);
+
+// ════════════════════════════════════════════════════════════════════════════
+// MAIN COMPONENT
+// ════════════════════════════════════════════════════════════════════════════
 const SideViewContent = ({ hoverCategory, onHoverLeave, onBrandClick }) => {
   const [industries, setIndustries] = useState([]);
   const [activeIndustry, setActiveIndustry] = useState(null);
   const [activeSubCategory, setActiveSubCategory] = useState(null);
+
+  // Mobile now has 3 tabs: 0=Industries, 1=SubCategories, 2=Brands
   const [mobileTabValue, setMobileTabValue] = useState(0);
+
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [availableSubCategories, setAvailableSubCategories] = useState([]);
   const [brands, setBrands] = useState([]);
@@ -210,14 +575,14 @@ const SideViewContent = ({ hoverCategory, onHoverLeave, onBrandClick }) => {
     industries: false,
     subcategories: false,
     brands: false,
-    loadMore: false
+    loadMore: false,
   });
   const [error, setError] = useState(null);
   const [apiError, setApiError] = useState(false);
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
-    severity: "error"
+    severity: "error",
   });
   const [pagination, setPagination] = useState({
     currentPage: 1,
@@ -231,23 +596,19 @@ const SideViewContent = ({ hoverCategory, onHoverLeave, onBrandClick }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const isTablet = useMediaQuery(theme.breakpoints.between("sm", "md"));
+  const navigate = useRouter();
 
-    const navigate = useRouter();
-  // Close snackbar
-  const handleCloseSnackbar = () => {
-    setSnackbar(prev => ({ ...prev, open: false }));
-  };
+  const handleCloseSnackbar = () =>
+    setSnackbar((prev) => ({ ...prev, open: false }));
 
-  // Fetch initial industries data
+  // ── API calls ────────────────────────────────────────────────────────────
   const fetchInitialData = useCallback(async () => {
     if (!hoverCategory) return;
-    
-    setLoading(prev => ({ ...prev, industries: true }));
+    setLoading((prev) => ({ ...prev, industries: true }));
     setError(null);
     setApiError(false);
     try {
       const response = await api.post("filter/getAllBrandFiltersdata");
-      
       if (response.data.success) {
         setIndustries(response.data.data.maincat || []);
       } else {
@@ -256,236 +617,191 @@ const SideViewContent = ({ hoverCategory, onHoverLeave, onBrandClick }) => {
         setSnackbar({
           open: true,
           message: response.data.message || "Failed to load industries",
-          severity: "error"
+          severity: "error",
         });
       }
     } catch (err) {
-      console.error("Failed to fetch initial data:", err);
-      const errorMessage = err.response?.data?.message || 
-                          err.message || 
-                          "Failed to connect to server. Please check your connection.";
-      setError(errorMessage);
+      const msg =
+        err.response?.data?.message ||
+        err.message ||
+        "Failed to connect to server.";
+      setError(msg);
       setApiError(true);
-      setSnackbar({
-        open: true,
-        message: errorMessage,
-        severity: "error"
-      });
+      setSnackbar({ open: true, message: msg, severity: "error" });
       setIndustries([]);
     } finally {
-      setLoading(prev => ({ ...prev, industries: false }));
+      setLoading((prev) => ({ ...prev, industries: false }));
     }
   }, [hoverCategory]);
 
-  
-
-  // Fetch subcategories for selected industry
   const fetchSubCategories = useCallback(async (industry) => {
     if (!industry) return [];
-    
-    setLoading(prev => ({ ...prev, subcategories: true }));
+    setLoading((prev) => ({ ...prev, subcategories: true }));
     setError(null);
     try {
       const queryParams = new URLSearchParams();
-      if (industry) queryParams.append('main', industry);
-      
-      const response = await api.post(`filter/getAllBrandFiltersdata?${queryParams.toString()}`);
-      
+      queryParams.append("main", industry);
+      const response = await api.post(
+        `filter/getAllBrandFiltersdata?${queryParams.toString()}`
+      );
       if (response.data.success) {
         return response.data.data.subcat || [];
       }
       return [];
     } catch (err) {
-      console.error("Failed to fetch subcategories:", err);
-      const errorMessage = err.response?.data?.message || 
-                          err.message || 
-                          "Failed to fetch subcategories";
-      setSnackbar({
-        open: true,
-        message: errorMessage,
-        severity: "warning"
-      });
+      const msg =
+        err.response?.data?.message ||
+        err.message ||
+        "Failed to fetch subcategories";
+      setSnackbar({ open: true, message: msg, severity: "warning" });
       return [];
     } finally {
-      setLoading(prev => ({ ...prev, subcategories: false }));
+      setLoading((prev) => ({ ...prev, subcategories: false }));
     }
   }, []);
 
-  // Fetch brands for subcategory - UPDATED to match the correct API format
   const fetchBrands = useCallback(async (filters) => {
     if (!filters.industry && !filters.subcat)
-  return {
-      brands: [], 
-      pagination: { 
-        currentPage: 1, 
-        limit: 30, 
-        hasNext: false, 
-        total: 0, 
-        totalPages: 0, 
-        hasPrevious: false 
-      } 
-    };
-    
-    setLoading(prev => ({ ...prev, brands: true }));
+      return {
+        brands: [],
+        pagination: {
+          currentPage: 1,
+          limit: 30,
+          hasNext: false,
+          total: 0,
+          totalPages: 0,
+          hasPrevious: false,
+        },
+      };
+
+    setLoading((prev) => ({ ...prev, brands: true }));
     try {
       const params = new URLSearchParams();
-      params.append('page', filters.page || 1);
-      params.append('limit', filters.limit || 30);
-      
-      if (filters.industry) params.append('maincat', filters.industry);
-      if (filters.subcat) params.append('subcat', filters.subcat);
-      
-      // Optional parameters (commented out but can be added if needed)
-      // if (filters.childcat) params.append('childcat', filters.childcat);
-      // if (filters.searchTerm) params.append('searchTerm', filters.searchTerm);
-      // if (filters.country) params.append('country', filters.country);
-      // if (filters.state) params.append('state', filters.state);
-      // if (filters.district) params.append('district', filters.district);
-      // if (filters.city) params.append('city', filters.city);
-      // if (filters.investmentRange) params.append('investmentRange', filters.investmentRange);
-      // if (filters.modelType) params.append('modelType', filters.modelType);
-      // if (filters.areaRequired) params.append('areaRequired', filters.areaRequired);
-      
-      const response = await api.get(`filter/getAllBrandsAndFilter?${params.toString()}`);
-      
+      params.append("page", filters.page || 1);
+      params.append("limit", filters.limit || 30);
+      if (filters.industry) params.append("maincat", filters.industry);
+      if (filters.subcat) params.append("subcat", filters.subcat);
+
+      const response = await api.get(
+        `filter/getAllBrandsAndFilter?${params.toString()}`
+      );
+
       if (response.data.success) {
-        // Normalize brand data structure
-        const normalizedBrands = response.data.data?.brands?.map(brand => ({
-          ...brand,
-          brandDetails: {
-            brandName: '',
-            companyName: '',
-            ...brand.brandDetails
-          },
-          brandfranchisedetails: {
-            franchiseDetails: {
-              fico: [],
-              trainingSupport: [],
-              ...brand.brandfranchisedetails?.franchiseDetails
+        const normalizedBrands =
+          response.data.data?.brands?.map((brand) => ({
+            ...brand,
+            brandDetails: { brandName: "", companyName: "", ...brand.brandDetails },
+            brandfranchisedetails: {
+              franchiseDetails: {
+                fico: [],
+                trainingSupport: [],
+                ...brand.brandfranchisedetails?.franchiseDetails,
+              },
+              ...brand.brandfranchisedetails,
             },
-            ...brand.brandfranchisedetails
-          },
-          uploads: {
-            logo: '',
-            ...brand.uploads
-          },
-          isLiked: brand?.isLiked || false,
-          isShortListed: brand?.isShortListed || false
-        })) || [];
-        
+            uploads: { logo: "", ...brand.uploads },
+            isLiked: brand?.isLiked || false,
+            isShortListed: brand?.isShortListed || false,
+          })) || [];
+
         return {
           brands: normalizedBrands,
-          pagination: response.data.data?.pagination || { 
-            currentPage: filters.page || 1, 
-            limit: filters.limit || 30, 
-            hasNext: false, 
-            total: 0, 
-            totalPages: 0, 
-            hasPrevious: false 
-          }
-        };
-      }
-      return { 
-        brands: [], 
-        pagination: { 
-          currentPage: filters.page || 1, 
-          limit: filters.limit || 30, 
-          hasNext: false, 
-          total: 0, 
-          totalPages: 0, 
-          hasPrevious: false 
-        } 
-      };
-    } catch (err) {
-      console.error("Failed to fetch brands:", err);
-      const errorMessage = err.response?.data?.message || 
-                          err.message || 
-                          "Failed to fetch brands";
-      setSnackbar({
-        open: true,
-        message: errorMessage,
-        severity: "error"
-      });
-      throw new Error(errorMessage);
-    } finally {
-      setLoading(prev => ({ ...prev, brands: false }));
-    }
-  }, []);
-
-  // Handle industry hover - fetch subcategories
-const handleIndustryHover = useCallback(
-  async (index, industryName) => {
-    if (activeIndustry !== index) {
-      setIsTransitioning(true);
-
-      setActiveIndustry(index);
-      setActiveSubCategory(null);
-
-      setBrands([]);
-      setError(null);
-
-      setPagination({
-        currentPage: 1,
-        limit: 30,
-        hasNext: false,
-        total: 0,
-        totalPages: 0,
-        hasPrevious: false,
-      });
-
-      try {
-        // Fetch subcategories
-        const subcats = await fetchSubCategories(industryName);
-        setAvailableSubCategories(subcats);
-
-        // ALSO FETCH INDUSTRY BRANDS
-        const result = await fetchBrands({
-          industry: industryName,
-          page: 1,
-          limit: 30,
-        });
-
-        setBrands(result.brands || []);
-
-        setPagination(
-          result.pagination || {
-            currentPage: 1,
-            limit: 30,
+          pagination: response.data.data?.pagination || {
+            currentPage: filters.page || 1,
+            limit: filters.limit || 30,
             hasNext: false,
             total: 0,
             totalPages: 0,
             hasPrevious: false,
-          }
-        );
-      } catch (err) {
-        console.error("Failed to fetch industry data:", err);
-
-        setAvailableSubCategories([]);
-        setBrands([]);
-      } finally {
-        setIsTransitioning(false);
+          },
+        };
       }
+      return {
+        brands: [],
+        pagination: {
+          currentPage: filters.page || 1,
+          limit: filters.limit || 30,
+          hasNext: false,
+          total: 0,
+          totalPages: 0,
+          hasPrevious: false,
+        },
+      };
+    } catch (err) {
+      const msg =
+        err.response?.data?.message || err.message || "Failed to fetch brands";
+      setSnackbar({ open: true, message: msg, severity: "error" });
+      throw new Error(msg);
+    } finally {
+      setLoading((prev) => ({ ...prev, brands: false }));
     }
-  },
-  [activeIndustry, fetchSubCategories, fetchBrands]
-);
+  }, []);
 
-  // Handle subcategory hover - fetch brands
+  // ── Handlers ─────────────────────────────────────────────────────────────
+  const handleIndustryHover = useCallback(
+    async (index, industryName) => {
+      if (activeIndustry !== index) {
+        setIsTransitioning(true);
+        setActiveIndustry(index);
+        setActiveSubCategory(null);
+        setBrands([]);
+        setError(null);
+        setPagination({
+          currentPage: 1,
+          limit: 30,
+          hasNext: false,
+          total: 0,
+          totalPages: 0,
+          hasPrevious: false,
+        });
+
+        try {
+          const subcats = await fetchSubCategories(industryName);
+          setAvailableSubCategories(subcats);
+
+          const result = await fetchBrands({
+            industry: industryName,
+            page: 1,
+            limit: 30,
+          });
+          setBrands(result.brands || []);
+          setPagination(
+            result.pagination || {
+              currentPage: 1,
+              limit: 30,
+              hasNext: false,
+              total: 0,
+              totalPages: 0,
+              hasPrevious: false,
+            }
+          );
+        } catch (err) {
+          console.error("Failed to fetch industry data:", err);
+          setAvailableSubCategories([]);
+          setBrands([]);
+        } finally {
+          setIsTransitioning(false);
+        }
+      }
+    },
+    [activeIndustry, fetchSubCategories, fetchBrands]
+  );
+
   const handleSubCategoryHover = useCallback(
     async (subCategoryName) => {
       if (activeSubCategory !== subCategoryName) {
         setIsTransitioning(true);
-        setLoading(prev => ({ ...prev, brands: true }));
+        setLoading((prev) => ({ ...prev, brands: true }));
         setError(null);
         setActiveSubCategory(subCategoryName);
         setBrands([]);
-        setPagination({ 
-          currentPage: 1, 
-          limit: 30, 
-          hasNext: false, 
-          total: 0, 
-          totalPages: 0, 
-          hasPrevious: false 
+        setPagination({
+          currentPage: 1,
+          limit: 30,
+          hasNext: false,
+          total: 0,
+          totalPages: 0,
+          hasPrevious: false,
         });
         try {
           const industry = industries[activeIndustry] || "";
@@ -493,70 +809,55 @@ const handleIndustryHover = useCallback(
             industry,
             subcat: subCategoryName,
             page: 1,
-            limit: 30
+            limit: 30,
           });
           setBrands(result.brands || []);
-          setPagination(result.pagination || { 
-            currentPage: 1, 
-            limit: 30, 
-            hasNext: false, 
-            total: 0, 
-            totalPages: 0, 
-            hasPrevious: false 
-          });
+          setPagination(
+            result.pagination || {
+              currentPage: 1,
+              limit: 30,
+              hasNext: false,
+              total: 0,
+              totalPages: 0,
+              hasPrevious: false,
+            }
+          );
         } catch (err) {
           console.error("Failed to fetch brands:", err);
           setError("Failed to fetch brands");
           setBrands([]);
-          setPagination({ 
-            currentPage: 1, 
-            limit: 30, 
-            hasNext: false, 
-            total: 0, 
-            totalPages: 0, 
-            hasPrevious: false 
-          });
         } finally {
           setIsTransitioning(false);
-          setLoading(prev => ({ ...prev, brands: false }));
+          setLoading((prev) => ({ ...prev, brands: false }));
         }
       }
     },
     [activeIndustry, activeSubCategory, industries, fetchBrands]
   );
 
- const handleBrandClick = useCallback((brand) => {
-  const brandName = brand.brandDetails?.brandName || brand.brandname || "Unknown";
-  const brandId = brand.uuid;
-  
-  // Close the drawer first
-  if (onHoverLeave) {
-    onHoverLeave();
-  }
-  
-  // Navigate to brand detail page
-  if (brandId) {
-    const encodedBrandName = encodeURIComponent(brandName);
-    navigate(`/franchise-brands/${brandId}?name=${encodedBrandName}`);
-  }
-  
-  // Also call the original onBrandClick if provided
-  if (onBrandClick) {
-    const normalizedBrand = {
-      ...brand,
-      brandDetails: {
-        brandName: '',
-        companyName: '',
-        ...brand.brandDetails
-      },
-      uploads: {
-        logo: '',
-        ...brand.uploads
+  const handleBrandClick = useCallback(
+    (brand) => {
+      const brandName =
+        brand.brandDetails?.brandName || brand.brandname || "Unknown";
+      const brandId = brand.uuid;
+      if (onHoverLeave) onHoverLeave();
+      if (brandId) {
+        const encodedBrandName = encodeURIComponent(brandName);
+        navigate.push(
+          `/franchise-business-opportunity/${brandId}?name=${encodedBrandName}`
+        );
       }
-    };
-    onBrandClick(normalizedBrand);
-  }
-}, [navigate, onBrandClick, onHoverLeave]);
+      if (onBrandClick) {
+        const normalizedBrand = {
+          ...brand,
+          brandDetails: { brandName: "", companyName: "", ...brand.brandDetails },
+          uploads: { logo: "", ...brand.uploads },
+        };
+        onBrandClick(normalizedBrand);
+      }
+    },
+    [navigate, onBrandClick, onHoverLeave]
+  );
 
   const handleMobileTabChange = useCallback((event, newValue) => {
     setMobileTabValue(newValue);
@@ -564,38 +865,59 @@ const handleIndustryHover = useCallback(
 
   const handleLoadMore = useCallback(async () => {
     if (!pagination.hasNext || loading.loadMore) return;
-    setLoading(prev => ({ ...prev, loadMore: true }));
+    setLoading((prev) => ({ ...prev, loadMore: true }));
     try {
       const industry = industries[activeIndustry] || "";
       const result = await fetchBrands({
         industry,
         subcat: activeSubCategory,
         page: pagination.currentPage + 1,
-        limit: pagination.limit
+        limit: pagination.limit,
       });
-      setBrands(prevBrands => [...prevBrands, ...(result.brands || [])]);
+      setBrands((prev) => [...prev, ...(result.brands || [])]);
       setPagination(result.pagination || pagination);
     } catch (err) {
       console.error("Failed to load more brands:", err);
-      setError("Failed to load more brands");
       setSnackbar({
         open: true,
         message: "Failed to load more brands",
-        severity: "error"
+        severity: "error",
       });
     } finally {
-      setLoading(prev => ({ ...prev, loadMore: false }));
+      setLoading((prev) => ({ ...prev, loadMore: false }));
     }
-  }, [pagination, activeIndustry, activeSubCategory, loading.loadMore, industries, fetchBrands]);
+  }, [
+    pagination,
+    activeIndustry,
+    activeSubCategory,
+    loading.loadMore,
+    industries,
+    fetchBrands,
+  ]);
 
-  // Fetch industries when drawer opens
+  // ── Mobile: select industry → jump to tab 1 ──────────────────────────────
+  const handleMobileIndustrySelect = useCallback(
+    async (index, industryName) => {
+      await handleIndustryHover(index, industryName);
+      setMobileTabValue(1);
+    },
+    [handleIndustryHover]
+  );
+
+  // ── Mobile: select subcat → jump to tab 2 ───────────────────────────────
+  const handleMobileSubCategorySelect = useCallback(
+    async (subCategoryName) => {
+      await handleSubCategoryHover(subCategoryName);
+      setMobileTabValue(2);
+    },
+    [handleSubCategoryHover]
+  );
+
+  // ── Lifecycle ─────────────────────────────────────────────────────────────
   useEffect(() => {
-    if (hoverCategory) {
-      fetchInitialData();
-    }
+    if (hoverCategory) fetchInitialData();
   }, [hoverCategory, fetchInitialData]);
 
-  // Clear data when drawer closes
   useEffect(() => {
     if (!hoverCategory) {
       setActiveIndustry(null);
@@ -605,220 +927,34 @@ const handleIndustryHover = useCallback(
       setBrands([]);
       setError(null);
       setApiError(false);
-      setPagination({ 
-        currentPage: 1, 
-        limit: 30, 
-        hasNext: false, 
-        total: 0, 
-        totalPages: 0, 
-        hasPrevious: false 
+      setPagination({
+        currentPage: 1,
+        limit: 30,
+        hasNext: false,
+        total: 0,
+        totalPages: 0,
+        hasPrevious: false,
       });
     }
   }, [hoverCategory]);
 
-  // Memoized mobile tab content
-  const getMobileTabContent = useMemo(() => {
-    const tabContents = [
-      // Industries Tab
-      <Box sx={{ p: 2 }}>
-        {loading.industries ? (
-          <CategorySkeleton />
-        ) : apiError ? (
-          <Box sx={{ textAlign: "center", py: 4 }}>
-            <ErrorIcon sx={{ fontSize: 48, color: "error.main", mb: 2 }} />
-            <Typography variant="body2" color="error">
-              Failed to load industries
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              Please try again later
-            </Typography>
-          </Box>
-        ) : industries.length > 0 ? (
-          industries.map((industry, index) => (
-            <motion.div
-              key={index}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <Box
-                onClick={() => {
-                  handleIndustryHover(index, industry);
-                  setMobileTabValue(1);
-                }}
-                sx={{
-                  cursor: "pointer",
-                  py: 1.5,
-                  px: 1.5,
-                  borderRadius: 2,
-                  mb: 1,
-                  color: activeIndustry === index ? "white" : "text.primary",
-                  bgcolor:
-                    activeIndustry === index
-                      ? "primary.main"
-                      : "background.paper",
-                  fontWeight: "medium",
-                  transition: "all 0.3s ease",
-                  boxShadow: theme.shadows[1],
-                  "&:hover": {
-                    bgcolor:
-                      activeIndustry === index ? "primary.dark" : "action.hover",
-                  },
-                }}
-              >
-                <Typography variant="subtitle1">{industry}</Typography>
-              </Box>
-            </motion.div>
-          ))
-        ) : (
-          <Typography variant="body2" color="text.secondary" textAlign="center" sx={{ py: 4 }}>
-            No industries available
-          </Typography>
-        )}
-      </Box>,
-      // Subcategories Tab
-      <Box sx={{ p: 2 }}>
-        <motion.div whileHover={{ x: -5 }} whileTap={{ scale: 0.98 }}>
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              mb: 2,
-              cursor: "pointer",
-              p: 1,
-              borderRadius: 1,
-              "&:hover": { bgcolor: "action.hover" },
-            }}
-            onClick={() => setMobileTabValue(0)}
-          >
-            <IconButton  size="small" sx={{ mr: 1 }} aria-label="close">
-              <CloseIcon fontSize="small" />
-            </IconButton>
-            <Typography variant="body2" color="text.secondary">
-              Back to Industries
-            </Typography>
-          </Box>
-        </motion.div>
-        
-        {loading.subcategories ? (
-          <CategorySkeleton />
-        ) : availableSubCategories.length > 0 ? (
-          availableSubCategories.map((subCategory, idx) => (
-            <Grow in={true} timeout={(idx + 1) * 150} key={idx}>
-              <motion.div whileHover={{ scale: 1.02 }}>
-                <Box
-                  onClick={() => handleSubCategoryHover(subCategory)}
-                  sx={{
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    py: 1.5,
-                    px: 1.5,
-                    borderRadius: 2,
-                    gap: 1.5,
-                    mb: 1,
-                    bgcolor:
-                      activeSubCategory === subCategory
-                        ? "primary.light"
-                        : "background.paper",
-                    color:
-                      activeSubCategory === subCategory
-                        ? "primary.contrastText"
-                        : "text.primary",
-                    boxShadow: theme.shadows[1],
-                    transition: "all 0.3s ease",
-                    "&:hover": {
-                      bgcolor:
-                        activeSubCategory === subCategory
-                          ? "primary.main"
-                          : "action.hover",
-                    },
-                  }}
-                >
-                  <Typography
-                    fontWeight={
-                      activeSubCategory === subCategory ? "bold" : "medium"
-                    }
-                  >
-                    {subCategory}
-                  </Typography>
-                </Box>
-              </motion.div>
-            </Grow>
-          ))
-        ) : (
-          <Typography variant="body2" color="text.secondary" textAlign="center" sx={{ py: 4 }}>
-            {activeIndustry !== null ? "No subcategories available" : "Select an industry first"}
-          </Typography>
-        )}
-      </Box>,
-    ];
-
-    return tabContents[mobileTabValue] || null;
-  }, [
-    mobileTabValue,
-    activeIndustry,
-    activeSubCategory,
-    availableSubCategories,
-    handleIndustryHover,
-    handleSubCategoryHover,
-    theme.shadows,
-    loading.industries,
-    loading.subcategories,
-    industries,
-    apiError,
-  ]);
-
-  // Content when only industry is selected (no subcategory hovered)
-  const renderIndustryContent = useMemo(() => {
-    return (
-      <Fade in={true} timeout={500}>
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            height: "100%",
-            color: "text.secondary",
-            textAlign: "center",
-            p: 3,
-          }}
-        >
-          <Typography variant="h4" fontWeight="bold" gutterBottom>
-            {industries[activeIndustry] || "Select Industry"}
-          </Typography>
-          <Typography variant="body1" sx={{ mb: 4, maxWidth: 400 }}>
-            Hover over a subcategory to see available brands
-          </Typography>
-        </Box>
-      </Fade>
-    );
-  }, [activeIndustry, industries]);
-
-  // Content when subcategory is selected (show brands)
+  // ── Desktop brands content ────────────────────────────────────────────────
   const renderBrandsContent = useMemo(() => {
-    // Show loading state during transitions or initial load
     if (isTransitioning || (loading.brands && brands.length === 0)) {
       return (
         <Box sx={{ p: 2 }}>
           <Skeleton variant="text" width="40%" height={40} sx={{ mb: 2 }} />
-          <Grid container spacing={isMobile ? 1 : 2}>
+          <Grid container spacing={2}>
             {Array.from({ length: 8 }).map((_, index) => (
-              <Grid
-                item
-                xs={12}
-                sm={6}
-                md={3}
-                key={`initial-skeleton-${index}`}
-              >
-                <BrandCardSkeleton isMobile={isMobile} />
+              <Grid item xs={12} sm={6} md={3} key={`skeleton-${index}`}>
+                <BrandCardSkeleton isMobile={false} />
               </Grid>
             ))}
           </Grid>
         </Box>
       );
     }
-    
+
     if (error) {
       return (
         <Box
@@ -837,9 +973,7 @@ const handleIndustryHover = useCallback(
           <Typography variant="h6" gutterBottom>
             Oops! Brands Under Updating Process
           </Typography>
-          <Typography variant="body2">
-            Please try again later
-          </Typography>
+          <Typography variant="body2">Please try again later</Typography>
         </Box>
       );
     }
@@ -853,7 +987,6 @@ const handleIndustryHover = useCallback(
               alignItems: "center",
               justifyContent: "space-between",
               mb: 3,
-              pt: isMobile ? 1 : 0,
             }}
           >
             <Typography
@@ -865,58 +998,42 @@ const handleIndustryHover = useCallback(
                 WebkitTextFillColor: "transparent",
               }}
             >
-{industries[activeIndustry] || "Industry"}
-{activeSubCategory ? ` - ${activeSubCategory}` : ""}            </Typography>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <Chip
-                label={` ${brands.length} brands`}
-                component="button"
-                size="small"
-                color="warning"
-                variant="outlined"
-                sx={{ fontWeight: "bold" }}
-              />
-            
-             
-            </Box>
+              {industries[activeIndustry] || "Industry"}
+              {activeSubCategory ? ` - ${activeSubCategory}` : ""}
+            </Typography>
+            <Chip
+              label={`${brands.length} brands`}
+              size="small"
+              color="warning"
+              variant="outlined"
+              sx={{ fontWeight: "bold" }}
+            />
           </Box>
 
-          <Grid container spacing={isMobile ? 1 : 2}>
+          <Grid container spacing={2}>
             {brands.map((brand, index) => {
               const uniqueKey = brand?.uuid
                 ? `brand-${brand.uuid}-${index}`
                 : `brand-fallback-${index}`;
-
               return (
                 <Grid item xs={12} sm={6} md={3} key={uniqueKey}>
                   <BrandCard
-                  
                     brand={brand}
                     onClick={handleBrandClick}
-                    isMobile={isMobile}
-                      onHoverLeave={onHoverLeave}
+                    isMobile={false}
+                    onHoverLeave={onHoverLeave}
                   />
                 </Grid>
               );
             })}
-
-            {loading.loadMore && (
-              <>
-                {Array.from({ length: 4 }).map((_, index) => (
-                  <Grid
-                    item
-                    xs={12}
-                    sm={6}
-                    md={3}
-                    key={`loadmore-skeleton-${index}`}
-                  >
-                    <BrandCardSkeleton isMobile={isMobile} />
-                  </Grid>
-                ))}
-              </>
-            )}
+            {loading.loadMore &&
+              Array.from({ length: 4 }).map((_, index) => (
+                <Grid item xs={12} sm={6} md={3} key={`loadmore-${index}`}>
+                  <BrandCardSkeleton isMobile={false} />
+                </Grid>
+              ))}
           </Grid>
-          
+
           {pagination.hasNext && (
             <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
               <Button
@@ -924,12 +1041,7 @@ const handleIndustryHover = useCallback(
                 color="primary"
                 onClick={handleLoadMore}
                 disabled={loading.loadMore}
-                sx={{
-                  px: 4,
-                  py: 1,
-                  borderRadius: 2,
-                  fontWeight: "bold",
-                }}
+                sx={{ px: 4, py: 1, borderRadius: 2, fontWeight: "bold" }}
               >
                 {loading.loadMore ? "Loading..." : "Load More"}
               </Button>
@@ -939,9 +1051,8 @@ const handleIndustryHover = useCallback(
       );
     }
 
-    // Empty state for subcategory
     return (
-      <Fade in={true}>
+      <Fade in>
         <Box
           sx={{
             display: "flex",
@@ -965,10 +1076,8 @@ const handleIndustryHover = useCallback(
     );
   }, [
     brands,
-    loading.brands,
-    loading.loadMore,
+    loading,
     error,
-    isMobile,
     pagination,
     activeIndustry,
     activeSubCategory,
@@ -976,68 +1085,55 @@ const handleIndustryHover = useCallback(
     handleBrandClick,
     isTransitioning,
     industries,
+    onHoverLeave,
   ]);
 
-  // Determine what to render in the brands section
-  const renderMainContent = useMemo(() => {
-   if (activeIndustry !== null) {
-  return renderBrandsContent;
-} else {
-      return (
-        <Fade in={true}>
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              height: "100%",
-              color: "text.secondary",
-              textAlign: "center",
-              p: 3,
-            }}
-          >
-            {loading.industries ? (
-              <>
-                <Skeleton variant="text" width="60%" height={48} sx={{ mb: 2 }} />
-                <Skeleton variant="text" width="80%" height={24} />
-              </>
-            ) : apiError ? (
-              <>
-                <ErrorIcon sx={{ fontSize: 48, color: "error.main", mb: 2 }} />
-                <Typography variant="h6" color="error" gutterBottom>
-                  Failed to load industries
-                </Typography>
-                <Typography variant="body2">
-                  Please try again later
-                </Typography>
-              </>
-            ) : (
-              <>
-                <Typography variant="h4" fontWeight="bold" gutterBottom>
-                  Welcome!
-                </Typography>
-                <Typography variant="body1" sx={{ maxWidth: 400 }}>
-                  {isMobile
-                    ? "Select an industry to explore subcategories"
-                    : "Hover over an industry to see available subcategories"}
-                </Typography>
-              </>
-            )}
-          </Box>
-        </Fade>
-      );
-    }
-  }, [
-    activeIndustry, 
-    activeSubCategory, 
-    renderBrandsContent, 
-    renderIndustryContent, 
-    isMobile, 
-    loading.industries, 
-    apiError
-  ]);
+  const renderDesktopMainContent = useMemo(() => {
+    if (activeIndustry !== null) return renderBrandsContent;
 
+    return (
+      <Fade in>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            height: "100%",
+            color: "text.secondary",
+            textAlign: "center",
+            p: 3,
+          }}
+        >
+          {loading.industries ? (
+            <>
+              <Skeleton variant="text" width="60%" height={48} sx={{ mb: 2 }} />
+              <Skeleton variant="text" width="80%" height={24} />
+            </>
+          ) : apiError ? (
+            <>
+              <ErrorIcon sx={{ fontSize: 48, color: "error.main", mb: 2 }} />
+              <Typography variant="h6" color="error" gutterBottom>
+                Failed to load industries
+              </Typography>
+              <Typography variant="body2">Please try again later</Typography>
+            </>
+          ) : (
+            <>
+              <Typography variant="h4" fontWeight="bold" gutterBottom>
+                Welcome!
+              </Typography>
+              <Typography variant="body1" sx={{ maxWidth: 400 }}>
+                Hover over an industry to see available subcategories
+              </Typography>
+            </>
+          )}
+        </Box>
+      </Fade>
+    );
+  }, [activeIndustry, renderBrandsContent, loading.industries, apiError]);
+
+  // ── Render ────────────────────────────────────────────────────────────────
   return (
     <>
       <Drawer
@@ -1046,81 +1142,277 @@ const handleIndustryHover = useCallback(
         onClose={onHoverLeave}
         PaperProps={{
           sx: {
-            height: isMobile ? "85vh" : isTablet ? "65vh" : 500,
+            // KEY FIX: use 100dvh on mobile so the drawer fills the viewport
+            // and doesn't get cut off or collapse scrolling
+            height: isMobile ? "100dvh" : isTablet ? "65vh" : 500,
             background: "rgba(255,255,255,0.95)",
             backdropFilter: "blur(12px)",
             boxShadow: "0 8px 32px 0 rgba(60,72,88,0.18)",
-            borderBottomLeftRadius: 24,
-            borderBottomRightRadius: 24,
             border: "1.5px solid rgba(255,255,255,0.25)",
-            overflow: "hidden",
+            // KEY FIX: Do NOT put overflow:hidden here on mobile
+            overflow: isMobile ? "hidden" : "hidden",
+            display: "flex",
+            flexDirection: "column",
           },
         }}
         SlideProps={{ timeout: 300 }}
       >
-        <Box
-          onMouseLeave={onHoverLeave}
-          sx={{
-            display: "flex",
-            flexDirection: isMobile ? "column" : "row",
-            height: "100%",
-            overflow: "hidden",
-          }}
-        >
-          {/* Mobile Tabs Navigation */}
-          {isMobile && (
-            <AppBar
-              position="static"
-              color="inherit"
-              elevation={0}
-              sx={{ background: "#ff9800", color: "white" }}
-            >
-              <Tabs
-                value={mobileTabValue}
-                onChange={handleMobileTabChange}
-                variant="fullWidth"
-                indicatorColor="secondary"
-                textColor="inherit"
-                sx={{
-                  "& .MuiTabs-indicator": { height: 4, backgroundColor: "white" },
-                }}
-              >
-                <Tab
-                  label="Industries"
-                  sx={{
-                    fontSize: "0.8rem",
-                    fontWeight: "bold",
-                    textTransform: "none",
-                    minHeight: 48,
-                  }}
-                />
-                <Tab
-                  label="Subcategories"
-                  disabled={activeIndustry === null}
-                  sx={{
-                    fontSize: "0.8rem",
-                    fontWeight: "bold",
-                    textTransform: "none",
-                    minHeight: 48,
-                  }}
-                />
-              </Tabs>
-            </AppBar>
-          )}
-
-          {/* Desktop View */}
-          {!isMobile && (
-            <>
-              {/* Industries Column - Fixed */}
+        {/* ── MOBILE LAYOUT ─────────────────────────────────────────────── */}
+        {isMobile ? (
+          // KEY FIX: The entire mobile layout is a flex column that fills the
+          // drawer height. The sticky AppBar does NOT scroll; only the content
+          // below it scrolls.
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              height: "100%",        // fill the drawer
+              overflow: "hidden",    // prevent the wrapper itself from scrolling
+            }}
+          >
+            {/* ── Sticky header ── */}
+            <Box sx={{ flexShrink: 0 }}>
+              {/* Close button */}
               <Box
                 sx={{
-                  width: 300,
+                  display: "flex",
+                  justifyContent: "center",
+                  bgcolor: "#ffffff",
+                  px: 1,
+                  pt: 0.5,
+                }}
+              >
+                <Button
+                  onClick={onHoverLeave}
+                  sx={{ color: "red", }}
+                  aria-label="close drawer"
+                >
+                  <CloseIcon />CLOSE
+                </Button>
+              </Box>
+
+              {/* Tabs */}
+              <AppBar
+                position="static"   // KEY FIX: static, not sticky – we handle
+                                    // stickiness via the parent flex layout
+                color="inherit"
+                elevation={0}
+                sx={{ background: "#ff9800", color: "white" }}
+              >
+                <Tabs
+                  value={mobileTabValue}
+                  onChange={handleMobileTabChange}
+                  variant="fullWidth"
+                  indicatorColor="secondary"
+                  textColor="inherit"
+                  sx={{
+                    "& .MuiTabs-indicator": {
+                      height: 4,
+                      backgroundColor: "white",
+                    },
+                  }}
+                >
+                  <Tab
+                    label="Industries"
+                    sx={{
+                      fontSize: "0.8rem",
+                      fontWeight: "bold",
+                      textTransform: "none",
+                      minHeight: 48,
+                    }}
+                  />
+                  <Tab
+                    label="Categories"
+                    disabled={activeIndustry === null}
+                    sx={{
+                      fontSize: "0.8rem",
+                      fontWeight: "bold",
+                      textTransform: "none",
+                      minHeight: 48,
+                    }}
+                  />
+                  <Tab
+                    label="Brands"
+                    disabled={activeIndustry === null}
+                    sx={{
+                      fontSize: "0.8rem",
+                      fontWeight: "bold",
+                      textTransform: "none",
+                      minHeight: 48,
+                    }}
+                  />
+                </Tabs>
+              </AppBar>
+            </Box>
+
+            {/* ── Scrollable content area ── */}
+            {/* KEY FIX: flex:1 + minHeight:0 + overflowY:auto is the correct
+                CSS flex-scroll pattern. Without minHeight:0 the child refuses
+                to shrink below its content height and scroll never activates. */}
+            <Box
+              sx={{
+                flex: 1,
+                minHeight: 0,          // ← critical for flex + scroll
+                overflowY: "auto",
+                overflowX: "hidden",
+                WebkitOverflowScrolling: "touch", // smooth scroll on iOS
+                bgcolor: "background.default",
+                "&::-webkit-scrollbar": { width: "6px" },
+                "&::-webkit-scrollbar-track": { background: "#eeeeee" },
+                "&::-webkit-scrollbar-thumb": {
+                  backgroundColor: "#ff9800",
+                  borderRadius: "10px",
+                },
+                scrollbarWidth: "thin",
+                scrollbarColor: "#ff9800 #eeeeee",
+              }}
+            >
+              {/* Tab panels rendered as plain divs – no extra wrappers */}
+              {mobileTabValue === 0 && (
+                <MobileIndustriesTab
+                  industries={industries}
+                  activeIndustry={activeIndustry}
+                  loading={loading}
+                  apiError={apiError}
+                  theme={theme}
+                  onSelect={handleMobileIndustrySelect}
+                />
+              )}
+              {mobileTabValue === 1 && (
+                <MobileSubCategoriesTab
+                  availableSubCategories={availableSubCategories}
+                  activeSubCategory={activeSubCategory}
+                  activeIndustry={activeIndustry}
+                  loading={loading}
+                  theme={theme}
+                  onBack={() => setMobileTabValue(0)}
+                  onSelect={handleMobileSubCategorySelect}
+                />
+              )}
+              {mobileTabValue === 2 && (
+                <MobileBrandsTab
+                  brands={brands}
+                  loading={loading}
+                  error={error}
+                  pagination={pagination}
+                  activeIndustry={activeIndustry}
+                  activeSubCategory={activeSubCategory}
+                  industries={industries}
+                  isTransitioning={isTransitioning}
+                  handleLoadMore={handleLoadMore}
+                  handleBrandClick={handleBrandClick}
+                  onHoverLeave={onHoverLeave}
+                  isMobile={isMobile}
+                  onBack={() => setMobileTabValue(1)}
+                />
+              )}
+            </Box>
+          </Box>
+        ) : (
+          /* ── DESKTOP LAYOUT ───────────────────────────────────────────── */
+          <Box
+            onMouseLeave={onHoverLeave}
+            sx={{
+              display: "flex",
+              flexDirection: "row",
+              height: "100%",
+              overflow: "hidden",
+            }}
+          >
+            {/* Industries column */}
+            <Box
+              sx={{
+                width: 300,
+                borderRight: `1px solid ${theme.palette.divider}`,
+                overflowY: "auto",
+                px: 2,
+                py: 2,
+                background: "linear-gradient(to bottom, #ffffff 0%, #f8f9fa 100%)",
+                "&::-webkit-scrollbar": { width: "6px" },
+                "&::-webkit-scrollbar-thumb": {
+                  background: "#ff9800",
+                  borderRadius: "10px",
+                },
+              }}
+            >
+              <Typography
+                variant="h6"
+                fontWeight="bold"
+                mb={2}
+                color="text.secondary"
+              >
+                Industries
+              </Typography>
+              {loading.industries ? (
+                <CategorySkeleton />
+              ) : industries.length > 0 ? (
+                industries.map((industry, index) => (
+                  <motion.div
+                    key={index}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <Box
+                      onMouseEnter={() => handleIndustryHover(index, industry)}
+                      sx={{
+                        cursor: "pointer",
+                        py: 1.5,
+                        px: 2,
+                        borderRadius: 2,
+                        mb: 1.5,
+                        color:
+                          activeIndustry === index ? "white" : "text.primary",
+                        bgcolor:
+                          activeIndustry === index
+                            ? "orange"
+                            : "background.paper",
+                        transition: "all 0.3s ease",
+                        boxShadow: theme.shadows[1],
+                        "&:hover": {
+                          bgcolor:
+                            activeIndustry === index ? "orange" : "action.hover",
+                        },
+                      }}
+                    >
+                      <Typography variant="subtitle1">{industry}</Typography>
+                    </Box>
+                  </motion.div>
+                ))
+              ) : apiError ? (
+                <Box sx={{ textAlign: "center", py: 4 }}>
+                  <ErrorIcon sx={{ fontSize: 48, color: "error.main", mb: 2 }} />
+                  <Typography variant="body2" color="error">
+                    Failed to load industries
+                  </Typography>
+                </Box>
+              ) : (
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  textAlign="center"
+                  sx={{ py: 4 }}
+                >
+                  No industries available
+                </Typography>
+              )}
+            </Box>
+
+            {/* Subcategories column */}
+            {activeIndustry !== null && (
+              <Box
+                sx={{
+                  width: 400,
                   borderRight: `1px solid ${theme.palette.divider}`,
                   overflowY: "auto",
                   px: 2,
                   py: 2,
                   background:
                     "linear-gradient(to bottom, #ffffff 0%, #f8f9fa 100%)",
+                  "&::-webkit-scrollbar": { width: "6px" },
+                  "&::-webkit-scrollbar-thumb": {
+                    background: "#ff9800",
+                    borderRadius: "10px",
+                  },
                 }}
               >
                 <Typography
@@ -1129,167 +1421,94 @@ const handleIndustryHover = useCallback(
                   mb={2}
                   color="text.secondary"
                 >
-                  Industries
+                  Industry - {industries[activeIndustry] || "Select Industry"}
                 </Typography>
-                
-                {loading.industries ? (
+                <Divider sx={{ mb: 2 }} />
+                {loading.subcategories ? (
                   <CategorySkeleton />
-                ) : industries.length > 0 ? (
-                  industries.map((industry, index) => (
-                    <motion.div
-                      key={index}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                    >
-                      <Box
-                        onMouseEnter={() => handleIndustryHover(index, industry)}
-                        sx={{
-                          cursor: "pointer",
-                          py: 1.5,
-                          px: 2,
-                          borderRadius: 2,
-                          mb: 1.5,
-                          color:
-                            activeIndustry === index ? "white" : "text.primary",
-                          bgcolor:
-                            activeIndustry === index
-                              ? "orange"
-                              : "background.paper",
-                          fontWeight: "medium",
-                          transition: "all 0.3s ease",
-                          boxShadow: theme.shadows[1],
-                          "&:hover": {
+                ) : availableSubCategories.length > 0 ? (
+                  availableSubCategories.map((subCategory, idx) => (
+                    <Grow in timeout={(idx + 1) * 150} key={idx}>
+                      <motion.div whileHover={{ scale: 1.02 }}>
+                        <Box
+                          onMouseEnter={() =>
+                            handleSubCategoryHover(subCategory)
+                          }
+                          sx={{
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            py: 1.5,
+                            px: 2,
+                            borderRadius: 2,
+                            gap: 1.5,
+                            mb: 1.5,
                             bgcolor:
-                              activeIndustry === index ? "orange" : "action.hover",
-                          },
-                        }}
-                      >
-                        <Typography variant="subtitle1">{industry}</Typography>
-                      </Box>
-                    </motion.div>
-                  ))
-                ) : apiError ? (
-                  <Box sx={{ textAlign: "center", py: 4 }}>
-                    <ErrorIcon sx={{ fontSize: 48, color: "error.main", mb: 2 }} />
-                    <Typography variant="body2" color="error">
-                      Failed to load industries
-                    </Typography>
-                  </Box>
-                ) : (
-                  <Typography variant="body2" color="text.secondary" textAlign="center" sx={{ py: 4 }}>
-                    No industries available
-                  </Typography>
-                )}
-              </Box>
-
-              {/* Subcategories Column - Fixed */}
-              {activeIndustry !== null && (
-                <Box
-                  sx={{
-                    width: 400,
-                    borderRight: `1px solid ${theme.palette.divider}`,
-                    overflowY: "auto",
-                    px: 2,
-                    py: 2,
-                    background:
-                      "linear-gradient(to bottom, #ffffff 0%, #f8f9fa 100%)",
-                  }}
-                >
-                  <Typography
-                    variant="h6"
-                    fontWeight="bold"
-                    mb={2}
-                    color="text.secondary"
-                  >
-                    Industry - {industries[activeIndustry] || "Select Industry"}
-                  </Typography>
-                  <Divider sx={{ mb: 2 }} />
-                  
-                  {loading.subcategories ? (
-                    <CategorySkeleton />
-                  ) : availableSubCategories.length > 0 ? (
-                    availableSubCategories.map((subCategory, idx) => (
-                      <Grow in={true} timeout={(idx + 1) * 150} key={idx}>
-                        <motion.div whileHover={{ scale: 1.02 }}>
-                          <Box
-                            onMouseEnter={() => handleSubCategoryHover(subCategory)}
-                            sx={{
-                              cursor: "pointer",
-                              display: "flex",
-                              alignItems: "center",
-                              py: 1.5,
-                              px: 2,
-                              borderRadius: 2,
-                              gap: 1.5,
-                              mb: 1.5,
+                              activeSubCategory === subCategory
+                                ? "orange"
+                                : "background.paper",
+                            color:
+                              activeSubCategory === subCategory
+                                ? "primary.contrastText"
+                                : "text.primary",
+                            boxShadow: theme.shadows[1],
+                            transition: "all 0.3s ease",
+                            "&:hover": {
                               bgcolor:
                                 activeSubCategory === subCategory
                                   ? "orange"
-                                  : "background.paper",
-                              color:
-                                activeSubCategory === subCategory
-                                  ? "primary.contrastText"
-                                  : "text.primary",
-                              boxShadow: theme.shadows[1],
-                              transition: "all 0.3s ease",
-                              "&:hover": {
-                                bgcolor:
-                                  activeSubCategory === subCategory
-                                    ? "orange"
-                                    : "action.hover",
-                              },
-                            }}
+                                  : "action.hover",
+                            },
+                          }}
+                        >
+                          <Typography
+                            fontWeight={
+                              activeSubCategory === subCategory
+                                ? "bold"
+                                : "medium"
+                            }
                           >
-                            <Typography
-                              fontWeight={
-                                activeSubCategory === subCategory
-                                  ? "bold"
-                                  : "medium"
-                              }
-                            >
-                              {subCategory}
-                            </Typography>
-                          </Box>
-                        </motion.div>
-                      </Grow>
-                    ))
-                  ) : (
-                    <Typography variant="body2" color="text.secondary" textAlign="center" sx={{ py: 4 }}>
-                      No subcategories available
-                    </Typography>
-                  )}
-                </Box>
-              )}
-            </>
-          )}
+                            {subCategory}
+                          </Typography>
+                        </Box>
+                      </motion.div>
+                    </Grow>
+                  ))
+                ) : (
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    textAlign="center"
+                    sx={{ py: 4 }}
+                  >
+                    No subcategories available
+                  </Typography>
+                )}
+              </Box>
+            )}
 
-          {/* Mobile Tab Content */}
-          {isMobile && (
+            {/* Main brands area */}
             <Box
-              sx={{ flex: 1, overflowY: "auto", bgcolor: "background.default" }}
+              sx={{
+                flex: 1,
+                overflowY: "auto",
+                px: 3,
+                py: 2,
+                bgcolor: "background.paper",
+                "&::-webkit-scrollbar": { width: "6px" },
+                "&::-webkit-scrollbar-thumb": {
+                  background: "#ff9800",
+                  borderRadius: "10px",
+                },
+              }}
             >
-              {getMobileTabContent}
+              {renderDesktopMainContent}
             </Box>
-          )}
-
-          {/* Main Content Area - Shows either industry info or brands */}
-          <Box
-            sx={{
-              flex: 1,
-              overflowY: "auto",
-              px: isMobile ? 1 : 3,
-              py: 2,
-              bgcolor: "background.paper",
-              borderTop: isMobile ? `1px solid ${theme.palette.divider}` : "none",
-              position: "relative",
-            }}
-          >
-            {renderMainContent}
           </Box>
-        </Box>
+        )}
       </Drawer>
 
-      {/* Snackbar for error messages */}
+      {/* Snackbar */}
       <Snackbar
         open={snackbar.open}
         autoHideDuration={6000}

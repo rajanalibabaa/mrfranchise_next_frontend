@@ -134,245 +134,65 @@ const BrandComparison = ({
   };
 
   const handleApply = (brand) => {
+    console.log(brand, "brnad data");
 
-    console.log(brand,"brnad data");
-    
     postView(brand?.uuid);
     // dispatch(openBrandDialog(brand));
-      window.open(`/franchise-brands/${brand?.uuid}`, "_blank");
+    window.open(`/franchise-business-opportunity/${brand?.uuid}`, "_blank");
   };
 
-  const loadImages = (element) => {
-    const images = Array.from(element.querySelectorAll("img"));
-    return Promise.all(
-      images.map((img) => {
-        if (img.complete) return Promise.resolve();
-        return new Promise((resolve) => {
-          img.onload = resolve;
-          img.onerror = resolve;
-        });
-      }),
-    );
-  };
+  const downloadPDF = async () => {
+    if (!tableRef.current) return;
 
-  /**
-   * Convert an external image URL to a data URL (blob) to bypass CORS.
-   */
-  const imageToDataURL = (url) => {
-    return new Promise((resolve, reject) => {
-      if (!url) {
-        resolve(null);
-        return;
+    setPdfGenerating(true);
+
+    const element = tableRef.current;
+
+    // 👉 store original width
+    const originalWidth = element.style.width;
+
+    // 👉 force desktop width
+    element.style.width = "1400px";
+
+    try {
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: "#ffffff",
+      });
+
+      const imgData = canvas.toDataURL("image/png");
+
+      const pdf = new jsPDF("landscape", "mm", "a4");
+
+      const pageWidth = 297;
+      const pageHeight = 210;
+
+      let imgWidth = pageWidth;
+      let imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+      if (imgHeight > pageHeight) {
+        const ratio = pageHeight / imgHeight;
+        imgHeight = pageHeight;
+        imgWidth = imgWidth * ratio;
       }
-      const img = new Image();
-      img.crossOrigin = "Anonymous";
-      img.onload = () => {
-        const canvas = document.createElement("canvas");
-        canvas.width = img.width;
-        canvas.height = img.height;
-        const ctx = canvas.getContext("2d");
-        ctx.drawImage(img, 0, 0);
-        try {
-          const dataURL = canvas.toDataURL("image/png");
-          resolve(dataURL);
-        } catch (err) {
-          console.warn("Failed to convert image to data URL:", url, err);
-          resolve(null);
-        }
-      };
-      img.onerror = () => {
-        console.warn("Failed to load image for PDF:", url);
-        resolve(null);
-      };
-      img.src = url;
-    });
+
+      const x = (pageWidth - imgWidth) / 2;
+      const y = (pageHeight - imgHeight) / 2;
+
+      pdf.addImage(imgData, "PNG", x, y, imgWidth, imgHeight);
+
+      pdf.save("MRFRANCHISE-brand-comparison.pdf");
+    } catch (error) {
+      console.error(error);
+    } finally {
+      // 👉 restore width
+      element.style.width = originalWidth;
+      setPdfGenerating(false);
+    }
   };
 
-//   if (!tableRef.current) return;
-
-//   setPdfGenerating(true);
-
-//   try {
-//     const canvas = await html2canvas(tableRef.current, {
-//       scale: 2,
-//       useCORS: true,
-//       backgroundColor: "#ffffff",
-//     });
-
-//     const imgData = canvas.toDataURL("image/png");
-
-//     const pdf = new jsPDF("landscape", "mm", "a4");
-
-//     const pageWidth = 297;
-//     const pageHeight = 210;
-
-//     // fit width
-//     let imgWidth = pageWidth;
-//     let imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-//     // 👉 if height overflow → shrink to single page
-//     if (imgHeight > pageHeight) {
-//       const ratio = pageHeight / imgHeight;
-//       imgHeight = pageHeight;
-//       imgWidth = imgWidth * ratio;
-//     }
-
-//     pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
-
-//     pdf.save("brand-comparison.pdf");
-
-//   } catch (error) {
-//     console.error(error);
-//   } finally {
-//     setPdfGenerating(false);
-//   }
-// };
-// 1 double page
-// const downloadPDF = async () => {
-//   if (!tableRef.current) return;
-
-//   setPdfGenerating(true);
-
-//   try {
-//     const canvas = await html2canvas(tableRef.current, {
-//       scale: 2,
-//       useCORS: true,
-//       backgroundColor: "#ffffff",
-//     });
-
-//     const imgData = canvas.toDataURL("image/png");
-
-//     const pdf = new jsPDF("landscape", "mm", "a4");
-
-//     const pageWidth = 297; // A4 landscape width
-//     const pageHeight = 210; // A4 landscape height
-
-//     const imgWidth = pageWidth;
-//     const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-//     let heightLeft = imgHeight;
-//     let position = 0;
-
-//     // First page
-//     pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-//     heightLeft -= pageHeight;
-
-//     // Extra pages
-//     while (heightLeft > 0) {
-//       position = heightLeft - imgHeight;
-//       pdf.addPage();
-//       pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-//       heightLeft -= pageHeight;
-//     }
-
-//     pdf.save("brand-comparison.pdf");
-
-//   } catch (error) {
-//     console.error(error);
-//   } finally {
-//     setPdfGenerating(false);
-//   }
-// };
-// 2 single page
-// const downloadPDF = async () => {
-
-//   if (!tableRef.current) return;
-
-//   setPdfGenerating(true);
-
-//   try {
-//     const canvas = await html2canvas(tableRef.current, {
-//       scale: 2,
-//       useCORS: true,
-//       backgroundColor: "#ffffff",
-//     });
-
-//     const imgData = canvas.toDataURL("image/png");
-
-//     const pdf = new jsPDF("landscape", "mm", "a4");
-
-//     const pageWidth = 297;
-//     const pageHeight = 210;
-
-//     let imgWidth = pageWidth;
-//     let imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-//     // 👉 if height overflow → scale both
-//     if (imgHeight > pageHeight) {
-//       const ratio = pageHeight / imgHeight;
-//       imgHeight = pageHeight;
-//       imgWidth = imgWidth * ratio;
-//     }
-
-//     // optional center
-//     const x = (pageWidth - imgWidth) / 2;
-//     const y = (pageHeight - imgHeight) / 2;
-
-//     pdf.addImage(imgData, "PNG", x, y, imgWidth, imgHeight);
-
-//     pdf.save("brand-comparison.pdf");
-
-//   } catch (error) {
-//     console.error(error);
-//   } finally {
-//     setPdfGenerating(false);
-//   }
-// };
-
-const downloadPDF = async () => {
-  if (!tableRef.current) return;
-
-  setPdfGenerating(true);
-
-  const element = tableRef.current;
-
-  // 👉 store original width
-  const originalWidth = element.style.width;
-
-  // 👉 force desktop width
-  element.style.width = "1400px";
-
-  try {
-    const canvas = await html2canvas(element, {
-      scale: 2,
-      useCORS: true,
-      backgroundColor: "#ffffff",
-    });
-
-    const imgData = canvas.toDataURL("image/png");
-
-    const pdf = new jsPDF("landscape", "mm", "a4");
-
-    const pageWidth = 297;
-    const pageHeight = 210;
-
-    let imgWidth = pageWidth;
-    let imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-    if (imgHeight > pageHeight) {
-      const ratio = pageHeight / imgHeight;
-      imgHeight = pageHeight;
-      imgWidth = imgWidth * ratio;
-    }
-
-    const x = (pageWidth - imgWidth) / 2;
-    const y = (pageHeight - imgHeight) / 2;
-
-    pdf.addImage(imgData, "PNG", x, y, imgWidth, imgHeight);
-
-    pdf.save("MRFRANCHISE-brand-comparison.pdf");
-
-  } catch (error) {
-    console.error(error);
-  } finally {
-    // 👉 restore width
-    element.style.width = originalWidth;
-    setPdfGenerating(false);
-  }
-};
- 
-
-const basicInfoFields = [
+  const basicInfoFields = [
     { label: "Brand Name", field: "brandDetails.brandName" },
     { label: "Company Name", field: "brandDetails.companyName" },
     {
@@ -451,12 +271,10 @@ const basicInfoFields = [
         >
           <Box
             display="flex"
-            justifyContent="space-between"
+            justifyContent="space-evenly"
             alignItems="center"
           >
-            <Typography variant="h6">
-              Brand Comparison ({brandDetails.length})
-            </Typography>
+            <Typography>Brand Comparison ({brandDetails.length})</Typography>
             <Box>
               {brandDetails.length > 0 && (
                 <Button
@@ -476,10 +294,15 @@ const basicInfoFields = [
                   )}
                 </Button>
               )}
-              <IconButton aria-label="close" onClick={onClose} sx={{ color: "black" }}>
+            
+            </Box>
+              <IconButton
+                aria-label="close"
+                onClick={onClose}
+                sx={{ color: "black" }}
+              >
                 <Close />
               </IconButton>
-            </Box>
           </Box>
         </DialogTitle>
         <DialogContent dividers>
@@ -496,24 +319,46 @@ const basicInfoFields = [
               </Typography>
             </Box>
           ) : (
-            <TableContainer component={Paper} ref={tableRef}>
+            <TableContainer
+              component={Paper}
+              ref={tableRef}
+              sx={{
+                maxHeight: "600px",
+                overflow: "auto",
+              }}
+            >
               <Table size="small" stickyHeader>
                 <TableHead>
                   <TableRow sx={{ bgcolor: "#f5f5f5" }}>
-                    <TableCell sx={{ fontWeight: "bold", width: "200px" }}>
+                    <TableCell
+                      sx={{
+                        fontWeight: "bold",
+                        width: "200px",
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 5,
+                        bgcolor: "#f5f5f5",
+                      }}
+                    >
                       Feature
                     </TableCell>
                     {brandDetails.map((brand) => (
                       <TableCell
                         key={brand.uuid}
                         align="center"
-                        sx={{ width: `${80 / brandDetails.length}%` }}
+                        sx={{
+                          width: `${80 / brandDetails.length}%`,
+                          position: "sticky",
+                          top: 0,
+                          zIndex: 4,
+                          bgcolor: "#f5f5f5",
+                        }}
                       >
                         <Box
                           display="flex"
                           flexDirection="column"
                           alignItems="center"
-                          mt={2}
+                          mt={0}
                           position="relative"
                         >
                           <Box position="relative">
@@ -578,7 +423,7 @@ const basicInfoFields = [
                           <Typography
                             display="flex"
                             space="between"
-                            flexDirection="row"
+                            flexDirection="column"
                             component={"div"}
                           >
                             <Chip
@@ -610,13 +455,21 @@ const basicInfoFields = [
                     ))}
                   </TableRow>
                 </TableHead>
-                <TableBody>
+
+                <TableBody sx={{ mt: "500px" }}>
                   {basicInfoFields.map((field) => (
                     <TableRow key={field.label} hover>
                       <TableCell
                         component="th"
                         scope="row"
-                        sx={{ bgcolor: "#f9f9f9", fontWeight: "bold" }}
+                        sx={{
+                          bgcolor: "#f9f9f9",
+                          fontWeight: "bold",
+
+                          position: "sticky",
+                          left: 0,
+                          zIndex: 3,
+                        }}
                       >
                         <Typography variant="subtitle2">
                           {field.label}

@@ -329,7 +329,7 @@ const Dashboard = () => {
         brand?.originalItem?.brandDetails?.uuid;
 
       if (brandId) {
-        navigate.push(`/franchise-brands/${brandId}`);
+        navigate.push(`/franchise-business-opportunity/${brandId}`);
       } else {
         console.error("Brand ID not found:", brand);
       }
@@ -471,7 +471,7 @@ const Dashboard = () => {
   return (
     <Box>
       {/* Profile Header */}
-      <Box sx={{ display: "flex", alignItems: "center", p: 2, gap: 2, mt: 1 }}>
+      <Box sx={{ display: "flex", alignItems: "center", p: 2, gap: 2, mt: {xs:0,md:15,sm:0} }}>
         {userData ? (
           <>
             <Avatar

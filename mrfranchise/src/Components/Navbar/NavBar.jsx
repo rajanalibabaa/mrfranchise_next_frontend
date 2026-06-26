@@ -123,40 +123,6 @@ function Navbar() {
     setPopupLogout(true);
   };
 
-  // const handleVerifySignOut = async () => {
-  //   setlogoutLoading(true);
-  //   try {
-  //     const response = await axios.post(
-  //       `https://mrfranchisebackend.mrfranchise.in/api/v1/logout/${ID}`,
-  //       {},
-  //       {
-  //         headers: {
-  //           Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-  //           "Content-Type": "application/json",
-  //         },
-  //         withCredentials: true,
-  //       }
-  //     );
-
-  //     if (response.status === 200) {
-  //       setTimeout(() => {
-  //         dispatch(logout());
-  //         setPopupLogout(false);
-  //         navigate("/");
-  //         setlogoutLoading(false);
-  //         // Clear local storage items
-  //         localStorage.removeItem("accessToken");
-  //         localStorage.removeItem("refreshToken");
-  //         localStorage.removeItem("brandUUID");
-  //         localStorage.removeItem("investorUUID");
-  //         localStorage.removeItem("userName");
-  //       }, 2000);
-  //     }
-  //   } catch (error) {
-  //     console.error("Logout error:", error.message || error);
-  //     setlogoutLoading(false);
-  //   }
-  // };
 
   const handleVerifySignOut = async () => {
     setlogoutLoading(true);
@@ -230,13 +196,7 @@ function Navbar() {
   };
 
   const handleLogoClick = () => {
-    // if (window.location.pathname === '/') {
-    //   window.location.reload();
-    // } else {
-    //   dispatch(showLoading());
-    //   navigate("/");
-    // }
-    // dispatch(showLoading());
+   
     router.push("/");
   };
 
@@ -255,7 +215,28 @@ function Navbar() {
       external: true,
     },
   ];
+  const menuItemsMobiles = [
+    // {
+    //   label: "Expand Your Franchise",
+    //   path: "/expandyourbrand",
+    //   external: false,
+    // },
+    // { label: "Investor", path: "/investfranchise", external: false },
+    { label: "Advertise", path: "/advertisewithus", external: false },
+    // { label: "Blogs", path: "/", external: false },
+    {
+      label: "Franchise Consulting",
+      path: "https://consulting.mrfranchise.in",
+      external: true,
+    },
+   {
+  label: "FREE LISTING",
+  path: "/brand_listing_creation_form ",
+  external: true
+}
+  ];
 
+   
   const handleNavigation = (item) => {
     if (item.external) {
       // ✅ open external site in new tab
@@ -279,7 +260,7 @@ function Navbar() {
             ? "rgba(255, 255, 255, 0.95)"
             : "rgba(255, 255, 255, 0.9)",
           borderBottom: "1px solid rgba(0, 0, 0, 0.12)",
-          position: "relative",
+          position: "fixed",
           transition: "all 0.3s ease",
           "&::before": {
             content: '""',
@@ -296,16 +277,43 @@ function Navbar() {
         {/* <AdSlot key={pathname} {...ADS.HOME.TOP_BILLBOARD} /> */}
         <Box
           sx={{
-            display: { xs: "none", sm: "flex" },
+            display: { xs: "flex", sm: "flex" },
             flexWrap: "wrap",
-            ml: "40px",
-            gap: isMobile ? 0.5 : 1,
+            ml: isMobile ? "50px":"40px",
+            gap: isMobile ? 2.5 : 1,
             position: "relative",
             zIndex: 1,
           }}
         >
-          
-          {menuItems.map((item) => (
+          {isMobile && (
+             menuItemsMobiles.map((item) => (
+            <motion.div
+              key={item.label}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <Button
+                size="small"
+                aria-label={item.label}
+                onClick={() => handleNavigation(item)}
+                sx={{
+                  fontSize: "0.65rem" ,
+                  textTransform: "none",
+                  color: "black",
+                  background:"#6fff00fa",
+                  "&:hover": {
+                    color: "#ff9800",
+                    backgroundColor: "rgba(255, 255, 255, 0.1)",
+                  },
+                }}
+              >
+                {item.label}
+              </Button>
+            </motion.div>
+          ))
+          )}
+          {!isMobile && (
+             menuItems.map((item) => (
             <motion.div
               key={item.label}
               whileHover={{ scale: 1.05 }}
@@ -328,15 +336,18 @@ function Navbar() {
                 {item.label}
               </Button>
             </motion.div>
-          ))}
+          ))
+          )}
+         
+          
         </Box>
         <Toolbar
           sx={{
             display: "flex",
-            justifyContent: isMobile ? "space-evenly" : "space-around",
+            justifyContent: isMobile ? "space-evenly" : "space-evenly",
             alignItems: "center",
-            px: { xs: 1, sm: 2 },
-            mb: 1,
+            px: { xs: 1, sm: 1 },
+            // mb: 1,
             minHeight: "64px !important",
             gap: isMobile ? 0 : 2,
           }}
@@ -364,26 +375,29 @@ function Navbar() {
               transition={{ type: "spring", stiffness: 400, damping: 10 }}
             >
               <Box
-                onClick={handleLogoClick}
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  textDecoration: "none",
-                }}
-              >
-                <Image
-  src="/mrfranchise_logo.avif"
-  alt="brand logo"
-  width={isMobile ? 120 : 150}
-  height={isMobile ? 50 : 90}
-  priority
-  loading="eager"
-  style={{
-    objectFit: "contain",
-    transition: "transform 0.3s ease",
+  onClick={handleLogoClick}
+  sx={{
+    display: "flex",
+    alignItems: "center",
+    textDecoration: "none",
+    overflow: "visible",
   }}
-/>
-              </Box>
+>
+  <Image
+    src="/mrfranchise_logo.avif"
+    alt="brand logo"
+    width={isMobile ? 145 : 175}
+    height={isMobile ? 60 : 100}
+    priority
+    loading="eager"
+    style={{
+      objectFit: "contain",
+      transform: "scale(1.25)", // zoom size
+      transition: "transform 0.3s ease",
+      transformOrigin: "center",
+    }}
+  />
+</Box>
             </motion.div>
           </Box>
           <Link
@@ -427,7 +441,7 @@ function Navbar() {
                 </Typography>
               </IconButton>
             </motion.div>
-            <motion.div whileHover={{ y: -2 }}>
+           {!isMobile && ( <motion.div whileHover={{ y: -2 }}>
               <Button
               aria-label="Add your franchise brands in mrfranchise"
                 onClick={() => {
@@ -444,15 +458,15 @@ function Navbar() {
                   margin: { xs: "5px" },
                   textTransform: "none",
                   fontSize: isMobile ? "0.1" : "1rem",
-                  fontWeight: 500,
+                  fontWeight: 600,
                   "&:hover": {
                     backgroundColor: "#7ad03a",
                   },
                 }}
               >
-                Add Brand
+                FREE LISTING
               </Button>
-            </motion.div>
+            </motion.div>)}
           </Box>
 
           <Box ref={avatarRef} sx={{ position: "relative" }}>
