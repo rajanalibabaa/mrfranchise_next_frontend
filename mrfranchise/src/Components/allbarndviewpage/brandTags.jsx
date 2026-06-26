@@ -103,17 +103,24 @@ dispatch(fetchFilterOptions({
 
     // Filter and sort options based on search terms (alphabetical order)
     const filteredMainCategories = useMemo(() => {
-      const term = (searchTerms.mainCategory || "").toLowerCase();
-      return mainCategories
-        .filter((main) => {
-          if (!main) return false;
-          return main.toLowerCase().includes(term);
-        })
-        .sort((a, b) =>
-          (a || "").toLowerCase().localeCompare((b || "").toLowerCase()),
-        )
-        .slice(0, 100);
-    }, [mainCategories, searchTerms.mainCategory]);
+  const term = (searchTerms.mainCategory || "").toLowerCase();
+
+  const result = [];
+
+  for (const group of mainCategories) {
+    if (!group?.heading || !Array.isArray(group.industries)) continue;
+
+    const matchedIndustries = group.industries
+      .filter((ind) => ind && ind.toLowerCase().includes(term))
+      .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+
+    if (matchedIndustries.length > 0) {
+      result.push({ heading: group.heading, industries: matchedIndustries });
+    }
+  }
+
+  return result;
+}, [mainCategories, searchTerms.mainCategory]);
 
     const filteredSubCategories = useMemo(() => {
       const term = (searchTerms.subCategory || "").toLowerCase();
@@ -184,30 +191,52 @@ useEffect(() => {
           gap: 1,
         }}
       >
-        {filteredMainCategories.map((category) => (
-          <Box
-            key={category}
-            onClick={() => onFilterChange("maincat", category)}
-            sx={{
-              px: 1.5,
-              py: 0.5,
-              borderRadius: "12px",
-              fontSize: { xs: 12, sm: 14, md: 16 },
-              cursor: "pointer",
-              border: "1px solid #ff9800",
-              backgroundColor:
-                filters.maincat === category ? "#4caf50" : "#fff",
-              color:
-                filters.maincat === category ? "#fff" : "#333",
-              "&:hover": {
-                // backgroundColor: "#f5f5f5",
-                textDecoration:'underline',
-              },
-            }}
-          >
-            {category} Franchise
-          </Box>
-        ))}
+    {filteredMainCategories.map((group) => (
+  <React.Fragment key={group.heading}>
+    {/* Heading label */}
+    <Box
+      sx={{
+        width: "100%",
+        px: 1,
+        py: 0.5,
+        fontSize: { xs: 10, sm: 11, md: 12 },
+        fontWeight: 700,
+        textTransform: "uppercase",
+        letterSpacing: "0.08em",
+        color: "text.secondary",
+        backgroundColor: "#f5f5f5",
+        borderRadius: "6px",
+        mt: 1,
+        pointerEvents: "none",
+      }}
+    >
+      {group.heading}
+    </Box>
+
+    {/* Industries under this heading */}
+    {group.industries.map((industry) => (
+      <Box
+        key={industry}
+        onClick={() => onFilterChange("maincat", industry)}
+        sx={{
+          px: 1.5,
+          py: 0.5,
+          borderRadius: "12px",
+          fontSize: { xs: 12, sm: 14, md: 16 },
+          cursor: "pointer",
+          border: "1px solid #ff9800",
+          backgroundColor: filters.maincat === industry ? "#4caf50" : "#fff",
+          color: filters.maincat === industry ? "#fff" : "#333",
+          "&:hover": {
+            textDecoration: "underline",
+          },
+        }}
+      >
+        {industry} Franchise
+      </Box>
+    ))}
+  </React.Fragment>
+))}
       </Box>
     )}
   </>

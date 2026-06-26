@@ -34,8 +34,8 @@ export default function BrandCategoryViewPage({ slug, subslug, maincat, subcat, 
       <Box
         component="main"
         sx={{
-          mt: { xs: "70px", sm: "12px" },
-          mx: { xs: 1, md: 2 },
+          mt: { xs: "70px", sm: "12px",md:"135px" },
+          mx: { xs: 1,  },
           minHeight: "calc(100vh - 64px)",
         }}
       >
