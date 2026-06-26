@@ -118,18 +118,25 @@ const FilterPanel = React.memo(
     };
 
     // Filter and sort options based on search terms (alphabetical order)
-    const filteredMainCategories = useMemo(() => {
-      const term = (searchTerms.mainCategory || "").toLowerCase();
-      return mainCategories
-        .filter((main) => {
-          if (!main) return false;
-          return main.toLowerCase().includes(term);
-        })
-        .sort((a, b) =>
-          (a || "").toLowerCase().localeCompare((b || "").toLowerCase()),
-        )
-        .slice(0, 100);
-    }, [mainCategories, searchTerms.mainCategory]);
+  const filteredMainCategories = useMemo(() => {
+  const term = (searchTerms.mainCategory || "").toLowerCase();
+
+  const result = [];
+
+  for (const group of mainCategories) {
+    if (!group?.heading || !Array.isArray(group.industries)) continue;
+
+    const matchedIndustries = group.industries
+      .filter((ind) => ind && ind.toLowerCase().includes(term))
+      .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+
+    if (matchedIndustries.length > 0) {
+      result.push({ heading: group.heading, industries: matchedIndustries });
+    }
+  }
+
+  return result;
+}, [mainCategories, searchTerms.mainCategory]);
 
     const filteredSubCategories = useMemo(() => {
       const term = (searchTerms.subCategory || "").toLowerCase();
@@ -315,142 +322,154 @@ const FilterPanel = React.memo(
                   }
                 }}
               >
-                {filteredMainCategories.map((category) => (
-                  <Box key={`cat-container-${category}`} sx={{ mb: 0 }}>
-                    <FormControlLabel
-                      key={`cat-${category}`}
-                      value={category}
-                      control={
-                        <Radio
-                          size="small"
-                          sx={{
-                            color: "#ff9800",
-                            "&.Mui-checked": { color: "#4caf50" },
-                            padding: "6px",
-                          }}
-                        />
-                      }
-                      label={
-                        <Typography fontSize="0.8125rem">
-                          {category} Franchise
-                        </Typography>
-                      }
-                      sx={{ mb: 0, mr: 0 }}
-                    />
+                {filteredMainCategories.map((group) => (
+  <React.Fragment key={`heading-${group.heading}`}>
+    {/* Heading label */}
+    <Box
+      sx={{
+        width: "93%",
+        px: 1,
+        py: 0.5,
+        fontSize: "0.65rem",
+        fontWeight: 700,
+        textTransform: "uppercase",
+        letterSpacing: "0.08em",
+        color: "text.secondary",
+        backgroundColor: "#f5f5f5",
+        borderRadius: "6px",
+        mt: 1,
+        pointerEvents: "none",
+      }}
+    >
+      {group.heading}
+    </Box>
 
-                    {/* Show subcategories when this main category is selected */}
-                    {filters.maincat === category && (
-                      <Box
-                        ref={subCategoryRef}
+    {/* Industries under this heading */}
+    {group.industries.map((industry) => (
+      <Box key={`cat-container-${industry}`} sx={{ mb: 0 }}>
+        <FormControlLabel
+          key={`cat-${industry}`}
+          value={industry}
+          control={
+            <Radio
+              size="small"
+              sx={{
+                color: "#ff9800",
+                "&.Mui-checked": { color: "#4caf50" },
+                padding: "6px",
+              }}
+            />
+          }
+          label={
+            <Typography fontSize="0.8125rem">
+              {industry} Franchise
+            </Typography>
+          }
+          sx={{ mb: 0, mr: 0 }}
+        />
+
+        {/* Show subcategories when this industry is selected */}
+        {filters.maincat === industry && (
+          <Box
+            ref={subCategoryRef}
+            sx={{ ml: 2, pl: 1 }}
+          >
+            <RadioGroup
+              value={filters.subcat || ""}
+              onChange={(e) => {
+                onFilterChange("subcat", e.target.value);
+                onFilterChange("childcat", "");
+                if (!e.target.value) {
+                  dispatch(resetChildCategories());
+                }
+              }}
+            >
+              {filteredSubCategories.map((subCategory) => (
+                <Box
+                  key={`subcat-container-${subCategory}`}
+                  sx={{ mt: 1 }}
+                >
+                  <FormControlLabel
+                    key={`subcat-${subCategory}`}
+                    value={subCategory}
+                    control={
+                      <Radio
+                        size="small"
                         sx={{
-                          ml: 2,
-                          pl: 1,
+                          color: "#ff9800",
+                          "&.Mui-checked": { color: "#4caf50" },
+                          padding: "6px",
                         }}
-                      >
-                        <RadioGroup
-                          value={filters.subcat || ""}
-                          onChange={(e) => {
-                            onFilterChange("subcat", e.target.value);
-                            onFilterChange("childcat", ""); // Reset child category when subcategory changes
-                            if (!e.target.value) {
-                              dispatch(resetChildCategories());
-                            }
-                          }}
-                        >
-                          {filteredSubCategories.map((subCategory) => (
-                            <Box
-                              key={`subcat-container-${subCategory}`}
-                              sx={{
-                                mt: 1,
-                              }}
-                            >
-                              <FormControlLabel
-                                key={`subcat-${subCategory}`}
-                                value={subCategory}
-                                control={
-                                  <Radio
-                                    size="small"
-                                    sx={{
-                                      color: "#ff9800",
-                                      "&.Mui-checked": { color: "#4caf50" },
-                                      padding: "6px",
-                                    }}
-                                  />
-                                }
-                                label={
-                                  <Typography fontSize="0.8125rem">
-                                    {subCategory} Franchise 
-                                  </Typography>
-                                }
-                                sx={{ mb: 0, mr: 0 }}
-                              />
+                      />
+                    }
+                    label={
+                      <Typography fontSize="0.8125rem">
+                        {subCategory} Franchise
+                      </Typography>
+                    }
+                    sx={{ mb: 0, mr: 0 }}
+                  />
 
-                              {/* Product Tags (Child categories) when this specific subcategory is selected */}
-                              {filters.subcat === subCategory && (
-                                <Box
+                  {/* Child categories when this subcategory is selected */}
+                  {filters.subcat === subCategory && (
+                    <Box sx={{ ml: 2, mt: 1, pl: 1 }}>
+                      {loadingChildCategories ? (
+                        <Box sx={{ p: 1 }}>
+                          <CircularProgress
+                            size={16}
+                            sx={{ color: "#ff9800" }}
+                          />
+                        </Box>
+                      ) : childCategories && childCategories.length > 0 ? (
+                        <RadioGroup
+                          value={filters.childcat || ""}
+                          onChange={(e) =>
+                            onFilterChange("childcat", e.target.value)
+                          }
+                        >
+                          {childCategories.map((childCategory) => (
+                            <FormControlLabel
+                              key={`childcat-${childCategory}`}
+                              value={childCategory}
+                              control={
+                                <Radio
+                                  size="small"
                                   sx={{
-                                    ml: 2,
-                                    mt: 1,
-                                    pl: 1,
+                                    color: "#ff9800",
+                                    "&.Mui-checked": { color: "#4caf50" },
+                                    padding: "6px",
                                   }}
-                                >
-                                  {loadingChildCategories ? (
-                                    <Box sx={{ p: 1 }}>
-                                      <CircularProgress
-                                        size={16}
-                                        sx={{ color: "#ff9800" }}
-                                      />
-                                    </Box>
-                                  ) : childCategories && childCategories.length > 0 ? (
-                                    <RadioGroup
-                                      value={filters.childcat || ""}
-                                      onChange={(e) =>
-                                        onFilterChange("childcat", e.target.value)
-                                      }
-                                    >
-                                      {childCategories.map((childCategory) => (
-                                        <FormControlLabel
-                                          key={`childcat-${childCategory}`}
-                                          value={childCategory}
-                                          control={
-                                            <Radio
-                                              size="small"
-                                              sx={{
-                                                color: "#ff9800",
-                                                "&.Mui-checked": {
-                                                  color: "#4caf50",
-                                                },
-                                                padding: "6px",
-                                              }}
-                                            />
-                                          }
-                                          label={
-                                            <Typography fontSize="0.8125rem">
-                                              {childCategory}
-                                            </Typography>
-                                          }
-                                          sx={{ mb: 0.5, mr: 0 }}
-                                        />
-                                      ))}
-                                    </RadioGroup>
-                                  ) : (
-                                    <Typography
-                                      fontSize="0.75rem"
-                                      color="text.secondary"
-                                      sx={{ py: 1, pl: 1 }}
-                                    >
-                                      No tags available
-                                    </Typography>
-                                  )}
-                                </Box>
-                              )}
-                            </Box>
+                                />
+                              }
+                              label={
+                                <Typography fontSize="0.8125rem">
+                                  {childCategory}
+                                </Typography>
+                              }
+                              sx={{ mb: 0.5, mr: 0 }}
+                            />
                           ))}
                         </RadioGroup>
-                      </Box>
-                    )}
-                  </Box>
-                ))}
+                      ) : (
+                        <Typography
+                          fontSize="0.75rem"
+                          color="text.secondary"
+                          sx={{ py: 1, pl: 1 }}
+                        >
+                          No tags available
+                        </Typography>
+                      )}
+                    </Box>
+                  )}
+                </Box>
+              ))}
+            </RadioGroup>
+          </Box>
+        )}
+      </Box>
+    ))}
+  </React.Fragment>
+))}
               </RadioGroup>
             </Box>
           </AccordionDetails>

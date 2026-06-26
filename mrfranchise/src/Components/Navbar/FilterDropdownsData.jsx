@@ -1,10 +1,9 @@
-
 "use client";
 import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import {
-
   useMediaQuery,
   useTheme,
+  ListSubheader,
 } from "@mui/material";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -14,23 +13,17 @@ import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
-
-
 import SearchIcon from "@mui/icons-material/Search";
 import { useRouter } from "next/navigation";
 import { useSelector, useDispatch } from "react-redux";
-import {
-  fetchFilterOptions,
- 
-  clearErrors,
-} from "@/Redux/Slices/filterDropdownData";
+import { fetchFilterOptions, clearErrors } from "@/Redux/Slices/filterDropdownData";
 
 const FilterDropdowns = ({ onFilterChange }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const router = useRouter();
-  // const navigate = useRouter();
   const dispatch = useDispatch();
+
   const [filters, setFilters] = useState({
     selectedMainCategory: "",
     selectedState: "",
@@ -41,41 +34,26 @@ const FilterDropdowns = ({ onFilterChange }) => {
   const isMountedRef = useRef(true);
 
   useEffect(() => {
-    return () => {
-      isMountedRef.current = false;
-    };
+    return () => { isMountedRef.current = false; };
   }, []);
 
-  // Get filter data from Redux store
   const {
-    mainCategories,
-    subCategories,
+    mainCategories, // now [{ heading, industries: [] }]
     states,
     investmentRanges,
     loading,
     error,
   } = useSelector((state) => state.filterDropdown);
-  console.log("FilterDropdowns - Redux State:", 
-    mainCategories,
-    subCategories,)
 
-
-  // Fetch initial filter options when component mounts
   useEffect(() => {
     dispatch(fetchFilterOptions());
-      
-    return () => {
-      dispatch(clearErrors());
-    };
+    return () => { dispatch(clearErrors()); };
   }, [dispatch]);
 
-  // Handle filter changes
   const handleFilterChange = useCallback(
     (name, value) => {
       setFilters((prev) => {
         const newFilters = { ...prev, [name]: value };
-
-        // Reset dependent filters when parent changes
         if (name === "selectedMainCategory") {
           newFilters.selectedState = "";
           newFilters.selectedDistrict = "";
@@ -84,119 +62,111 @@ const FilterDropdowns = ({ onFilterChange }) => {
           newFilters.selectedDistrict = "";
           newFilters.selectedCity = "";
         }
-
         return newFilters;
       });
 
-      // Fetch dependent data if needed
       if (name === "selectedMainCategory" && value) {
-        // 🔸 Changed parameter from sub to main
         dispatch(fetchFilterOptions({ main: value }));
       } else if (name === "selectedState" && value) {
         dispatch(fetchFilterOptions({ state: value }));
       }
 
-      // Call the parent component's filter change handler if provided
       if (onFilterChange) {
-        if (name === "selectedMainCategory") {
-          onFilterChange("maincat", value); // This is correct
-        } else if (name === "selectedState") {
-          onFilterChange("state", value);
-        } else if (name === "selectedInvestmentRange") {
-          onFilterChange("investmentRange", value);
-        }
+        if (name === "selectedMainCategory") onFilterChange("maincat", value);
+        else if (name === "selectedState") onFilterChange("state", value);
+        else if (name === "selectedInvestmentRange") onFilterChange("investmentRange", value);
       }
     },
     [dispatch, onFilterChange]
   );
 
-  
-  // Format investment ranges for display
   const formattedInvestmentRanges = useMemo(() => {
     if (!investmentRanges || investmentRanges.length === 0) {
       return [{ label: "All Ranges", value: "" }];
     }
-
-    // Helper function to convert range to numerical value (in rupees)
     const getRangeValue = (range) => {
-      // Handle special cases first
       if (range.includes("Below")) return 0;
       if (range === "Rs. 50,000 - 2 L") return 50000;
-      
-      // Extract the minimum value from the range
       const match = range.match(/Rs\.?\s*([\d,\.]+)\s*(L|Cr|Crs)?/i);
       if (!match) return Number.MAX_SAFE_INTEGER;
-      
       const num = parseFloat(match[1].replace(/,/g, ''));
       const unit = match[2] ? match[2].toLowerCase() : '';
-      
-      // Convert to rupees
       if (unit === 'cr') return num * 10000000;
       if (unit === 'l') return num * 100000;
       return num;
     };
-
-    // Sort ranges based on their numerical value
-    const sortedRanges = [...investmentRanges].sort((a, b) => {
-      return getRangeValue(a) - getRangeValue(b);
-    });
-
+    const sortedRanges = [...investmentRanges].sort(
+      (a, b) => getRangeValue(a) - getRangeValue(b)
+    );
     return [
       { label: "All Ranges", value: "" },
       ...sortedRanges.map((range) => ({ label: range, value: range })),
     ];
   }, [investmentRanges]);
-const toSlug = (str) =>
-  str
-    ?.toLowerCase()
-    .replace(/&/g, "and")
-    .replace(/\s+/g, "-")
-    .trim();
 
-  // Handle search button click
-// In handleFindBrands function - ensure proper URL generation
-const handleFindBrands = useCallback(() => {
-  if (isNavigating) return;
-  setIsNavigating(true);
+  // Build grouped menu items from [{ heading, industries[] }]
+  const industryMenuItems = useMemo(() => {
+    if (!mainCategories || mainCategories.length === 0) return [];
 
-  const { selectedMainCategory, selectedState, selectedInvestmentRange } = filters;
+    const items = [];
+    for (const group of mainCategories) {
+      // Section header (not selectable)
+      items.push(
+        <ListSubheader
+          key={`heading-${group.heading}`}
+          sx={{
+            fontWeight: 700,
+            fontSize: "0.75rem",
+            color: "text.secondary",
+            textTransform: "uppercase",
+            letterSpacing: "0.08em",
+            lineHeight: "2rem",
+            backgroundColor: "#f5f5f5",
+            pointerEvents: "none", // not clickable
+          }}
+        >
+          {group.heading}
+        </ListSubheader>
+      );
 
-  // Build query params
-  const queryParams = new URLSearchParams();
-
-  if (selectedMainCategory) {
-    queryParams.append("maincat", selectedMainCategory);
-  }
-  if (selectedState) {
-    queryParams.append("state", selectedState);
-  }
-  if (selectedInvestmentRange) {
-    queryParams.append("investmentRange", selectedInvestmentRange);
-  }
-
-  // Generate URL
-  const hasAnyFilter =
-    selectedMainCategory || selectedState || selectedInvestmentRange;
-
-  const url = hasAnyFilter
-    ? `/all-franchise-brands?${queryParams.toString()}`
-    : "/all-franchise-brands";
-
-  console.log("Navigating to:", url);
-  
-  // Open in new tab
-  window.open(url, "_blank", "noopener,noreferrer");
-
-  // Force reset navigation lock after a short delay, guarding with isMountedRef
-  setTimeout(() => {
-    if (isMountedRef.current) {
-      setIsNavigating(false);
+      // Industry options under this heading
+      const sorted = [...(group.industries || [])].sort((a, b) =>
+        a.localeCompare(b, undefined, { sensitivity: "base" })
+      );
+      for (const industry of sorted) {
+        items.push(
+          <MenuItem key={industry} value={industry} sx={{ pl: 3 }}>
+            {industry}
+          </MenuItem>
+        );
+      }
     }
-  }, 500);
-}, [filters, isNavigating]);
+    return items;
+  }, [mainCategories]);
 
+  const handleFindBrands = useCallback(() => {
+    if (isNavigating) return;
+    setIsNavigating(true);
 
-  // 🔸 Changed to check mainCategories instead of subCategories
+    const { selectedMainCategory, selectedState, selectedInvestmentRange } = filters;
+    const queryParams = new URLSearchParams();
+
+    if (selectedMainCategory) queryParams.append("maincat", selectedMainCategory);
+    if (selectedState) queryParams.append("state", selectedState);
+    if (selectedInvestmentRange) queryParams.append("investmentRange", selectedInvestmentRange);
+
+    const hasAnyFilter = selectedMainCategory || selectedState || selectedInvestmentRange;
+    const url = hasAnyFilter
+      ? `/all-franchise-brands?${queryParams.toString()}`
+      : "/all-franchise-brands";
+
+    window.open(url, "_blank", "noopener,noreferrer");
+
+    setTimeout(() => {
+      if (isMountedRef.current) setIsNavigating(false);
+    }, 500);
+  }, [filters, isNavigating]);
+
   if (loading && !mainCategories.length && !states.length) {
     return (
       <Box display="flex" justifyContent="center" p={4}>
@@ -227,53 +197,32 @@ const handleFindBrands = useCallback(() => {
         boxShadow: 1,
       }}
     >
-    {/* Industry Filter */}
-<FormControl fullWidth sx={{ minWidth: 180 }}>
-  <InputLabel>Industry</InputLabel>
-  <Select
-    value={filters.selectedMainCategory}
-    onChange={(e) =>
-      handleFilterChange("selectedMainCategory", e.target.value)
-    }
-    label="Industry"
-    aria-label="Select Industry"
-    
-    MenuProps={{ PaperProps: { style: { maxHeight: 300 } } }}
-    sx={{
-      backgroundColor: "white",
-      borderRadius: 1,
-    }}
-  >
-    <MenuItem value="">All Industries</MenuItem>
-
-    {[...mainCategories]
-      .sort((a, b) =>
-        (a || "").localeCompare(b || "", undefined, { sensitivity: "base" })
-      )
-      .map((category) => (
-        <MenuItem key={category} value={category}>
-          {category}
-        </MenuItem>
-      ))}
-  </Select>
-</FormControl>
-
+      {/* Industry Filter — grouped by heading */}
+      <FormControl fullWidth sx={{ minWidth: 180 }}>
+        <InputLabel>Industry</InputLabel>
+        <Select
+          value={filters.selectedMainCategory}
+          onChange={(e) => handleFilterChange("selectedMainCategory", e.target.value)}
+          label="Industry"
+          aria-label="Select Industry"
+          MenuProps={{ PaperProps: { style: { maxHeight: 350 } } }}
+          sx={{ backgroundColor: "white", borderRadius: 1 }}
+        >
+         
+          {industryMenuItems}
+        </Select>
+      </FormControl>
 
       {/* Investment Range Filter */}
       <FormControl fullWidth sx={{ minWidth: 180 }}>
         <InputLabel>Investment Range</InputLabel>
         <Select
           value={filters.selectedInvestmentRange}
-          onChange={(e) =>
-            handleFilterChange("selectedInvestmentRange", e.target.value)
-          }
+          onChange={(e) => handleFilterChange("selectedInvestmentRange", e.target.value)}
           label="Investment Range"
-            aria-label="Select Investment Range"
+          aria-label="Select Investment Range"
           MenuProps={{ PaperProps: { style: { maxHeight: 300 } } }}
-          sx={{
-            backgroundColor: "white",
-            borderRadius: 1,
-          }}
+          sx={{ backgroundColor: "white", borderRadius: 1 }}
         >
           {formattedInvestmentRanges.map((option) => (
             <MenuItem key={option.value} value={option.value}>
@@ -292,10 +241,7 @@ const handleFindBrands = useCallback(() => {
           label="Location"
           aria-label="Select Location"
           MenuProps={{ PaperProps: { style: { maxHeight: 300 } } }}
-          sx={{
-            backgroundColor: "white",
-            borderRadius: 1,
-          }}
+          sx={{ backgroundColor: "white", borderRadius: 1 }}
         >
           <MenuItem value="">All Locations</MenuItem>
           {states.map((state) => (
@@ -311,17 +257,15 @@ const handleFindBrands = useCallback(() => {
         onClick={handleFindBrands}
         aria-label="Find Brands in mrfranchise"
         startIcon={<SearchIcon />}
-       sx={{
+        sx={{
           height: "56px",
           minWidth: isMobile ? "100%" : "180px",
           backgroundColor: "#ff9800",
           textTransform: "none",
           fontWeight: "600",
-          fontSize: '1rem',
+          fontSize: "1rem",
           color: "white",
-          "&:hover": {
-            backgroundColor: "#fb8c00",
-          },
+          "&:hover": { backgroundColor: "#fb8c00" },
           borderRadius: 1,
           boxShadow: "none",
         }}
