@@ -99,11 +99,11 @@ const PaymentSummaryDesktopView = ({
         <TableBody>
           {paymentSummary.length > 0 ? (
             Object.entries(groupedByPlan).map(([planId, planData]) => {
-              const { sortedRanges, labelSubtotalMap } = buildSortedRanges(planId, planData);
+             const { sortedRanges, labelSubtotalMap } = buildSortedRanges(planId, planData);
 
-              console.log("planData:", planData);
-console.log("sortedRanges sample:", sortedRanges[0]);
-console.log("item sample:", sortedRanges[0]?.items[0]);
+// ADD THIS 👇
+console.log("labelSubtotalMap:", labelSubtotalMap);
+console.log("item[0] full data:", JSON.stringify(sortedRanges[0]?.items[0], null, 2));
 
               const labelRowSpanMap = {};
               sortedRanges.forEach((rg) => {
@@ -264,30 +264,48 @@ console.log("item sample:", sortedRanges[0]?.items[0]);
     );
   })()}
 
-                    {!renderedSubtotals.has(lbl) &&
-                      (() => {
-                        renderedSubtotals.add(lbl);
-                        return (
-                          <TableCell
-                            key={`subtotal-${lbl}`}
-                            align="right"
-                            rowSpan={labelRowSpanMap[lbl]}
-                            sx={{ ...bodyCellSx, verticalAlign: "middle" }}
-                          >
-                            <Typography
-                              sx={{
-                                fontSize: "1rem",
-                                fontWeight: 700,
-                                color: COLORS.secondaryDark,
-                                whiteSpace: "nowrap",
-                                textAlign: "center",
-                              }}
-                            >
-                              ₹{(labelSubtotalMap[lbl] || 0).toLocaleString("en-IN")}
-                            </Typography>
-                          </TableCell>
-                        );
-                      })()}
+                 {!renderedSubtotals.has(lbl) &&
+  (() => {
+    renderedSubtotals.add(lbl);
+
+    const labelRanges = sortedRanges.filter(
+      (rg) => (rg.investmentRangeLabel || "—") === lbl
+    );
+
+    // Dedupe states across all ranges under this label
+    const uniqueStates = new Set(
+      labelRanges.flatMap((rg) =>
+        rg.items.flatMap((it) => it.states || [])
+      )
+    );
+
+    // pricePerState is the same across all ranges in a label
+    const pricePerState = labelRanges[0]?.items[0]?.pricePerState ?? 0;
+
+    // ✅ 1 unique state (Delhi) × 9000 = 9000
+    const labelSubtotal = uniqueStates.size * pricePerState;
+
+    return (
+      <TableCell
+        key={`subtotal-${lbl}`}
+        align="right"
+        rowSpan={labelRowSpanMap[lbl]}
+        sx={{ ...bodyCellSx, verticalAlign: "middle" }}
+      >
+        <Typography
+          sx={{
+            fontSize: "1rem",
+            fontWeight: 700,
+            color: COLORS.secondaryDark,
+            whiteSpace: "nowrap",
+            textAlign: "center",
+          }}
+        >
+          ₹{labelSubtotal.toLocaleString("en-IN")}
+        </Typography>
+      </TableCell>
+    );
+  })()}
 
                     <TableCell align="center" sx={bodyCellSx}>
                       <Tooltip title="Remove from summary" arrow>

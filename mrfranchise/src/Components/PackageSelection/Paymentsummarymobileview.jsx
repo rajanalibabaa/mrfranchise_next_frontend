@@ -150,29 +150,35 @@ const PaymentSummaryMobileView = ({
 
         <Collapse in={isExpanded}>
           <Box sx={{ px: 0, pb: 0.5 }}>
-            {Object.entries(labelGroupMap).map(([label, ranges]) => {
-              const groupSubtotal = labelSubtotalMap[label] || 0;
+           {Object.entries(labelGroupMap).map(([label, ranges]) => {
+  
+  // ✅ Dedupe states across all ranges in this label
+  const uniqueStates = new Set(
+  ranges.flatMap((rg) => rg.items.flatMap((it) => it.states || []))
+);
+const pricePerState = ranges[0]?.items[0]?.pricePerState ?? 0;
+const groupSubtotal = uniqueStates.size * pricePerState;
 
-              return (
-                <Box key={label}>
-                  <Box
-                    sx={{
-                      px: 2.5,
-                      py: 1.5,
-                      backgroundColor: COLORS.grey[100],
-                      borderBottom: `1px solid ${COLORS.border}`,
-                      borderTop: `1px solid ${COLORS.border}`,
-                    }}
-                  >
-                    <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                      <Typography sx={{ fontSize: "1.2rem", fontWeight: 700, color: COLORS.black }}>
-                        {label}
-                      </Typography>
-                      <Typography sx={{ fontSize: "1.2rem", fontWeight: 700, color: COLORS.secondaryDark }}>
-                        ₹{groupSubtotal.toLocaleString("en-IN")}
-                      </Typography>
-                    </Box>
-                  </Box>
+  return (
+    <Box key={label}>
+      <Box
+        sx={{
+          px: 2.5,
+          py: 1.5,
+          backgroundColor: COLORS.grey[100],
+          borderBottom: `1px solid ${COLORS.border}`,
+          borderTop: `1px solid ${COLORS.border}`,
+        }}
+      >
+        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <Typography sx={{ fontSize: "1.2rem", fontWeight: 700, color: COLORS.black }}>
+            {label}
+          </Typography>
+          <Typography sx={{ fontSize: "1.2rem", fontWeight: 700, color: COLORS.secondaryDark }}>
+            ₹{groupSubtotal.toLocaleString("en-IN")}
+          </Typography>
+        </Box>
+      </Box>
 
                   {ranges.map((rangeGroup, idx) => {
                     const isLastInGroup = idx === ranges.length - 1;
