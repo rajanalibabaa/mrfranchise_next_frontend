@@ -64,7 +64,7 @@ const AdvertisingPage = () => {
         fullWidth
         scroll="paper"
       >
-        <DialogTitle sx={{ backgroundColor: "#f8f9fa", m: 0, p: 2, pr: 6 }}>
+        <DialogTitle sx={{ backgroundColor: '#f8f9fa', m: 0, p: 2, pr: 6 }}>
           You Are Adding a New Franchise Business Model For This Investment
           Range — {investmentRangeData?.range}
           <Typography variant="subtitle2" color="textSecondary">

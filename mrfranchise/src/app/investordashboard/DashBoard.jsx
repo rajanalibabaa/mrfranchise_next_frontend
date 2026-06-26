@@ -471,7 +471,7 @@ const Dashboard = () => {
   return (
     <Box>
       {/* Profile Header */}
-      <Box sx={{ display: "flex", alignItems: "center", p: 2, gap: 2, mt: 1 }}>
+      <Box sx={{ display: "flex", alignItems: "center", p: 2, gap: 2, mt: {xs:0,md:15,sm:0} }}>
         {userData ? (
           <>
             <Avatar

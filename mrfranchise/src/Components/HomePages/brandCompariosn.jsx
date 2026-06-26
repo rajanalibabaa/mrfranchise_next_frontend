@@ -249,7 +249,7 @@ const BrandComparison = ({
       <Dialog
         open={open}
         onClose={onClose}
-        maxWidth="xl"
+        maxWidth="lg"
         fullWidth
         scroll="paper"
         sx={{
@@ -272,11 +272,9 @@ const BrandComparison = ({
           <Box
             display="flex"
             justifyContent="space-evenly"
-            // alignItems="center"
+            alignItems="center"
           >
-            <Typography >
-              Brand Comparison ({brandDetails.length})
-            </Typography>
+            <Typography>Brand Comparison ({brandDetails.length})</Typography>
             <Box>
               {brandDetails.length > 0 && (
                 <Button
@@ -296,6 +294,8 @@ const BrandComparison = ({
                   )}
                 </Button>
               )}
+            
+            </Box>
               <IconButton
                 aria-label="close"
                 onClick={onClose}
@@ -303,7 +303,6 @@ const BrandComparison = ({
               >
                 <Close />
               </IconButton>
-            </Box>
           </Box>
         </DialogTitle>
         <DialogContent dividers>
