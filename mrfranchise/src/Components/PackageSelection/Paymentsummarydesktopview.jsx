@@ -101,6 +101,10 @@ const PaymentSummaryDesktopView = ({
             Object.entries(groupedByPlan).map(([planId, planData]) => {
               const { sortedRanges, labelSubtotalMap } = buildSortedRanges(planId, planData);
 
+              console.log("planData:", planData);
+console.log("sortedRanges sample:", sortedRanges[0]);
+console.log("item sample:", sortedRanges[0]?.items[0]);
+
               const labelRowSpanMap = {};
               sortedRanges.forEach((rg) => {
                 const lbl = rg.investmentRangeLabel || "—";
@@ -109,6 +113,7 @@ const PaymentSummaryDesktopView = ({
 
               const renderedLabels = new Set();
               const renderedSubtotals = new Set();
+              const renderedLeadLabels = new Set();
 
               const rangeRows = sortedRanges.map((rangeGroup, idx) => {
                 const lbl = rangeGroup.investmentRangeLabel || "—";
@@ -218,29 +223,46 @@ const PaymentSummaryDesktopView = ({
                       )}
                     </TableCell>
 
-                    {idx === 0 && (
-                      <TableCell
-                        align="center"
-                        rowSpan={sortedRanges.length}
-                        sx={{ ...bodyCellSx, verticalAlign: "middle" }}
-                      >
-                        {rangeGroup.items[0]?.isListingPlan ? (
-                          <Typography sx={{ fontSize: "1rem", fontWeight: 700 }}>-</Typography>
-                        ) : (
-                          <>
-                            <Typography sx={{ fontSize: "1rem", fontWeight: 700 }}>
-                              {typeof planData.totalPlanLeads === "number"
-                                ? planData.totalPlanLeads.toLocaleString("en-IN")
-                                : planData.totalPlanLeads}
-                            </Typography>
-                            <Typography sx={{ fontSize: "0.7rem", color: COLORS.grey[600], mt: 0.5 }}>
-                              {planData.lastSelectedLeads} × {planData.totalPlanStates} ={" "}
-                              {planData.totalPlanLeads.toLocaleString("en-IN")}
-                            </Typography>
-                          </>
-                        )}
-                      </TableCell>
-                    )}
+    {!renderedLeadLabels.has(lbl) &&
+  (() => {
+    renderedLeadLabels.add(lbl);
+
+    const labelRanges = sortedRanges.filter(
+      (rg) => (rg.investmentRangeLabel || "—") === lbl
+    );
+    const isListing = labelRanges[0]?.items[0]?.isListingPlan;
+
+    const leadsPerState = planData.lastSelectedLeads ?? 0;
+
+    // ✅ Deduplicate states within this label only
+    const uniqueStates = new Set(
+      labelRanges.flatMap((rg) => rg.items.flatMap((it) => it.states || []))
+    );
+    const labelTotalStates = uniqueStates.size;
+    const labelTotalLeads = leadsPerState * labelTotalStates;
+
+    return (
+      <TableCell
+        key={`leads-${lbl}`}
+        align="center"
+        rowSpan={labelRowSpanMap[lbl]}
+        sx={{ ...bodyCellSx, verticalAlign: "middle" }}
+      >
+        {isListing ? (
+          <Typography sx={{ fontSize: "1rem", fontWeight: 700 }}>-</Typography>
+        ) : (
+          <>
+            <Typography sx={{ fontSize: "1rem", fontWeight: 700 }}>
+              {labelTotalLeads.toLocaleString("en-IN")}
+            </Typography>
+            <Typography sx={{ fontSize: "0.7rem", color: COLORS.grey[600], mt: 0.5 }}>
+              {leadsPerState} × {labelTotalStates} = {labelTotalLeads.toLocaleString("en-IN")}
+            </Typography>
+          </>
+        )}
+      </TableCell>
+    );
+  })()}
 
                     {!renderedSubtotals.has(lbl) &&
                       (() => {
