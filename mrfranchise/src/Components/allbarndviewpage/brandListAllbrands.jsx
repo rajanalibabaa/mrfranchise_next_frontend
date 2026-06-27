@@ -470,22 +470,64 @@ function BrandList({ maincat, subcat, slug, subslug }) {
   // ============================================
   // FILTER CHANGE EFFECT
   // ============================================
-  useEffect(() => {
-    if (!initialFiltersApplied) return;
-    const filterKey = JSON.stringify(filters);
-    if (lastFetchKeyRef.current === filterKey) return;
-    const timer = setTimeout(() => {
-      if (isMountedRef.current) fetchBrands(filters);
-    }, 150);
-    return () => clearTimeout(timer);
-  }, [filters, initialFiltersApplied, fetchBrands]);
+// ============================================
+// FILTER CHANGE EFFECT
+// ============================================
+useEffect(() => {
+  if (!initialFiltersApplied) return;
+
+  const filterKey = JSON.stringify({
+    maincat: filters.maincat,
+    subcat: filters.subcat,
+    childcat: filters.childcat,
+    modelType: filters.modelType,
+    franchiseType: filters.franchiseType,   // ← ADD THIS
+    investmentRange: filters.investmentRange,
+    areaRequired: filters.areaRequired,
+    state: filters.state,
+    district: filters.district,
+    city: filters.city,
+    searchTerm: filters.searchTerm,
+    page: filters.page,
+  });
+
+  if (lastFetchKeyRef.current === filterKey) return;
+
+  const timer = setTimeout(() => {
+    if (isMountedRef.current) {
+      console.log("🔄 Fetching brands due to filter change. franchiseType =", filters.franchiseType);
+      fetchBrands(filters);
+    }
+  }, 150);
+
+  return () => clearTimeout(timer);
+}, [
+  filters.maincat,
+  filters.subcat,
+  filters.childcat,
+  filters.modelType,
+  filters.franchiseType,        // ← Critical
+  filters.investmentRange,
+  filters.areaRequired,
+  filters.state,
+  filters.district,
+  filters.city,
+  filters.searchTerm,
+  filters.page,
+  initialFiltersApplied,
+  fetchBrands,
+]);
 
   // ============================================
   // HANDLE FILTER CHANGE
   // ============================================
   const handleFilterChange = useCallback(
     (name, value) => {
+
+      console.log(`✅ handleFilterChange called: ${name} = ${value}`);
       dispatch(setFilter({ filterName: name, value }));
+
+
       if (name === "maincat") {
         if (value) dispatch(fetchFilterOptions({ main: value }));
         else dispatch(fetchFilterOptions());

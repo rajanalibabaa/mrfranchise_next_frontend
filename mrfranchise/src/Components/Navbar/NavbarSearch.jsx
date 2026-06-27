@@ -84,13 +84,18 @@ const NavbarSearch = ({ open, handleClose }) => {
   }, [dispatch, open]);
 
   // Fetch sub-categories when main category is selected
-  useEffect(() => {
-    if (selectedMainCategory) {
-      dispatch(fetchFilterOptions({ main: selectedMainCategory }));
-      setSelectedSubCategory("");
-      setSelectedChildCategory("");
-    }
-  }, [selectedMainCategory, dispatch]);
+useEffect(() => {
+  if (selectedMainCategory?.industry) {
+    dispatch(
+      fetchFilterOptions({
+        main: selectedMainCategory.industry,
+      })
+    );
+
+    setSelectedSubCategory("");
+    setSelectedChildCategory("");
+  }
+}, [selectedMainCategory, dispatch]);
 
   // Fetch child-categories when sub-category is selected
   useEffect(() => {
@@ -118,18 +123,23 @@ const NavbarSearch = ({ open, handleClose }) => {
   }, [selectedDistrict, dispatch]);
 
   // Filter main categories based on search term
-  const filteredMainCategories = useMemo(() => {
-    const term = searchTerms.mainCategory.toLowerCase();
-    
-    // Ensure we're working with an array
-    const categories = Array.isArray(mainCategories) ? mainCategories : [];
-    
-    const filtered = categories
-      .filter((cat) => cat && cat.toString().toLowerCase().includes(term))
-      .slice(0, 100);
-    
-    return filtered;
-  }, [mainCategories, searchTerms.mainCategory]);
+const filteredMainCategories = useMemo(() => {
+  const term = (searchTerms.mainCategory || "").toLowerCase();
+
+  return mainCategories.flatMap((group) => {
+    if (!group?.heading || !Array.isArray(group.industries)) return [];
+
+    return group.industries
+      .filter((industry) =>
+        industry.toLowerCase().includes(term)
+      )
+      .sort((a, b) => a.localeCompare(b))
+      .map((industry) => ({
+        heading: group.heading,
+        industry,
+      }));
+  });
+}, [mainCategories, searchTerms.mainCategory]);
 
   // Filter sub categories based on search term (NOT dependent on selectedMainCategory for initial display)
   const filteredSubCategories = useMemo(() => {
@@ -227,8 +237,11 @@ const NavbarSearch = ({ open, handleClose }) => {
     const queryParams = new URLSearchParams();
 
     if (searchTerm) queryParams.append("searchTerm", searchTerm);
-    if (selectedMainCategory)
-      queryParams.append("maincat", selectedMainCategory);
+    if (selectedMainCategory?.industry)
+  queryParams.append(
+    "maincat",
+    selectedMainCategory.industry
+  );
     if (selectedSubCategory) queryParams.append("subcat", selectedSubCategory);
     if (selectedChildCategory)
       queryParams.append("childcat", selectedChildCategory);
@@ -452,37 +465,55 @@ const NavbarSearch = ({ open, handleClose }) => {
             justifyContent="center"
             mb={3}
           >
-            <FormControl sx={{ minWidth: { xs: "100%", md: 600 }, width: { xs: "100%", md: "auto" } }}>
-              <Autocomplete
-                options={filteredMainCategories}
-                value={selectedMainCategory}
-                onChange={(_, v) => {
-                  setSelectedMainCategory(v);
-                  setSelectedSubCategory("");
-                  setSelectedChildCategory("");
-                }}
-                inputValue={searchTerms.mainCategory}
-                onInputChange={(_, v) => handleSearchChange("mainCategory", v)}
-                ListboxComponent={CustomListbox}
-                renderInput={(params) => (
-                  <TextField 
-                    {...params} 
-                    label="Industry" 
-                    helperText={`${filteredMainCategories.length} options available`}
-                    error={!!dropdownError}
-                  />
-                )}
-                loading={dropdownLoading}
-                renderOption={(props, option) => (
-                  <li {...props} key={option}>
-                    {option}
-                  </li>
-                )}
-                getOptionLabel={(option) => option || ""}
-                isOptionEqualToValue={(option, value) => option === value}
-                size="small"
-              />
-            </FormControl>
+            <FormControl
+  sx={{
+    minWidth: { xs: "100%", md: 600 },
+    width: { xs: "100%", md: "auto" },
+  }}
+>
+  <Autocomplete
+    size="small"
+    options={filteredMainCategories}
+    value={selectedMainCategory}
+    loading={dropdownLoading}
+    ListboxComponent={CustomListbox}
+
+    groupBy={(option) => option.heading}
+
+    getOptionLabel={(option) => option?.industry || ""}
+
+    isOptionEqualToValue={(option, value) =>
+      option?.industry === value?.industry
+    }
+
+    onChange={(event, value) => {
+      setSelectedMainCategory(value);
+      setSelectedSubCategory("");
+      setSelectedChildCategory("");
+    }}
+
+    inputValue={searchTerms.mainCategory}
+
+    onInputChange={(event, value) => {
+      handleSearchChange("mainCategory", value);
+    }}
+
+    renderOption={(props, option) => (
+      <li {...props} key={`${option.heading}-${option.industry}`}>
+        {option.industry}
+      </li>
+    )}
+
+    renderInput={(params) => (
+      <TextField
+        {...params}
+        label="Industry"
+        helperText={`${filteredMainCategories.length} options available`}
+        error={!!dropdownError}
+      />
+    )}
+  />
+</FormControl>
 
             <FormControl sx={{ minWidth: { xs: "100%", md: 600 }, width: { xs: "100%", md: "auto" } }}>
               <Autocomplete
