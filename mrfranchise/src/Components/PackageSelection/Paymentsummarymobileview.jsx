@@ -55,10 +55,12 @@ const PaymentSummaryMobileView = ({
       </Box>
     );
   }
-
+console.log("groupedByPlan keys:", Object.keys(groupedByPlan));
+console.log("paymentSummary:", paymentSummary);
   // ─── Main Render ────────────────────────────────────────────────────────────
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+      
       {Object.entries(groupedByPlan).map(([planId, planData]) => {
         const { labelGroupMap } = buildSortedRanges(planId, planData);
         const isExpanded = expandedPlan === planId;
@@ -159,17 +161,16 @@ const PaymentSummaryMobileView = ({
                     </Typography>
                   </Box> */}
 
-                  {/* Formula */}
-                  <Typography
-                    sx={{
-                      fontSize: "0.7rem",
-                      fontWeight: 500,
-                      color: COLORS.grey[400],
-                    }}
-                  >
-                    ({planData.lastSelectedLeads} leads/state ×{" "}
-                    {planData.totalPlanStates} states)
-                  </Typography>
+{/* Formula */}
+{planData.isListingPlan ? (
+  <Typography sx={{ fontSize: "0.7rem", fontWeight: 500, color: COLORS.grey[400] }}>
+    All India · All States
+  </Typography>
+) : (
+  <Typography sx={{ fontSize: "0.7rem", fontWeight: 500, color: COLORS.grey[400] }}>
+    ({planData.lastSelectedLeads} leads/state × {planData.totalPlanStates} states)
+  </Typography>
+)}
                 </Box>
 
                 {/* Right: Arrow */}
@@ -213,11 +214,13 @@ const PaymentSummaryMobileView = ({
 
                   const groupTotalStates = uniqueStates.size;
                   const groupTotalLeads = leadsPerState * groupTotalStates;
-const groupKey = `${planId}__${label}`;
-const matchedSummary = paymentSummary.find((p) => p.groupKey === groupKey);
-// const groupSubtotal = matchedSummary?.amount ?? 0;
+const isListingGroup = ranges[0]?.items[0]?.isListingPlan;
+const lookupKey = isListingGroup
+  ? planId         
+  : `${planId}__${label}`;
+const matchedSummary = paymentSummary.find((p) => p.groupKey === lookupKey);
 const groupSubtotal =
-  matchedSummary?.amount ?? paymentSummary[0]?.amount ?? 0;
+  matchedSummary?.amount ?? ranges.reduce((sum, rg) => sum + (rg.totalAmount || 0), 0);
                   return (
                     <Box key={label}>
                       {/* ── Investment Group Header ──────────────────────── */}
