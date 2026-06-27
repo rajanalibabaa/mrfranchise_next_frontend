@@ -116,109 +116,119 @@ const PaymentSummaryTable = ({
 
   const groupedByPlan = {};
 
-  paymentSummary.forEach((group) => {
-    if (!group.items || group.items.length === 0) return;
+ paymentSummary.forEach((group) => {
+  if (!group.items || group.items.length === 0) return;
 
-    if (!groupedByPlan[group.planId]) {
-      groupedByPlan[group.planId] = {
-        planName: group.planName,
-        validityDays: group.validityDays,
+  // ← Use groupKey as the key, not planId, to avoid collisions
+  const mapKey = group.groupKey || group.planId;
+
+  if (!groupedByPlan[mapKey]) {
+    groupedByPlan[mapKey] = {
+      planName: group.planName,
+      validityDays: group.validityDays,
+      items: [],
+      totalPlanAmount: 0,
+      totalPlanLeads: 0,
+      totalPlanStates: 0,
+      lastSelectedLeads: 0,
+      isListingPlan: group.isListingPlan || false,
+      planId: group.planId, // keep planId stored separately
+    };
+  }
+
+  const planData = groupedByPlan[mapKey];
+
+  group.items.forEach((item) => {
+    const itemStates = item.states || [];
+    const itemStateCount = item.isListingPlan ? group.totalStates : itemStates.length;
+    const itemSelectedLeads = item.isListingPlan
+      ? 0
+      : (item.selectedLeads || group.selectedLeads || 0);
+    const calculatedTotalLeads = item.isListingPlan
+      ? 0
+      : item.totalLeads || itemSelectedLeads * itemStateCount;
+    const calculatedTotalAmount =
+      item.totalAmount && item.totalAmount > 0
+        ? item.totalAmount
+        : ((group.pricePerState || 0) / (group.minLead > 0 ? group.minLead : 1)) *
+          itemStateCount * itemSelectedLeads;
+
+    planData.items.push({
+      ...item,
+      states: itemStates,
+      stateCount: itemStateCount,
+      selectedLeads: itemSelectedLeads,
+      totalLeads: calculatedTotalLeads,
+      totalAmount: calculatedTotalAmount,
+      pricePerState: group.pricePerState,
+      groupAmount: group.amount || group.totalAmount || 0,
+      validityDays: group.validityDays,
+    });
+  });
+
+  // totals
+  const allStatesSet = new Set();
+  let totalLeads = 0, totalAmount = 0, lastSelectedLeads = 0;
+  planData.items.forEach((item) => {
+    (item.states || []).forEach((s) => allStatesSet.add(s));
+    totalLeads += item.totalLeads || 0;
+    totalAmount += item.totalAmount || 0;
+    if (item.selectedLeads) lastSelectedLeads = item.selectedLeads;
+  });
+  planData.totalPlanStates = allStatesSet.size;
+  planData.totalPlanLeads = totalLeads;
+  planData.totalPlanAmount = totalAmount;
+  planData.lastSelectedLeads = lastSelectedLeads;
+});
+
+// Recalc
+Object.entries(groupedByPlan).forEach(([mapKey, planData]) => {
+  if (planData.isListingPlan) {
+    planData.totalPlanAmount = planData.items.reduce(
+      (sum, item) => sum + (item.totalAmount || 0), 0
+    );
+    return;
+  }
+  const globalUniqueStates = new Set();
+  let lastSelectedLeads = 0;
+  planData.items.forEach((item) => {
+    (item.states || []).forEach((s) => globalUniqueStates.add(s));
+    if (item.selectedLeads) lastSelectedLeads = item.selectedLeads;
+  });
+  const uniqueStateCount = globalUniqueStates.size;
+  planData.totalPlanLeads = lastSelectedLeads * uniqueStateCount;
+  planData.totalPlanStates = uniqueStateCount;
+  planData.lastSelectedLeads = lastSelectedLeads;
+  planData.totalPlanAmount = planData.items.reduce(
+    (sum, item) => sum + (item.totalAmount || 0), 0
+  );
+});
+  const buildSortedRanges = (planId, planData) => {
+  const groupedByRange = planData.items.reduce((acc, item) => {
+    const rangeKey = `${planId}_${item.investmentRangeLabel}_${item.range}`;
+    if (!acc[rangeKey]) {
+      const itemStates = item.states || [];
+      const stateCount = item.isListingPlan ? 0 : itemStates.length; // ← listing has ["ALL STATES"]
+
+      acc[rangeKey] = {
+        range: item.range,
+        investmentRangeLabel: item.investmentRangeLabel,
+        planId,
         items: [],
-        totalPlanAmount: 0,
-        totalPlanLeads: 0,
-        totalPlanStates: 0,
-        lastSelectedLeads: 0,
+        totalStates: stateCount,
+        totalLeads: item.totalLeads || 0,
+        totalAmount: 0,
+        selectedLeads: item.selectedLeads || 0,
+        pricePerState: item.pricePerState,
+        validityDays: item.validityDays,
+        states: itemStates,
+        isListingPlan: item.isListingPlan || false, // ← ADD THIS
       };
     }
+    acc[rangeKey].items.push(item);
+    return acc;
+  }, {});
 
-    const planData = groupedByPlan[group.planId];
-
-    // Process each item and ensure states are preserved
-    group.items.forEach((item) => {
-      const itemStates = item.states || [];
-      const itemStateCount = itemStates.length;
-      const itemSelectedLeads = item.selectedLeads || group.selectedLeads || 0;
-
-      const calculatedTotalLeads = item.totalLeads || (itemSelectedLeads * itemStateCount);
-   const calculatedTotalAmount =
-  (item.totalAmount && item.totalAmount > 0)
-    ? item.totalAmount
-    : ((group.pricePerState || 0) / (group.minLead > 0 ? group.minLead : 1)) * itemStateCount * itemSelectedLeads;
-
-      planData.items.push({
-        ...item,
-        states: itemStates,
-        stateCount: itemStateCount,
-        selectedLeads: itemSelectedLeads,
-        totalLeads: calculatedTotalLeads,
-        totalAmount: calculatedTotalAmount,
-        pricePerState: group.pricePerState,
-        groupAmount: group.amount || group.totalAmount || 0,
-        validityDays: group.validityDays,
-      });
-    });
-
-    // Calculate plan totals from all items
-    const allStatesSet = new Set();
-    let totalLeads = 0;
-    let totalAmount = 0;
-    let lastSelectedLeads = 0;
-
-    planData.items.forEach((item) => {
-      const itemStates = item.states || [];
-      itemStates.forEach((s) => allStatesSet.add(s));
-      totalLeads += (item.totalLeads || 0);
-      totalAmount += (item.totalAmount || 0);
-      if (item.selectedLeads) lastSelectedLeads = item.selectedLeads;
-    });
-
-planData.totalPlanStates = allStatesSet.size;
-    planData.totalPlanLeads = totalLeads;
-    planData.totalPlanAmount = totalAmount;
-    planData.lastSelectedLeads = lastSelectedLeads;
-  });
-
-  // Recalculate using unique states across all items per plan
-  Object.entries(groupedByPlan).forEach(([planId, planData]) => {
-    const globalUniqueStates = new Set();
-    let lastSelectedLeads = 0;
-
-    planData.items.forEach((item) => {
-      (item.states || []).forEach((s) => globalUniqueStates.add(s));
-      if (item.selectedLeads) lastSelectedLeads = item.selectedLeads;
-    });
-
-    const uniqueStateCount = globalUniqueStates.size;
-
-    planData.totalPlanLeads = lastSelectedLeads * uniqueStateCount;
-    planData.totalPlanStates = uniqueStateCount;
-    planData.lastSelectedLeads = lastSelectedLeads;
-    planData.totalPlanAmount = planData.items.reduce((sum, item) => sum + (item.totalAmount || 0), 0);
-  });
-  const buildSortedRanges = (planId, planData) => {
-    const groupedByRange = planData.items.reduce((acc, item) => {
-      const rangeKey = `${planId}_${item.investmentRangeLabel}_${item.range}`;
-      if (!acc[rangeKey]) {
-        const itemStates = item.states || [];
-        const stateCount = itemStates.length;
-
-     acc[rangeKey] = {
-  range: item.range,
-  investmentRangeLabel: item.investmentRangeLabel,
-  planId: planId,
-  items: [],
-  totalStates: stateCount,
-  totalLeads: item.totalLeads || 0,
-  totalAmount: 0, // ← will be summed below after all items pushed
-  selectedLeads: item.selectedLeads || 0,
-  pricePerState: item.pricePerState,
-  validityDays: item.validityDays,
-  states: itemStates,
-};
-      }
-      acc[rangeKey].items.push(item);
-      return acc;
-    }, {});
 
  // Recalculate totalAmount and totalStates for each range from all its items
 Object.values(groupedByRange).forEach((rg) => {
@@ -247,12 +257,21 @@ Object.values(groupedByRange).forEach((rg) => {
 
     const sortedRanges = Object.values(labelGroupMap).flat();
 
-    const labelSubtotalMap = {};
-    Object.entries(labelGroupMap).forEach(([lbl, ranges]) => {
-      labelSubtotalMap[lbl] = ranges.reduce((sum, rg) => sum + (rg.totalAmount || 0), 0);
-    });
+const labelSubtotalMap = {};
+Object.entries(labelGroupMap).forEach(([lbl, ranges]) => {
+  const isListingGroup = ranges[0]?.items[0]?.isListingPlan;
 
-    return { sortedRanges, labelSubtotalMap, labelGroupMap };
+  // planId here is actually mapKey (e.g. "listing-abc123" or "abc123__groupkey")
+  // so for listing plans, use planId directly — don't add "listing-" prefix again
+  const lookupKey = isListingGroup
+    ? planId                    // ← was `listing-${planId}` which double-prefixed
+    : `${planId}__${lbl}`;
+
+  const matched = paymentSummary.find((p) => p.groupKey === lookupKey);
+  labelSubtotalMap[lbl] = matched?.amount ??
+    ranges.reduce((sum, rg) => sum + (rg.totalAmount || 0), 0);
+});
+return { sortedRanges, labelSubtotalMap, labelGroupMap };
   };
 
   // ─── RENDER ──────────────────────────────────────────────────────────

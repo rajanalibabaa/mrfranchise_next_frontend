@@ -99,17 +99,17 @@ const Dashboard = () => {
   const loadAppliedBrands = useCallback(async () => {
     if (!investorUUID) return;
 
-    console.log("Fetching applied brands for investorUUID:", investorUUID);
+    // console.log("Fetching applied brands for investorUUID:", investorUUID);
 
     try {
       const res = await axios.post(
-        "https://mrfranchisebackend.mrfranchise.in/api/v1/instantapply",
+        "http://localhost:5000/api/v1/instantapply",
         { applyId: investorUUID },
         { headers: { "Content-Type": "application/json" } }
       );
 
       const data = res.data?.data || [];
-      console.log("===appliedResdata===", data);
+      // console.log("===appliedResdata===", data); 
       setAppliedBrands(data);
     } catch (err) {
       console.error("Error fetching applied brands:", err);
@@ -136,7 +136,7 @@ const Dashboard = () => {
         config
       );
 
-      console.log("📌 User Response:", userRes.data);
+      // console.log("📌 User Response:", userRes.data);
       setUserData(userRes.data?.data || null);
 
       await Promise.all([
