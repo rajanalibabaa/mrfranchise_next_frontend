@@ -153,7 +153,8 @@ console.log("paymet",paymentSummary);
 
 const groupKey = `${planId}__${lbl}`;
 const matchedSummary = paymentSummary.find((p) => p.groupKey === groupKey);
-const labelSubtotal = matchedSummary?.amount ?? 0;
+const labelSubtotal =
+  matchedSummary?.amount ?? paymentSummary[0]?.amount ?? 0;
                 const isListing = groupRanges[0]?.items[0]?.isListingPlan;
 
                 // rowSpan for label-level cells

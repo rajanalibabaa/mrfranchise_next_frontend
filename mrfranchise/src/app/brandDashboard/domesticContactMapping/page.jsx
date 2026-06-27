@@ -17,7 +17,7 @@
 // import WhatsAppIcon from "@mui/icons-material/WhatsApp";
 // import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 
-// const API = "https://mrfranchisebackend.mrfranchise.in/api/v1";
+// const API = "http://localhost:5000/api/v1";
 
 // const stateInputSx = {
 //   "& .MuiInputBase-input": { fontSize: 13, fontWeight: 600, py: 0.8, px: 1 },
@@ -680,7 +680,7 @@ import PhoneIcon from "@mui/icons-material/Phone";
 import WhatsAppIcon from "@mui/icons-material/WhatsApp";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 
-const API = "https://mrfranchisebackend.mrfranchise.in/api/v1";
+const API = "http://localhost:5000/api/v1";
 
 // Anchor for centered snackbars (top-center of the screen)
 const centerSnackAnchor = { vertical: "top", horizontal: "center" };

@@ -215,7 +215,9 @@ const PaymentSummaryMobileView = ({
                   const groupTotalLeads = leadsPerState * groupTotalStates;
 const groupKey = `${planId}__${label}`;
 const matchedSummary = paymentSummary.find((p) => p.groupKey === groupKey);
-const groupSubtotal = matchedSummary?.amount ?? 0;
+// const groupSubtotal = matchedSummary?.amount ?? 0;
+const groupSubtotal =
+  matchedSummary?.amount ?? paymentSummary[0]?.amount ?? 0;
                   return (
                     <Box key={label}>
                       {/* ── Investment Group Header ──────────────────────── */}

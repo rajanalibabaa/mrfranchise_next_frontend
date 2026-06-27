@@ -7,12 +7,24 @@ const userId = getUserId();
 const token = getToken();
 // Utility for handling API errors
 const handleApiError = (error) => {
-  console.error("API Error:", error.response?.data || error.message);
-  return (
-    error.response?.data?.message ||
-    error.message ||
-    "An unknown error occurred"
+
+  console.error(
+    "API ERROR FULL:",
+    error
   );
+
+  if (error.response) {
+    return (
+      error.response.data?.message ||
+      "Server returned an error"
+    );
+  }
+
+  if (error.request) {
+    return "No response from server";
+  }
+
+  return error.message || "Unknown error";
 };
 
 export const fetchViewBrandsById = createAsyncThunk(

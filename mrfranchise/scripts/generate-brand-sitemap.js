@@ -1,11 +1,11 @@
 const fs = require("fs");
 
 const SITE_URL =
-  "https://mrfranchise.in" || "https://mrfranchisebackend.mrfranchise.in";
+  "https://mrfranchise.in" || "http://localhost:5000";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL ||
-  "https://mrfranchisebackend.mrfranchise.in";
+  "http://localhost:5000";
 
 function slugify(text = "") {
   return text
