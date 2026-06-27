@@ -151,11 +151,13 @@ console.log("paymet",paymentSummary);
                   groupRanges[0]?.items[0]?.pricePerState ?? 0;
                                                   console.log("labeltotoalleadssssssssss",pricePerState);
 
-const groupKey = `${planId}__${lbl}`;
-const matchedSummary = paymentSummary.find((p) => p.groupKey === groupKey);
+const isListing = groupRanges[0]?.items[0]?.isListingPlan;
+const lookupKey = isListing
+  ? `listing-${planId}`
+  : `${planId}__${lbl}`;
+const matchedSummary = paymentSummary.find((p) => p.groupKey === lookupKey);
 const labelSubtotal =
-  matchedSummary?.amount ?? paymentSummary[0]?.amount ?? 0;
-                const isListing = groupRanges[0]?.items[0]?.isListingPlan;
+  matchedSummary?.amount ?? groupRanges.reduce((sum, rg) => sum + (rg.totalAmount || 0), 0);
 
                 // rowSpan for label-level cells
                 const labelRowSpan = groupRanges.length;
