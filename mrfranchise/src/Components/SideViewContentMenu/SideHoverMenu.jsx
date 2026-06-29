@@ -367,32 +367,62 @@ const MobileIndustriesTab = ({
         </Typography>
       </Box>
     ) : industries.length > 0 ? (
-      industries.map((industry, index) => (
-        <motion.div key={index} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-          <Box
-            onClick={() => onSelect(index, industry)}
-            sx={{
-              cursor: "pointer",
-              py: 1.5,
-              px: 1.5,
-              borderRadius: 2,
-              mb: 1,
-              color: activeIndustry === index ? "white" : "text.primary",
-              bgcolor:
-                activeIndustry === index ? "primary.main" : "background.paper",
-              fontWeight: "medium",
-              transition: "all 0.3s ease",
-              boxShadow: theme.shadows[1],
-              "&:hover": {
-                bgcolor:
-                  activeIndustry === index ? "primary.dark" : "action.hover",
-              },
-            }}
-          >
-            <Typography variant="subtitle1">{industry}</Typography>
-          </Box>
-        </motion.div>
-      ))
+    industries.map((group,groupIndex)=>(
+
+<Box key={group.heading}>
+
+<Typography
+sx={{
+fontWeight:700,
+color:"#ff6b00",
+mb:1,
+mt:2
+}}
+>
+
+{group.heading}
+
+</Typography>
+
+{group.industries.map((industry,index)=>{
+
+const uniqueIndex=`${groupIndex}-${index}`;
+
+return(
+
+<Box
+key={industry}
+onClick={()=>onSelect(uniqueIndex,industry)}
+sx={{
+cursor:"pointer",
+py:1.5,
+px:2,
+borderRadius:2,
+mb:1,
+
+bgcolor:
+activeIndustry===uniqueIndex
+?"primary.main"
+:"white",
+
+color:
+activeIndustry===uniqueIndex
+?"white"
+:"black"
+}}
+>
+
+{industry}
+
+</Box>
+
+)
+
+})}
+
+</Box>
+
+))
     ) : (
       <Typography
         variant="body2"
@@ -567,6 +597,7 @@ const SideViewContent = ({ hoverCategory, onHoverLeave, onBrandClick }) => {
 
   // Mobile now has 3 tabs: 0=Industries, 1=SubCategories, 2=Brands
   const [mobileTabValue, setMobileTabValue] = useState(0);
+  const [activeIndustryName,setActiveIndustryName]=useState("");
 
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [availableSubCategories, setAvailableSubCategories] = useState([]);
@@ -610,7 +641,9 @@ const SideViewContent = ({ hoverCategory, onHoverLeave, onBrandClick }) => {
     try {
       const response = await api.post("filter/getAllBrandFiltersdata");
       if (response.data.success) {
-        setIndustries(response.data.data.maincat || []);
+        const groups = response.data?.data?.maincat || [];
+
+setIndustries(groups);
       } else {
         setError(response.data.message || "Failed to load industries");
         setApiError(true);
@@ -738,54 +771,35 @@ const SideViewContent = ({ hoverCategory, onHoverLeave, onBrandClick }) => {
   }, []);
 
   // ── Handlers ─────────────────────────────────────────────────────────────
-  const handleIndustryHover = useCallback(
-    async (index, industryName) => {
-      if (activeIndustry !== index) {
-        setIsTransitioning(true);
-        setActiveIndustry(index);
-        setActiveSubCategory(null);
-        setBrands([]);
-        setError(null);
-        setPagination({
-          currentPage: 1,
-          limit: 30,
-          hasNext: false,
-          total: 0,
-          totalPages: 0,
-          hasPrevious: false,
-        });
+  const handleIndustryHover=async(index,industry)=>{
 
-        try {
-          const subcats = await fetchSubCategories(industryName);
-          setAvailableSubCategories(subcats);
+setActiveIndustry(index);
 
-          const result = await fetchBrands({
-            industry: industryName,
-            page: 1,
-            limit: 30,
-          });
-          setBrands(result.brands || []);
-          setPagination(
-            result.pagination || {
-              currentPage: 1,
-              limit: 30,
-              hasNext: false,
-              total: 0,
-              totalPages: 0,
-              hasPrevious: false,
-            }
-          );
-        } catch (err) {
-          console.error("Failed to fetch industry data:", err);
-          setAvailableSubCategories([]);
-          setBrands([]);
-        } finally {
-          setIsTransitioning(false);
-        }
-      }
-    },
-    [activeIndustry, fetchSubCategories, fetchBrands]
-  );
+setActiveIndustryName(industry);
+
+setActiveSubCategory(null);
+
+setBrands([]);
+
+const subcats=await fetchSubCategories(industry);
+
+setAvailableSubCategories(subcats);
+
+const result=await fetchBrands({
+
+industry,
+
+page:1,
+
+limit:30
+
+});
+
+setBrands(result.brands);
+
+setPagination(result.pagination);
+
+}
 
   const handleSubCategoryHover = useCallback(
     async (subCategoryName) => {
@@ -1346,38 +1360,80 @@ const SideViewContent = ({ hoverCategory, onHoverLeave, onBrandClick }) => {
               {loading.industries ? (
                 <CategorySkeleton />
               ) : industries.length > 0 ? (
-                industries.map((industry, index) => (
-                  <motion.div
-                    key={index}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    <Box
-                      onMouseEnter={() => handleIndustryHover(index, industry)}
-                      sx={{
-                        cursor: "pointer",
-                        py: 1.5,
-                        px: 2,
-                        borderRadius: 2,
-                        mb: 1.5,
-                        color:
-                          activeIndustry === index ? "white" : "text.primary",
-                        bgcolor:
-                          activeIndustry === index
-                            ? "orange"
-                            : "background.paper",
-                        transition: "all 0.3s ease",
-                        boxShadow: theme.shadows[1],
-                        "&:hover": {
-                          bgcolor:
-                            activeIndustry === index ? "orange" : "action.hover",
-                        },
-                      }}
-                    >
-                      <Typography variant="subtitle1">{industry}</Typography>
-                    </Box>
-                  </motion.div>
-                ))
+             industries.map((group, groupIndex) => (
+
+  <Box key={group.heading} sx={{ mb:3 }}>
+
+    <Typography
+      sx={{
+        fontWeight:700,
+        color:"#ff6b00",
+        mb:1,
+        px:2,
+        fontSize:"18px"
+      }}
+    >
+      {group.heading}
+    </Typography>
+
+    {group.industries.map((industry,index)=>{
+
+      const uniqueIndex=`${groupIndex}-${index}`;
+
+      return(
+
+        <motion.div
+          key={industry}
+          whileHover={{scale:1.02}}
+        >
+
+          <Box
+            onMouseEnter={()=>
+                handleIndustryHover(uniqueIndex,industry)
+            }
+            sx={{
+              cursor:"pointer",
+              py:1.5,
+              px:2,
+              ml:2,
+              mb:1,
+              borderRadius:2,
+
+              bgcolor:
+                activeIndustry===uniqueIndex
+                  ?"orange"
+                  :"white",
+
+              color:
+                activeIndustry===uniqueIndex
+                  ?"white"
+                  :"black",
+
+              transition:"0.3s",
+
+              "&:hover":{
+                bgcolor:"#ffe7d1"
+              }
+            }}
+          >
+
+            <Typography>
+
+              {industry}
+
+            </Typography>
+
+          </Box>
+
+        </motion.div>
+
+      )
+
+    })}
+
+  </Box>
+
+))
               ) : apiError ? (
                 <Box sx={{ textAlign: "center", py: 4 }}>
                   <ErrorIcon sx={{ fontSize: 48, color: "error.main", mb: 2 }} />
@@ -1421,7 +1477,7 @@ const SideViewContent = ({ hoverCategory, onHoverLeave, onBrandClick }) => {
                   mb={2}
                   color="text.secondary"
                 >
-                  Industry - {industries[activeIndustry] || "Select Industry"}
+                 Industry - {activeIndustryName || "Select Industry"}
                 </Typography>
                 <Divider sx={{ mb: 2 }} />
                 {loading.subcategories ? (

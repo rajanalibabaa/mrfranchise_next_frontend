@@ -114,6 +114,59 @@ const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
     getBrandName, getCategory, getIndustry,
   } = usePackageSelection(onAddInvestmentRange);
 
+  const handleAddListingPlan = (plan, pkg) => {
+    const groupKey = `listing-${plan._id}`;
+    const allAvailableStates = finalToken ? allStates : ALL_INDIA_STATES;
+    const stateCount = allAvailableStates.length;
+
+    const listingItem = {
+      id: `listing-${plan._id}-item`,
+      investmentRangeLabel: "ALL INVESTMENT RANGE",
+      range: "ALL INVESTMENT RANGE",
+      stateCount,
+      states: ["ALL STATES"],
+      selectedLeads: "-",
+      totalLeads: "-",
+      totalAmount: pkg.amount || 0,
+      pricePerState: pkg.amount || 0,
+      isListingPlan: true,
+    };
+
+    setPaymentSummary((prev) => {
+      if (prev.some((g) => g.groupKey === groupKey)) {
+        openSnack("Already added", "info");
+        return prev;
+      }
+      openSnack(`${plan.planName} added to cart`, "success");
+      setTimeout(() => scrollToPaymentSummary(), 400);
+      return [
+        ...prev,
+        {
+          groupKey,
+          planId: plan._id,
+          packagesType: plan.packageType,
+          planName: plan.planName,
+          planUniqueId: plan.planUniqueId,
+          planpackageId: pkg._id,
+          investmentRangeLabel: "ALL INVESTMENT RANGE",
+          validityDays: pkg.validityDays,
+          pricePerState: pkg.amount,
+          amount: pkg.amount,
+          totalLeads: "-",
+          items: [listingItem],
+          isListingPlan: true,
+          uniqueStates: ["ALL STATES"],
+          totalStates: stateCount,
+        },
+      ];
+    });
+
+    setMovedGroupKeys((prev) => {
+      if (!prev.includes(groupKey)) return [...prev, groupKey];
+      return prev;
+    });
+  };
+  
   // ── renderStatesByRegion (needs local state from hook) ────────────────────
   const renderStatesByRegion = () => {
     const statesToDisplay = getStatesToDisplay();
@@ -405,6 +458,7 @@ const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
             hideListingPlans={false}
             sectionExpanded={openSection}
             onSectionChange={handleSectionChange}
+            handleAddListingPlanProp={handleAddListingPlan}
           />
         ) : (
           <InvestorLeadPlans

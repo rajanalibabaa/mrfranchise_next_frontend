@@ -239,7 +239,7 @@ const FilterDropdowns = ({ onFilterChange }) => {
       {/* ✅ Industry Filter with InputBase Search */}
       <FormControl fullWidth sx={{ minWidth: 180 }}>
         <InputLabel shrink={opened.selectedMainCategory || !!filters.selectedMainCategory}>
-          Industry
+          Investment Industry
         </InputLabel>
         <Select
           value={filters.selectedMainCategory}
@@ -361,7 +361,7 @@ const FilterDropdowns = ({ onFilterChange }) => {
       {/* Location Filter */}
       <FormControl fullWidth sx={{ minWidth: 180 }}>
         <InputLabel shrink={opened.selectedState || !!filters.selectedState}>
-          Location
+          Investment Location
         </InputLabel>
         <Select
           value={filters.selectedState}

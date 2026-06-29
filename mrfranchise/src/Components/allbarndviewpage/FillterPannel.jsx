@@ -19,12 +19,13 @@ import SearchIcon from "@mui/icons-material/Search";
 import Close from "@mui/icons-material/Close";
 
 import {
+  fetchFilterOptions,
   resetChildCategories,
   resetDistricts,
   resetCities,
+  resetFranchiseTypes,
 } from "@/Redux/Slices/filterDropdownData";
 
-// Define the correct order for investment ranges
 const INVESTMENT_RANGE_ORDER = [
   "Below - 50k",
   "Rs. 50k - 2 Lakhs",
@@ -39,13 +40,10 @@ const INVESTMENT_RANGE_ORDER = [
   "Rs. 5 Crores - above",
 ];
 
-// ─── Highlighted Text Component ───────────────────────────────────────────────
-// ─── Highlighted Text Component ───────────────────────────────────────────────
+// ─── Highlighted Text ─────────────────────────────────────────────────────────
 const HighlightedText = ({ text, highlight }) => {
   if (!highlight?.trim() || !text) return <>{text}</>;
-
-  const parts = text.split(new RegExp(`(${highlight})`, 'gi'));
-
+  const parts = text.split(new RegExp(`(${highlight})`, "gi"));
   return (
     <>
       {parts.map((part, i) =>
@@ -55,7 +53,6 @@ const HighlightedText = ({ text, highlight }) => {
             style={{
               color: "#ff9800",
               fontWeight: 600,
-              // Ensure same size as normal text
               fontSize: "inherit",
               lineHeight: "inherit",
             }}
@@ -64,14 +61,20 @@ const HighlightedText = ({ text, highlight }) => {
           </span>
         ) : (
           part
-        )
+        ),
       )}
     </>
   );
 };
 
-// ─── Reusable Search Box ───────────────────────────────────────────────────────
-const DropdownSearchBox = ({ value, onChange, onClear, placeholder, inputRef }) => (
+// ─── Reusable Search Box ──────────────────────────────────────────────────────
+const DropdownSearchBox = ({
+  value,
+  onChange,
+  onClear,
+  placeholder,
+  inputRef,
+}) => (
   <Box
     onKeyDown={(e) => e.stopPropagation()}
     onMouseDown={(e) => e.stopPropagation()}
@@ -106,11 +109,7 @@ const DropdownSearchBox = ({ value, onChange, onClear, placeholder, inputRef }) 
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onKeyDown={(e) => e.stopPropagation()}
-        sx={{
-          fontSize: "0.9rem",
-          flex: 1,
-          "& input": { padding: 0 },
-        }}
+        sx={{ fontSize: "0.9rem", flex: 1, "& input": { padding: 0 } }}
       />
       {value && (
         <Close
@@ -131,7 +130,34 @@ const DropdownSearchBox = ({ value, onChange, onClear, placeholder, inputRef }) 
   </Box>
 );
 
-// ─── Component ─────────────────────────────────────────────────────────────────
+// ─── Franchise Heading label style ────────────────────────────────────────────
+const HeadingLabel = ({
+  children,
+  color = "text.secondary",
+  bg = "#f5f5f5",
+}) => (
+  <Box
+    sx={{
+      px: 1,
+      py: 0.5,
+      fontSize: "0.65rem",
+      fontWeight: 700,
+      textTransform: "uppercase",
+      letterSpacing: "0.08em",
+      color,
+      backgroundColor: bg,
+      borderRadius: "6px",
+      mt: 1.5,
+      mb: 0.5,
+      pointerEvents: "none",
+      width: "95%",
+    }}
+  >
+    {children}
+  </Box>
+);
+
+// ─── Component ────────────────────────────────────────────────────────────────
 const FillterPannel = React.memo(
   ({
     filters,
@@ -141,11 +167,15 @@ const FillterPannel = React.memo(
     resultStats = { showing: 0, total: 0 },
   }) => {
     const dispatch = useDispatch();
+
     const {
       mainCategories,
       subCategories,
       childCategories,
-      franchiseModels,
+      franchiseModels, // ["FRANCHISE BUSINESS", "DEALERS & DISTRIBUTORS", "CHANNEL PARTNERS"]
+      franchiseHeading, // { "CLOUD KITCHEN": [...], "COCO": [...] } — from ?franchiseModel= call
+      franchiseTypeData, // flat array — from ?franchiseModel= call
+      activeFranchiseModel, // currently fetched model name
       investmentRanges,
       areaRequired,
       states,
@@ -155,20 +185,21 @@ const FillterPannel = React.memo(
       loadingChildCategories,
       loadingDistricts,
       loadingCities,
+      loadingFranchiseTypes,
     } = useSelector((state) => state.filterDropdown);
 
+    // ── Refs ───────────────────────────────────────────────────────────────────
     const mainCategoryRef = useRef(null);
     const subCategoryRef = useRef(null);
     const modelTypeRef = useRef(null);
     const locationRef = useRef(null);
     const investmentRef = useRef(null);
     const areaRequiredRef = useRef(null);
-
-    // Search input refs (for auto-focus on accordion open)
     const industrySearchRef = useRef(null);
     const subCategorySearchRef = useRef(null);
     const stateSearchRef = useRef(null);
     const districtSearchRef = useRef(null);
+    const modelTypeSearchRef = useRef(null);
 
     const [searchTerms, setSearchTerms] = useState({
       mainCategory: "",
@@ -190,39 +221,68 @@ const FillterPannel = React.memo(
       investment: false,
     });
 
-    // Read URL parameters on mount
+    // ── Read URL params on mount ───────────────────────────────────────────────
     useEffect(() => {
       const params = new URLSearchParams(window.location.search);
       const maincat = params.get("maincat");
       const subcat = params.get("subcat");
       const state = params.get("state");
       const investmentRange = params.get("investmentRange");
-      const areaRequiredParam = params.get("areaRequired");
+      const areaReq = params.get("areaRequired");
+      const fModel = params.get("franchiseModel");
+      const fType = params.get("franchiseType");
 
       if (maincat) onFilterChange("maincat", maincat);
       if (subcat) onFilterChange("subcat", subcat);
       if (state) onFilterChange("state", state);
       if (investmentRange) onFilterChange("investmentRange", investmentRange);
-      if (areaRequiredParam) onFilterChange("areaRequired", areaRequiredParam);
+      if (areaReq) onFilterChange("areaRequired", areaReq);
+      if (fModel) onFilterChange("modelType", fModel);
+      if (fType) onFilterChange("franchiseType", fType);
     }, [onFilterChange]);
 
+    // ── When Model Type accordion opens → fetch all 3 models in parallel ───────
+    // This pre-loads all headings so they show instantly like your screenshot
+    useEffect(() => {
+      if (expandedSections.modelType && franchiseModels.length > 0) {
+        if (filters.modelType && activeFranchiseModel !== filters.modelType) {
+          dispatch(fetchFilterOptions({ franchiseModel: filters.modelType }));
+        }
+      }
+    }, [
+      expandedSections.modelType,
+      filters.modelType,
+      activeFranchiseModel,
+      franchiseModels,
+      dispatch,
+    ]);
+    // ── When franchiseModel filter changes → fetch its headings ───────────────
+    useEffect(() => {
+      if (filters.modelType) {
+        dispatch(fetchFilterOptions({ franchiseModel: filters.modelType }));
+      } else {
+        dispatch(resetFranchiseTypes());
+      }
+    }, [filters.modelType, dispatch]);
+
+    // ── Helpers ────────────────────────────────────────────────────────────────
     const toggleSection = (section) => {
       setExpandedSections((prev) => {
-        const newState = { ...prev };
+        const next = { ...prev };
         if (!prev[section]) {
-          Object.keys(newState).forEach((key) => {
-            if (key !== section) newState[key] = false;
+          Object.keys(next).forEach((k) => {
+            if (k !== section) next[k] = false;
           });
         }
-        newState[section] = !prev[section];
-        return newState;
+        next[section] = !prev[section];
+        return next;
       });
 
-      // Auto-focus the relevant search box after accordion opens
       if (!expandedSections[section]) {
         setTimeout(() => {
           if (section === "mainCategory") industrySearchRef.current?.focus();
           if (section === "location") stateSearchRef.current?.focus();
+          if (section === "modelType") modelTypeSearchRef.current?.focus();
         }, 200);
       }
     };
@@ -230,17 +290,18 @@ const FillterPannel = React.memo(
     const updateSearch = (key, value) =>
       setSearchTerms((prev) => ({ ...prev, [key]: value }));
 
-    // ── Filtered lists ──────────────────────────────────────────────────────────
+    // ── Filtered lists ─────────────────────────────────────────────────────────
+
     const filteredMainCategories = useMemo(() => {
       const term = (searchTerms.mainCategory || "").toLowerCase();
       const result = [];
       for (const group of mainCategories) {
         if (!group?.heading || !Array.isArray(group.industries)) continue;
-        const matchedIndustries = group.industries
+        const matched = group.industries
           .filter((ind) => ind && ind.toLowerCase().includes(term))
           .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
-        if (matchedIndustries.length > 0)
-          result.push({ heading: group.heading, industries: matchedIndustries });
+        if (matched.length > 0)
+          result.push({ heading: group.heading, industries: matched });
       }
       return result;
     }, [mainCategories, searchTerms.mainCategory]);
@@ -253,17 +314,10 @@ const FillterPannel = React.memo(
         .slice(0, 100);
     }, [subCategories, searchTerms.subCategory]);
 
-    const filteredModelTypes = useMemo(() => {
-      const term = (searchTerms.modelType || "").toLowerCase().trim();
-      return franchiseModels
-        .filter((type) => type && type.toLowerCase().includes(term))
-        .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
-    }, [franchiseModels, searchTerms.modelType]);
-
     const filteredInvestmentRanges = useMemo(() => {
       const term = (searchTerms.investmentRange || "").toLowerCase();
       return investmentRanges
-        .filter((range) => range && range.toLowerCase().includes(term))
+        .filter((r) => r && r.toLowerCase().includes(term))
         .sort((a, b) => {
           const iA = INVESTMENT_RANGE_ORDER.indexOf(a);
           const iB = INVESTMENT_RANGE_ORDER.indexOf(b);
@@ -307,12 +361,39 @@ const FillterPannel = React.memo(
         .slice(0, 100);
     }, [filters.district, cities, searchTerms.city]);
 
-    // ── Render ──────────────────────────────────────────────────────────────────
+    // Filter franchiseHeading entries by search term
+    // franchiseHeading = { "CLOUD KITCHEN": ["CLOUD KITCHEN"], "COCO": ["COCO - Area", ...] }
+    const filteredFranchiseHeading = useMemo(() => {
+      const term = (searchTerms.modelType || "").toLowerCase();
+      if (!term) return franchiseHeading || {};
+
+      const result = {};
+      for (const [heading, types] of Object.entries(franchiseHeading || {})) {
+        // Match on heading name OR on any type string under it
+        const matchedTypes = types.filter((t) =>
+          t.toLowerCase().includes(term),
+        );
+        const headingMatches = heading.toLowerCase().includes(term);
+        if (headingMatches) {
+          result[heading] = types; // show all types if heading matches
+        } else if (matchedTypes.length > 0) {
+          result[heading] = matchedTypes; // show only matched types
+        }
+      }
+      return result;
+    }, [franchiseHeading, searchTerms.modelType]);
+
+    // ── Render ─────────────────────────────────────────────────────────────────
     return (
       <Box
-        sx={{ pr: 2, height: "calc(100vh - 120px)", width: "100%", overflowY: "auto" }}
+        sx={{
+          pr: 2,
+          height: "calc(100vh - 120px)",
+          width: "100%",
+          overflowY: "auto",
+        }}
       >
-        {/* Result count banner */}
+        {/* Result banner */}
         <Typography
           variant="body2"
           sx={{
@@ -329,7 +410,7 @@ const FillterPannel = React.memo(
           Showing {resultStats.showing || 0} of {resultStats.total || 0} brands
         </Typography>
 
-        {/* Header row */}
+        {/* Header */}
         <Box
           display="flex"
           justifyContent="space-between"
@@ -353,7 +434,7 @@ const FillterPannel = React.memo(
           </Button>
         </Box>
 
-        {/* ── Industries Filter ─────────────────────────────────────────────── */}
+        {/* ── Industries ──────────────────────────────────────────────────────── */}
         <Accordion
           ref={mainCategoryRef}
           expanded={expandedSections.mainCategory}
@@ -366,20 +447,38 @@ const FillterPannel = React.memo(
             expandIcon={<ExpandMoreIcon sx={{ color: "#4caf50" }} />}
             sx={{ px: 1, "&.Mui-expanded": { minHeight: "48px" } }}
           >
-            <Typography sx={{ color: "#4caf50", fontWeight: "bold", fontSize: "0.875rem" }}>
+            <Typography
+              sx={{
+                color: "#4caf50",
+                fontWeight: "bold",
+                fontSize: "0.875rem",
+              }}
+            >
               Industries
+              {filters.maincat && (
+                <Box
+                  component="span"
+                  sx={{
+                    ml: 1,
+                    fontSize: "0.7rem",
+                    color: "#ff9800",
+                    fontWeight: 400,
+                  }}
+                >
+                  ({filters.maincat})
+                </Box>
+              )}
             </Typography>
           </AccordionSummary>
 
           <AccordionDetails sx={{ p: 0 }}>
-            {/* Search box for industries */}
-            <DropdownSearchBox
-              inputRef={industrySearchRef}
-              value={searchTerms.mainCategory}
-              onChange={(v) => updateSearch("mainCategory", v)}
-              onClear={() => updateSearch("mainCategory", "")}
-              placeholder="Search industry..."
-            />
+            {/* <DropdownSearchBox
+            inputRef={industrySearchRef}
+            value={searchTerms.mainCategory}
+            onChange={(v) => updateSearch("mainCategory", v)}
+            onClear={() => updateSearch("mainCategory", "")}
+            placeholder="Search industry..."
+          /> */}
 
             <Box sx={{ px: 1, maxHeight: 320, overflowY: "auto" }}>
               <RadioGroup
@@ -388,7 +487,7 @@ const FillterPannel = React.memo(
                   onFilterChange("maincat", e.target.value);
                   onFilterChange("subcat", "");
                   onFilterChange("childcat", "");
-                  updateSearch("subCategory", ""); // clear sub-search on industry change
+                  updateSearch("subCategory", "");
                   if (!e.target.value) dispatch(resetChildCategories());
                 }}
               >
@@ -405,29 +504,10 @@ const FillterPannel = React.memo(
 
                 {filteredMainCategories.map((group) => (
                   <React.Fragment key={`heading-${group.heading}`}>
-                    {/* Group heading */}
-                    <Box
-                      sx={{
-                        width: "93%",
-                        px: 1,
-                        py: 0.5,
-                        fontSize: "0.65rem",
-                        fontWeight: 700,
-                        textTransform: "uppercase",
-                        letterSpacing: "0.08em",
-                        color: "text.secondary",
-                        backgroundColor: "#f5f5f5",
-                        borderRadius: "6px",
-                        mt: 1,
-                        pointerEvents: "none",
-                      }}
-                    >
-                      {group.heading}
-                    </Box>
+                    <HeadingLabel>{group.heading}</HeadingLabel>
 
-                    {/* Industries */}
                     {group.industries.map((industry) => (
-                      <Box key={`cat-container-${industry}`} sx={{ mb: 0 }}>
+                      <Box key={`cat-container-${industry}`}>
                         <FormControlLabel
                           value={industry}
                           control={
@@ -442,33 +522,31 @@ const FillterPannel = React.memo(
                           }
                           label={
                             <Typography fontSize="0.8125rem">
-                              <HighlightedText 
-                                text={`${industry} Franchise`} 
-                                highlight={searchTerms.mainCategory} 
+                              <HighlightedText
+                                text={`${industry} Franchise`}
+                                highlight={searchTerms.mainCategory}
                               />
                             </Typography>
                           }
                           sx={{ mb: 0, mr: 0 }}
                         />
 
-                        {/* Inline subcategory panel when this industry is selected */}
                         {filters.maincat === industry && (
                           <Box ref={subCategoryRef} sx={{ ml: 2, pl: 1 }}>
-                            {/* Search box for subcategories */}
-                            <DropdownSearchBox
-                              inputRef={subCategorySearchRef}
-                              value={searchTerms.subCategory}
-                              onChange={(v) => updateSearch("subCategory", v)}
-                              onClear={() => updateSearch("subCategory", "")}
-                              placeholder="Search subcategory..."
-                            />
-
+                            {/* <DropdownSearchBox
+                            inputRef={subCategorySearchRef}
+                            value={searchTerms.subCategory}
+                            onChange={(v) => updateSearch("subCategory", v)}
+                            onClear={() => updateSearch("subCategory", "")}
+                            placeholder="Search subcategory..."
+                          /> */}
                             <RadioGroup
                               value={filters.subcat || ""}
                               onChange={(e) => {
                                 onFilterChange("subcat", e.target.value);
                                 onFilterChange("childcat", "");
-                                if (!e.target.value) dispatch(resetChildCategories());
+                                if (!e.target.value)
+                                  dispatch(resetChildCategories());
                               }}
                             >
                               {filteredSubCategories.length === 0 && (
@@ -482,7 +560,10 @@ const FillterPannel = React.memo(
                               )}
 
                               {filteredSubCategories.map((subCategory) => (
-                                <Box key={`subcat-container-${subCategory}`} sx={{ mt: 1 }}>
+                                <Box
+                                  key={`subcat-container-${subCategory}`}
+                                  sx={{ mt: 1 }}
+                                >
                                   <FormControlLabel
                                     value={subCategory}
                                     control={
@@ -497,46 +578,53 @@ const FillterPannel = React.memo(
                                     }
                                     label={
                                       <Typography fontSize="0.8125rem">
-                                        <HighlightedText 
-                                          text={`${subCategory} Franchise`} 
-                                          highlight={searchTerms.subCategory} 
+                                        <HighlightedText
+                                          text={`${subCategory} Franchise`}
+                                          highlight={searchTerms.subCategory}
                                         />
                                       </Typography>
                                     }
                                     sx={{ mb: 0, mr: 0 }}
                                   />
 
-                                  {/* Child categories */}
-                                  {filters.subcat === subCategory && (
+                                  {/* {filters.subcat === subCategory && (
                                     <Box sx={{ ml: 2, mt: 1, pl: 1 }}>
                                       {loadingChildCategories ? (
                                         <Box sx={{ p: 1 }}>
-                                          <CircularProgress size={16} sx={{ color: "#ff9800" }} />
+                                          <CircularProgress
+                                            size={16}
+                                            sx={{ color: "#ff9800" }}
+                                          />
                                         </Box>
                                       ) : childCategories?.length > 0 ? (
                                         <RadioGroup
                                           value={filters.childcat || ""}
                                           onChange={(e) =>
-                                            onFilterChange("childcat", e.target.value)
+                                            onFilterChange(
+                                              "childcat",
+                                              e.target.value,
+                                            )
                                           }
                                         >
-                                          {childCategories.map((childCategory) => (
+                                          {childCategories.map((child) => (
                                             <FormControlLabel
-                                              key={`childcat-${childCategory}`}
-                                              value={childCategory}
+                                              key={`childcat-${child}`}
+                                              value={child}
                                               control={
                                                 <Radio
                                                   size="small"
                                                   sx={{
                                                     color: "#ff9800",
-                                                    "&.Mui-checked": { color: "#4caf50" },
+                                                    "&.Mui-checked": {
+                                                      color: "#4caf50",
+                                                    },
                                                     padding: "6px",
                                                   }}
                                                 />
                                               }
                                               label={
                                                 <Typography fontSize="0.8125rem">
-                                                  {childCategory}
+                                                  {child}
                                                 </Typography>
                                               }
                                               sx={{ mb: 0.5, mr: 0 }}
@@ -553,7 +641,7 @@ const FillterPannel = React.memo(
                                         </Typography>
                                       )}
                                     </Box>
-                                  )}
+                                  )} */}
                                 </Box>
                               ))}
                             </RadioGroup>
@@ -568,7 +656,16 @@ const FillterPannel = React.memo(
           </AccordionDetails>
         </Accordion>
 
-        {/* ── Model Type Filter ─────────────────────────────────────────────── */}
+        {/* ── Model Type ──────────────────────────────────────────────────────── */}
+        {/*
+        UX flow (matches your screenshot):
+        1. User opens accordion → sees top-level models as radio options
+        2. User picks one (e.g. "CHANNEL PARTNERS") → fetch fires → franchiseHeading populates
+        3. Below the model radios, headings + their types render in a scrollable list
+        4. User picks a franchiseType (the actual filter value sent to API)
+      */}
+        {/* ── Model Type ──────────────────────────────────────────────────────── */}
+        {/* ── Model Type ──────────────────────────────────────────────────────── */}
         <Accordion
           ref={modelTypeRef}
           expanded={expandedSections.modelType}
@@ -581,47 +678,164 @@ const FillterPannel = React.memo(
             expandIcon={<ExpandMoreIcon sx={{ color: "#4caf50" }} />}
             sx={{ px: 1, "&.Mui-expanded": { minHeight: "48px" } }}
           >
-            <Typography sx={{ color: "#4caf50", fontWeight: "bold", fontSize: "0.875rem" }}>
-              Model Type
+            <Typography
+              sx={{
+                color: "#4caf50",
+                fontWeight: "bold",
+                fontSize: "0.875rem",
+              }}
+            >
+              Business Opportunites{" "}
+              {filters.modelType && (
+                <Box
+                  component="span"
+                  sx={{ ml: 1, fontSize: "0.7rem", color: "#ff9800",fontWeight: 400, }}
+                >
+                  ({filters.modelType})
+                </Box>
+              )}
+              {filters.franchiseType && (
+                <Box
+                  component="span"
+                  sx={{ ml: 1, fontSize: "0.7rem", color: "#ff9800" }}
+                >
+                  → {filters.franchiseType}
+                </Box>
+              )}
             </Typography>
           </AccordionSummary>
+
           <AccordionDetails sx={{ p: 0 }}>
-            <Box sx={{ px: 1 }}>
+            {/* Top Level */}
+            <Box
+              sx={{
+                px: 1.5,
+                pt: 1,
+                pb: 0.5,
+                borderBottom: "1px solid #f5f5f5",
+              }}
+            >
+              <Typography
+                sx={{
+                  fontSize: "0.7rem",
+                  color: "text.secondary",
+                  mb: 0.5,
+                  textTransform: "uppercase",
+                }}
+              >
+                Select Business Opportunites
+              </Typography>
               <RadioGroup
                 value={filters.modelType || ""}
-                onChange={(e) => onFilterChange("modelType", e.target.value)}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  onFilterChange("modelType", val);
+                  onFilterChange("franchiseType", null); // Only reset when changing model
+                  updateSearch("modelType", "");
+                  if (!val) dispatch(resetFranchiseTypes());
+                }}
               >
-                {filteredModelTypes.map((type) => (
+                {franchiseModels.map((model) => (
                   <FormControlLabel
-                    key={`modeltype-${type}`}
-                    value={type}
-                    control={
-                      <Radio
-                        size="small"
-                        sx={{
-                          color: "#ff9800",
-                          "&.Mui-checked": { color: "#4caf50" },
-                          padding: "6px",
-                        }}
-                      />
-                    }
-                    label={
-                      <Typography fontSize="0.8125rem">
-                        <HighlightedText 
-                          text={type} 
-                          highlight={searchTerms.modelType} 
-                        />
-                      </Typography>
-                    }
-                    sx={{ mb: 0, mr: 0 }}
+                    key={`model-${model}`}
+                    value={model}
+                    control={<Radio size="small" sx={{ color: "#ff9800" }} />}
+                    label={<Typography fontSize="0.75rem">{model}</Typography>}
                   />
                 ))}
               </RadioGroup>
             </Box>
+
+            {/* Sub Types */}
+            {filters.modelType && (
+              <Box>
+                {loadingFranchiseTypes ? (
+                  <Box
+                    sx={{ display: "flex", justifyContent: "center", py: 3 }}
+                  >
+                    <CircularProgress size={24} sx={{ color: "#ff9800" }} />
+                  </Box>
+                ) : (
+                  <>
+                    {/* <DropdownSearchBox
+              inputRef={modelTypeSearchRef}
+              value={searchTerms.modelType}
+              onChange={(v) => updateSearch("modelType", v)}
+              onClear={() => updateSearch("modelType", "")}
+              placeholder={`Search in ${filters.modelType}...`}
+            /> */}
+
+                    <Box sx={{ px: 1, maxHeight: 340, overflowY: "auto" }}>
+                      <RadioGroup
+                        value={filters.franchiseType || ""}
+                        onChange={(e) => {
+                          console.log(
+                            "FranchiseType selected:",
+                            e.target.value,
+                          );
+                          onFilterChange("franchiseType", e.target.value);
+                        }}
+                      >
+                        <Typography
+                          sx={{
+                            fontSize: "0.7rem",
+                            color: "text.secondary",
+                            mb: 0.5,
+                            textTransform: "uppercase",
+                            mt: 2,
+                          }}
+                        >
+                          Select Business Model
+                        </Typography>
+                        {Object.entries(filteredFranchiseHeading).map(
+                          ([heading, types]) => (
+                            <React.Fragment key={heading}>
+                              <Box
+                                sx={{
+                                  px: 1,
+                                  py: 0.5,
+                                  fontSize: "0.65rem",
+                                  fontWeight: 700,
+                                  textTransform: "uppercase",
+                                  color: "#ff9800",
+                                  backgroundColor: "#fff8f0",
+                                  borderRadius: "4px",
+                                  mt: 1.5,
+                                  mb: 0.5,
+                                }}
+                              >
+                                {heading}
+                              </Box>
+                              {types.map((type) => (
+                                <FormControlLabel
+                                  key={type}
+                                  value={type}
+                                  control={
+                                    <Radio
+                                      size="small"
+                                      sx={{ color: "#ff9800" }}
+                                    />
+                                  }
+                                  label={
+                                    <Typography fontSize="0.8125rem">
+                                      {type}
+                                    </Typography>
+                                  }
+                                  sx={{ mb: 0.5, ml: 0.5 }}
+                                />
+                              ))}
+                            </React.Fragment>
+                          ),
+                        )}
+                      </RadioGroup>
+                    </Box>
+                  </>
+                )}
+              </Box>
+            )}
           </AccordionDetails>
         </Accordion>
-
-        {/* ── Investment Range Filter ───────────────────────────────────────── */}
+        {/* ── Investment Range ─────────────────────────────────────────────────── */}
         <Accordion
           ref={investmentRef}
           expanded={expandedSections.investment}
@@ -634,15 +848,36 @@ const FillterPannel = React.memo(
             expandIcon={<ExpandMoreIcon sx={{ color: "#4caf50" }} />}
             sx={{ px: 1, "&.Mui-expanded": { minHeight: "48px" } }}
           >
-            <Typography sx={{ color: "#4caf50", fontWeight: "bold", fontSize: "0.875rem" }}>
+            <Typography
+              sx={{
+                color: "#4caf50",
+                fontWeight: "bold",
+                fontSize: "0.875rem",
+              }}
+            >
               Investment Range
+              {filters.investmentRange && (
+                <Box
+                  component="span"
+                  sx={{
+                    ml: 1,
+                    fontSize: "0.7rem",
+                    color: "#ff9800",
+                    fontWeight: 400,
+                  }}
+                >
+                  ({filters.investmentRange})
+                </Box>
+              )}
             </Typography>
           </AccordionSummary>
           <AccordionDetails sx={{ p: 0 }}>
             <Box sx={{ px: 1 }}>
               <RadioGroup
                 value={filters.investmentRange || ""}
-                onChange={(e) => onFilterChange("investmentRange", e.target.value)}
+                onChange={(e) =>
+                  onFilterChange("investmentRange", e.target.value)
+                }
               >
                 {filteredInvestmentRanges.map((range) => (
                   <FormControlLabel
@@ -660,9 +895,9 @@ const FillterPannel = React.memo(
                     }
                     label={
                       <Typography fontSize="0.8125rem">
-                        <HighlightedText 
-                          text={range} 
-                          highlight={searchTerms.investmentRange} 
+                        <HighlightedText
+                          text={range}
+                          highlight={searchTerms.investmentRange}
                         />
                       </Typography>
                     }
@@ -674,7 +909,7 @@ const FillterPannel = React.memo(
           </AccordionDetails>
         </Accordion>
 
-        {/* ── Area Required Filter ──────────────────────────────────────────── */}
+        {/* ── Area Required ────────────────────────────────────────────────────── */}
         <Accordion
           ref={areaRequiredRef}
           expanded={expandedSections.areaRequired}
@@ -687,8 +922,27 @@ const FillterPannel = React.memo(
             expandIcon={<ExpandMoreIcon sx={{ color: "#4caf50" }} />}
             sx={{ px: 1, "&.Mui-expanded": { minHeight: "48px" } }}
           >
-            <Typography sx={{ color: "#4caf50", fontWeight: "bold", fontSize: "0.875rem" }}>
+            <Typography
+              sx={{
+                color: "#4caf50",
+                fontWeight: "bold",
+                fontSize: "0.875rem",
+              }}
+            >
               Area Required
+              {filters.areaRequired && (
+                <Box
+                  component="span"
+                  sx={{
+                    ml: 1,
+                    fontSize: "0.7rem",
+                    color: "#ff9800",
+                    fontWeight: 400,
+                  }}
+                >
+                  ({filters.areaRequired})
+                </Box>
+              )}
             </Typography>
           </AccordionSummary>
           <AccordionDetails sx={{ p: 0 }}>
@@ -709,7 +963,9 @@ const FillterPannel = React.memo(
                       }}
                     />
                   }
-                  label={<Typography fontSize="0.8125rem">All Areas</Typography>}
+                  label={
+                    <Typography fontSize="0.8125rem">All Areas</Typography>
+                  }
                   sx={{ mb: 0, mr: 0 }}
                 />
                 {filteredAreaRequired.map((area) => (
@@ -728,9 +984,9 @@ const FillterPannel = React.memo(
                     }
                     label={
                       <Typography fontSize="0.8125rem">
-                        <HighlightedText 
-                          text={area} 
-                          highlight={searchTerms.areaRequired} 
+                        <HighlightedText
+                          text={area}
+                          highlight={searchTerms.areaRequired}
                         />
                       </Typography>
                     }
@@ -739,7 +995,12 @@ const FillterPannel = React.memo(
                 ))}
               </RadioGroup>
               {filteredAreaRequired.length === 0 && (
-                <Typography fontSize="0.75rem" color="text.secondary" textAlign="center" sx={{ py: 1 }}>
+                <Typography
+                  fontSize="0.75rem"
+                  color="text.secondary"
+                  textAlign="center"
+                  sx={{ py: 1 }}
+                >
                   No results found
                 </Typography>
               )}
@@ -747,7 +1008,7 @@ const FillterPannel = React.memo(
           </AccordionDetails>
         </Accordion>
 
-        {/* ── Location Filters ──────────────────────────────────────────────── */}
+        {/* ── Location ─────────────────────────────────────────────────────────── */}
         <Accordion
           ref={locationRef}
           expanded={expandedSections.location}
@@ -760,20 +1021,40 @@ const FillterPannel = React.memo(
             expandIcon={<ExpandMoreIcon sx={{ color: "#4caf50" }} />}
             sx={{ px: 1, "&.Mui-expanded": { minHeight: "48px" } }}
           >
-            <Typography sx={{ color: "#4caf50", fontWeight: "bold", fontSize: "0.875rem" }}>
+            <Typography
+              sx={{
+                color: "#4caf50",
+                fontWeight: "bold",
+                fontSize: "0.875rem",
+              }}
+            >
               Location Filters
+              {filters.state && (
+                <Box
+                  component="span"
+                  sx={{
+                    ml: 1,
+                    fontSize: "0.7rem",
+                    color: "#ff9800",
+                    fontWeight: 400,
+                  }}
+                >
+                  ({filters.state}
+                  {filters.district ? ` › ${filters.district}` : ""}
+                  {filters.city ? ` › ${filters.city}` : ""})
+                </Box>
+              )}
             </Typography>
           </AccordionSummary>
 
           <AccordionDetails sx={{ p: 0 }}>
-            {/* Search box for states */}
-            <DropdownSearchBox
-              inputRef={stateSearchRef}
-              value={searchTerms.state}
-              onChange={(v) => updateSearch("state", v)}
-              onClear={() => updateSearch("state", "")}
-              placeholder="Search state..."
-            />
+            {/* <DropdownSearchBox
+            inputRef={stateSearchRef}
+            value={searchTerms.state}
+            onChange={(v) => updateSearch("state", v)}
+            onClear={() => updateSearch("state", "")}
+            placeholder="Search state..."
+          /> */}
 
             <Box sx={{ px: 1, maxHeight: 360, overflowY: "auto" }}>
               {loading ? (
@@ -787,12 +1068,17 @@ const FillterPannel = React.memo(
                     onFilterChange("state", e.target.value);
                     onFilterChange("district", "");
                     onFilterChange("city", "");
-                    updateSearch("district", ""); // clear district search on state change
+                    updateSearch("district", "");
                     if (!e.target.value) dispatch(resetDistricts());
                   }}
                 >
                   {filteredStates.length === 0 && (
-                    <Typography fontSize="0.75rem" color="text.secondary" textAlign="center" sx={{ py: 2 }}>
+                    <Typography
+                      fontSize="0.75rem"
+                      color="text.secondary"
+                      textAlign="center"
+                      sx={{ py: 2 }}
+                    >
                       No states found
                     </Typography>
                   )}
@@ -813,30 +1099,31 @@ const FillterPannel = React.memo(
                         }
                         label={
                           <Typography fontSize="0.8125rem">
-                            <HighlightedText 
-                              text={state} 
-                              highlight={searchTerms.state} 
+                            <HighlightedText
+                              text={state}
+                              highlight={searchTerms.state}
                             />
                           </Typography>
                         }
                         sx={{ mb: 0, mr: 0 }}
                       />
 
-                      {/* Inline district panel when this state is selected */}
                       {filters.state === state && (
                         <Box sx={{ ml: 3, mt: 0.5, pl: 1 }}>
-                          {/* Search box for districts */}
-                          <DropdownSearchBox
-                            inputRef={districtSearchRef}
-                            value={searchTerms.district}
-                            onChange={(v) => updateSearch("district", v)}
-                            onClear={() => updateSearch("district", "")}
-                            placeholder="Search district..."
-                          />
+                          {/* <DropdownSearchBox
+                          inputRef={districtSearchRef}
+                          value={searchTerms.district}
+                          onChange={(v) => updateSearch("district", v)}
+                          onClear={() => updateSearch("district", "")}
+                          placeholder="Search district..."
+                        /> */}
 
                           {loadingDistricts ? (
                             <Box sx={{ p: 1 }}>
-                              <CircularProgress size={16} sx={{ color: "#ff9800" }} />
+                              <CircularProgress
+                                size={16}
+                                sx={{ color: "#ff9800" }}
+                              />
                             </Box>
                           ) : (
                             <>
@@ -849,11 +1136,14 @@ const FillterPannel = React.memo(
                                 }}
                               >
                                 {filteredDistricts.length === 0 && (
-                                  <Typography fontSize="0.75rem" color="text.secondary" sx={{ py: 1, pl: 1 }}>
+                                  <Typography
+                                    fontSize="0.75rem"
+                                    color="text.secondary"
+                                    sx={{ py: 1, pl: 1 }}
+                                  >
                                     No districts found
                                   </Typography>
                                 )}
-
                                 {filteredDistricts.map((district) => (
                                   <FormControlLabel
                                     key={`district-${district}`}
@@ -870,9 +1160,9 @@ const FillterPannel = React.memo(
                                     }
                                     label={
                                       <Typography fontSize="0.8125rem">
-                                        <HighlightedText 
-                                          text={district} 
-                                          highlight={searchTerms.district} 
+                                        <HighlightedText
+                                          text={district}
+                                          highlight={searchTerms.district}
                                         />
                                       </Typography>
                                     }
@@ -881,17 +1171,21 @@ const FillterPannel = React.memo(
                                 ))}
                               </RadioGroup>
 
-                              {/* Cities when district is selected */}
                               {filters.district && (
                                 <Box sx={{ ml: 2, mt: 1, pl: 1 }}>
                                   {loadingCities ? (
                                     <Box sx={{ p: 1 }}>
-                                      <CircularProgress size={16} sx={{ color: "#ff9800" }} />
+                                      <CircularProgress
+                                        size={16}
+                                        sx={{ color: "#ff9800" }}
+                                      />
                                     </Box>
                                   ) : filteredCities.length > 0 ? (
                                     <RadioGroup
                                       value={filters.city || ""}
-                                      onChange={(e) => onFilterChange("city", e.target.value)}
+                                      onChange={(e) =>
+                                        onFilterChange("city", e.target.value)
+                                      }
                                     >
                                       {filteredCities.map((city) => (
                                         <FormControlLabel
@@ -902,16 +1196,18 @@ const FillterPannel = React.memo(
                                               size="small"
                                               sx={{
                                                 color: "#ff9800",
-                                                "&.Mui-checked": { color: "#4caf50" },
+                                                "&.Mui-checked": {
+                                                  color: "#4caf50",
+                                                },
                                                 padding: "6px",
                                               }}
                                             />
                                           }
                                           label={
                                             <Typography fontSize="0.8125rem">
-                                              <HighlightedText 
-                                                text={city} 
-                                                highlight={searchTerms.city} 
+                                              <HighlightedText
+                                                text={city}
+                                                highlight={searchTerms.city}
                                               />
                                             </Typography>
                                           }
@@ -920,7 +1216,11 @@ const FillterPannel = React.memo(
                                       ))}
                                     </RadioGroup>
                                   ) : (
-                                    <Typography fontSize="0.75rem" color="text.secondary" sx={{ py: 1, pl: 1 }}>
+                                    <Typography
+                                      fontSize="0.75rem"
+                                      color="text.secondary"
+                                      sx={{ py: 1, pl: 1 }}
+                                    >
                                       No cities available
                                     </Typography>
                                   )}
