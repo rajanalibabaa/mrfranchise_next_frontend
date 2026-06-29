@@ -6,7 +6,7 @@ const SITE_URL = "https://mrfranchise.in";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL ||
-  "http://localhost:5000";
+  "https://mrfranchisebackend.mrfranchise.in";
 
 // ISR
 export const dynamicParams = true;
