@@ -2276,7 +2276,7 @@ Franchise Tags
             required
             size="medium"
           >
-            <InputLabel>Business Network</InputLabel>
+            <InputLabel>Business Opportunites</InputLabel>
             <Select
               value={currentFicoModel.franchiseModel}
               onChange={handleFicoChange}
@@ -2303,7 +2303,7 @@ Franchise Tags
             required
             size="medium"
           >
-            <InputLabel>Business Model & Type</InputLabel>
+            <InputLabel>Business Model</InputLabel>
             <Select
   value={currentFicoModel.franchiseType}
   onChange={handleFicoChange}
