@@ -377,13 +377,13 @@ useEffect(() => {
         </AccordionSummary>
 
         <AccordionDetails sx={{ p: 0 }}>
-          <DropdownSearchBox
+          {/* <DropdownSearchBox
             inputRef={industrySearchRef}
             value={searchTerms.mainCategory}
             onChange={(v) => updateSearch("mainCategory", v)}
             onClear={() => updateSearch("mainCategory", "")}
             placeholder="Search industry..."
-          />
+          /> */}
 
           <Box sx={{ px: 1, maxHeight: 320, overflowY: "auto" }}>
             <RadioGroup
@@ -421,13 +421,13 @@ useEffect(() => {
 
                       {filters.maincat === industry && (
                         <Box ref={subCategoryRef} sx={{ ml: 2, pl: 1 }}>
-                          <DropdownSearchBox
+                          {/* <DropdownSearchBox
                             inputRef={subCategorySearchRef}
                             value={searchTerms.subCategory}
                             onChange={(v) => updateSearch("subCategory", v)}
                             onClear={() => updateSearch("subCategory", "")}
                             placeholder="Search subcategory..."
-                          />
+                          /> */}
                           <RadioGroup
                             value={filters.subcat || ""}
                             onChange={(e) => {
@@ -515,8 +515,7 @@ useEffect(() => {
   <AccordionSummary expandIcon={<ExpandMoreIcon sx={{ color: "#4caf50" }} />}
     sx={{ px: 1, "&.Mui-expanded": { minHeight: "48px" } }}>
     <Typography sx={{ color: "#4caf50", fontWeight: "bold", fontSize: "0.875rem" }}>
-      Model Type
-      {filters.modelType && <Box component="span" sx={{ ml: 1, fontSize: "0.7rem", color: "#ff9800" }}>({filters.modelType})</Box>}
+Business Opportunity      {filters.modelType && <Box component="span" sx={{ ml: 1, fontSize: "0.7rem", color: "#ff9800" }}>({filters.modelType})</Box>}
       {filters.franchiseType && <Box component="span" sx={{ ml: 1, fontSize: "0.7rem", color: "#ff9800" }}>→ {filters.franchiseType}</Box>}
     </Typography>
   </AccordionSummary>
@@ -558,13 +557,13 @@ useEffect(() => {
           </Box>
         ) : (
           <>
-            <DropdownSearchBox
+            {/* <DropdownSearchBox
               inputRef={modelTypeSearchRef}
               value={searchTerms.modelType}
               onChange={(v) => updateSearch("modelType", v)}
               onClear={() => updateSearch("modelType", "")}
               placeholder={`Search in ${filters.modelType}...`}
-            />
+            /> */}
 
             <Box sx={{ px: 1, maxHeight: 340, overflowY: "auto" }}>
               <RadioGroup
@@ -708,13 +707,13 @@ useEffect(() => {
         </AccordionSummary>
 
         <AccordionDetails sx={{ p: 0 }}>
-          <DropdownSearchBox
+          {/* <DropdownSearchBox
             inputRef={stateSearchRef}
             value={searchTerms.state}
             onChange={(v) => updateSearch("state", v)}
             onClear={() => updateSearch("state", "")}
             placeholder="Search state..."
-          />
+          /> */}
 
           <Box sx={{ px: 1, maxHeight: 360, overflowY: "auto" }}>
             {loading ? (
@@ -747,13 +746,13 @@ useEffect(() => {
 
                     {filters.state === state && (
                       <Box sx={{ ml: 3, mt: 0.5, pl: 1 }}>
-                        <DropdownSearchBox
+                        {/* <DropdownSearchBox
                           inputRef={districtSearchRef}
                           value={searchTerms.district}
                           onChange={(v) => updateSearch("district", v)}
                           onClear={() => updateSearch("district", "")}
                           placeholder="Search district..."
-                        />
+                        /> */}
 
                         {loadingDistricts ? (
                           <Box sx={{ p: 1 }}><CircularProgress size={16} sx={{ color: "#ff9800" }} /></Box>
