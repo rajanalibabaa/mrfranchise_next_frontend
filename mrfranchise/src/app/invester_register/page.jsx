@@ -192,7 +192,10 @@ const InvestorRegister = () => {
   const [propertyCities, setPropertyCities] = useState([]);
   const [loadingPincode, setLoadingPincode] = useState(false);
   const [pincodeError, setPincodeError] = useState("");
-  const [industryOptions, setIndustryOptions] = useState([]);
+  
+  // Updated industry states
+  const [industryGroupedData, setIndustryGroupedData] = useState([]); // full grouped data for display
+  const [industryOptions, setIndustryOptions] = useState([]); // flattened array of { industry, heading } for Autocomplete
   const [categoryOptions, setCategoryOptions] = useState([]);
   const [loadingIndustries, setLoadingIndustries] = useState(true);
   const [loadingIndustryDetails, setLoadingIndustryDetails] = useState(false);
@@ -559,7 +562,7 @@ const InvestorRegister = () => {
       .map((city) => city.name);
   };
 
-  // Fetch industries
+  // Fetch industries – now expects grouped data
   const fetchIndustries = async () => {
     try {
       setLoadingIndustries(true);
@@ -569,16 +572,29 @@ const InvestorRegister = () => {
       const result = await response.json();
 
       if (result.success && result.data?.Industry) {
-        setIndustryOptions(result.data.Industry);
+        const grouped = result.data.Industry; // array of { heading, industries }
+        setIndustryGroupedData(grouped);
+
+        // Flatten to an array of { industry, heading } for Autocomplete
+        const flatOptions = [];
+        grouped.forEach((group) => {
+          group.industries.forEach((ind) => {
+            flatOptions.push({
+              industry: ind,
+              heading: group.heading,
+            });
+          });
+        });
+        setIndustryOptions(flatOptions);
+
         // Set default to Food & Beverages if exists
-        const foodBeverage = result.data.Industry.find(
-          (ind) =>
-            ind.toLowerCase().includes("food") ||
-            ind.toLowerCase().includes("beverage"),
+        const foodBeverage = flatOptions.find((opt) =>
+          opt.industry.toLowerCase().includes("food") ||
+          opt.industry.toLowerCase().includes("beverage")
         );
         if (foodBeverage) {
-          handlePreferenceChange("industry", foodBeverage);
-          fetchIndustryDetails(foodBeverage);
+          handlePreferenceChange("industry", foodBeverage.industry);
+          fetchIndustryDetails(foodBeverage.industry);
         }
       }
     } catch (error) {
@@ -589,7 +605,7 @@ const InvestorRegister = () => {
     }
   };
 
-  // Fetch industry details
+  // Fetch industry details (categories, etc.)
   const fetchIndustryDetails = async (industryName) => {
     if (!industryName) return;
 
@@ -600,9 +616,9 @@ const InvestorRegister = () => {
       );
       const result = await response.json();
 
-      if (result.success && result.data) {
-        setCategoryOptions(result.data.categories || []);
-      }
+     if (result.success && result.data) {
+  setCategoryOptions(result.data.categories || []); // array of { category, id }
+}
     } catch (error) {
       console.error("Error fetching industry details:", error);
       showSnackbar("Failed to load industry details", "error");
@@ -611,8 +627,9 @@ const InvestorRegister = () => {
     }
   };
 
-  // Handle industry change
+  // Handle industry change – called when user selects an industry from Autocomplete
   const handleIndustryChange = (value) => {
+    // value is the industry string
     handlePreferenceChange("industry", value);
     handlePreferenceChange("category", "");
     if (value) {
@@ -621,7 +638,6 @@ const InvestorRegister = () => {
   };
 
   // Add preference
-  // Add preference with proper validation
   const handleAddPreference = () => {
     const pref = formData.currentPreference;
     const errors = [];
@@ -653,8 +669,6 @@ const InvestorRegister = () => {
       if (!pref.propertyCity) errors.push("Property City");
     }
 
-    // Note: For "Rental Property", no property fields are required
-
     if (errors.length > 0) {
       showSnackbar(
         `Please fill required fields: ${errors.join(", ")}`,
@@ -663,7 +677,7 @@ const InvestorRegister = () => {
       return;
     }
 
-    // Check if this preference already exists (optional but recommended)
+    // Check if this preference already exists
     const isDuplicate = formData.preferences.some(
       (existingPref) =>
         existingPref.industry === pref.industry &&
@@ -999,8 +1013,6 @@ const InvestorRegister = () => {
       }),
     };
 
-    // console.log("Submitting data:", formattedData);
-
     try {
       // dispatch(showLoading());
       const response = await axios.post(
@@ -1014,19 +1026,14 @@ const InvestorRegister = () => {
         localStorage.removeItem(FORM_DATA_KEY);
         setFormData(initialFormState);
         setRegistrationSuccess(true);
-        // alert("Registration successful! You can now login.", "success");
-        
-        // Store user info if needed
+
         if (formattedData.firstName) {
           localStorage.setItem("investorName", formattedData.firstName);
         }
         if (formattedData.email) {
           localStorage.setItem("investorEmail", formattedData.email);
         }
-
-        
       } else {
-        // dispatch(hideLoading());
         showSnackbar(
           "An unexpected error occurred. Please try again.",
           "error",
@@ -1034,7 +1041,6 @@ const InvestorRegister = () => {
       }
     } catch (error) {
       console.error("Registration error:", error);
-      // dispatch(hideLoading());
 
       if (error.response?.status === 409) {
         showSnackbar(
@@ -1052,6 +1058,7 @@ const InvestorRegister = () => {
       }
     }
   };
+  
   // Snackbar helpers
   const showSnackbar = (message, severity = "info") => {
     setSnackbar({ open: true, message, severity });
@@ -1105,7 +1112,6 @@ const InvestorRegister = () => {
           flexDirection: isMobile ? "column" : "row",
           display: "flex",
           justifyContent: "space-evenly",
-          // alignItems: "flex-start",
           marginLeft: { xs: "0" },
           width: { xs: "70%", lg: "100%", md: "100%", sm: "100%" },
         }}
@@ -1138,18 +1144,19 @@ const InvestorRegister = () => {
               <PersonOutlined color="primary" /> Personal Details
             </Typography>
 
-<Box
-  sx={{
-    display: "grid",
-    gridTemplateColumns: {
-      xs: "1fr",
-      sm: "repeat(2, 1fr)",
-      md: "repeat(3, 1fr)",
-    },
-    gap: 3,
-    mb: 4,
-  }}
->              {/* First Name */}
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: {
+                  xs: "1fr",
+                  sm: "repeat(2, 1fr)",
+                  md: "repeat(3, 1fr)",
+                },
+                gap: 3,
+                mb: 4,
+              }}
+            >
+              {/* First Name */}
               <Box sx={{ gridColumn: { xs: "span 1", sm: "span 2", md: "span 3" } }}>
                 <TextField
                   label="First Name"
@@ -1176,249 +1183,242 @@ const InvestorRegister = () => {
               </Box>
 
               {/* Email with verification */}
-            
-                <Box>
-                  <TextField
-                    label="Email"
-                    type="email"
-                    fullWidth
-                    variant="outlined"
-                    value={formData.email}
-                    onChange={(e) => handleInputChange("email", e.target.value)}
-                    required
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <Email color="action" />
-                        </InputAdornment>
-                      ),
-                      endAdornment: (
-                        <InputAdornment position="end">
-                          {verificationState.email.verified ? (
-                            <Box
-                              display="flex"
-                              alignItems="center"
-                              color="success.main"
-                            >
-                              <CheckCircleOutline fontSize="medium" />
-                              <Typography variant="caption" sx={{ ml: 0.5 }}>
-                                Verified
-                              </Typography>
-                            </Box>
-                          ) : (
-                            <Button
-                              variant="outlined"
-                              size="small"
-                              onClick={() => {
-                                handleVerificationDialog("email", true);
-                                handleSendOtp("email");
-                              }}
-                              disabled={
-                                !formData.email ||
-                                verificationState.email.loading
-                              }
-                              startIcon={
-                                verificationState.email.loading ? (
-                                  <CircularProgress size={14} />
-                                ) : (
-                                  <Send fontSize="small" />
-                                )
-                              }
-                            >
-                              Verify
-                            </Button>
-                          )}
-                        </InputAdornment>
-                      ),
-                    }}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: "8px",
-                      },
-                    }}
-                  />
-                </Box>
+              <Box>
+                <TextField
+                  label="Email"
+                  type="email"
+                  fullWidth
+                  variant="outlined"
+                  value={formData.email}
+                  onChange={(e) => handleInputChange("email", e.target.value)}
+                  required
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Email color="action" />
+                      </InputAdornment>
+                    ),
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        {verificationState.email.verified ? (
+                          <Box
+                            display="flex"
+                            alignItems="center"
+                            color="success.main"
+                          >
+                            <CheckCircleOutline fontSize="medium" />
+                            <Typography variant="caption" sx={{ ml: 0.5 }}>
+                              Verified
+                            </Typography>
+                          </Box>
+                        ) : (
+                          <Button
+                            variant="outlined"
+                            size="small"
+                            onClick={() => {
+                              handleVerificationDialog("email", true);
+                              handleSendOtp("email");
+                            }}
+                            disabled={
+                              !formData.email ||
+                              verificationState.email.loading
+                            }
+                            startIcon={
+                              verificationState.email.loading ? (
+                                <CircularProgress size={14} />
+                              ) : (
+                                <Send fontSize="small" />
+                              )
+                            }
+                          >
+                            Verify
+                          </Button>
+                        )}
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: "8px",
+                    },
+                  }}
+                />
+              </Box>
 
-                {/* Mobile Number */}
-                <Box>
-                  <TextField
-                    label="Mobile Number"
-                    fullWidth
-                    variant="outlined"
-                    value={formData.mobileNumber}
-                    onChange={(e) => {
-                      const value = e.target.value
-                        .replace(/\D/g, "")
-                        .slice(0, 10);
-                      handleInputChange("mobileNumber", value);
-                    }}
-                    inputProps={{
-                      maxLength: 10,
-                      inputMode: "numeric",
-                    }}
-                    onBlur={() => {
-                      if (formData.mobileNumber.length === 10) {
-                        setShowWhatsappSnackbar(true);
-                      }
-                    }}
-                    required
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <Phone color="action" />
-                          <Typography variant="body1" sx={{ ml: 1 }}>
-                            {phonePrefix}
-                          </Typography>
-                        </InputAdornment>
-                      ),
-                    }}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: "8px",
-                      },
-                    }}
-                  />
-                </Box>
+              {/* Mobile Number */}
+              <Box>
+                <TextField
+                  label="Mobile Number"
+                  fullWidth
+                  variant="outlined"
+                  value={formData.mobileNumber}
+                  onChange={(e) => {
+                    const value = e.target.value
+                      .replace(/\D/g, "")
+                      .slice(0, 10);
+                    handleInputChange("mobileNumber", value);
+                  }}
+                  inputProps={{
+                    maxLength: 10,
+                    inputMode: "numeric",
+                  }}
+                  onBlur={() => {
+                    if (formData.mobileNumber.length === 10) {
+                      setShowWhatsappSnackbar(true);
+                    }
+                  }}
+                  required
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Phone color="action" />
+                        <Typography variant="body1" sx={{ ml: 1 }}>
+                          {phonePrefix}
+                        </Typography>
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: "8px",
+                    },
+                  }}
+                />
+              </Box>
 
-                {/* WhatsApp Number */}
-                <Box>
-                  <TextField
-                    label="WhatsApp Number"
-                    fullWidth
-                    variant="outlined"
-                    value={formData.whatsappNumber}
-                    onChange={(e) => {
-                      const value = e.target.value
-                        .replace(/\D/g, "")
-                        .slice(0, 10);
-                      handleInputChange("whatsappNumber", value);
-                    }}
-                    inputProps={{
-                      maxLength: 10,
-                      inputMode: "numeric",
-                    }}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <Phone color="action" />
-                          <Typography variant="body1" sx={{ ml: 1 }}>
-                            {phonePrefix}
-                          </Typography>
-                        </InputAdornment>
-                      ),
-                    }}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: "8px",
-                      },
-                    }}
-                  />
-                </Box>
-            
+              {/* WhatsApp Number */}
+              <Box>
+                <TextField
+                  label="WhatsApp Number"
+                  fullWidth
+                  variant="outlined"
+                  value={formData.whatsappNumber}
+                  onChange={(e) => {
+                    const value = e.target.value
+                      .replace(/\D/g, "")
+                      .slice(0, 10);
+                    handleInputChange("whatsappNumber", value);
+                  }}
+                  inputProps={{
+                    maxLength: 10,
+                    inputMode: "numeric",
+                  }}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Phone color="action" />
+                        <Typography variant="body1" sx={{ ml: 1 }}>
+                          {phonePrefix}
+                        </Typography>
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: "8px",
+                    },
+                  }}
+                />
+              </Box>
 
               {/* Country */}
-
-             
-                <Box >
-                  <Autocomplete
-                    options={countries.map((c) => c.name)}
-                    value={formData.country}
-                    onChange={(_, newValue) => {
-                      handleInputChange("country", newValue || "India");
-                      handleInputChange("state", "");
-                      handleInputChange("city", "");
-                      handleInputChange("pincode", "");
-                    }}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        label="Country"
-                        variant="outlined"
-                        required
-                        InputLabelProps={{ shrink: true }}
-                      />
-                    )}
-                    fullWidth
-                    sx={{
-                      borderRadius: "8px",
-                      backgroundColor: "background.paper",
-                    }}
-                  />
-                </Box>
-                  {/* Address */}
-<Box sx={{ gridColumn: { xs: "span 1", sm: "span 2", md: "span 2" } }}>
+              <Box>
+                <Autocomplete
+                  options={countries.map((c) => c.name)}
+                  value={formData.country}
+                  onChange={(_, newValue) => {
+                    handleInputChange("country", newValue || "India");
+                    handleInputChange("state", "");
+                    handleInputChange("city", "");
+                    handleInputChange("pincode", "");
+                  }}
+                  renderInput={(params) => (
                     <TextField
-                    label="Address"
-                    fullWidth
-                    variant="outlined"
-                    value={formData.address}
-                    onChange={(e) =>
-                      handleInputChange("address", e.target.value)
-                    }
-                    required
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <Home color="action" />
-                        </InputAdornment>
-                      ),
-                    }}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: "8px",
-                      },
-                    }}
-                  />
-                </Box>
+                      {...params}
+                      label="Country"
+                      variant="outlined"
+                      required
+                      InputLabelProps={{ shrink: true }}
+                    />
+                  )}
+                  fullWidth
+                  sx={{
+                    borderRadius: "8px",
+                    backgroundColor: "background.paper",
+                  }}
+                />
+              </Box>
 
-              
-                 {/* Pincode */}
-                <Box>
-                  <TextField
-                    label={
-                      formData.country === "India" ? "Pincode" : "Postal Code"
-                    }
-                    fullWidth
-                    variant="outlined"
-                    value={formData.pincode}
-                    onChange={(e) => {
-                      const value = e.target.value
-                        .replace(/\D/g, "")
-                        .slice(0, formData.country === "India" ? 6 : 10);
-                      handleInputChange("pincode", value);
-                    }}
-                    required
-                    error={!!pincodeError}
-                    helperText={pincodeError}
-                    inputProps={{
-                      maxLength: formData.country === "India" ? 6 : 10,
-                      inputMode: "numeric",
-                    }}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <Tooltip title={formData.country}>
-                            <FlagIcon />
-                          </Tooltip>
-                        </InputAdornment>
-                      ),
-                      endAdornment: loadingPincode ? (
-                        <InputAdornment position="end">
-                          <CircularProgress size={20} />
-                        </InputAdornment>
-                      ) : null,
-                    }}
-                    onBlur={handlePincodeBlur}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: "8px",
-                      },
-                    }}
-                  />
-                </Box>
+              {/* Address */}
+              <Box sx={{ gridColumn: { xs: "span 1", sm: "span 2", md: "span 2" } }}>
+                <TextField
+                  label="Address"
+                  fullWidth
+                  variant="outlined"
+                  value={formData.address}
+                  onChange={(e) =>
+                    handleInputChange("address", e.target.value)
+                  }
+                  required
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Home color="action" />
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: "8px",
+                    },
+                  }}
+                />
+              </Box>
 
-
-           
+              {/* Pincode */}
+              <Box>
+                <TextField
+                  label={
+                    formData.country === "India" ? "Pincode" : "Postal Code"
+                  }
+                  fullWidth
+                  variant="outlined"
+                  value={formData.pincode}
+                  onChange={(e) => {
+                    const value = e.target.value
+                      .replace(/\D/g, "")
+                      .slice(0, formData.country === "India" ? 6 : 10);
+                    handleInputChange("pincode", value);
+                  }}
+                  required
+                  error={!!pincodeError}
+                  helperText={pincodeError}
+                  inputProps={{
+                    maxLength: formData.country === "India" ? 6 : 10,
+                    inputMode: "numeric",
+                  }}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Tooltip title={formData.country}>
+                          <FlagIcon />
+                        </Tooltip>
+                      </InputAdornment>
+                    ),
+                    endAdornment: loadingPincode ? (
+                      <InputAdornment position="end">
+                        <CircularProgress size={20} />
+                      </InputAdornment>
+                    ) : null,
+                  }}
+                  onBlur={handlePincodeBlur}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: "8px",
+                    },
+                  }}
+                />
+              </Box>
 
               {/* State */}
               <Box>
@@ -1455,7 +1455,8 @@ const InvestorRegister = () => {
               </Box>
 
               {/* Occupation */}
-  <Box sx={{ gridColumn: { xs: "span 1", sm: "span 2", md: "span 3" } }}>                <TextField
+              <Box sx={{ gridColumn: { xs: "span 1", sm: "span 2", md: "span 3" } }}>
+                <TextField
                   select
                   label="Occupation"
                   fullWidth
@@ -1490,7 +1491,8 @@ const InvestorRegister = () => {
 
               {/* Other Occupation */}
               {formData.occupation === "Other" && (
-  <Box sx={{ gridColumn: { xs: "span 1", sm: "span 2", md: "span 3" } }}>                  <TextField
+                <Box sx={{ gridColumn: { xs: "span 1", sm: "span 2", md: "span 3" } }}>
+                  <TextField
                     label="Specify Occupation"
                     fullWidth
                     variant="outlined"
@@ -1546,114 +1548,104 @@ const InvestorRegister = () => {
                 </Tooltip>
               </Typography>
 
-<Box
-    sx={{
-      display: "grid",
-      gridTemplateColumns: {
-        xs: "1fr",
-        sm: "repeat(2, 1fr)",
-        md: "repeat(4, 1fr)",
-      },
-      gap: 3,
-      mb: 4,
-    }}
-  >                {/* Industry and Category */}
+              <Box
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: {
+                    xs: "1fr",
+                    sm: "repeat(2, 1fr)",
+                    md: "repeat(4, 1fr)",
+                  },
+                  gap: 3,
+                  mb: 4,
+                }}
+              >
+                {/* Industry – Autocomplete with groupBy */}
+                <Box>
+                  <Autocomplete
+                    options={industryOptions}
+                    groupBy={(option) => option.heading}
+                    getOptionLabel={(option) => option.industry}
+                    value={
+                      industryOptions.find(
+                        (opt) => opt.industry === formData.currentPreference.industry
+                      ) || null
+                    }
+                    onChange={(_, newValue) => {
+                      if (newValue) {
+                        handleIndustryChange(newValue.industry);
+                      } else {
+                        handleIndustryChange("");
+                      }
+                    }}
+                    loading={loadingIndustries}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Industry"
+                        variant="outlined"
+                        required
+                        InputProps={{
+                          ...params.InputProps,
+                          endAdornment: (
+                            <>
+                              {loadingIndustries ? (
+                                <CircularProgress color="inherit" size={20} />
+                              ) : null}
+                              {params.InputProps.endAdornment}
+                            </>
+                          ),
+                        }}
+                      />
+                    )}
+                    renderOption={(props, option) => (
+                      <li {...props} key={option.industry}>
+                        {option.industry}
+                      </li>
+                    )}
+                    fullWidth
+                    sx={{
+                      "& .MuiAutocomplete-groupLabel": {
+                        fontWeight: "bold",
+                        color: "primary.main",
+                        backgroundColor: "action.hover",
+                        padding: "0 16px",
+                        fontSize: "0.9rem",
+                      },
+                    }}
+                  />
+                </Box>
+
+                {/* Category – simplified to avoid syntax errors */}
                 <Box>
                   <TextField
                     select
-                    label="Industry"
+                    label="Category"
                     fullWidth
                     variant="outlined"
-                    value={formData.currentPreference.industry}
-                    onChange={(e) => handleIndustryChange(e.target.value)}
-                    disabled={loadingIndustries}
+                    value={formData.currentPreference.category}
+                    onChange={(e) =>
+                      handlePreferenceChange("category", e.target.value)
+                    }
+                    disabled={
+                      !formData.currentPreference.industry ||
+                      loadingIndustryDetails
+                    }
                     sx={{ borderRadius: "8px" }}
                   >
                     <MenuItem value="">
-                      <em>Select Industry</em>
+                      <em>Select Category</em>
                     </MenuItem>
-                    {industryOptions.map((industry) => (
-                      <MenuItem key={industry} value={industry}>
-                        {industry}
-                      </MenuItem>
-                    ))}
+                 {categoryOptions.map((catObj) => (
+  <MenuItem key={catObj.id} value={catObj.category}>
+    {catObj.category}
+  </MenuItem>
+))}
                   </TextField>
+                  {loadingIndustryDetails && (
+                    <FormHelperText>Loading categories...</FormHelperText>
+                  )}
                 </Box>
-<Box sx={{ width: '100%', minWidth: 0 }}>
-  <TextField
-    select
-    label="Category"
-    fullWidth
-    variant="outlined"
-    value={formData.currentPreference.category}
-    onChange={(e) =>
-      handlePreferenceChange("category", e.target.value)
-    }
-    disabled={
-      !formData.currentPreference.industry ||
-      loadingIndustryDetails
-    }
-    sx={{ 
-      borderRadius: "8px",
-      '& .MuiSelect-select': {
-        overflow: 'hidden',
-        textOverflow: 'ellipsis',
-        whiteSpace: 'nowrap',
-      }
-    }}
-    SelectProps={{
-      renderValue: (selected) => {
-        if (!selected) return <span style={{ color: '#999' }}>Select Category</span>;
-        return (
-          <Box
-            sx={{
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-              width: '100%',
-              display: 'block',
-            }}
-            title={selected}
-          >
-            {selected}
-          </Box>
-        );
-      },
-      MenuProps: {
-        PaperProps: {
-          sx: {
-            maxHeight: 300,
-            '& .MuiMenuItem-root': {
-              whiteSpace: 'normal',
-              minHeight: '48px',
-            },
-          },
-        },
-      },
-    }}
-  >
-    <MenuItem value="">
-      <em>Select Category</em>
-    </MenuItem>
-    {categoryOptions.map((category) => (
-      <MenuItem 
-        key={category} 
-        value={category}
-        sx={{
-          whiteSpace: 'normal',
-          py: 1,
-          // Ensure menu items don't affect the select width
-          maxWidth: '400px',
-        }}
-      >
-        {category}
-      </MenuItem>
-    ))}
-  </TextField>
-  {loadingIndustryDetails && (
-    <FormHelperText>Loading categories...</FormHelperText>
-  )}
-</Box>
 
                 {/* Investment Amount */}
                 <Box>
@@ -1757,7 +1749,7 @@ const InvestorRegister = () => {
                     {formData.currentPreference.locationType ===
                     "international" ? (
                       <>
-                        <Box >
+                        <Box>
                           <TextField
                             select
                             label="Country"
@@ -2270,7 +2262,7 @@ const InvestorRegister = () => {
                 type="submit"
                 variant="contained"
                 size="large"
-                disabled={!formData.terms} // ONLY check terms, NOT preferences
+                disabled={!formData.terms}
                 sx={{
                   width: { xs: "100%", sm: "auto" },
                   minWidth: "200px",
@@ -2377,43 +2369,45 @@ const InvestorRegister = () => {
               </Box>
             </DialogContent>
           </Dialog>
-           <Dialog
-        open={registrationSuccess}
-        onClose={handleSuccessRedirect}
-        PaperProps={{ sx: { borderRadius: "16px", p: 3 } }}
-      >
-        <DialogTitle sx={{ fontWeight: "bold", textAlign: "center" }}>
-          Registration Successful!
-        </DialogTitle>
-        <DialogContent>
-          <Box sx={{ textAlign: "center", py: 2 }}>
-            <CheckCircleOutline sx={{ fontSize: 60, color: "success.main", mb: 2 }} />
-            <Typography variant="h6" gutterBottom>
-              Welcome, {formData.firstName}!
-            </Typography>
-            <Typography variant="body1">
-              Your investor registration has been completed successfully.
-            </Typography>
-            <Typography variant="body2" sx={{ mt: 1, color: "text.secondary" }}>
-              You can now login to your account.
-            </Typography>
-          </Box>
-        </DialogContent>
-        <DialogActions sx={{ justifyContent: "center", pb: 3 }}>
-          <Button
-            variant="contained"
-            onClick={handleSuccessRedirect}
-            sx={{
-              borderRadius: "8px",
-              backgroundColor: "#7ad03a",
-              "&:hover": { backgroundColor: "#5a9e2a" },
-              px: 4,
-            }}
+
+          {/* Registration Success Dialog */}
+          <Dialog
+            open={registrationSuccess}
+            onClose={handleSuccessRedirect}
+            PaperProps={{ sx: { borderRadius: "16px", p: 3 } }}
           >
-            Continue to Home
-          </Button>
-        </DialogActions>
-      </Dialog>
+            <DialogTitle sx={{ fontWeight: "bold", textAlign: "center" }}>
+              Registration Successful!
+            </DialogTitle>
+            <DialogContent>
+              <Box sx={{ textAlign: "center", py: 2 }}>
+                <CheckCircleOutline sx={{ fontSize: 60, color: "success.main", mb: 2 }} />
+                <Typography variant="h6" gutterBottom>
+                  Welcome, {formData.firstName}!
+                </Typography>
+                <Typography variant="body1">
+                  Your investor registration has been completed successfully.
+                </Typography>
+                <Typography variant="body2" sx={{ mt: 1, color: "text.secondary" }}>
+                  You can now login to your account.
+                </Typography>
+              </Box>
+            </DialogContent>
+            <DialogActions sx={{ justifyContent: "center", pb: 3 }}>
+              <Button
+                variant="contained"
+                onClick={handleSuccessRedirect}
+                sx={{
+                  borderRadius: "8px",
+                  backgroundColor: "#7ad03a",
+                  "&:hover": { backgroundColor: "#5a9e2a" },
+                  px: 4,
+                }}
+              >
+                Continue to Home
+              </Button>
+            </DialogActions>
+          </Dialog>
 
           {/* WhatsApp Snackbar */}
           <Snackbar
@@ -2489,13 +2483,13 @@ const InvestorRegister = () => {
         </Box>
 
         {!isMobile && (
-          <Box >
+          <Box>
             {/* <RegisterationMediaHandling /> */}
             {/* <AdSlot {...ADS.HOME.FILTER_BOTTOM_RECTANGLE}/> */}
           </Box>
         )}
       </Box>
-            {/* <AdSlot {...ADS.HOME.FOOTER_RECTANGLE}/> */}
+      {/* <AdSlot {...ADS.HOME.FOOTER_RECTANGLE}/> */}
 
       <Box>
         <Footer />
