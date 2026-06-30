@@ -64,6 +64,7 @@ const ListingPlans = ({
       id: `listing-${plan._id}-item`,
       investmentRangeLabel: "ALL INVESTMENT RANGE",
       range: "ALL INVESTMENT RANGE",
+      basicLeadCount:pkg.basicLeadCount,
       stateCount,
       states: ["ALL STATES"],
       selectedLeads: "-",
@@ -93,6 +94,8 @@ const ListingPlans = ({
           validityDays: pkg.validityDays,
           pricePerState: pkg.amount,
           amount: pkg.amount,
+                basicLeadCount:pkg.basicLeadCount,
+
           totalLeads: "-",
           items: [listingItem],
           isListingPlan: true,

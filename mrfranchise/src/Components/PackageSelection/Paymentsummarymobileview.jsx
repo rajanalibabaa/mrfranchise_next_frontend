@@ -55,8 +55,8 @@ const PaymentSummaryMobileView = ({
       </Box>
     );
   }
-console.log("groupedByPlan keys:", Object.keys(groupedByPlan));
-console.log("paymentSummary:", paymentSummary);
+// console.log("groupedByPlan keys:", Object.keys(groupedByPlan));
+// console.log("paymentSummary:", paymentSummary);
   // ─── Main Render ────────────────────────────────────────────────────────────
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
@@ -215,12 +215,62 @@ console.log("paymentSummary:", paymentSummary);
                   const groupTotalStates = uniqueStates.size;
                   const groupTotalLeads = leadsPerState * groupTotalStates;
 const isListingGroup = ranges[0]?.items[0]?.isListingPlan;
-const lookupKey = isListingGroup
-  ? planId         
-  : `${planId}__${label}`;
-const matchedSummary = paymentSummary.find((p) => p.groupKey === lookupKey);
-const groupSubtotal =
-  matchedSummary?.amount ?? ranges.reduce((sum, rg) => sum + (rg.totalAmount || 0), 0);
+
+
+const matchedSummary = paymentSummary.find((item) => {
+
+  // LISTING
+  if (isListingGroup) {
+    return (
+      item.groupKey === `listing-${item.planId}` &&
+      item.investmentRangeLabel === label
+    );
+  }
+
+
+  // LEAD
+  return (
+    item.planId === planId.split("__")[0] &&
+    item.investmentRangeLabel === label
+  );
+
+});
+
+
+// console.log("mobile matchedSummary:", matchedSummary);
+
+
+let groupSubtotal = 0;
+
+
+if (matchedSummary) {
+
+  // listing direct amount
+  if (matchedSummary.packagesType === "LISTING") {
+
+    groupSubtotal = matchedSummary.amount;
+
+  } 
+  
+  // lead formula
+  else if (matchedSummary.packagesType === "LEAD") {
+
+    //formula for payment total calcultaions
+    groupSubtotal =
+      (matchedSummary.pricePerState /
+        matchedSummary.basicLeadCount) *
+      matchedSummary.totalStates *
+      matchedSummary.selectedLeads;
+
+  }
+
+}
+
+
+// console.log(
+//   "mobile groupSubtotal:",
+//   groupSubtotal
+// );
                   return (
                     <Box key={label}>
                       {/* ── Investment Group Header ──────────────────────── */}

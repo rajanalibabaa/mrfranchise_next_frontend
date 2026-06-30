@@ -117,12 +117,12 @@ const PaymentSummaryDesktopView = ({
         {/* ── TABLE BODY ─────────────────────────────────────────────────── */}
         <TableBody>
           {paymentSummary.length > 0 ? (
-            Object.entries(groupedByPlan).map(([planId, planData]) => {
-              const { sortedRanges } = buildSortedRanges(planId, planData);
+            Object.entries(groupedByPlan).map(([rawPlanId, planData]) => {
+              const planId = rawPlanId.split("__")[0];
 
+              const { sortedRanges } = buildSortedRanges(planId, planData);
               // Group ranges by their investment label
               const labelGroups = groupRangesByLabel(sortedRanges);
-console.log("paymet",paymentSummary);
 
               // total row count for this plan (for Campaign Period rowSpan)
               // each label group → ranges.length rows + 1 divider row (except last)
@@ -139,25 +139,46 @@ console.log("paymet",paymentSummary);
                 // ── unique states & leads for this label group ───────────
                 const uniqueStates = new Set(
                   groupRanges.flatMap((rg) =>
-                    rg.items.flatMap((it) => it.states || [])
-                  )
+                    rg.items.flatMap((it) => it.states || []),
+                  ),
                 );
                 const leadsPerState = planData.lastSelectedLeads ?? 0;
                 const labelTotalStates = uniqueStates.size;
                 const labelTotalLeads = leadsPerState * labelTotalStates;
 
-                // price for this label group
-                const pricePerState =
-                  groupRanges[0]?.items[0]?.pricePerState ?? 0;
-                                                  console.log("labeltotoalleadssssssssss",pricePerState);
+                const isListing = groupRanges[0]?.items[0]?.isListingPlan;
 
-const isListing = groupRanges[0]?.items[0]?.isListingPlan;
-const lookupKey = isListing
-  ? `listing-${planId}`
-  : `${planId}__${lbl}`;
-const matchedSummary = paymentSummary.find((p) => p.groupKey === lookupKey);
-const labelSubtotal =
-  matchedSummary?.amount ?? groupRanges.reduce((sum, rg) => sum + (rg.totalAmount || 0), 0);
+                // find directly by planId + investmentRangeLabel
+                const matchedSummary = paymentSummary.find((item) => {
+                  // LISTING PLAN
+                  if (isListing) {
+                    return (
+                      item.groupKey === `listing-${item.planId}` &&
+                      item.investmentRangeLabel === lbl
+                    );
+                  }
+
+                  // LEAD PLAN
+                  return (
+                    item.planId === planId && item.investmentRangeLabel === lbl
+                  );
+                });
+
+                let labelSubtotal = 0;
+
+                if (matchedSummary) {
+                  if (matchedSummary.packagesType === "LISTING") {
+                    // direct amount
+                    labelSubtotal = matchedSummary.amount;
+                  } else {
+                    // lead calculation
+                    labelSubtotal =
+                      (matchedSummary.pricePerState /
+                        matchedSummary.basicLeadCount) *
+                      matchedSummary.totalStates *
+                      matchedSummary.selectedLeads;
+                  }
+                }
 
                 // rowSpan for label-level cells
                 const labelRowSpan = groupRanges.length;
@@ -299,8 +320,8 @@ const labelSubtotal =
                                   const allStatesList = [
                                     ...new Set(
                                       rangeGroup.items.flatMap(
-                                        (item) => item.states || []
-                                      )
+                                        (item) => item.states || [],
+                                      ),
                                     ),
                                   ];
                                   handleShowStates(e, allStatesList);
@@ -421,7 +442,7 @@ const labelSubtotal =
                           </IconButton>
                         </Tooltip>
                       </TableCell>
-                    </TableRow>
+                    </TableRow>,
                   );
                 });
 
@@ -449,7 +470,7 @@ const labelSubtotal =
                           }}
                         />
                       </TableCell>
-                    </TableRow>
+                    </TableRow>,
                   );
                 }
               });
