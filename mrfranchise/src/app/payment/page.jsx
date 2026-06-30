@@ -38,6 +38,7 @@ import {
   WorkspacePremiumOutlined,
   CheckBox,
 } from "@mui/icons-material";
+  
 import { toast } from "react-hot-toast";
 import PaymentButton from "./PaymentButton";
 import { GSTCalculator } from "@/Utils/gstCalculator";
@@ -48,8 +49,8 @@ export default function PaymentPage() {
   const [paymentData, setPaymentData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [gstBreakdown, setGstBreakdown] = useState(null);
-const [acceptedTerms, setAcceptedTerms] = useState(false);
-const [openTerms, setOpenTerms] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [openTerms, setOpenTerms] = useState(false);
 
   useEffect(() => {
     const data = localStorage.getItem("paymentSummary");
@@ -484,9 +485,7 @@ const [openTerms, setOpenTerms] = useState(false);
                           ₹{subtotal.toLocaleString()}
                         </Typography>
                       </Box>
-
                       <Divider />
-
                       {/* GST Breakdown */}
                       <Box>
                         <Stack
@@ -526,9 +525,7 @@ const [openTerms, setOpenTerms] = useState(false);
                           </Box>
                         </Stack>
                       </Box>
-
                       <Divider />
-
                       {/* Total */}
                       <Box
                         sx={{
@@ -564,84 +561,188 @@ const [openTerms, setOpenTerms] = useState(false);
                       </Box>
 <Box
   sx={{
-    mt:2,
-    p:2,
-    borderRadius:2,
-    border:"1px solid #e8eaed",
-    bgcolor:"#fafafa"
+    mt: 2,
+    p: 2.5,
+    borderRadius: 3,
+    border: acceptedTerms
+      ? "1px solid #22c55e"
+      : "1px solid #dbe3ef",
+    background: acceptedTerms
+      ? "linear-gradient(135deg,#f0fdf4,#ffffff)"
+      : "linear-gradient(135deg,#f8fafc,#ffffff)",
+    boxShadow: acceptedTerms
+      ? "0 8px 25px rgba(34,197,94,0.12)"
+      : "0 4px 15px rgba(15,23,42,0.05)",
+    transition: "all .3s ease",
+    "&:hover":{
+      boxShadow:"0 8px 30px rgba(15,23,42,0.10)"
+    }
   }}
 >
 
-<Stack direction="row" alignItems="flex-start">
+<Stack 
+ direction="row" 
+ alignItems="flex-start"
+ spacing={1.5}
+>
+
 
 <Checkbox
-  checked={acceptedTerms}
-  onChange={(e)=>setAcceptedTerms(e.target.checked)}
-  sx={{
-    color:"#4285f4",
-    mt:-1
-  }}
+ checked={acceptedTerms}
+ onChange={(e)=>setAcceptedTerms(e.target.checked)}
+ sx={{
+   p:0,
+   mt:0.3,
+   color:"#2563eb",
+
+   "&.Mui-checked":{
+     color:"#16a34a"
+   }
+ }}
 />
 
 
-<Box>
+<Box flex={1}>
+
+
+<Stack
+ direction="row"
+ alignItems="center"
+ spacing={1}
+>
+
+<VerifiedUserOutlined
+ sx={{
+   fontSize:18,
+   color: acceptedTerms ? "#16a34a":"#2563eb"
+ }}
+/>
+
 
 <Typography
-sx={{
-fontSize:"0.9rem",
-fontWeight:600
-}}
+ sx={{
+   fontSize:"0.85rem",
+   fontWeight:700,
+   color:"#0f172a"
+ }}
 >
-I agree to the Terms & Conditions
+ Accept Terms & Conditions
 </Typography>
 
 
+</Stack>
+
+
+
 <Typography
-sx={{
-fontSize:"0.75rem",
-color:"text.secondary"
-}}
+ sx={{
+   mt:1,
+   fontSize:"0.75rem",
+   lineHeight:1.6,
+   color:"#64748b"
+ }}
 >
-I confirm that I have read and accepted MR FRANCHISE policies.
-{" "}
+
+I confirm that I have reviewed and accepted MR FRANCHISE Business Expansion Partnership Terms, Privacy Policy and Refund Policy.
+
+
 <Typography
-component="span"
-sx={{
-color:"#4285f4",
-cursor:"pointer",
-fontWeight:600
-}}
-onClick={()=>setOpenTerms(true)}
+ component="span"
+ onClick={()=>setOpenTerms(true)}
+ sx={{
+   ml:0.8,
+   color:"#2563eb",
+   cursor:"pointer",
+   fontWeight:700,
+   fontSize:"0.75rem",
+
+   "&:hover":{
+     textDecoration:"underline"
+   }
+ }}
 >
-View Terms
+ View Terms
 </Typography>
 
+
+</Typography>
+
+
+
+{
+acceptedTerms && (
+
+<Box
+ sx={{
+  mt:1.5,
+  px:1.5,
+  py:0.8,
+  borderRadius:2,
+  bgcolor:"#dcfce7",
+  display:"inline-flex",
+  alignItems:"center"
+ }}
+>
+
+<Typography
+ sx={{
+  fontSize:"0.7rem",
+  color:"#15803d",
+  fontWeight:700
+ }}
+>
+✓ Terms Accepted
 </Typography>
 
 
 </Box>
 
+)
+
+
+}
+
+
+</Box>
+
+
 </Stack>
 
-</Box>                      {/* Payment Button */}
-                      <PaymentButton
-                        amount={finalAmount}
-                        packageName={packagesNames}
-                        packageData={paymentData}
-                        paymentMode="online"
-                         disabled={!acceptedTerms}
-                        onSuccess={handlePaymentSuccess}
-                      />
-                      <Divider />
 
-                      <PaymentButton
-                        amount={finalAmount}
-                        packageName={packagesNames}
-                        packageData={paymentData}
-                        paymentMode="offline"
-                        disabled={!acceptedTerms}
-                        onSuccess={handlePaymentSuccess}
-                      />
+</Box>
+
+
+{/* Payment Button only after accept */}
+
+{
+ acceptedTerms && (
+
+ <>
+ 
+ <PaymentButton
+    amount={finalAmount}
+    packageName={packagesNames}
+    packageData={paymentData}
+    paymentMode="online"
+    onSuccess={handlePaymentSuccess}
+ />
+
+
+ <Divider sx={{my:2}}/>
+
+
+ <PaymentButton
+    amount={finalAmount}
+    packageName={packagesNames}
+    packageData={paymentData}
+    paymentMode="offline"
+    onSuccess={handlePaymentSuccess}
+ />
+
+ </>
+
+ )
+}
                       {/* Payment Methods */}
                       <Box
                         sx={{
@@ -672,7 +773,6 @@ View Terms
                           UPI • Cards • Net Banking • Wallets
                         </Typography>
                       </Box>
-
                       {/* Security Note */}
                       <Stack
                         direction="row"
@@ -727,117 +827,285 @@ View Terms
       </Box>
       <Footer />
       <Dialog
-open={openTerms}
-onClose={()=>setOpenTerms(false)}
-maxWidth="md"
-fullWidth
->
+        open={openTerms}
+        onClose={() => setOpenTerms(false)}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            overflow: "hidden",
+          },
+        }}
+      >
+        {/* HEADER */}
 
-<DialogTitle
-sx={{
-fontWeight:700,
-fontSize:"1.3rem",
-borderBottom:"1px solid #eee"
-}}
->
-MR FRANCHISE - Business Expansion Partnership Terms & Conditions
-</DialogTitle>
+        <Box
+          sx={{
+            background: "#0f172a",
+            color: "white",
+            p: 3,
+          }}
+        >
+          <Typography variant="h5" fontWeight={700}>
+            MR FRANCHISE
+          </Typography>
 
+          <Typography
+            variant="subtitle2"
+            sx={{
+              mt: 0.5,
+              opacity: 0.8,
+            }}
+          >
+            BUSINESS EXPANSION PARTNERSHIP TERMS & CONDITIONS
+          </Typography>
 
-<DialogContent
-dividers
-sx={{
-maxHeight:"65vh",
-"&::-webkit-scrollbar":{
-width:8
-}
-}}
->
+          <Typography
+            variant="body2"
+            sx={{
+              mt: 2,
+              opacity: 0.9,
+            }}
+          >
+            Operated By:
+            <br />
+            <b>CHOLA BUSINESS AUTOMATION PRIVATE LIMITED</b>
+            
+          </Typography>
+        </Box>
 
+        {/* CONTENT */}
 
-<Typography
-sx={{
-fontSize:"0.9rem",
-lineHeight:1.8,
-color:"#374151",
-whiteSpace:"pre-line"
-}}
->
+        <DialogContent
+          sx={{
+            p: 4,
+            background: "#f8fafc",
+            maxHeight: "65vh",
+          }}
+        >
+          {[
+            {
+              title: "1. ACCEPTANCE OF TERMS",
+              text: `By selecting a plan, submitting information, executing an order, making payment, or using any services offered through MR FRANCHISE, the Brand confirms that it has read, understood, and agreed to these Terms & Conditions.
 
-{`
-1. ACCEPTANCE OF TERMS
+The individual accepting these Terms represents and warrants that he/she has authority to bind the Brand and its affiliates.`,
+            },
 
-By selecting a plan, submitting information, executing an order, making payment, or using any services offered through MR FRANCHISE, the Brand confirms that it has read, understood, and agreed to these Terms & Conditions.
+            {
+              title: "2. NATURE OF SERVICES",
+              text: `MR FRANCHISE is a business expansion platform providing marketing, promotion, investor enquiry generation, investor matching, lead generation, business networking, visibility enhancement, consulting, campaign management and related business expansion services.
 
+Services may include:
 
-2. NATURE OF SERVICES
+• Franchise Expansion
+• Dealer Expansion
+• Distributor Expansion
+• Channel Partner Expansion
+• Service Partner Expansion
+• Master Franchise Expansion
+• Business Opportunity Promotion
+• Investor Acquisition Campaigns
+• Digital Marketing Activities
+• Events, Exhibitions, Conferences and Networking Activities`,
+            },
 
-MR FRANCHISE is a business expansion platform providing marketing, promotion, investor enquiry generation, investor matching, lead generation, business networking, visibility enhancement, consulting, campaign management and related business expansion services.
+            {
+              title: "3. NO GUARANTEE OF BUSINESS RESULTS",
+              text: `MR FRANCHISE does not guarantee:
 
+• Franchise sales
+• Franchise appointments
+• Dealer appointments
+• Distributor appointments
+• Revenue generation
+• Profitability
+• Investor conversion
+• Business expansion success
 
-3. NO GUARANTEE OF BUSINESS RESULTS
+MR FRANCHISE only provides contracted business expansion and investor enquiry generation services.`,
+            },
 
-MR FRANCHISE does not guarantee franchise sales, appointments, revenue generation, profitability, investor conversion or business expansion success.
+            {
+              title: "4. BRAND INFORMATION REQUIREMENT",
+              text: `The Brand shall provide:
 
+• Brand profile
+• Company profile
+• Logos
+• Photographs
+• Product information
+• Opportunity details
+• Investment details
+• Territory details
+• Marketing materials
+• Contact details
+• Required approvals
 
-4. BRAND INFORMATION REQUIREMENT
+within three (3) calendar days from payment.`,
+            },
 
-The Brand shall provide complete business information within three (3) calendar days from payment.
+            {
+              title: "5. CAMPAIGN COMMENCEMENT",
+              text: `Campaign commencement may occur through:
 
+• Profile creation
+• Profile publication
+• Campaign setup
+• Advertisement preparation
+• Marketing planning
+• Portal listing
+• Investor matching preparation`,
+            },
 
-5. CAMPAIGN COMMENCEMENT
+            {
+              title: "6. LEAD DELIVERY POLICY",
+              text: `Investor enquiries may originate through:
 
-Campaign commencement begins after profile creation, campaign setup, marketing preparation, portal listing or internal processing.
+• Website enquiries
+• Digital campaigns
+• Social media
+• Events
+• Exhibitions
+• Email campaigns
+• Call campaigns
 
+Investor enquiries represent expressions of interest only and are not investment commitments.`,
+            },
 
-6. LEAD DELIVERY POLICY
+            {
+              title: "7. INVESTOR DELIVERY GUARANTEE",
+              text: `Where a plan specifies committed investor enquiries, MR FRANCHISE shall use commercially reasonable efforts to deliver the committed quantity.
 
-Investor enquiries represent expressions of interest only and are not commitments to invest.
+If delivery is incomplete, campaign duration may be extended until completion.`,
+            },
 
+            {
+              title: "8. MONEY BACK GUARANTEE POLICY",
+              text: `Eligibility requires:
 
-7. PAYMENT TERMS
+• Complete information submitted within 3 days
+• Brand cooperation
+• Investor follow-up within 48 hours
+• Proper records maintained
+• Claims submitted within required period`,
+            },
 
-All payments shall be made in advance.
+            {
+              title: "9. REFUND POLICY",
+              text: `Unless required by law or approved:
+
+• Registration fees are non-refundable
+• Listing fees are non-refundable
+• Promotion fees are non-refundable
+• Marketing fees are non-refundable
+• Campaign setup fees are non-refundable`,
+            },
+
+            {
+              title: "10. PAYMENT TERMS",
+              text: `All payments shall be made in advance.
+
 Taxes shall be additional wherever applicable.
 
+MR FRANCHISE may revise plans, pricing and deliverables.`,
+            },
 
-8. REFUND POLICY
+            {
+              title: "11. DATA USAGE AUTHORIZATION",
+              text: `The Brand authorizes MR FRANCHISE to:
 
-Registration fees, listing fees, promotion fees, marketing fees and campaign setup fees are non-refundable unless specifically approved.
+• Store information
+• Process information
+• Publish information
+• Promote information
+• Advertise information
 
+across digital platforms, websites, applications and marketing channels.`,
+            },
 
-9. DATA USAGE AUTHORIZATION
+            {
+              title: "12. GOVERNING LAW AND JURISDICTION",
+              text: `These Terms shall be governed by the laws of India.
 
-The Brand authorizes MR FRANCHISE to store, process, publish and promote submitted information.
+Disputes shall be resolved through arbitration in Chennai, Tamil Nadu, India.
 
+Courts at Chennai shall have exclusive jurisdiction.`,
+            },
 
-10. GOVERNING LAW
+            {
+              title: "13. MANDATORY CHECKBOX ACCEPTANCE",
+              text: `Before payment, the Brand confirms:
 
-These Terms shall be governed by the laws of India.
-Disputes shall be resolved in Chennai, Tamil Nadu, India.
-`}
+☑ Agreement to Website Terms of Use
 
-</Typography>
+☑ Agreement to Privacy Policy
 
+☑ Agreement to Refund & Cancellation Policy
 
-</DialogContent>
+☑ Agreement to Investor Delivery Policy
 
+☑ Understanding that MR FRANCHISE does not guarantee sales, revenue or profitability
 
-<DialogActions>
+☑ Authorization to process and promote submitted information
 
-<Button
-onClick={()=>setOpenTerms(false)}
-variant="contained"
-sx={{
-textTransform:"none"
-}}
->
-Close
-</Button>
+☑ Agreement to Business Expansion Partnership Terms & Conditions`,
+            },
+          ].map((section, index) => (
+            <Box
+              key={index}
+              sx={{
+                mb: 3,
+                p: 2.5,
+                background: "white",
+                borderRadius: 2,
+                border: "1px solid #e5e7eb",
+              }}
+            >
+              <Typography
+                fontWeight={700}
+                sx={{
+                  color: "#0f172a",
+                  mb: 1,
+                }}
+              >
+                {section.title}
+              </Typography>
 
-</DialogActions>
+              <Typography
+                sx={{
+                  whiteSpace: "pre-line",
+                  lineHeight: 1.8,
+                  fontSize: "0.9rem",
+                  color: "#475569",
+                }}
+              >
+                {section.text}
+              </Typography>
+            </Box>
+          ))}
+        </DialogContent>
 
-</Dialog>
+        <DialogActions
+          sx={{
+            p: 2,
+            borderTop: "1px solid #e5e7eb",
+          }}
+        >
+          <Button
+            variant="contained"
+            onClick={() => setOpenTerms(false)}
+            sx={{
+              borderRadius: 2,
+              px: 4,
+              textTransform: "none",
+              backgroundColor:"green"
+            }}
+          >
+            I Understand
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 }
