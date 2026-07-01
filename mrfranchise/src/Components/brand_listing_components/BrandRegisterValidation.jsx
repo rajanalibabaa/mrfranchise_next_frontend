@@ -34,28 +34,28 @@ const validateBrandDetails = (data) => {
     if (isEmpty(data.tagLine)) errors.tagLine = "TagLine is required";
   
   // CEO Information
-  if (isEmpty(data.ceoName)) errors.ceoName = "CEO name is required";
+  // if (isEmpty(data.ceoName)) errors.ceoName = "CEO name is required";
   
-  if (isEmpty(data.ceoEmail)) {
-    errors.ceoEmail = "CEO email is required";
-  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.ceoEmail)) {
-    errors.ceoEmail = "Invalid CEO email format";
-  }
+  // if (isEmpty(data.ceoEmail)) {
+  //   errors.ceoEmail = "CEO email is required";
+  // } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.ceoEmail)) {
+  //   errors.ceoEmail = "Invalid CEO email format";
+  // }
   
-  if (isEmpty(data.ceoMobile)) {
-    errors.ceoMobile = "CEO mobile number is required";
-  } else if (!/^\+\d{8,15}$/.test(data.ceoMobile)) {
-    errors.ceoMobile = "Invalid CEO mobile number format";
-  }
+  // if (isEmpty(data.ceoMobile)) {
+  //   errors.ceoMobile = "CEO mobile number is required";
+  // } else if (!/^\+\d{8,15}$/.test(data.ceoMobile)) {
+  //   errors.ceoMobile = "Invalid CEO mobile number format";
+  // }
   
   // Office Information
   if (isEmpty(data.headOfficeAddress)) {
     errors.headOfficeAddress = "Head office address is required";
   }
   
-    if (isEmpty(data.officeMobile)) {
-    errors.officeMobile = " Office Mobile Number is required";
-  }
+  //   if (isEmpty(data.officeMobile)) {
+  //   errors.officeMobile = " Office Mobile Number is required";
+  // }
   
   if (isEmpty(data.country)) errors.country = "Country is required";
   if (isEmpty(data.pincode)) {

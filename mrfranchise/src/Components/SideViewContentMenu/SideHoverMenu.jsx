@@ -2,10 +2,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import axios from "axios";
 import Drawer from "@mui/material/Drawer";
-import {
-  useMediaQuery,
-  useTheme,
-} from "@mui/material";
+import { useMediaQuery, useTheme } from "@mui/material";
 import AppBar from "@mui/material/AppBar";
 import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
@@ -32,7 +29,7 @@ import { openBrandDialog } from "@/Redux/Slices/OpenBrandNewPageSlice";
 import { ArrowBack } from "@mui/icons-material";
 
 const api = axios.create({
-  baseURL: "http://localhost:5000/api/v1/",
+  baseURL:`${process.env.NEXT_PUBLIC_API_URL}/api/v1/`,
   headers: {
     "Content-Type": "application/json",
   },
@@ -40,7 +37,8 @@ const api = axios.create({
 
 const BrandCard = React.memo(
   ({ brand, onClick, isMobile, onHoverLeave }) => {
-    const brandName = brand.brandDetails?.brandName || brand.brandname || "Unknown";
+    const brandName =
+      brand.brandDetails?.brandName || brand.brandname || "Unknown";
     const brandId = brand.uuid;
     const brandLogo = brand.uploads?.logo || brand.logo || "";
     const companyName = brand.brandDetails?.companyName || "";
@@ -156,7 +154,7 @@ const BrandCard = React.memo(
       prevProps.brand.uuid === nextProps.brand.uuid &&
       prevProps.isMobile === nextProps.isMobile
     );
-  }
+  },
 );
 
 const BrandCardSkeleton = ({ isMobile }) => (
@@ -238,7 +236,7 @@ const MobileBrandsPanel = ({
 
   if (brands.length > 0) {
     return (
-      <Box sx={{ p: 1, }}>
+      <Box sx={{ p: 1 }}>
         {/* Header */}
         <Box
           sx={{
@@ -367,62 +365,45 @@ const MobileIndustriesTab = ({
         </Typography>
       </Box>
     ) : industries.length > 0 ? (
-    industries.map((group,groupIndex)=>(
+      industries.map((group, groupIndex) => (
+        <Box key={group.heading}>
+          <Typography
+            sx={{
+              fontWeight: 700,
+              color: "#ff6b00",
+              mb: 1,
+              mt: 2,
+            }}
+          >
+            {group.heading}
+          </Typography>
 
-<Box key={group.heading}>
+          {group.industries.map((industry, index) => {
+            const uniqueIndex = `${groupIndex}-${index}`;
 
-<Typography
-sx={{
-fontWeight:700,
-color:"#ff6b00",
-mb:1,
-mt:2
-}}
->
+            return (
+              <Box
+                key={industry}
+                onClick={() => onSelect(uniqueIndex, industry)}
+                sx={{
+                  cursor: "pointer",
+                  py: 1.5,
+                  px: 2,
+                  borderRadius: 2,
+                  mb: 1,
 
-{group.heading}
+                  bgcolor:
+                    activeIndustry === uniqueIndex ? "primary.main" : "white",
 
-</Typography>
-
-{group.industries.map((industry,index)=>{
-
-const uniqueIndex=`${groupIndex}-${index}`;
-
-return(
-
-<Box
-key={industry}
-onClick={()=>onSelect(uniqueIndex,industry)}
-sx={{
-cursor:"pointer",
-py:1.5,
-px:2,
-borderRadius:2,
-mb:1,
-
-bgcolor:
-activeIndustry===uniqueIndex
-?"primary.main"
-:"white",
-
-color:
-activeIndustry===uniqueIndex
-?"white"
-:"black"
-}}
->
-
-{industry}
-
-</Box>
-
-)
-
-})}
-
-</Box>
-
-))
+                  color: activeIndustry === uniqueIndex ? "white" : "black",
+                }}
+              >
+                {industry}
+              </Box>
+            );
+          })}
+        </Box>
+      ))
     ) : (
       <Typography
         variant="body2"
@@ -462,7 +443,7 @@ const MobileSubCategoriesTab = ({
         onClick={onBack}
       >
         <IconButton size="small" sx={{ mr: 1 }} aria-label="back">
-          <ArrowBack color="red"/>
+          <ArrowBack color="red" />
         </IconButton>
         <Typography variant="body2" color="text.secondary">
           Back to Industries
@@ -506,7 +487,9 @@ const MobileSubCategoriesTab = ({
               }}
             >
               <Typography
-                fontWeight={activeSubCategory === subCategory ? "bold" : "medium"}
+                fontWeight={
+                  activeSubCategory === subCategory ? "bold" : "medium"
+                }
               >
                 {subCategory}
               </Typography>
@@ -561,8 +544,7 @@ const MobileBrandsTab = ({
         onClick={onBack}
       >
         <IconButton size="small" sx={{ mr: 1 }} aria-label="back">
-                    <ArrowBack color="red"/>
-
+          <ArrowBack color="red" />
         </IconButton>
         <Typography variant="body2" color="text.secondary">
           Back to Categories
@@ -597,7 +579,7 @@ const SideViewContent = ({ hoverCategory, onHoverLeave, onBrandClick }) => {
 
   // Mobile now has 3 tabs: 0=Industries, 1=SubCategories, 2=Brands
   const [mobileTabValue, setMobileTabValue] = useState(0);
-  const [activeIndustryName,setActiveIndustryName]=useState("");
+  const [activeIndustryName, setActiveIndustryName] = useState("");
 
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [availableSubCategories, setAvailableSubCategories] = useState([]);
@@ -643,7 +625,7 @@ const SideViewContent = ({ hoverCategory, onHoverLeave, onBrandClick }) => {
       if (response.data.success) {
         const groups = response.data?.data?.maincat || [];
 
-setIndustries(groups);
+        setIndustries(groups);
       } else {
         setError(response.data.message || "Failed to load industries");
         setApiError(true);
@@ -675,7 +657,7 @@ setIndustries(groups);
       const queryParams = new URLSearchParams();
       queryParams.append("main", industry);
       const response = await api.post(
-        `filter/getAllBrandFiltersdata?${queryParams.toString()}`
+        `filter/getAllBrandFiltersdata?${queryParams.toString()}`,
       );
       if (response.data.success) {
         return response.data.data.subcat || [];
@@ -716,14 +698,18 @@ setIndustries(groups);
       if (filters.subcat) params.append("subcat", filters.subcat);
 
       const response = await api.get(
-        `filter/getAllBrandsAndFilter?${params.toString()}`
+        `filter/getAllBrandsAndFilter?${params.toString()}`,
       );
 
       if (response.data.success) {
         const normalizedBrands =
           response.data.data?.brands?.map((brand) => ({
             ...brand,
-            brandDetails: { brandName: "", companyName: "", ...brand.brandDetails },
+            brandDetails: {
+              brandName: "",
+              companyName: "",
+              ...brand.brandDetails,
+            },
             brandfranchisedetails: {
               franchiseDetails: {
                 fico: [],
@@ -771,35 +757,31 @@ setIndustries(groups);
   }, []);
 
   // ── Handlers ─────────────────────────────────────────────────────────────
-  const handleIndustryHover=async(index,industry)=>{
+  const handleIndustryHover = async (index, industry) => {
+    setActiveIndustry(index);
 
-setActiveIndustry(index);
+    setActiveIndustryName(industry);
 
-setActiveIndustryName(industry);
+    setActiveSubCategory(null);
 
-setActiveSubCategory(null);
+    setBrands([]);
 
-setBrands([]);
+    const subcats = await fetchSubCategories(industry);
 
-const subcats=await fetchSubCategories(industry);
+    setAvailableSubCategories(subcats);
 
-setAvailableSubCategories(subcats);
+    const result = await fetchBrands({
+      industry,
 
-const result=await fetchBrands({
+      page: 1,
 
-industry,
+      limit: 30,
+    });
 
-page:1,
+    setBrands(result.brands);
 
-limit:30
-
-});
-
-setBrands(result.brands);
-
-setPagination(result.pagination);
-
-}
+    setPagination(result.pagination);
+  };
 
   const handleSubCategoryHover = useCallback(
     async (subCategoryName) => {
@@ -834,7 +816,7 @@ setPagination(result.pagination);
               total: 0,
               totalPages: 0,
               hasPrevious: false,
-            }
+            },
           );
         } catch (err) {
           console.error("Failed to fetch brands:", err);
@@ -846,7 +828,7 @@ setPagination(result.pagination);
         }
       }
     },
-    [activeIndustry, activeSubCategory, industries, fetchBrands]
+    [activeIndustry, activeSubCategory, industries, fetchBrands],
   );
 
   const handleBrandClick = useCallback(
@@ -858,19 +840,23 @@ setPagination(result.pagination);
       if (brandId) {
         const encodedBrandName = encodeURIComponent(brandName);
         navigate.push(
-          `/franchise-business-opportunity/${brandId}?name=${encodedBrandName}`
+          `/franchise-business-opportunity/${brandId}?name=${encodedBrandName}`,
         );
       }
       if (onBrandClick) {
         const normalizedBrand = {
           ...brand,
-          brandDetails: { brandName: "", companyName: "", ...brand.brandDetails },
+          brandDetails: {
+            brandName: "",
+            companyName: "",
+            ...brand.brandDetails,
+          },
           uploads: { logo: "", ...brand.uploads },
         };
         onBrandClick(normalizedBrand);
       }
     },
-    [navigate, onBrandClick, onHoverLeave]
+    [navigate, onBrandClick, onHoverLeave],
   );
 
   const handleMobileTabChange = useCallback((event, newValue) => {
@@ -915,7 +901,7 @@ setPagination(result.pagination);
       await handleIndustryHover(index, industryName);
       setMobileTabValue(1);
     },
-    [handleIndustryHover]
+    [handleIndustryHover],
   );
 
   // ── Mobile: select subcat → jump to tab 2 ───────────────────────────────
@@ -924,7 +910,7 @@ setPagination(result.pagination);
       await handleSubCategoryHover(subCategoryName);
       setMobileTabValue(2);
     },
-    [handleSubCategoryHover]
+    [handleSubCategoryHover],
   );
 
   // ── Lifecycle ─────────────────────────────────────────────────────────────
@@ -1180,8 +1166,8 @@ setPagination(result.pagination);
             sx={{
               display: "flex",
               flexDirection: "column",
-              height: "100%",        // fill the drawer
-              overflow: "hidden",    // prevent the wrapper itself from scrolling
+              height: "100%", // fill the drawer
+              overflow: "hidden", // prevent the wrapper itself from scrolling
             }}
           >
             {/* ── Sticky header ── */}
@@ -1198,17 +1184,18 @@ setPagination(result.pagination);
               >
                 <Button
                   onClick={onHoverLeave}
-                  sx={{ color: "red", }}
+                  sx={{ color: "red" }}
                   aria-label="close drawer"
                 >
-                  <CloseIcon />CLOSE
+                  <CloseIcon />
+                  CLOSE
                 </Button>
               </Box>
 
               {/* Tabs */}
               <AppBar
-                position="static"   // KEY FIX: static, not sticky – we handle
-                                    // stickiness via the parent flex layout
+                position="static" // KEY FIX: static, not sticky – we handle
+                // stickiness via the parent flex layout
                 color="inherit"
                 elevation={0}
                 sx={{ background: "#ff9800", color: "white" }}
@@ -1266,7 +1253,7 @@ setPagination(result.pagination);
             <Box
               sx={{
                 flex: 1,
-                minHeight: 0,          // ← critical for flex + scroll
+                minHeight: 0, // ← critical for flex + scroll
                 overflowY: "auto",
                 overflowX: "hidden",
                 WebkitOverflowScrolling: "touch", // smooth scroll on iOS
@@ -1341,7 +1328,8 @@ setPagination(result.pagination);
                 overflowY: "auto",
                 px: 2,
                 py: 2,
-                background: "linear-gradient(to bottom, #ffffff 0%, #f8f9fa 100%)",
+                background:
+                  "linear-gradient(to bottom, #ffffff 0%, #f8f9fa 100%)",
                 "&::-webkit-scrollbar": { width: "6px" },
                 "&::-webkit-scrollbar-thumb": {
                   background: "#ff9800",
@@ -1360,83 +1348,66 @@ setPagination(result.pagination);
               {loading.industries ? (
                 <CategorySkeleton />
               ) : industries.length > 0 ? (
-             industries.map((group, groupIndex) => (
+                industries.map((group, groupIndex) => (
+                  <Box key={group.heading} sx={{ mb: 3 }}>
+                    <Typography
+                      sx={{
+                        fontWeight: 700,
+                        color: "#ff6b00",
+                        mb: 1,
+                        px: 2,
+                        fontSize: "18px",
+                      }}
+                    >
+                      {group.heading}
+                    </Typography>
 
-  <Box key={group.heading} sx={{ mb:3 }}>
+                    {group.industries.map((industry, index) => {
+                      const uniqueIndex = `${groupIndex}-${index}`;
 
-    <Typography
-      sx={{
-        fontWeight:700,
-        color:"#ff6b00",
-        mb:1,
-        px:2,
-        fontSize:"18px"
-      }}
-    >
-      {group.heading}
-    </Typography>
+                      return (
+                        <motion.div key={industry} whileHover={{ scale: 1.02 }}>
+                          <Box
+                            onMouseEnter={() =>
+                              handleIndustryHover(uniqueIndex, industry)
+                            }
+                            sx={{
+                              cursor: "pointer",
+                              py: 1.5,
+                              px: 2,
+                              ml: 2,
+                              mb: 1,
+                              borderRadius: 2,
 
-    {group.industries.map((industry,index)=>{
+                              bgcolor:
+                                activeIndustry === uniqueIndex
+                                  ? "orange"
+                                  : "white",
 
-      const uniqueIndex=`${groupIndex}-${index}`;
+                              color:
+                                activeIndustry === uniqueIndex
+                                  ? "white"
+                                  : "black",
 
-      return(
+                              transition: "0.3s",
 
-        <motion.div
-          key={industry}
-          whileHover={{scale:1.02}}
-        >
-
-          <Box
-            onMouseEnter={()=>
-                handleIndustryHover(uniqueIndex,industry)
-            }
-            sx={{
-              cursor:"pointer",
-              py:1.5,
-              px:2,
-              ml:2,
-              mb:1,
-              borderRadius:2,
-
-              bgcolor:
-                activeIndustry===uniqueIndex
-                  ?"orange"
-                  :"white",
-
-              color:
-                activeIndustry===uniqueIndex
-                  ?"white"
-                  :"black",
-
-              transition:"0.3s",
-
-              "&:hover":{
-                bgcolor:"#ffe7d1"
-              }
-            }}
-          >
-
-            <Typography>
-
-              {industry}
-
-            </Typography>
-
-          </Box>
-
-        </motion.div>
-
-      )
-
-    })}
-
-  </Box>
-
-))
+                              "&:hover": {
+                                bgcolor: "#ffe7d1",
+                              },
+                            }}
+                          >
+                            <Typography>{industry}</Typography>
+                          </Box>
+                        </motion.div>
+                      );
+                    })}
+                  </Box>
+                ))
               ) : apiError ? (
                 <Box sx={{ textAlign: "center", py: 4 }}>
-                  <ErrorIcon sx={{ fontSize: 48, color: "error.main", mb: 2 }} />
+                  <ErrorIcon
+                    sx={{ fontSize: 48, color: "error.main", mb: 2 }}
+                  />
                   <Typography variant="body2" color="error">
                     Failed to load industries
                   </Typography>
@@ -1477,7 +1448,7 @@ setPagination(result.pagination);
                   mb={2}
                   color="text.secondary"
                 >
-                 Industry - {activeIndustryName || "Select Industry"}
+                  Industry - {activeIndustryName || "Select Industry"}
                 </Typography>
                 <Divider sx={{ mb: 2 }} />
                 {loading.subcategories ? (
