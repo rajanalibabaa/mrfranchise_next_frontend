@@ -221,7 +221,7 @@ const PaymentSummaryDesktopView = ({
                         >
                           <Typography
                             sx={{
-                              fontSize: "1.4rem",
+                              fontSize: "1.2rem",
                               fontWeight: 600,
                               color: COLORS.primary,
                               px: 1,
@@ -229,7 +229,7 @@ const PaymentSummaryDesktopView = ({
                               borderRadius: 2,
                             }}
                           >
-                            {planData.validityDays} Days
+                            {planData.validityDays} Days campaign
                           </Typography>
                         </TableCell>
                       )}
@@ -373,14 +373,14 @@ const PaymentSummaryDesktopView = ({
                               </Typography>
                               <Typography
                                 sx={{
-                                  fontSize: "0.68rem",
-                                  color: COLORS.grey[500],
+                                  fontSize: "0.7rem",
+                                  color: COLORS.black[500],
                                   mt: 0.3,
                                   lineHeight: 1.3,
                                 }}
                               >
-                                {leadsPerState} × {labelTotalStates} ={" "}
-                                {labelTotalLeads.toLocaleString("en-IN")}
+                                {leadsPerState}Leads × {labelTotalStates}states {" "}
+                                {/* {labelTotalLeads.toLocaleString("en-IN")} */}
                               </Typography>
                             </Box>
                           )}
@@ -419,16 +419,19 @@ const PaymentSummaryDesktopView = ({
                         <Tooltip title="Remove from summary" arrow>
                           <IconButton
                             size="small"
-                            onClick={() => {
-                              setItemToRemove({
-                                planName: planData.planName,
-                                range: rangeGroup.range,
-                                investmentRangeLabel:
-                                  rangeGroup.investmentRangeLabel,
-                                items: rangeGroup.items,
-                              });
-                              setOpenRemoveConfirmDialog(true);
-                            }}
+                           onClick={() => {
+  setItemToRemove({
+    planName: planData.planName,
+    range: rangeGroup.range,
+    investmentRange: rangeGroup.range,
+    investmentRangeLabel: rangeGroup.investmentRangeLabel,
+    items: rangeGroup.items,
+    totalLeads: labelTotalLeads,
+    totalAmount: labelSubtotal,
+    validityDays: planData.validityDays,
+  });
+  setOpenRemoveConfirmDialog(true);
+}}
                             sx={{
                               color: COLORS.grey[600],
                               p: 0.3,
