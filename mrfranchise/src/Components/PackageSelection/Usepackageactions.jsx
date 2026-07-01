@@ -598,54 +598,60 @@ const usePackageActions = (dataHook, onAddInvestmentRange) => {
     ],
   );
 
-  const handleRemoveSingleFromPayment = useCallback(
-    (item) => {
-      const { id } = item;
-      setPaymentSummary((prev) => {
-        const updated = prev
-          .map((g) => {
-            if (!g.items.some((it) => it.id === id)) return g;
-            const updatedItems = g.items.filter((it) => it.id !== id);
-            if (updatedItems.length === 0) {
-              setMovedGroupKeys((keys) => keys.filter((k) => k !== g.groupKey));
-              return null;
-            }
-            const newUniqueStates = getUniqueStatesAcrossRanges(updatedItems);
-            const leadsDataKey = `${g.planId}_${g.investmentRangeLabel}`;
-            const availableLeads = leadsDropdownData[leadsDataKey] || [];
-            const minLeads =
-              availableLeads.length > 0 ? Math.min(...availableLeads) : 1;
-            const divisor = minLeads > 0 ? minLeads : 1;
-            const selectedLeads = updatedItems[0]?.selectedLeads || 0;
-            return {
-              ...g,
-              items: updatedItems,
-              uniqueStates: newUniqueStates,
-              totalStates: newUniqueStates.length,
-              amount:
-                (g.pricePerState / divisor) *
-                newUniqueStates.length *
-                selectedLeads,
-              totalLeads: newUniqueStates.length * selectedLeads,
-            };
-          })
-          .filter(Boolean);
-        if (updated.length === 0 && typeof window !== "undefined") {
-          localStorage.removeItem("paymentSummaryDraft");
-          localStorage.removeItem("movedGroupKeys");
-        }
-        return updated;
-      });
-      openSnack("Investment range removed from payment", "info");
-    },
-    [
-      getUniqueStatesAcrossRanges,
-      openSnack,
-      leadsDropdownData,
-      setPaymentSummary,
-      setMovedGroupKeys,
-    ],
-  );
+const handleRemoveSingleFromPayment = useCallback(
+  (item) => {
+    const { id } = item;
+    setPaymentSummary((prev) => {
+      const updated = prev
+        .map((g) => {
+          if (!g.items.some((it) => it.id === id)) return g;
+          const updatedItems = g.items.filter((it) => it.id !== id);
+          if (updatedItems.length === 0) {
+            setMovedGroupKeys((keys) => keys.filter((k) => k !== g.groupKey));
+            return null;
+          }
+          const newUniqueStates = getUniqueStatesAcrossRanges(updatedItems);
+          const leadsDataKey = `${g.planId}_${g.investmentRangeLabel}`;
+          const availableLeads = leadsDropdownData[leadsDataKey] || [];
+          const minLeads =
+            availableLeads.length > 0 ? Math.min(...availableLeads) : 1;
+          const divisor = minLeads > 0 ? minLeads : 1;
+          const selectedLeads = updatedItems[0]?.selectedLeads || 0;
+          return {
+            ...g,
+            items: updatedItems,
+            uniqueStates: newUniqueStates,
+            totalStates: newUniqueStates.length,
+            amount:
+              (g.pricePerState / divisor) *
+              newUniqueStates.length *
+              selectedLeads,
+            totalLeads: newUniqueStates.length * selectedLeads,
+          };
+        })
+        .filter(Boolean);
+      if (updated.length === 0 && typeof window !== "undefined") {
+        localStorage.removeItem("paymentSummaryDraft");
+        localStorage.removeItem("movedGroupKeys");
+      }
+      return updated;
+    });
+    setCheckedItems((prev) => {
+      const updatedChecked = { ...prev };
+      delete updatedChecked[id];
+      return updatedChecked;
+    });
+    openSnack("Investment range removed from payment", "info");
+  },
+  [
+    getUniqueStatesAcrossRanges,
+    openSnack,
+    leadsDropdownData,
+    setPaymentSummary,
+    setMovedGroupKeys,
+    setCheckedItems,
+  ],
+);
 
   const handleRemoveListingPlan = useCallback(
     (planId) => {

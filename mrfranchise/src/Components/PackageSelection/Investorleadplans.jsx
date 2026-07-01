@@ -52,6 +52,8 @@ const InvestorLeadPlans = ({
   setOpenConfirmDialog,
   openSnack,
   selectedListingPlanId,
+  setItemToRemove,
+setOpenRemoveDialog,
 }) => {
   if (!selectedGroup) {
     return (
@@ -548,25 +550,56 @@ const InvestorLeadPlans = ({
                         <Tooltip title={inPayment ? "Already added to cart" : "Add investment range to cart"} arrow>
                           <span>
                             <Checkbox
-                              checked={checkedItems[itemId] || false}
-                              onChange={(e) => {
-                                if (inPayment) {
-                                  openSnack(`${item.range} is already in your cart`, "warning");
-                                  return;
-                                }
-                                if (e.target.checked) {
-                                  setCheckedItems((prev) => ({ ...prev, [itemId]: true }));
-                                  openSnack(`${item.range} selected`, "success");
-                                } else {
-                                  setCheckedItems((prev) => ({ ...prev, [itemId]: false }));
-                                  openSnack(`${item.range} deselected`, "info");
-                                }
-                              }}
-                              disabled={inPayment || !!selectedListingPlanId}
-                              size="small"
+                         checked={checkedItems[itemId] || inPayment || false}
+                             onChange={(e) => {
+  if (inPayment) {
+    if (!e.target.checked) {
+      // find the matching group/item in paymentSummary and trigger remove dialog
+      const matchedGroup = paymentSummary.find(
+        (group) =>
+          group.planId === selectedPlan._id &&
+          group.items.some(
+            (it) =>
+              it.investmentRangeLabel === item.investmentRangeLabel &&
+              it.range === item.range,
+          ),
+      );
+    if (matchedGroup) {
+        const matchedItem = matchedGroup.items.find(
+          (it) =>
+            it.investmentRangeLabel === item.investmentRangeLabel &&
+            it.range === item.range,
+        );
+
+        setItemToRemove({
+          planName: matchedGroup.planName,
+          range: item.range,
+          investmentRange: item.range,
+          investmentRangeLabel: item.investmentRangeLabel,
+          validityDays: uniqueValidityDays[0],
+          totalLeads: groupTotalLeads,
+          totalAmount: groupTotalAmount,
+          items: matchedItem ? [matchedItem] : matchedGroup.items,
+        });
+        setOpenRemoveDialog(true);
+      }
+      return;
+    }
+    openSnack(`${item.range} is already in your cart`, "warning");
+    return;
+  }
+  if (e.target.checked) {
+    setCheckedItems((prev) => ({ ...prev, [itemId]: true }));
+    openSnack(`${item.range} selected`, "success");
+  } else {
+    setCheckedItems((prev) => ({ ...prev, [itemId]: false }));
+    openSnack(`${item.range} deselected`, "info");
+  }
+}}
+disabled={!!selectedListingPlanId}                              size="small"
                               sx={{
                                 p: 0, m: 0, color: COLORS.primary,
-                                "&.Mui-checked": { color: COLORS.secondary },
+                              "&.Mui-checked": { color: "#2e7d32" },
                                 "&.Mui-disabled": { color: COLORS.secondary },
                               }}
                             />
@@ -677,8 +710,19 @@ const InvestorLeadPlans = ({
                         }}
                         align="center"
                       >
-                        <Box sx={{ display: "flex", flexDirection: "column", gap: 3, alignItems: "center", justifyContent: "center", width: "100%" }}>
-                          <Button
+<Box
+  sx={{
+    display: "flex",
+    flexDirection: "column",
+    gap: 3,
+    alignItems: "center",
+    justifyContent: "center",
+    width: "100%",
+    position: "sticky",
+    top: "80%",
+    transform: "translateY(-140%)",
+  }}
+>                        <Button
                             variant="contained"
                             onClick={() => {
                               const allCheckedItems = profilePackages.filter((p) => {

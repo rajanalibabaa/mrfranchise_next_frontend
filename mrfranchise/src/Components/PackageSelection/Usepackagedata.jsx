@@ -151,8 +151,10 @@ const usePackageData = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
+      
       const response = await fetch(`${API_URL}/api/v1/admin/plans/getAllPlans`);
       const json = await response.json();
+      console.log("json",json)
       if (json.success && Array.isArray(json.data)) {
         setPlans(json.data);
         const leadsData = {};

@@ -776,7 +776,8 @@ const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
             setOpenConfirmDialog={setOpenConfirmDialog}
             openSnack={openSnack}
             selectedListingPlanId={selectedListingPlanId}
-          />
+            setItemToRemove={setItemToRemove}
+setOpenRemoveDialog={setOpenRemoveConfirmDialog}          />
         )}
       </Box>
 
