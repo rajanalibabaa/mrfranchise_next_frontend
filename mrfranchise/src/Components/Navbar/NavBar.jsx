@@ -230,7 +230,7 @@ function Navbar() {
       external: true,
     },
    {
-  label: "FREE LISTING",
+  label: "Brand LISTING",
   path: "/brand_listing_creation_form ",
   external: true
 }
@@ -476,13 +476,13 @@ function Navbar() {
                   margin: { xs: "5px" },
                   textTransform: "none",
                   fontSize: isMobile ? "0.1" : "1rem",
-                  fontWeight: 400,
+                  fontWeight: 600,
                   "&:hover": {
                     backgroundColor: "#7ad03a",
                   },
                 }}
               >
-                FREE LISTING
+                BRAND LISTING
               </Button>
             </motion.div>)}
           </Box>

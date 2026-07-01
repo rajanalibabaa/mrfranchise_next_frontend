@@ -35,7 +35,7 @@ const RemoveInvestmentRangeDialog = ({
     onClose();
     setItemToRemove(null);
   };
-
+console.log("item",itemToRemove)
   return (
     <Dialog
       open={open}
@@ -61,15 +61,15 @@ const RemoveInvestmentRangeDialog = ({
         sx={{
           background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryDark} 100%)`,
           fontSize: TEXT_SIZES.large,
-          fontWeight: 700,
+          fontWeight: 900,
           color: COLORS.white,
-          py: 2,
+          py: 0.7,
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
         }}
       >
-        Confirm Removal
+        Remove From Payment Summary
         <IconButton
           onClick={handleDialogClose}
           sx={{
@@ -84,59 +84,78 @@ const RemoveInvestmentRangeDialog = ({
       </DialogTitle>
 
       {/* Content */}
-      <DialogContent sx={{ pt: 3, pb: 1 , mt:1}}>
+      <DialogContent sx={{ pt: 5, pb: 1 , mt:2.5}}>
         <Typography
           sx={{
             fontSize: TEXT_SIZES.medium,
             color: COLORS.black,
-            mb: 1,
+            mb: 2,
           }}
         >
           Are you sure you want to remove this investment
-          range?
+          range from payment summary?
         </Typography>
-
-        {itemToRemove && (
-          <Box
-            sx={{
-              mt: 1,
-              p: 1,
-              bgcolor: COLORS.lightOrange,
-              borderRadius: 2,
-            }}
-          >
-            <Typography
-              sx={{
-                fontSize: TEXT_SIZES.medium,
-                color: COLORS.black,
-              }}
-            >
-              <strong>Plan:</strong> {itemToRemove.planName}
-            </Typography>
-
-            <Typography
-              sx={{
-                fontSize: TEXT_SIZES.medium,
-                color: COLORS.black,
-                mt: 0.5,
-              }}
-            >
-              <strong>Investment Range:</strong>{" "}
-              {itemToRemove.range}
-            </Typography>
-
-            <Typography
-              sx={{
-                fontSize: TEXT_SIZES.medium,
-                color: COLORS.black,
-                mt: 0.5,
-              }}
-            >
-              <strong>Investment Group:</strong>{" "}
-              {itemToRemove.investmentRangeLabel}
-            </Typography>
-          </Box>
-        )}
+ 
+      {itemToRemove && (
+  <Box
+    sx={{
+      mt: 1,
+      p: 1,
+      bgcolor: COLORS.lightOrange,
+      borderRadius: 2,
+    }}
+  >
+    {[
+      {
+        label: "Plan",
+        value: `${itemToRemove.validityDays ?? itemToRemove.items?.[0]?.validityDays} Days Campaign`,
+      },
+      {
+        label: "Investment Range",
+        value: Array.isArray(itemToRemove.investmentRange)
+          ? itemToRemove.investmentRange.join(", ")
+          : itemToRemove.investmentRange ?? itemToRemove.range ?? "N/A",
+      },
+      {
+        label: "Investment Group",
+        value: itemToRemove.investmentRangeLabel,
+      },
+      {
+        label: "Total Leads",
+        value: itemToRemove.totalLeads ?? itemToRemove.items?.[0]?.totalLeads,
+      },
+      {
+        label: "Total Amount",
+        value: `₹${(itemToRemove.totalAmount ?? itemToRemove.items?.[0]?.totalAmount)?.toLocaleString("en-IN")}`,
+      },
+    ].map((row, idx) => (
+      <Box
+        key={row.label}
+        sx={{
+          display: "flex",
+          alignItems: "baseline",
+          mt: idx === 0 ? 0 : 1,
+        }}
+      >
+        <Typography
+          sx={{
+            fontSize: TEXT_SIZES.medium,
+            fontWeight: 700,
+            color: COLORS.black,
+            width: 160,
+            flexShrink: 0,
+          }}
+        >
+          {row.label}
+        </Typography>
+        <Typography sx={{ fontSize: TEXT_SIZES.medium, color: COLORS.black }}>
+  <Box component="span" sx={{ mr: 1 }}>:</Box>
+  {row.value}
+</Typography>
+      </Box>
+    ))}
+  </Box>
+)}
       </DialogContent>
 
       {/* Footer - Only Remove button */}
@@ -162,7 +181,7 @@ const RemoveInvestmentRangeDialog = ({
             },
           }}
         >
-          Yes, Remove
+          Remove
         </Button>
       </DialogActions>
     </Dialog>

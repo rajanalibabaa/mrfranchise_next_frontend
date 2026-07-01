@@ -30,18 +30,29 @@ import ListingPlans from "./ListingPlans";
 import InvestorLeadPlans from "./Investorleadplans";
 import PackageSelectionModals from "./Packageselectionmodals";
 import usePackageSelection from "./Packageselectionhooks";
-import { COLORS, TEXT_SIZES, INDIA_STATES, ALL_INDIA_STATES, bounceAnimation } from "./Packageselectionconstants";
+import {
+  COLORS,
+  TEXT_SIZES,
+  INDIA_STATES,
+  ALL_INDIA_STATES,
+  bounceAnimation,
+} from "./Packageselectionconstants";
 
 // ─── Alert Message ────────────────────────────────────────────────────────────
 const AlertMessage = memo(({ severity, message, action }) => (
   <Alert
     severity={severity}
     sx={{
-      mb: 2, borderRadius: 2,
-      backgroundColor: severity === "success" ? COLORS.lightGreen : COLORS.lightOrange,
-      color: COLORS.black, fontSize: TEXT_SIZES.medium,
+      mb: 2,
+      borderRadius: 2,
+      backgroundColor:
+        severity === "success" ? COLORS.lightGreen : COLORS.lightOrange,
+      color: COLORS.black,
+      fontSize: TEXT_SIZES.medium,
       border: `1px solid ${severity === "success" ? COLORS.secondary : COLORS.primary}`,
-      "& .MuiAlert-icon": { color: severity === "success" ? COLORS.secondary : COLORS.primary },
+      "& .MuiAlert-icon": {
+        color: severity === "success" ? COLORS.secondary : COLORS.primary,
+      },
     }}
     action={action}
   >
@@ -56,41 +67,64 @@ const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
   const {
-    paymentSummaryRef, upgradeSectionRef, router,
-    paymentSummary, setPaymentSummary,
-    plans, loading, error,
-    selected, setSelected,
+    paymentSummaryRef,
+    upgradeSectionRef,
+    router,
+    paymentSummary,
+    setPaymentSummary,
+    plans,
+    loading,
+    error,
+    selected,
+    setSelected,
     ficoInvestmentRanges,
     detectedState,
     openStateModal,
     allStates,
-    selectedStates, setSelectedStates,
+    selectedStates,
+    setSelectedStates,
     statesByInvestmentRange,
     currentEditingRange,
-    isUpgradeMode, setIsUpgradeMode,
-    upgradePlanId, setUpgradePlanId,
-    showLogin, setShowLogin,
+    isUpgradeMode,
+    setIsUpgradeMode,
+    upgradePlanId,
+    setUpgradePlanId,
+    showLogin,
+    setShowLogin,
     openSection,
     snack,
     leadsDropdownData,
     selectedLeadsPerRange,
     selectedListingPlanId,
-    movedGroupKeys, setMovedGroupKeys,
-    selectedGroup, setSelectedGroup,
+    movedGroupKeys,
+    setMovedGroupKeys,
+    selectedGroup,
+    setSelectedGroup,
     selectedValidityDays,
-    checkedItems, setCheckedItems,
-    openConfirmDialog, setOpenConfirmDialog,
-    pendingSelection, setPendingSelection,
-    expandedRegion, setExpandedRegion,
-    openStatesTooltip, setOpenStatesTooltip,
+    checkedItems,
+    setCheckedItems,
+    openConfirmDialog,
+    setOpenConfirmDialog,
+    pendingSelection,
+    setPendingSelection,
+    expandedRegion,
+    setExpandedRegion,
+    openStatesTooltip,
+    setOpenStatesTooltip,
     tooltipStates,
-    openRemoveConfirmDialog, setOpenRemoveConfirmDialog,
-    itemToRemove, setItemToRemove,
-    data, loadings, errors,
-    finalToken, finalBrandUUID,
+    openRemoveConfirmDialog,
+    setOpenRemoveConfirmDialog,
+    itemToRemove,
+    setItemToRemove,
+    data,
+    loadings,
+    errors,
+    finalToken,
+    finalBrandUUID,
     filteredPlans,
     scrollToPaymentSummary,
-    openSnack, closeSnack,
+    openSnack,
+    closeSnack,
     handleSectionChange,
     getRangeKey,
     getStatesToDisplay,
@@ -111,7 +145,9 @@ const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
     handleClearAll,
     handleStateCheckboxChange,
     isFicoInvestmentRange,
-    getBrandName, getCategory, getIndustry,
+    getBrandName,
+    getCategory,
+    getIndustry,
   } = usePackageSelection(onAddInvestmentRange);
 
   const handleAddListingPlan = (plan, pkg) => {
@@ -127,6 +163,7 @@ const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
       states: ["ALL STATES"],
       selectedLeads: "-",
       totalLeads: "-",
+      basicLeadCount: pkg.basicLeadCount || 0,
       totalAmount: pkg.amount || 0,
       pricePerState: pkg.amount || 0,
       isListingPlan: true,
@@ -150,6 +187,7 @@ const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
           planpackageId: pkg._id,
           investmentRangeLabel: "ALL INVESTMENT RANGE",
           validityDays: pkg.validityDays,
+          basicLeadCount: pkg.basicLeadCount,
           pricePerState: pkg.amount,
           amount: pkg.amount,
           totalLeads: "-",
@@ -166,40 +204,75 @@ const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
       return prev;
     });
   };
-  
+
   // ── renderStatesByRegion (needs local state from hook) ────────────────────
   const renderStatesByRegion = () => {
     const statesToDisplay = getStatesToDisplay();
     const alreadySelectedStates = getAlreadySelectedStatesInOtherRanges();
 
     return Object.entries(INDIA_STATES).map(([region, states]) => {
-      const availableStates = states.filter((state) => statesToDisplay.includes(state));
+      const availableStates = states.filter((state) =>
+        statesToDisplay.includes(state),
+      );
       if (availableStates.length === 0) return null;
-      const selectedCount = availableStates.filter((state) => selectedStates.has(state)).length;
-      const availableToSelectCount = availableStates.filter((state) => !alreadySelectedStates.has(state)).length;
+      const selectedCount = availableStates.filter((state) =>
+        selectedStates.has(state),
+      ).length;
+      const availableToSelectCount = availableStates.filter(
+        (state) => !alreadySelectedStates.has(state),
+      ).length;
 
       return (
         <Accordion
           key={region}
           expanded={expandedRegion === region}
-          onChange={(event, isExpanded) => { setExpandedRegion(isExpanded ? region : null); }}
+          onChange={(event, isExpanded) => {
+            setExpandedRegion(isExpanded ? region : null);
+          }}
           elevation={0}
-          sx={{ border: `1px solid ${COLORS.border}`, borderRadius: "8px !important", mb: 0.6, "&:before": { display: "none" }, "&.Mui-expanded": { margin: "0 0 12px 0" } }}
+          sx={{
+            border: `1px solid ${COLORS.border}`,
+            borderRadius: "8px !important",
+            mb: 0.6,
+            "&:before": { display: "none" },
+            "&.Mui-expanded": { margin: "0 0 12px 0" },
+          }}
         >
           <AccordionSummary
             expandIcon={<ExpandMoreIcon sx={{ color: COLORS.primary }} />}
             sx={{
-              backgroundColor: COLORS.grey[50], borderRadius: "8px",
+              backgroundColor: COLORS.grey[50],
+              borderRadius: "8px",
               "&.Mui-expanded": { borderRadius: "8px 8px 0 0" },
-              "& .MuiAccordionSummary-content": { alignItems: "center", justifyContent: "space-between" },
+              "& .MuiAccordionSummary-content": {
+                alignItems: "center",
+                justifyContent: "space-between",
+              },
             }}
           >
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <Typography sx={{ fontSize: TEXT_SIZES.medium, fontWeight: 700, color: COLORS.black }}>{region}</Typography>
+              <Typography
+                sx={{
+                  fontSize: TEXT_SIZES.medium,
+                  fontWeight: 700,
+                  color: COLORS.black,
+                }}
+              >
+                {region}
+              </Typography>
               <Chip
                 label={`${selectedCount}/${availableToSelectCount} Selected`}
                 size="small"
-                sx={{ height: 15, fontSize: "0.7rem", backgroundColor: selectedCount === availableToSelectCount ? COLORS.secondary : COLORS.grey[400], color: COLORS.white, fontWeight: 600 }}
+                sx={{
+                  height: 15,
+                  fontSize: "0.7rem",
+                  backgroundColor:
+                    selectedCount === availableToSelectCount
+                      ? COLORS.secondary
+                      : COLORS.grey[400],
+                  color: COLORS.white,
+                  fontWeight: 600,
+                }}
               />
             </Box>
           </AccordionSummary>
@@ -210,18 +283,48 @@ const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
                 onClick={(e) => {
                   e.stopPropagation();
                   const newSet = new Set(selectedStates);
-                  const selectableStates = availableStates.filter((state) => !alreadySelectedStates.has(state));
-                  const allSelected = selectableStates.every((state) => selectedStates.has(state));
-                  if (allSelected) { selectableStates.forEach((state) => newSet.delete(state)); openSnack(`Deselected all selectable states in ${region}`, "info"); }
-                  else { selectableStates.forEach((state) => newSet.add(state)); openSnack(`Selected ${selectableStates.length} states in ${region}`, "success"); }
+                  const selectableStates = availableStates.filter(
+                    (state) => !alreadySelectedStates.has(state),
+                  );
+                  const allSelected = selectableStates.every((state) =>
+                    selectedStates.has(state),
+                  );
+                  if (allSelected) {
+                    selectableStates.forEach((state) => newSet.delete(state));
+                    openSnack(
+                      `Deselected all selectable states in ${region}`,
+                      "info",
+                    );
+                  } else {
+                    selectableStates.forEach((state) => newSet.add(state));
+                    openSnack(
+                      `Selected ${selectableStates.length} states in ${region}`,
+                      "success",
+                    );
+                  }
                   setSelectedStates(newSet);
                 }}
-                sx={{ fontSize: "0.7rem", textTransform: "none", color: COLORS.primary, cursor: "pointer", display: "inline-flex", alignItems: "center", borderRadius: "4px", "&:hover": { backgroundColor: COLORS.lightOrange } }}
+                sx={{
+                  fontSize: "0.7rem",
+                  textTransform: "none",
+                  color: COLORS.primary,
+                  cursor: "pointer",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  borderRadius: "4px",
+                  "&:hover": { backgroundColor: COLORS.lightOrange },
+                }}
               >
                 Select All Available ({availableToSelectCount})
               </Box>
             </Box>
-            <Box sx={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 1 }}>
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: "repeat(2, 1fr)",
+                gap: 1,
+              }}
+            >
               {availableStates.map((state) => {
                 const isDisabled = alreadySelectedStates.has(state);
                 const isChecked = selectedStates.has(state);
@@ -233,29 +336,72 @@ const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
                         checked={isChecked}
                         onChange={() => {
                           if (!isDisabled) handleStateCheckboxChange(state);
-                          else openSnack("This state is already used in investment range and cannot be selected again", "warning");
+                          else
+                            openSnack(
+                              "This state is already used in investment range and cannot be selected again",
+                              "warning",
+                            );
                         }}
                         disabled={isDisabled}
-                        sx={{ color: COLORS.primary, "&.Mui-checked": { color: COLORS.secondary }, "&.Mui-disabled": { color: COLORS.grey[400] } }}
+                        sx={{
+                          color: COLORS.primary,
+                          "&.Mui-checked": { color: COLORS.secondary },
+                          "&.Mui-disabled": { color: COLORS.grey[400] },
+                        }}
                       />
                     }
                     label={
                       <Box sx={{ display: "flex", flexDirection: "column" }}>
-                        <Typography sx={{ fontSize: TEXT_SIZES.medium, color: isDisabled ? COLORS.grey[500] : COLORS.black, fontWeight: isChecked ? 600 : 400, textDecoration: isDisabled ? "line-through" : "none" }}>
+                        <Typography
+                          sx={{
+                            fontSize: TEXT_SIZES.medium,
+                            color: isDisabled ? COLORS.grey[500] : COLORS.black,
+                            fontWeight: isChecked ? 600 : 400,
+                            textDecoration: isDisabled
+                              ? "line-through"
+                              : "none",
+                          }}
+                        >
                           {state}
                         </Typography>
                         {isDisabled && (
-                          <Typography sx={{ fontSize: "0.65rem", color: COLORS.grey[500], lineHeight: 1.2, mt: 0.2 }}>
-                            This state is already used in investment range and cannot be selected again
+                          <Typography
+                            sx={{
+                              fontSize: "0.65rem",
+                              color: COLORS.grey[500],
+                              lineHeight: 1.2,
+                              mt: 0.2,
+                            }}
+                          >
+                            This state is already used in investment range and
+                            cannot be selected again
                           </Typography>
                         )}
                       </Box>
                     }
                     sx={{
-                      display: "flex", flexDirection: "row", alignItems: "center", margin: 0, py: 0.5, px: 1, borderRadius: 1.5, transition: "all 0.2s ease",
-                      backgroundColor: isChecked ? COLORS.lightGreen : "transparent", width: "100%", opacity: isDisabled ? 0.6 : 1,
-                      "&:hover": { backgroundColor: !isDisabled && (isChecked ? COLORS.lightGreen : COLORS.lightOrange) },
-                      "& .MuiFormControlLabel-label": { width: "calc(100% - 35px)", overflow: "hidden" },
+                      display: "flex",
+                      flexDirection: "row",
+                      alignItems: "center",
+                      margin: 0,
+                      py: 0.5,
+                      px: 1,
+                      borderRadius: 1.5,
+                      transition: "all 0.2s ease",
+                      backgroundColor: isChecked
+                        ? COLORS.lightGreen
+                        : "transparent",
+                      width: "100%",
+                      opacity: isDisabled ? 0.6 : 1,
+                      "&:hover": {
+                        backgroundColor:
+                          !isDisabled &&
+                          (isChecked ? COLORS.lightGreen : COLORS.lightOrange),
+                      },
+                      "& .MuiFormControlLabel-label": {
+                        width: "calc(100% - 35px)",
+                        overflow: "hidden",
+                      },
                     }}
                   />
                 );
@@ -270,8 +416,19 @@ const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
   // ── Loading / Error states ─────────────────────────────────────────────────
   if (loading) {
     return (
-      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "400px" }}>
-        <CircularProgress sx={{ color: COLORS.primary }} size={60} thickness={4} />
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "400px",
+        }}
+      >
+        <CircularProgress
+          sx={{ color: COLORS.primary }}
+          size={60}
+          thickness={4}
+        />
       </Box>
     );
   }
@@ -279,7 +436,14 @@ const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
   if (error) {
     return (
       <Box sx={{ p: 3 }}>
-        <Alert severity="error" sx={{ fontSize: TEXT_SIZES.medium, borderRadius: 2, border: `1px solid ${COLORS.primary}` }}>
+        <Alert
+          severity="error"
+          sx={{
+            fontSize: TEXT_SIZES.medium,
+            borderRadius: 2,
+            border: `1px solid ${COLORS.primary}`,
+          }}
+        >
           {error}
         </Alert>
       </Box>
@@ -289,30 +453,98 @@ const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
   // ── Render ────────────────────────────────────────────────────────────────
   return (
     <Box sx={{ width: "100%", minHeight: "100vh" }}>
-
       {/* Brand Header */}
-      {(data?.brandDetails?.brandName || data?.brandName || getBrandName() || data?.brandDetails?.category || data?.category || data?.brandDetails?.industry || data?.industry) && (
-        <Box sx={{ display: "flex", flexDirection: { xs: "column", md: "row" }, justifyContent: { xs: "center", md: "flex-end" }, alignItems: { xs: "center", md: "center" }, gap: { xs: 1, md: 2 }, border: { xs: `4px solid ${COLORS.secondary}`, md: "none" }, borderRadius: 2, mb: 3, pb: 2, px: { xs: 0, md: 4 }, flexWrap: "wrap" }}>
-          {(data?.brandDetails?.brandName || data?.brandName || getBrandName()) && (
+      {(data?.brandDetails?.brandName ||
+        data?.brandName ||
+        getBrandName() ||
+        data?.brandDetails?.category ||
+        data?.category ||
+        data?.brandDetails?.industry ||
+        data?.industry) && (
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: { xs: "column", md: "row" },
+            justifyContent: { xs: "center", md: "flex-end" },
+            alignItems: { xs: "center", md: "center" },
+            gap: { xs: 1, md: 2 },
+            border: { xs: `4px solid ${COLORS.secondary}`, md: "none" },
+            borderRadius: 2,
+            mb: 3,
+            pb: 2,
+            px: { xs: 0, md: 4 },
+            flexWrap: "wrap",
+          }}
+        >
+          {(data?.brandDetails?.brandName ||
+            data?.brandName ||
+            getBrandName()) && (
             <Box sx={{ display: "flex", alignItems: "center" }}>
-              <Typography sx={{ fontSize: { xs: TEXT_SIZES.large, sm: TEXT_SIZES.medium }, color: COLORS.black, display: { xs: "none", md: "block" } }}>Brand Name:</Typography>
-              <Typography sx={{ fontSize: TEXT_SIZES.xl, fontWeight: 700, color: COLORS.primary, textAlign: "center" }}>
-                {data?.brandDetails?.brandName || data?.brandName || getBrandName()}
+              <Typography
+                sx={{
+                  fontSize: { xs: TEXT_SIZES.large, sm: TEXT_SIZES.medium },
+                  color: COLORS.black,
+                  display: { xs: "none", md: "block" },
+                }}
+              >
+                Brand Name:
+              </Typography>
+              <Typography
+                sx={{
+                  fontSize: TEXT_SIZES.xl,
+                  fontWeight: 700,
+                  color: COLORS.primary,
+                  textAlign: "center",
+                }}
+              >
+                {data?.brandDetails?.brandName ||
+                  data?.brandName ||
+                  getBrandName()}
               </Typography>
             </Box>
           )}
           {(data?.brandDetails?.industry || data?.industry) && (
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <Typography sx={{ fontSize: { xs: TEXT_SIZES.large, sm: TEXT_SIZES.medium }, color: COLORS.black, display: { xs: "none", md: "block" } }}>Industry:</Typography>
-              <Typography sx={{ fontSize: TEXT_SIZES.xl, fontWeight: 700, color: COLORS.black, textAlign: "center" }}>
+              <Typography
+                sx={{
+                  fontSize: { xs: TEXT_SIZES.large, sm: TEXT_SIZES.medium },
+                  color: COLORS.black,
+                  display: { xs: "none", md: "block" },
+                }}
+              >
+                Industry:
+              </Typography>
+              <Typography
+                sx={{
+                  fontSize: TEXT_SIZES.xl,
+                  fontWeight: 700,
+                  color: COLORS.black,
+                  textAlign: "center",
+                }}
+              >
                 {data?.brandDetails?.industry || data?.industry}
               </Typography>
             </Box>
           )}
           {(data?.brandDetails?.category || data?.category) && (
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <Typography sx={{ fontSize: { xs: TEXT_SIZES.large, sm: TEXT_SIZES.medium }, color: COLORS.black, display: { xs: "none", md: "block" } }}>Category:</Typography>
-              <Typography sx={{ fontSize: TEXT_SIZES.medium, fontWeight: 700, color: COLORS.black, textAlign: "center" }}>
+              <Typography
+                sx={{
+                  fontSize: { xs: TEXT_SIZES.large, sm: TEXT_SIZES.medium },
+                  color: COLORS.black,
+                  display: { xs: "none", md: "block" },
+                }}
+              >
+                Category:
+              </Typography>
+              <Typography
+                sx={{
+                  fontSize: TEXT_SIZES.medium,
+                  fontWeight: 700,
+                  color: COLORS.black,
+                  textAlign: "center",
+                }}
+              >
                 {data?.brandDetails?.category || data?.category}
               </Typography>
             </Box>
@@ -336,14 +568,18 @@ const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
         allStates={allStates}
         finalToken={finalToken}
         ficoInvestmentRanges={ficoInvestmentRanges}
-        onUpgradeModeChange={(isUpgrade, planId) => { setIsUpgradeMode(isUpgrade); setUpgradePlanId(planId); }}
+        onUpgradeModeChange={(isUpgrade, planId) => {
+          setIsUpgradeMode(isUpgrade);
+          setUpgradePlanId(planId);
+        }}
         onAddToPaymentSummary={(upgradeData) => {
           const selectedItems = [];
           const checkedRanges = upgradeData.checkedRanges || [];
           checkedRanges.forEach((range) => {
             const states = upgradeData.statesByRange?.[range] || [];
             if (states?.length > 0) {
-              const selectedLeads = upgradeData.selectedLeads || upgradeData.leads || 0;
+              const selectedLeads =
+                upgradeData.selectedLeads || upgradeData.leads || 0;
               const minLead = upgradeData.minLead || 1;
               const pricePerState = upgradeData.pricePerState || 0;
               const stateCount = states.length;
@@ -355,27 +591,42 @@ const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
                 stateCount,
                 selectedLeads,
                 totalLeads: selectedLeads * stateCount,
-                totalAmount: (pricePerState / minLead) * stateCount * selectedLeads,
+                totalAmount:
+                  (pricePerState / minLead) * stateCount * selectedLeads,
               });
             }
           });
           if (selectedItems.length === 0) return;
           const groupKey = `${upgradeData.planId}__${upgradeData.investmentRangeLabel}`;
           setPaymentSummary((prev) => {
-            const existingIndex = prev.findIndex((p) => p.groupKey === groupKey);
+            const existingIndex = prev.findIndex(
+              (p) => p.groupKey === groupKey,
+            );
             const allStatesSet = new Set();
-            selectedItems.forEach((item) => { (item.states || []).forEach((state) => allStatesSet.add(state)); });
+            selectedItems.forEach((item) => {
+              (item.states || []).forEach((state) => allStatesSet.add(state));
+            });
             const newGroup = {
-              groupKey, planId: upgradeData.planId, planName: upgradeData.planName,
+              groupKey,
+              planId: upgradeData.planId,
+              planName: upgradeData.planName,
               investmentRangeLabel: upgradeData.investmentRangeLabel || "—",
               pricePerState: upgradeData.pricePerState || 0,
               validityDays: upgradeData.validityDays || 0,
+              basicLeadCount: upgradeData.basicLeadCount || 0,
               items: selectedItems,
               uniqueStates: Array.from(allStatesSet),
               totalStates: allStatesSet.size,
-              amount: selectedItems.reduce((sum, item) => sum + (item.totalAmount || 0), 0),
-              totalLeads: selectedItems.reduce((sum, item) => sum + (item.totalLeads || 0), 0),
-              selectedLeads: upgradeData.selectedLeads || upgradeData.leads || 0,
+              amount: selectedItems.reduce(
+                (sum, item) => sum + (item.totalAmount || 0),
+                0,
+              ),
+              totalLeads: selectedItems.reduce(
+                (sum, item) => sum + (item.totalLeads || 0),
+                0,
+              ),
+              selectedLeads:
+                upgradeData.selectedLeads || upgradeData.leads || 0,
             };
             if (existingIndex !== -1) {
               const updated = [...prev];
@@ -384,7 +635,9 @@ const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
             }
             return [...prev, newGroup];
           });
-          setMovedGroupKeys((prev) => prev.includes(groupKey) ? prev : [...prev, groupKey]);
+          setMovedGroupKeys((prev) =>
+            prev.includes(groupKey) ? prev : [...prev, groupKey],
+          );
           setTimeout(() => scrollToPaymentSummary(), 100);
         }}
       />
@@ -413,14 +666,46 @@ const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
       )}
 
       {/* Investor Lead Plans */}
-      <Box sx={{ mb: 4, display: "flex", justifyContent: "center", flexDirection: "column", alignItems: "center" }}>
+      <Box
+        sx={{
+          mb: 4,
+          display: "flex",
+          justifyContent: "center",
+          flexDirection: "column",
+          alignItems: "center",
+        }}
+      >
         {!isMobile && (
-          <Box sx={{ width: "100%", maxWidth: "1300px", mb: 3, textAlign: "center" }}>
-            <Typography variant="h4" sx={{ fontWeight: 700, color: COLORS.black, mb: 1, fontSize: { xs: "1rem", md: "1.9rem" } }}>
+          <Box
+            sx={{
+              width: "100%",
+              maxWidth: "1300px",
+              mb: 3,
+              textAlign: "center",
+            }}
+          >
+            <Typography
+              variant="h4"
+              sx={{
+                fontWeight: 700,
+                color: COLORS.black,
+                mb: 1,
+                fontSize: { xs: "1rem", md: "1.9rem" },
+              }}
+            >
               INVESTOR LEAD PLANS
             </Typography>
-            <Typography variant="body3" sx={{ color: COLORS.black, fontSize: TEXT_SIZES.medium, maxWidth: "600px", mx: "auto" }}>
-              Franchise | Dealer and Distributor | Channel Partner | Agent and Association
+            <Typography
+              variant="body3"
+              sx={{
+                color: COLORS.black,
+                fontSize: TEXT_SIZES.medium,
+                maxWidth: "600px",
+                mx: "auto",
+              }}
+            >
+              Franchise | Dealer and Distributor | Channel Partner | Agent and
+              Association
             </Typography>
           </Box>
         )}
@@ -491,23 +776,37 @@ const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
             setOpenConfirmDialog={setOpenConfirmDialog}
             openSnack={openSnack}
             selectedListingPlanId={selectedListingPlanId}
-          />
+            setItemToRemove={setItemToRemove}
+setOpenRemoveDialog={setOpenRemoveConfirmDialog}          />
         )}
       </Box>
 
       {/* Payment Summary */}
-      {(paymentSummary.filter((g) => movedGroupKeys.includes(g.groupKey)).length > 0 || paymentSummary.length > 0) && (
+      {(paymentSummary.filter((g) => movedGroupKeys.includes(g.groupKey))
+        .length > 0 ||
+        paymentSummary.length > 0) && (
         <>
           {(() => {
-            const movedGroups = paymentSummary.filter((g) => movedGroupKeys.includes(g.groupKey));
+            const movedGroups = paymentSummary.filter((g) =>
+              movedGroupKeys.includes(g.groupKey),
+            );
             const totalPlans = new Set(movedGroups.map((g) => g.planId)).size;
-            const totalAmount = movedGroups.reduce((acc, g) => acc + (g.amount || 0), 0);
+            const totalAmount = movedGroups.reduce(
+              (acc, g) => acc + (g.amount || 0),
+              0,
+            );
             return (
               <PaymentBottomBar
                 COLORS={COLORS}
                 TEXT_SIZES={TEXT_SIZES}
                 bounceAnimation={bounceAnimation}
-                statCards={[{ label: "Plans", value: totalPlans, icon: <LayersIcon sx={{ fontSize: 17 }} /> }]}
+                statCards={[
+                  {
+                    label: "Plans",
+                    value: totalPlans,
+                    icon: <LayersIcon sx={{ fontSize: 17 }} />,
+                  },
+                ]}
                 totalAmount={totalAmount}
                 loading={loading}
                 handleProceedToPayment={handleProceedToPayment}
@@ -540,7 +839,9 @@ const PackageSelection = ({ onAddInvestmentRange = () => {} }) => {
         setSelectedStates={setSelectedStates}
         allStates={allStates}
         finalToken={finalToken}
-        getAlreadySelectedStatesInOtherRanges={getAlreadySelectedStatesInOtherRanges}
+        getAlreadySelectedStatesInOtherRanges={
+          getAlreadySelectedStatesInOtherRanges
+        }
         getStatesToDisplay={getStatesToDisplay}
         renderStatesByRegion={renderStatesByRegion}
         handleSelectAll={handleSelectAll}

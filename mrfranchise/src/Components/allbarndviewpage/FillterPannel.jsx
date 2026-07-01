@@ -192,6 +192,7 @@ const FillterPannel = React.memo(
     const mainCategoryRef = useRef(null);
     const subCategoryRef = useRef(null);
     const modelTypeRef = useRef(null);
+    const businessModelRef = useRef(null);
     const locationRef = useRef(null);
     const investmentRef = useRef(null);
     const areaRequiredRef = useRef(null);
@@ -216,6 +217,7 @@ const FillterPannel = React.memo(
       mainCategory: false,
       subCategory: false,
       modelType: false,
+      businessModel: false,
       areaRequired: false,
       location: false,
       investment: false,
@@ -256,6 +258,24 @@ const FillterPannel = React.memo(
       franchiseModels,
       dispatch,
     ]);
+
+    // ── When Business Model accordion opens → make sure headings for the
+    //    currently selected modelType are fetched ─────────────────────────────
+    useEffect(() => {
+      if (
+        expandedSections.businessModel &&
+        filters.modelType &&
+        activeFranchiseModel !== filters.modelType
+      ) {
+        dispatch(fetchFilterOptions({ franchiseModel: filters.modelType }));
+      }
+    }, [
+      expandedSections.businessModel,
+      filters.modelType,
+      activeFranchiseModel,
+      dispatch,
+    ]);
+
     // ── When franchiseModel filter changes → fetch its headings ───────────────
     useEffect(() => {
       if (filters.modelType) {
@@ -283,6 +303,8 @@ const FillterPannel = React.memo(
           if (section === "mainCategory") industrySearchRef.current?.focus();
           if (section === "location") stateSearchRef.current?.focus();
           if (section === "modelType") modelTypeSearchRef.current?.focus();
+          if (section === "businessModel")
+            modelTypeSearchRef.current?.focus();
         }, 200);
       }
     };
@@ -586,62 +608,6 @@ const FillterPannel = React.memo(
                                     }
                                     sx={{ mb: 0, mr: 0 }}
                                   />
-
-                                  {/* {filters.subcat === subCategory && (
-                                    <Box sx={{ ml: 2, mt: 1, pl: 1 }}>
-                                      {loadingChildCategories ? (
-                                        <Box sx={{ p: 1 }}>
-                                          <CircularProgress
-                                            size={16}
-                                            sx={{ color: "#ff9800" }}
-                                          />
-                                        </Box>
-                                      ) : childCategories?.length > 0 ? (
-                                        <RadioGroup
-                                          value={filters.childcat || ""}
-                                          onChange={(e) =>
-                                            onFilterChange(
-                                              "childcat",
-                                              e.target.value,
-                                            )
-                                          }
-                                        >
-                                          {childCategories.map((child) => (
-                                            <FormControlLabel
-                                              key={`childcat-${child}`}
-                                              value={child}
-                                              control={
-                                                <Radio
-                                                  size="small"
-                                                  sx={{
-                                                    color: "#ff9800",
-                                                    "&.Mui-checked": {
-                                                      color: "#4caf50",
-                                                    },
-                                                    padding: "6px",
-                                                  }}
-                                                />
-                                              }
-                                              label={
-                                                <Typography fontSize="0.8125rem">
-                                                  {child}
-                                                </Typography>
-                                              }
-                                              sx={{ mb: 0.5, mr: 0 }}
-                                            />
-                                          ))}
-                                        </RadioGroup>
-                                      ) : (
-                                        <Typography
-                                          fontSize="0.75rem"
-                                          color="text.secondary"
-                                          sx={{ py: 1, pl: 1 }}
-                                        >
-                                          No tags available
-                                        </Typography>
-                                      )}
-                                    </Box>
-                                  )} */}
                                 </Box>
                               ))}
                             </RadioGroup>
@@ -656,16 +622,7 @@ const FillterPannel = React.memo(
           </AccordionDetails>
         </Accordion>
 
-        {/* ── Model Type ──────────────────────────────────────────────────────── */}
-        {/*
-        UX flow (matches your screenshot):
-        1. User opens accordion → sees top-level models as radio options
-        2. User picks one (e.g. "CHANNEL PARTNERS") → fetch fires → franchiseHeading populates
-        3. Below the model radios, headings + their types render in a scrollable list
-        4. User picks a franchiseType (the actual filter value sent to API)
-      */}
-        {/* ── Model Type ──────────────────────────────────────────────────────── */}
-        {/* ── Model Type ──────────────────────────────────────────────────────── */}
+        {/* ── Business Opportunities (top-level model select) ────────────────── */}
         <Accordion
           ref={modelTypeRef}
           expanded={expandedSections.modelType}
@@ -689,33 +646,28 @@ const FillterPannel = React.memo(
               {filters.modelType && (
                 <Box
                   component="span"
-                  sx={{ ml: 1, fontSize: "0.7rem", color: "#ff9800",fontWeight: 400, }}
+                  sx={{
+                    ml: 1,
+                    fontSize: "0.7rem",
+                    color: "#ff9800",
+                    fontWeight: 400,
+                  }}
                 >
                   ({filters.modelType})
-                </Box>
-              )}
-              {filters.franchiseType && (
-                <Box
-                  component="span"
-                  sx={{ ml: 1, fontSize: "0.7rem", color: "#ff9800" }}
-                >
-                  → {filters.franchiseType}
                 </Box>
               )}
             </Typography>
           </AccordionSummary>
 
           <AccordionDetails sx={{ p: 0 }}>
-            {/* Top Level */}
             <Box
               sx={{
                 px: 1.5,
                 pt: 1,
-                pb: 0.5,
-                borderBottom: "1px solid #f5f5f5",
+                pb: 1,
               }}
             >
-              <Typography
+              {/* <Typography
                 sx={{
                   fontSize: "0.7rem",
                   color: "text.secondary",
@@ -724,7 +676,7 @@ const FillterPannel = React.memo(
                 }}
               >
                 Select Business Opportunites
-              </Typography>
+              </Typography> */}
               <RadioGroup
                 value={filters.modelType || ""}
                 onChange={(e) => {
@@ -745,96 +697,139 @@ const FillterPannel = React.memo(
                 ))}
               </RadioGroup>
             </Box>
+          </AccordionDetails>
+        </Accordion>
 
-            {/* Sub Types */}
-            {filters.modelType && (
-              <Box>
-                {loadingFranchiseTypes ? (
-                  <Box
-                    sx={{ display: "flex", justifyContent: "center", py: 3 }}
-                  >
-                    <CircularProgress size={24} sx={{ color: "#ff9800" }} />
-                  </Box>
-                ) : (
-                  <>
-                    {/* <DropdownSearchBox
-              inputRef={modelTypeSearchRef}
-              value={searchTerms.modelType}
-              onChange={(v) => updateSearch("modelType", v)}
-              onClear={() => updateSearch("modelType", "")}
-              placeholder={`Search in ${filters.modelType}...`}
-            /> */}
+        {/* ── Select Business Model (sub-type select, own accordion) ─────────── */}
+        <Accordion
+          ref={businessModelRef}
+          expanded={expandedSections.businessModel}
+          onChange={() => toggleSection("businessModel")}
+          disableGutters
+          elevation={0}
+          sx={{ mb: 2, "&:before": { display: "none" } }}
+        >
+          <AccordionSummary
+            expandIcon={<ExpandMoreIcon sx={{ color: "#4caf50" }} />}
+            sx={{ px: 1, "&.Mui-expanded": { minHeight: "48px" } }}
+          >
+            <Typography
+              sx={{
+                color: "#4caf50",
+                fontWeight: "bold",
+                fontSize: "0.875rem",
+              }}
+            >
+              Business Model
+              {filters.franchiseType && (
+                <Box
+                  component="span"
+                  sx={{
+                    ml: 1,
+                    fontSize: "0.7rem",
+                    color: "#ff9800",
+                    fontWeight: 400,
+                  }}
+                >
+                  ({filters.franchiseType})
+                </Box>
+              )}
+            </Typography>
+          </AccordionSummary>
 
-                    <Box sx={{ px: 1, maxHeight: 340, overflowY: "auto" }}>
-                      <RadioGroup
-                        value={filters.franchiseType || ""}
-                        onChange={(e) => {
-                          console.log(
-                            "FranchiseType selected:",
-                            e.target.value,
-                          );
-                          onFilterChange("franchiseType", e.target.value);
-                        }}
-                      >
-                        <Typography
-                          sx={{
-                            fontSize: "0.7rem",
-                            color: "text.secondary",
-                            mb: 0.5,
-                            textTransform: "uppercase",
-                            mt: 2,
-                          }}
-                        >
-                          Select Business Model
-                        </Typography>
-                        {Object.entries(filteredFranchiseHeading).map(
-                          ([heading, types]) => (
-                            <React.Fragment key={heading}>
-                              <Box
-                                sx={{
-                                  px: 1,
-                                  py: 0.5,
-                                  fontSize: "0.65rem",
-                                  fontWeight: 700,
-                                  textTransform: "uppercase",
-                                  color: "#ff9800",
-                                  backgroundColor: "#fff8f0",
-                                  borderRadius: "4px",
-                                  mt: 1.5,
-                                  mb: 0.5,
-                                }}
-                              >
-                                {heading}
-                              </Box>
-                              {types.map((type) => (
-                                <FormControlLabel
-                                  key={type}
-                                  value={type}
-                                  control={
-                                    <Radio
-                                      size="small"
-                                      sx={{ color: "#ff9800" }}
-                                    />
-                                  }
-                                  label={
-                                    <Typography fontSize="0.8125rem">
-                                      {type}
-                                    </Typography>
-                                  }
-                                  sx={{ mb: 0.5, ml: 0.5 }}
-                                />
-                              ))}
-                            </React.Fragment>
-                          ),
-                        )}
-                      </RadioGroup>
-                    </Box>
-                  </>
-                )}
+          <AccordionDetails sx={{ p: 0 }}>
+            {!filters.modelType ? (
+              <Typography
+                fontSize="0.75rem"
+                color="text.secondary"
+                textAlign="center"
+                sx={{ py: 3, px: 2 }}
+              >
+                Please select a Business Opportunity first
+              </Typography>
+            ) : loadingFranchiseTypes ? (
+              <Box sx={{ display: "flex", justifyContent: "center", py: 3 }}>
+                <CircularProgress size={24} sx={{ color: "#ff9800" }} />
               </Box>
+            ) : (
+              <>
+                {/* <DropdownSearchBox
+                  inputRef={modelTypeSearchRef}
+                  value={searchTerms.modelType}
+                  onChange={(v) => updateSearch("modelType", v)}
+                  onClear={() => updateSearch("modelType", "")}
+                  placeholder={`Search in ${filters.modelType}...`}
+                /> */}
+
+                <Box sx={{ px: 1, maxHeight: 340, overflowY: "auto" }}>
+                  <RadioGroup
+                    value={filters.franchiseType || ""}
+                    onChange={(e) => {
+                      console.log(
+                        "FranchiseType selected:",
+                        e.target.value,
+                      );
+                      onFilterChange("franchiseType", e.target.value);
+                    }}
+                  >
+                    {Object.keys(filteredFranchiseHeading).length === 0 && (
+                      <Typography
+                        fontSize="0.75rem"
+                        color="text.secondary"
+                        textAlign="center"
+                        sx={{ py: 2 }}
+                      >
+                        No business models found
+                      </Typography>
+                    )}
+
+                    {Object.entries(filteredFranchiseHeading).map(
+                      ([heading, types]) => (
+                        <React.Fragment key={heading}>
+                          <Box
+                            sx={{
+                              px: 1,
+                              py: 0.5,
+                              fontSize: "0.65rem",
+                              fontWeight: 700,
+                              textTransform: "uppercase",
+                              color: "#ff9800",
+                              backgroundColor: "#fff8f0",
+                              borderRadius: "4px",
+                              mt: 1.5,
+                              mb: 0.5,
+                            }}
+                          >
+                            {heading}
+                          </Box>
+                          {types.map((type) => (
+                            <FormControlLabel
+                              key={type}
+                              value={type}
+                              control={
+                                <Radio
+                                  size="small"
+                                  sx={{ color: "#ff9800" }}
+                                />
+                              }
+                              label={
+                                <Typography fontSize="0.8125rem">
+                                  {type}
+                                </Typography>
+                              }
+                              sx={{ mb: 0.5, ml: 0.5 }}
+                            />
+                          ))}
+                        </React.Fragment>
+                      ),
+                    )}
+                  </RadioGroup>
+                </Box>
+              </>
             )}
           </AccordionDetails>
         </Accordion>
+
         {/* ── Investment Range ─────────────────────────────────────────────────── */}
         <Accordion
           ref={investmentRef}
