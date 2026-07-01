@@ -3,7 +3,7 @@ import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import axios from 'axios';
 import { getUserId } from '@/Utils/autherId';
 
-const API_BASE_URL = 'https://mrfranchisebackend.mrfranchise.in/api/v1/';
+const API_BASE_URL = 'http://localhost:5000/api/v1/';
 
 
 

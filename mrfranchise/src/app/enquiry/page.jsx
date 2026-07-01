@@ -51,7 +51,7 @@ import DateRangeIcon from "@mui/icons-material/DateRange";
 import Footer from "@/Components/Footers/Footer";
 import Navbar from "@/Components/Navbar/NavBar";
 
-const API = "https://mrfranchisebackend.mrfranchise.in/api/v1/instantapply/all?page=1&limit=100";
+const API = "http://localhost:5000/api/v1/instantapply/all?page=1&limit=100";
 
 export default function InstantApplyPage() {
   const [leads, setLeads] = useState([]);

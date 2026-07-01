@@ -477,7 +477,7 @@ const Search = ({ handleClose }) => {
               handleSelectedSuggestionData={handleSelectedSuggestionData}
             />
           )}
-        </Paper>
+        </Paper>  
       )}
     </Box>
   );
