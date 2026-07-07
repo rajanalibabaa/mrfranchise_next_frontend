@@ -31,6 +31,7 @@ import {
   FormControl,
   FormHelperText,
   IconButton,
+  ListSubheader,
 } from "@mui/material";
 import {
   Person,
@@ -52,7 +53,6 @@ import {
 } from "@mui/icons-material";
 import { Link as RouterLink } from "next/link";
 import { useDispatch } from "react-redux";
-// import { showLoading, hideLoading } from "@/Redux/Slices/loadingSlice";
 import FlagIcon from "@mui/icons-material/Flag";
 import Navbar from "@/Components/Navbar/NavBar";
 import Footer from "@/Components/Footers/Footer";
@@ -61,7 +61,6 @@ import AdSlot from "@/Components/ads/GoogleAd";
 import { ADS } from "@/config/ads.config";
 
 const initialFormState = {
-  // Personal Details
   firstName: "",
   email: "",
   mobileNumber: "",
@@ -75,13 +74,12 @@ const initialFormState = {
   otherOccupation: "",
   terms: false,
 
-  // Preferences (for current preference being added)
   currentPreference: {
     industry: "",
     category: "",
     investmentRange: "",
     investmentAmount: "",
-    locationType: "domestic", // 'domestic' or 'international'
+    locationType: "domestic",
     preferredCountry: "India",
     preferredState: "",
     preferredDistrict: "",
@@ -93,7 +91,6 @@ const initialFormState = {
     propertyCity: "",
   },
 
-  // List of added preferences
   preferences: [],
 };
 
@@ -166,7 +163,7 @@ const propertySizeOptions = [
 const InvestorRegister = () => {
   const [formData, setFormData] = useState(initialFormState);
   const [verificationState, setVerificationState] = useState(
-    initialVerificationState,
+    initialVerificationState
   );
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -179,7 +176,6 @@ const InvestorRegister = () => {
   const [registrationSuccess, setRegistrationSuccess] = useState(false);
   const [showWhatsappSnackbar, setShowWhatsappSnackbar] = useState(false);
 
-  // Data states
   const [countries, setCountries] = useState([]);
   const [countryCodes, setCountryCodes] = useState([]);
   const [phonePrefix, setPhonePrefix] = useState("+91");
@@ -192,13 +188,14 @@ const InvestorRegister = () => {
   const [propertyCities, setPropertyCities] = useState([]);
   const [loadingPincode, setLoadingPincode] = useState(false);
   const [pincodeError, setPincodeError] = useState("");
-  
-  // Updated industry states
-  const [industryGroupedData, setIndustryGroupedData] = useState([]); // full grouped data for display
-  const [industryOptions, setIndustryOptions] = useState([]); // flattened array of { industry, heading } for Autocomplete
+
+  // ─── NEW: grouped industry state ─────────────────────────────────────────
+  // industryGroups: [{ heading: string, industries: string[] }]
+  const [industryGroups, setIndustryGroups] = useState([]);
   const [categoryOptions, setCategoryOptions] = useState([]);
   const [loadingIndustries, setLoadingIndustries] = useState(true);
   const [loadingIndustryDetails, setLoadingIndustryDetails] = useState(false);
+  // ─────────────────────────────────────────────────────────────────────────
 
   const navigate = useRouter();
   const dispatch = useDispatch();
@@ -208,31 +205,24 @@ const InvestorRegister = () => {
 
   const FORM_DATA_KEY = "investor_form_data";
 
-  // Fetch initial data
   useEffect(() => {
-    // Fetch countries
     fetch("https://countriesnow.space/api/v0.1/countries")
       .then((res) => res.json())
       .then((data) => {
-        if (data.data) {
-          setCountries(
-            data.data.map((c) => ({ name: c.country, code: c.iso2 })),
-          );
-        }
+        if (data.data)
+          setCountries(data.data.map((c) => ({ name: c.country, code: c.iso2 })));
       });
 
-    // Fetch country codes for phone prefixes
     fetch("https://countriesnow.space/api/v0.1/countries/codes")
       .then((res) => res.json())
       .then((data) => {
         if (data.data) setCountryCodes(data.data);
       });
 
-    // Fetch India state data
     const fetchIndiaData = async () => {
       try {
         const res = await axios.get(
-          "https://raw.githubusercontent.com/prasad-gowda/india-state-district-cities/master/India-state-district-city.json",
+          "https://raw.githubusercontent.com/prasad-gowda/india-state-district-cities/master/India-state-district-city.json"
         );
         setIndiaData(res.data);
       } catch (err) {
@@ -241,7 +231,6 @@ const InvestorRegister = () => {
     };
     fetchIndiaData();
 
-    // Fetch international countries
     fetch("https://countriesnow.space/api/v0.1/countries/positions")
       .then((res) => res.json())
       .then((data) => {
@@ -252,7 +241,6 @@ const InvestorRegister = () => {
         }
       });
 
-    // Load saved form data
     const savedData = localStorage.getItem(FORM_DATA_KEY);
     if (savedData) {
       try {
@@ -263,24 +251,18 @@ const InvestorRegister = () => {
       }
     }
 
-    // Fetch industries
     fetchIndustries();
   }, []);
 
-  // Save form data to localStorage
   useEffect(() => {
     localStorage.setItem(FORM_DATA_KEY, JSON.stringify(formData));
   }, [formData]);
 
-  // Update phone prefix when country changes
   useEffect(() => {
     const country = formData.country;
-    if (!country) {
-      setPhonePrefix("+91");
-      return;
-    }
+    if (!country) { setPhonePrefix("+91"); return; }
     const found = countryCodes.find(
-      (c) => c.name === country || c.iso2 === country || c.iso3 === country,
+      (c) => c.name === country || c.iso2 === country || c.iso3 === country
     );
     setPhonePrefix(found ? found.dial_code : "+91");
   }, [formData.country, countryCodes]);
@@ -288,17 +270,14 @@ const InvestorRegister = () => {
   const getCountryIsoCode = (countryName) => {
     if (!countryName) return "IN";
     const normalized = countryName.trim().toLowerCase();
-
     if (normalized === "india") return "IN";
-
     const selectedCountryObj = countries.find(
       (c) =>
         c.name?.toLowerCase() === normalized ||
         c.code?.toLowerCase() === normalized ||
         c.iso2?.toLowerCase() === normalized ||
-        c.iso3?.toLowerCase() === normalized,
+        c.iso3?.toLowerCase() === normalized
     );
-
     if (selectedCountryObj?.code) return selectedCountryObj.code.toUpperCase();
     return normalized.length === 2 ? normalized.toUpperCase() : "IN";
   };
@@ -306,35 +285,18 @@ const InvestorRegister = () => {
   const lookupPincode = async (pincode, country) => {
     const countryCode = getCountryIsoCode(country);
     if (!pincode || !country) return;
-
     setLoadingPincode(true);
     setPincodeError("");
-
     try {
-      const result = await fetchGlobalLocationByPostalCode(
-        pincode,
-        countryCode,
-      );
-
-      if (result.status !== "success") {
-        throw new Error(result.message || "No location found");
-      }
-
-      setFormData((prev) => ({
-        ...prev,
-        state: result.state || "",
-        city: result.city || "",
-      }));
+      const result = await fetchGlobalLocationByPostalCode(pincode, countryCode);
+      if (result.status !== "success") throw new Error(result.message || "No location found");
+      setFormData((prev) => ({ ...prev, state: result.state || "", city: result.city || "" }));
     } catch (err) {
-      setFormData((prev) => ({
-        ...prev,
-        state: "",
-        city: "",
-      }));
+      setFormData((prev) => ({ ...prev, state: "", city: "" }));
       setPincodeError(
         countryCode === "IN"
           ? "Invalid Indian pincode"
-          : "Postal code not found for selected country",
+          : "Postal code not found for selected country"
       );
     } finally {
       setLoadingPincode(false);
@@ -345,53 +307,35 @@ const InvestorRegister = () => {
     const pincode = formData.pincode;
     const country = formData.country;
     const countryCode = getCountryIsoCode(country);
-
-    if (!pincode || !country) {
-      setPincodeError("");
-      return;
-    }
-
-    if (
-      countryCode === "IN" && pincode.length === 6
-    ) {
-      lookupPincode(pincode, country);
-    } else if (countryCode !== "IN" && pincode.length >= 3) {
-      lookupPincode(pincode, country);
-    } else if (countryCode === "IN" && pincode.length > 0 && pincode.length < 6) {
+    if (!pincode || !country) { setPincodeError(""); return; }
+    if (countryCode === "IN" && pincode.length === 6) lookupPincode(pincode, country);
+    else if (countryCode !== "IN" && pincode.length >= 3) lookupPincode(pincode, country);
+    else if (countryCode === "IN" && pincode.length > 0 && pincode.length < 6)
       setPincodeError("Enter 6-digit pincode");
-    }
   }, [formData.pincode, formData.country, countries]);
 
   const handlePincodeBlur = () => {
     const pincode = formData.pincode;
     const country = formData.country;
     const countryCode = getCountryIsoCode(country);
-
     if (
       (countryCode === "IN" && pincode.length === 6) ||
       (countryCode !== "IN" && pincode.length >= 3)
-    ) {
+    )
       lookupPincode(pincode, country);
-    }
   };
 
-  // Fetch property states when property country changes
   useEffect(() => {
     const country = formData.currentPreference.propertyCountry;
     if (!country) {
       setPropertyStates([]);
       setFormData((prev) => ({
         ...prev,
-        currentPreference: {
-          ...prev.currentPreference,
-          propertyState: "",
-          propertyCity: "",
-        },
+        currentPreference: { ...prev.currentPreference, propertyState: "", propertyCity: "" },
       }));
       setPropertyCities([]);
       return;
     }
-
     fetch("https://countriesnow.space/api/v0.1/countries/states", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -399,62 +343,43 @@ const InvestorRegister = () => {
     })
       .then((res) => res.json())
       .then((data) => {
-        if (data.data && data.data.states) {
-          setPropertyStates(data.data.states.map((s) => s.name));
-        } else {
-          setPropertyStates([]);
-        }
+        if (data.data && data.data.states) setPropertyStates(data.data.states.map((s) => s.name));
+        else setPropertyStates([]);
       })
       .catch(() => setPropertyStates([]));
   }, [formData.currentPreference.propertyCountry]);
 
-  // Fetch property cities when property state changes
   useEffect(() => {
     const country = formData.currentPreference.propertyCountry;
     const state = formData.currentPreference.propertyState;
-
     if (!country || !state) {
       setPropertyCities([]);
       setFormData((prev) => ({
         ...prev,
-        currentPreference: {
-          ...prev.currentPreference,
-          propertyCity: "",
-        },
+        currentPreference: { ...prev.currentPreference, propertyCity: "" },
       }));
       return;
     }
-
     if (country === "India" && indiaData.length > 0) {
       const stateObj = indiaData.find((s) => s.name === state);
       if (stateObj) {
         const uniqueCities = Array.from(
-          new Set((stateObj.cities || []).map((city) => city.name)),
+          new Set((stateObj.cities || []).map((city) => city.name))
         );
         setPropertyCities(uniqueCities);
-      } else {
-        setPropertyCities([]);
-      }
+      } else setPropertyCities([]);
     } else {
       fetch("https://countriesnow.space/api/v0.1/countries/state/cities", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          country: country.trim(),
-          state: state.trim(),
-        }),
+        body: JSON.stringify({ country: country.trim(), state: state.trim() }),
       })
         .then((res) => res.json())
         .then((data) => {
-          if (data.data && Array.isArray(data.data)) {
-            setPropertyCities(data.data);
-          } else {
-            setPropertyCities([]);
-          }
+          if (data.data && Array.isArray(data.data)) setPropertyCities(data.data);
+          else setPropertyCities([]);
         })
-        .catch(() => {
-          setPropertyCities([]);
-        });
+        .catch(() => setPropertyCities([]));
     }
   }, [
     formData.currentPreference.propertyCountry,
@@ -462,13 +387,9 @@ const InvestorRegister = () => {
     indiaData,
   ]);
 
-  // Fetch international states when preferred country changes
   useEffect(() => {
     const country = formData.currentPreference.preferredCountry;
-    if (
-      formData.currentPreference.locationType === "international" &&
-      country
-    ) {
+    if (formData.currentPreference.locationType === "international" && country) {
       fetch("https://countriesnow.space/api/v0.1/countries/states", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -476,44 +397,26 @@ const InvestorRegister = () => {
       })
         .then((res) => res.json())
         .then((data) => {
-          if (data.data && data.data.states) {
-            setIntlStates(data.data.states.map((s) => s.name));
-          } else {
-            setIntlStates([]);
-          }
+          if (data.data && data.data.states) setIntlStates(data.data.states.map((s) => s.name));
+          else setIntlStates([]);
         })
         .catch(() => setIntlStates([]));
     }
-  }, [
-    formData.currentPreference.preferredCountry,
-    formData.currentPreference.locationType,
-  ]);
+  }, [formData.currentPreference.preferredCountry, formData.currentPreference.locationType]);
 
-  // Fetch international cities when preferred state changes
   useEffect(() => {
     const country = formData.currentPreference.preferredCountry;
     const state = formData.currentPreference.preferredState;
-
-    if (
-      formData.currentPreference.locationType === "international" &&
-      country &&
-      state
-    ) {
+    if (formData.currentPreference.locationType === "international" && country && state) {
       fetch("https://countriesnow.space/api/v0.1/countries/state/cities", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          country,
-          state,
-        }),
+        body: JSON.stringify({ country, state }),
       })
         .then((res) => res.json())
         .then((data) => {
-          if (data.data) {
-            setIntlCities(data.data);
-          } else {
-            setIntlCities([]);
-          }
+          if (data.data) setIntlCities(data.data);
+          else setIntlCities([]);
         })
         .catch(() => setIntlCities([]));
     }
@@ -523,78 +426,106 @@ const InvestorRegister = () => {
     formData.currentPreference.locationType,
   ]);
 
-  // Handle form input changes
   const handleInputChange = (field, value) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handlePreferenceChange = (field, value) => {
     setFormData((prev) => ({
       ...prev,
-      currentPreference: {
-        ...prev.currentPreference,
-        [field]: value,
-      },
+      currentPreference: { ...prev.currentPreference, [field]: value },
     }));
   };
+// Helper to extract clean name (text inside brackets if present, otherwise full name)
+// Helper to get display name (text BEFORE bracket)
+const getDisplayName = (name) => {
+  if (!name) return name;
+  return name.split("(")[0].trim();
+};
 
-  // Get Indian states and districts
-  const getIndianStates = () => {
-    return indiaData.map((state) => state.name) || [];
-  };
+// Helper to extract clean name (text INSIDE brackets, or full name if no brackets)
+const extractCleanName = (name) => {
+  if (!name) return name;
+  const match = name.match(/\(([^)]+)\)/);
+  return match ? match[1] : name;
+};
 
-  const getIndianDistricts = (stateName) => {
-    if (!stateName) return [];
-    const stateObj = indiaData.find((s) => s.name === stateName);
-    return stateObj?.districts || [];
-  };
+const getIndianStates = () => indiaData.map((state) => state.name) || [];
 
-  const getIndianCities = (stateName, districtName) => {
-    if (!stateName || !districtName) return [];
-    const stateObj = indiaData.find((s) => s.name === stateName);
-    if (!stateObj?.cities) return [];
+const getIndianDistricts = (stateName) => {
+  if (!stateName) return [];
+  const stateObj = indiaData.find((s) => s.name === stateName);
+  if (!stateObj) return [];
+  return stateObj.districts || [];
+};
 
-    return stateObj.cities
-      .filter((city) => city.district === districtName)
-      .map((city) => city.name);
-  };
+const getIndianCities = (stateName, districtValue) => {
+  if (!stateName || !districtValue) return [];
 
-  // Fetch industries – now expects grouped data
+  const stateObj = indiaData.find((s) => s.name === stateName);
+  if (!stateObj) return [];
+  if (!stateObj.cities || !Array.isArray(stateObj.cities)) return [];
+
+  // KEY FIX:
+  // District stored value = "Kanchipuram (Kancheepuram)"  (raw from districts array)
+  // city.district in JSON = "Kanchipuram"                 (only text BEFORE bracket)
+  // So we MUST use getDisplayName() to match city.district
+
+  const displayDistrict = getDisplayName(districtValue); // "Kanchipuram"
+  const cleanDistrict = extractCleanName(districtValue);  // "Kancheepuram"
+
+  console.log("Matching district:", {
+    raw: districtValue,
+    display: displayDistrict,
+    clean: cleanDistrict,
+    totalCities: stateObj.cities.length,
+    sampleCityDistricts: stateObj.cities.slice(0, 5).map(c => c.district)
+  });
+
+  const filtered = stateObj.cities.filter((city) => {
+    const cd = (city.district || "").trim();
+    return (
+      cd === displayDistrict ||                                    // ✅ PRIMARY: "Kanchipuram"
+      cd === cleanDistrict ||                                      // "Kancheepuram"
+      cd === districtValue ||                                      // exact raw match
+      cd.toLowerCase() === displayDistrict.toLowerCase() ||       // case-insensitive
+      cd.toLowerCase() === cleanDistrict.toLowerCase()
+    );
+  });
+
+  console.log("Filtered cities count:", filtered.length);
+
+  const cityNames = filtered.map((city) => city.name);
+  return [...new Set(cityNames)];
+};
+
+  // ─── UPDATED: fetchIndustries ─────────────────────────────────────────────
+  // Backend now returns: { success, data: { Industry: [{ heading, industries }] } }
   const fetchIndustries = async () => {
     try {
       setLoadingIndustries(true);
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/getIndustryByIndustryName`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/getIndustryByIndustryName`
       );
       const result = await response.json();
 
-      if (result.success && result.data?.Industry) {
-        const grouped = result.data.Industry; // array of { heading, industries }
-        setIndustryGroupedData(grouped);
+      if (result.success && Array.isArray(result.data?.Industry)) {
+        // Store grouped structure: [{ heading, industries: string[] }]
+        setIndustryGroups(result.data.Industry);
 
-        // Flatten to an array of { industry, heading } for Autocomplete
-        const flatOptions = [];
-        grouped.forEach((group) => {
-          group.industries.forEach((ind) => {
-            flatOptions.push({
-              industry: ind,
-              heading: group.heading,
-            });
-          });
-        });
-        setIndustryOptions(flatOptions);
-
-        // Set default to Food & Beverages if exists
-        const foodBeverage = flatOptions.find((opt) =>
-          opt.industry.toLowerCase().includes("food") ||
-          opt.industry.toLowerCase().includes("beverage")
-        );
-        if (foodBeverage) {
-          handlePreferenceChange("industry", foodBeverage.industry);
-          fetchIndustryDetails(foodBeverage.industry);
+        // Auto-select Food & Beverages if present (search across all groups)
+        let defaultIndustry = null;
+        for (const group of result.data.Industry) {
+          const found = group.industries?.find(
+            (ind) =>
+              ind.toLowerCase().includes("food") ||
+              ind.toLowerCase().includes("beverage")
+          );
+          if (found) { defaultIndustry = found; break; }
+        }
+        if (defaultIndustry) {
+          handlePreferenceChange("industry", defaultIndustry);
+          fetchIndustryDetails(defaultIndustry);
         }
       }
     } catch (error) {
@@ -604,21 +535,24 @@ const InvestorRegister = () => {
       setLoadingIndustries(false);
     }
   };
+  // ─────────────────────────────────────────────────────────────────────────
 
-  // Fetch industry details (categories, etc.)
   const fetchIndustryDetails = async (industryName) => {
     if (!industryName) return;
-
     try {
       setLoadingIndustryDetails(true);
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/getIndustryByIndustryName?industry=${encodeURIComponent(industryName)}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/getIndustryByIndustryName?industry=${encodeURIComponent(industryName)}`
       );
       const result = await response.json();
-
-     if (result.success && result.data) {
-  setCategoryOptions(result.data.categories || []); // array of { category, id }
-}
+      if (result.success && result.data) {
+        // Normalize: backend may return strings or objects — always store strings
+        const raw = result.data.categories || [];
+        const normalized = raw.map((c) =>
+          typeof c === "string" ? c : c?.name || c?.category || c?.label || String(c)
+        );
+        setCategoryOptions(normalized);
+      }
     } catch (error) {
       console.error("Error fetching industry details:", error);
       showSnackbar("Failed to load industry details", "error");
@@ -627,30 +561,21 @@ const InvestorRegister = () => {
     }
   };
 
-  // Handle industry change – called when user selects an industry from Autocomplete
   const handleIndustryChange = (value) => {
-    // value is the industry string
     handlePreferenceChange("industry", value);
     handlePreferenceChange("category", "");
-    if (value) {
-      fetchIndustryDetails(value);
-    }
+    if (value) fetchIndustryDetails(value);
   };
 
-  // Add preference
   const handleAddPreference = () => {
     const pref = formData.currentPreference;
     const errors = [];
-
-    // Basic required fields (always required)
     if (!pref.industry) errors.push("Industry");
     if (!pref.category) errors.push("Category");
     if (!pref.investmentRange) errors.push("Investment Range");
     if (!pref.investmentAmount) errors.push("Investment Amount");
     if (!pref.locationType) errors.push("Location Type");
     if (!pref.propertyType) errors.push("Property Type");
-
-    // Location-specific validation
     if (pref.locationType === "domestic") {
       if (!pref.preferredState) errors.push("Preferred State");
       if (!pref.preferredDistrict) errors.push("Preferred District");
@@ -660,24 +585,16 @@ const InvestorRegister = () => {
       if (!pref.preferredState) errors.push("Preferred State");
       if (!pref.preferredCity) errors.push("Preferred City");
     }
-
-    // Property-specific validation (only for Own Property)
     if (pref.propertyType === "Own Property") {
       if (!pref.propertySize) errors.push("Property Size");
       if (!pref.propertyCountry) errors.push("Property Country");
       if (!pref.propertyState) errors.push("Property State");
       if (!pref.propertyCity) errors.push("Property City");
     }
-
     if (errors.length > 0) {
-      showSnackbar(
-        `Please fill required fields: ${errors.join(", ")}`,
-        "error",
-      );
+      showSnackbar(`Please fill required fields: ${errors.join(", ")}`, "error");
       return;
     }
-
-    // Check if this preference already exists
     const isDuplicate = formData.preferences.some(
       (existingPref) =>
         existingPref.industry === pref.industry &&
@@ -685,28 +602,23 @@ const InvestorRegister = () => {
         existingPref.investmentAmount === pref.investmentAmount &&
         existingPref.locationType === pref.locationType &&
         existingPref.preferredState === pref.preferredState &&
-        existingPref.propertyType === pref.propertyType,
+        existingPref.propertyType === pref.propertyType
     );
-
     if (isDuplicate) {
       showSnackbar("This preference already exists!", "warning");
       return;
     }
-
-    // Add to preferences list
     setFormData((prev) => ({
       ...prev,
       preferences: [...prev.preferences, { ...pref }],
       currentPreference: {
         ...initialFormState.currentPreference,
-        locationType: pref.locationType, // Keep same location type for convenience
+        locationType: pref.locationType,
       },
     }));
-
     showSnackbar("Preference added successfully!", "success");
   };
 
-  // Remove preference
   const handleRemovePreference = (index) => {
     if (window.confirm("Are you sure you want to remove this preference?")) {
       setFormData((prev) => ({
@@ -717,7 +629,6 @@ const InvestorRegister = () => {
     }
   };
 
-  // Edit preference
   const handleEditPreference = (index) => {
     const prefToEdit = formData.preferences[index];
     setFormData((prev) => ({
@@ -728,81 +639,46 @@ const InvestorRegister = () => {
     showSnackbar("Preference loaded for editing", "info");
   };
 
-  // Handle OTP verification
   const handleVerificationDialog = (field, open) => {
     setVerificationState((prev) => ({
       ...prev,
-      [field]: {
-        ...prev[field],
-        showDialog: open,
-        error: null,
-      },
+      [field]: { ...prev[field], showDialog: open, error: null },
     }));
     setOtpInput("");
   };
 
   const handleSendOtp = async (field) => {
-    const identifier =
-      field === "email" ? formData.email : formData.mobileNumber;
-
-    if (!identifier) {
-      showSnackbar(`Please enter ${field} first`, "error");
-      return;
-    }
-
+    const identifier = field === "email" ? formData.email : formData.mobileNumber;
+    if (!identifier) { showSnackbar(`Please enter ${field} first`, "error"); return; }
     setVerificationState((prev) => ({
       ...prev,
-      [field]: {
-        ...prev[field],
-        loading: true,
-        error: null,
-      },
+      [field]: { ...prev[field], loading: true, error: null },
     }));
-
     try {
       const response = await axios.post(
         `${API_BASE_URL}/otpverify/send-otp-email`,
-        {
-          [field === "email" ? "email" : "phone"]: identifier,
-          type: field,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        },
+        { [field === "email" ? "email" : "phone"]: identifier, type: field },
+        { headers: { "Content-Type": "application/json" } }
       );
-
       if (response.data.token) {
         setOtpToken(response.data.token);
         setVerificationState((prev) => ({
           ...prev,
-          [field]: {
-            ...prev[field],
-            otpSent: true,
-            loading: false,
-            verified: false,
-          },
+          [field]: { ...prev[field], otpSent: true, loading: false, verified: false },
         }));
         showSnackbar(`OTP sent successfully to your ${field}`, "success");
       } else {
         throw new Error(response.data.message || "Failed to send OTP");
       }
     } catch (error) {
-      console.error(`Error sending OTP for ${field}:`, error);
       const errorMessage =
         error.response?.data?.message ||
         error.response?.data?.error ||
         error.message ||
         "Failed to send OTP";
-
       setVerificationState((prev) => ({
         ...prev,
-        [field]: {
-          ...prev[field],
-          loading: false,
-          error: errorMessage,
-        },
+        [field]: { ...prev[field], loading: false, error: errorMessage },
       }));
       showSnackbar(errorMessage, "error");
     }
@@ -812,29 +688,19 @@ const InvestorRegister = () => {
     if (!otpInput || otpInput.length !== 6) {
       setVerificationState((prev) => ({
         ...prev,
-        [field]: {
-          ...prev[field],
-          error: "Please enter a valid 6-digit OTP",
-        },
+        [field]: { ...prev[field], error: "Please enter a valid 6-digit OTP" },
       }));
       return;
     }
-
     setVerificationState((prev) => ({
       ...prev,
-      [field]: {
-        ...prev[field],
-        loading: true,
-        error: null,
-      },
+      [field]: { ...prev[field], loading: true, error: null },
     }));
-
     try {
       const response = await axios.post(
         `${API_BASE_URL}/otpverify/verify-otp`,
         {
-          identifier:
-            field === "email" ? formData.email : formData.mobileNumber,
+          identifier: field === "email" ? formData.email : formData.mobileNumber,
           otp: otpInput,
           type: field,
         },
@@ -843,110 +709,58 @@ const InvestorRegister = () => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${otpToken}`,
           },
-        },
+        }
       );
-
       if (response.data.message?.includes("verified successfully")) {
         setVerificationState((prev) => ({
           ...prev,
-          [field]: {
-            ...prev[field],
-            verified: true,
-            showDialog: false,
-            loading: false,
-          },
+          [field]: { ...prev[field], verified: true, showDialog: false, loading: false },
         }));
         showSnackbar(
           response.data.message ||
             `${field === "email" ? "Email" : "Mobile number"} verified successfully!`,
-          "success",
+          "success"
         );
         setOtpInput("");
       } else {
         throw new Error(response.data.error || "OTP verification failed");
       }
     } catch (error) {
-      console.error(`Error verifying OTP for ${field}:`, error);
       const errorMessage =
         error.response?.data?.message ||
         error.response?.data?.error ||
         error.message ||
         "OTP verification failed";
-
       setVerificationState((prev) => ({
         ...prev,
-        [field]: {
-          ...prev[field],
-          loading: false,
-          error: errorMessage,
-        },
+        [field]: { ...prev[field], loading: false, error: errorMessage },
       }));
       showSnackbar(errorMessage, "error");
     }
   };
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Personal fields validation with specific error messages
     const validationErrors = [];
-
-    if (!formData.firstName.trim()) {
-      validationErrors.push("First Name");
-    }
-
-    if (!formData.email.trim()) {
-      validationErrors.push("Email");
-    }
-
-    if (!verificationState.email.verified) {
-      validationErrors.push("Email verification");
-    }
-
-    if (!formData.mobileNumber.trim() || formData.mobileNumber.length !== 10) {
+    if (!formData.firstName.trim()) validationErrors.push("First Name");
+    if (!formData.email.trim()) validationErrors.push("Email");
+    if (!verificationState.email.verified) validationErrors.push("Email verification");
+    if (!formData.mobileNumber.trim() || formData.mobileNumber.length !== 10)
       validationErrors.push("Mobile Number (10 digits)");
-    }
-
-    if (!formData.address.trim()) {
-      validationErrors.push("Address");
-    }
-
-    if (!formData.pincode.trim()) {
-      validationErrors.push("Pincode/Postal Code");
-    }
-
-    if (!formData.country.trim()) {
-      validationErrors.push("Country");
-    }
-
-    if (
-      formData.occupation === "" ||
-      formData.occupation === "Select Occupation"
-    ) {
+    if (!formData.address.trim()) validationErrors.push("Address");
+    if (!formData.pincode.trim()) validationErrors.push("Pincode/Postal Code");
+    if (!formData.country.trim()) validationErrors.push("Country");
+    if (formData.occupation === "" || formData.occupation === "Select Occupation")
       validationErrors.push("Occupation");
-    }
-
-    if (formData.occupation === "Other" && !formData.otherOccupation.trim()) {
+    if (formData.occupation === "Other" && !formData.otherOccupation.trim())
       validationErrors.push("Specify Occupation");
-    }
-
-    if (!formData.terms) {
-      validationErrors.push("Terms and Conditions");
-    }
-
-    // Check if at least one preference is added
-    if (formData.preferences.length === 0) {
+    if (!formData.terms) validationErrors.push("Terms and Conditions");
+    if (formData.preferences.length === 0)
       validationErrors.push("At least one investment preference");
-    }
-
-    // Show all errors at once
     if (validationErrors.length > 0) {
       showSnackbar(`Please complete: ${validationErrors.join(", ")}`, "error");
       return;
     }
-
-    // Format the data for backend - ONLY use preferences from the list
     const formattedData = {
       firstName: formData.firstName.trim(),
       email: formData.email.trim(),
@@ -965,12 +779,8 @@ const InvestorRegister = () => {
       }),
       preferences: formData.preferences.map((pref) => {
         const isInternational = pref.locationType === "international";
-
-        // Format location data based on type
         let locationData = {};
-
         if (isInternational) {
-          // For international: country, state, city
           locationData = {
             preferredCountry: pref.preferredCountry || "",
             preferredState: pref.preferredState || "",
@@ -978,23 +788,15 @@ const InvestorRegister = () => {
             locationType: "international",
           };
         } else {
-          // For domestic: India, state, district, city
           locationData = {
             preferredCountry: "India",
             preferredState: pref.preferredState || "",
-            preferredDistrict: pref.preferredDistrict || "",
-            preferredCity: pref.preferredCity || "",
+preferredDistrict: getDisplayName(pref.preferredDistrict) || "", // ← send clean name            preferredCity: pref.preferredCity || "",
             locationType: "domestic",
           };
         }
-
         return {
-          category: [
-            {
-              main: pref.industry || "",
-              sub: pref.category || "",
-            },
-          ],
+          category: [{ main: pref.industry || "", sub: pref.category || "" }],
           investmentRange: pref.investmentRange || "",
           investmentAmount: pref.investmentAmount || "",
           propertyPreferred: [
@@ -1012,81 +814,102 @@ const InvestorRegister = () => {
         };
       }),
     };
-
     try {
-      // dispatch(showLoading());
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL}/api/v1/investor/createInvestor`,
         formattedData,
-        { headers: { "Content-Type": "application/json" } },
+        { headers: { "Content-Type": "application/json" } }
       );
-
       if (response.status === 201) {
-        // Clear form and localStorage
         localStorage.removeItem(FORM_DATA_KEY);
         setFormData(initialFormState);
         setRegistrationSuccess(true);
-
-        if (formattedData.firstName) {
-          localStorage.setItem("investorName", formattedData.firstName);
-        }
-        if (formattedData.email) {
-          localStorage.setItem("investorEmail", formattedData.email);
-        }
+        if (formattedData.firstName) localStorage.setItem("investorName", formattedData.firstName);
+        if (formattedData.email) localStorage.setItem("investorEmail", formattedData.email);
       } else {
-        showSnackbar(
-          "An unexpected error occurred. Please try again.",
-          "error",
-        );
+        showSnackbar("An unexpected error occurred. Please try again.", "error");
       }
     } catch (error) {
       console.error("Registration error:", error);
-
       if (error.response?.status === 409) {
-        showSnackbar(
-          "This user is already registered. Please log in.",
-          "error",
-        );
+        showSnackbar("This user is already registered. Please log in.", "error");
       } else if (error.response?.data?.errors) {
         showSnackbar(error.response.data.errors.join(", "), "error");
       } else {
         showSnackbar(
-          error.response?.data?.message ||
-            "An unexpected error occurred. Please try again.",
-          "error",
+          error.response?.data?.message || "An unexpected error occurred. Please try again.",
+          "error"
         );
       }
     }
   };
-  
-  // Snackbar helpers
+
   const showSnackbar = (message, severity = "info") => {
     setSnackbar({ open: true, message, severity });
   };
+  const handleCloseSnackbar = () => setSnackbar((prev) => ({ ...prev, open: false }));
+  const openLoginPopup = () => setLoginOpen(true);
+  const closeLoginPopup = () => { setLoginOpen(false); setRegistrationSuccess(false); };
+  const handleSuccessRedirect = () => { setRegistrationSuccess(false); navigate.push("/"); };
 
-  const handleCloseSnackbar = () => {
-    setSnackbar((prev) => ({ ...prev, open: false }));
-  };
+  // ─── Build flat + grouped MenuItems for the Industry select ──────────────
+  const buildIndustryMenuItems = () => {
+    if (loadingIndustries) {
+      return [
+        <MenuItem key="loading" disabled>
+          <CircularProgress size={16} sx={{ mr: 1 }} /> Loading industries…
+        </MenuItem>,
+      ];
+    }
+    if (!industryGroups.length) {
+      return [<MenuItem key="none" disabled>No industries available</MenuItem>];
+    }
 
-  // Dialog helpers
-  const openLoginPopup = () => {
-    setLoginOpen(true);
-  };
+    const items = [
+      <MenuItem key="__placeholder" value="">
+        <em>Select Industry</em>
+      </MenuItem>,
+    ];
 
-  const closeLoginPopup = () => {
-    setLoginOpen(false);
-    setRegistrationSuccess(false);
+    industryGroups.forEach((group) => {
+      // Section header (non-selectable) — styled like the screenshot
+      items.push(
+        <ListSubheader
+          key={`header-${group.heading}`}
+          sx={{
+            fontWeight: 700,
+            fontSize: "0.7rem",
+            letterSpacing: "0.08em",
+            color: "text.secondary",
+            textTransform: "uppercase",
+            lineHeight: "2rem",
+            backgroundColor: "background.paper",
+            borderBottom: "1px solid",
+            borderColor: "divider",
+            px: 2,
+          }}
+        >
+          {group.heading}
+        </ListSubheader>
+      );
+
+      // Industry items under this heading
+      (group.industries || []).forEach((industry) => {
+        items.push(
+          <MenuItem key={industry} value={industry} sx={{ pl: 3 }}>
+            {industry}
+          </MenuItem>
+        );
+      });
+    });
+
+    return items;
   };
-   const handleSuccessRedirect = () => {
-    setRegistrationSuccess(false);
-    navigate.push('/');
-  };
+  // ─────────────────────────────────────────────────────────────────────────
 
   return (
     <>
-      <Box
-        sx={{ position: "fixed", top: 0, left: 0, width: "100%", zIndex: 1000 }}
-      >
+      <Box sx={{ position: "fixed", top: 0, left: 0, width: "100%", zIndex: 1000 }}>
         <Navbar />
       </Box>
 
@@ -1128,7 +951,7 @@ const InvestorRegister = () => {
           }}
         >
           <form onSubmit={handleSubmit}>
-            {/* Personal Details Section */}
+            {/* ── Personal Details ───────────────────────────────────────── */}
             <Typography
               variant="h5"
               sx={{
@@ -1163,9 +986,7 @@ const InvestorRegister = () => {
                   fullWidth
                   variant="outlined"
                   value={formData.firstName}
-                  onChange={(e) =>
-                    handleInputChange("firstName", e.target.value)
-                  }
+                  onChange={(e) => handleInputChange("firstName", e.target.value)}
                   required
                   InputProps={{
                     startAdornment: (
@@ -1174,15 +995,11 @@ const InvestorRegister = () => {
                       </InputAdornment>
                     ),
                   }}
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      borderRadius: "8px",
-                    },
-                  }}
+                  sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
                 />
               </Box>
 
-              {/* Email with verification */}
+              {/* Email */}
               <Box>
                 <TextField
                   label="Email"
@@ -1201,11 +1018,7 @@ const InvestorRegister = () => {
                     endAdornment: (
                       <InputAdornment position="end">
                         {verificationState.email.verified ? (
-                          <Box
-                            display="flex"
-                            alignItems="center"
-                            color="success.main"
-                          >
+                          <Box display="flex" alignItems="center" color="success.main">
                             <CheckCircleOutline fontSize="medium" />
                             <Typography variant="caption" sx={{ ml: 0.5 }}>
                               Verified
@@ -1219,10 +1032,7 @@ const InvestorRegister = () => {
                               handleVerificationDialog("email", true);
                               handleSendOtp("email");
                             }}
-                            disabled={
-                              !formData.email ||
-                              verificationState.email.loading
-                            }
+                            disabled={!formData.email || verificationState.email.loading}
                             startIcon={
                               verificationState.email.loading ? (
                                 <CircularProgress size={14} />
@@ -1237,15 +1047,11 @@ const InvestorRegister = () => {
                       </InputAdornment>
                     ),
                   }}
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      borderRadius: "8px",
-                    },
-                  }}
+                  sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
                 />
               </Box>
 
-              {/* Mobile Number */}
+              {/* Mobile */}
               <Box>
                 <TextField
                   label="Mobile Number"
@@ -1253,19 +1059,12 @@ const InvestorRegister = () => {
                   variant="outlined"
                   value={formData.mobileNumber}
                   onChange={(e) => {
-                    const value = e.target.value
-                      .replace(/\D/g, "")
-                      .slice(0, 10);
+                    const value = e.target.value.replace(/\D/g, "").slice(0, 10);
                     handleInputChange("mobileNumber", value);
                   }}
-                  inputProps={{
-                    maxLength: 10,
-                    inputMode: "numeric",
-                  }}
+                  inputProps={{ maxLength: 10, inputMode: "numeric" }}
                   onBlur={() => {
-                    if (formData.mobileNumber.length === 10) {
-                      setShowWhatsappSnackbar(true);
-                    }
+                    if (formData.mobileNumber.length === 10) setShowWhatsappSnackbar(true);
                   }}
                   required
                   InputProps={{
@@ -1278,15 +1077,11 @@ const InvestorRegister = () => {
                       </InputAdornment>
                     ),
                   }}
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      borderRadius: "8px",
-                    },
-                  }}
+                  sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
                 />
               </Box>
 
-              {/* WhatsApp Number */}
+              {/* WhatsApp */}
               <Box>
                 <TextField
                   label="WhatsApp Number"
@@ -1294,15 +1089,10 @@ const InvestorRegister = () => {
                   variant="outlined"
                   value={formData.whatsappNumber}
                   onChange={(e) => {
-                    const value = e.target.value
-                      .replace(/\D/g, "")
-                      .slice(0, 10);
+                    const value = e.target.value.replace(/\D/g, "").slice(0, 10);
                     handleInputChange("whatsappNumber", value);
                   }}
-                  inputProps={{
-                    maxLength: 10,
-                    inputMode: "numeric",
-                  }}
+                  inputProps={{ maxLength: 10, inputMode: "numeric" }}
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
@@ -1313,11 +1103,7 @@ const InvestorRegister = () => {
                       </InputAdornment>
                     ),
                   }}
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      borderRadius: "8px",
-                    },
-                  }}
+                  sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
                 />
               </Box>
 
@@ -1342,10 +1128,7 @@ const InvestorRegister = () => {
                     />
                   )}
                   fullWidth
-                  sx={{
-                    borderRadius: "8px",
-                    backgroundColor: "background.paper",
-                  }}
+                  sx={{ borderRadius: "8px", backgroundColor: "background.paper" }}
                 />
               </Box>
 
@@ -1356,9 +1139,7 @@ const InvestorRegister = () => {
                   fullWidth
                   variant="outlined"
                   value={formData.address}
-                  onChange={(e) =>
-                    handleInputChange("address", e.target.value)
-                  }
+                  onChange={(e) => handleInputChange("address", e.target.value)}
                   required
                   InputProps={{
                     startAdornment: (
@@ -1367,20 +1148,14 @@ const InvestorRegister = () => {
                       </InputAdornment>
                     ),
                   }}
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      borderRadius: "8px",
-                    },
-                  }}
+                  sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
                 />
               </Box>
 
               {/* Pincode */}
               <Box>
                 <TextField
-                  label={
-                    formData.country === "India" ? "Pincode" : "Postal Code"
-                  }
+                  label={formData.country === "India" ? "Pincode" : "Postal Code"}
                   fullWidth
                   variant="outlined"
                   value={formData.pincode}
@@ -1412,11 +1187,7 @@ const InvestorRegister = () => {
                     ) : null,
                   }}
                   onBlur={handlePincodeBlur}
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      borderRadius: "8px",
-                    },
-                  }}
+                  sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
                 />
               </Box>
 
@@ -1462,9 +1233,7 @@ const InvestorRegister = () => {
                   fullWidth
                   variant="outlined"
                   value={formData.occupation}
-                  onChange={(e) =>
-                    handleInputChange("occupation", e.target.value)
-                  }
+                  onChange={(e) => handleInputChange("occupation", e.target.value)}
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
@@ -1472,24 +1241,16 @@ const InvestorRegister = () => {
                       </InputAdornment>
                     ),
                   }}
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      borderRadius: "8px",
-                    },
-                  }}
+                  sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
                 >
                   {occupationOptions.map((option) => (
-                    <MenuItem
-                      key={option}
-                      value={option === "Select Occupation" ? "" : option}
-                    >
+                    <MenuItem key={option} value={option === "Select Occupation" ? "" : option}>
                       {option}
                     </MenuItem>
                   ))}
                 </TextField>
               </Box>
 
-              {/* Other Occupation */}
               {formData.occupation === "Other" && (
                 <Box sx={{ gridColumn: { xs: "span 1", sm: "span 2", md: "span 3" } }}>
                   <TextField
@@ -1497,21 +1258,15 @@ const InvestorRegister = () => {
                     fullWidth
                     variant="outlined"
                     value={formData.otherOccupation}
-                    onChange={(e) =>
-                      handleInputChange("otherOccupation", e.target.value)
-                    }
+                    onChange={(e) => handleInputChange("otherOccupation", e.target.value)}
                     required
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: "8px",
-                      },
-                    }}
+                    sx={{ "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
                   />
                 </Box>
               )}
             </Box>
 
-            {/* Preferences Section */}
+            {/* ── Preferences ────────────────────────────────────────────── */}
             <Box sx={{ mt: 6 }}>
               <Typography
                 variant="h5"
@@ -1536,10 +1291,7 @@ const InvestorRegister = () => {
                     aria-label="info"
                     sx={{
                       color: "warning.main",
-                      "&:hover": {
-                        backgroundColor: "info.main",
-                        color: "white",
-                      },
+                      "&:hover": { backgroundColor: "info.main", color: "white" },
                       marginLeft: "5px",
                     }}
                   >
@@ -1560,94 +1312,112 @@ const InvestorRegister = () => {
                   mb: 4,
                 }}
               >
-                {/* Industry – Autocomplete with groupBy */}
+                {/* ── Industry (grouped) ── */}
                 <Box>
-                  <Autocomplete
-                    options={industryOptions}
-                    groupBy={(option) => option.heading}
-                    getOptionLabel={(option) => option.industry}
-                    value={
-                      industryOptions.find(
-                        (opt) => opt.industry === formData.currentPreference.industry
-                      ) || null
-                    }
-                    onChange={(_, newValue) => {
-                      if (newValue) {
-                        handleIndustryChange(newValue.industry);
-                      } else {
-                        handleIndustryChange("");
-                      }
-                    }}
-                    loading={loadingIndustries}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        label="Industry"
-                        variant="outlined"
-                        required
-                        InputProps={{
-                          ...params.InputProps,
-                          endAdornment: (
-                            <>
-                              {loadingIndustries ? (
-                                <CircularProgress color="inherit" size={20} />
-                              ) : null}
-                              {params.InputProps.endAdornment}
-                            </>
-                          ),
-                        }}
-                      />
-                    )}
-                    renderOption={(props, option) => (
-                      <li {...props} key={option.industry}>
-                        {option.industry}
-                      </li>
-                    )}
+                  <TextField
+                    select
+                    label="Industry"
                     fullWidth
-                    sx={{
-                      "& .MuiAutocomplete-groupLabel": {
-                        fontWeight: "bold",
-                        color: "primary.main",
-                        backgroundColor: "action.hover",
-                        padding: "0 16px",
-                        fontSize: "0.9rem",
+                    variant="outlined"
+                    value={formData.currentPreference.industry}
+                    onChange={(e) => handleIndustryChange(e.target.value)}
+                    disabled={loadingIndustries}
+                    sx={{ borderRadius: "8px" }}
+                    SelectProps={{
+                      // Allow ListSubheader to render correctly inside Select
+                      MenuProps: {
+                        PaperProps: {
+                          sx: {
+                            maxHeight: 360,
+                            "& .MuiListSubheader-root": {
+                              pointerEvents: "none", // makes headers non-clickable
+                            },
+                          },
+                        },
                       },
                     }}
-                  />
+                  >
+                    {buildIndustryMenuItems()}
+                  </TextField>
                 </Box>
 
-                {/* Category – simplified to avoid syntax errors */}
-                <Box>
+                {/* ── Category ── */}
+                <Box sx={{ width: "100%", minWidth: 0 }}>
                   <TextField
                     select
                     label="Category"
                     fullWidth
                     variant="outlined"
                     value={formData.currentPreference.category}
-                    onChange={(e) =>
-                      handlePreferenceChange("category", e.target.value)
-                    }
+                    onChange={(e) => handlePreferenceChange("category", e.target.value)}
                     disabled={
-                      !formData.currentPreference.industry ||
-                      loadingIndustryDetails
+                      !formData.currentPreference.industry || loadingIndustryDetails
                     }
-                    sx={{ borderRadius: "8px" }}
+                    sx={{
+                      borderRadius: "8px",
+                      "& .MuiSelect-select": {
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      },
+                    }}
+                    SelectProps={{
+                      renderValue: (selected) => {
+                        if (!selected)
+                          return <span style={{ color: "#999" }}>Select Category</span>;
+                        return (
+                          <Box
+                            sx={{
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              whiteSpace: "nowrap",
+                              width: "100%",
+                              display: "block",
+                            }}
+                            title={selected}
+                          >
+                            {selected}
+                          </Box>
+                        );
+                      },
+                      MenuProps: {
+                        PaperProps: {
+                          sx: {
+                            maxHeight: 300,
+                            "& .MuiMenuItem-root": {
+                              whiteSpace: "normal",
+                              minHeight: "48px",
+                            },
+                          },
+                        },
+                      },
+                    }}
                   >
                     <MenuItem value="">
                       <em>Select Category</em>
                     </MenuItem>
-                 {categoryOptions.map((catObj) => (
-  <MenuItem key={catObj.id} value={catObj.category}>
-    {catObj.category}
-  </MenuItem>
-))}
+                    {categoryOptions.map((category, idx) => {
+                      const label =
+                        typeof category === "string"
+                          ? category
+                          : category?.name || category?.category || category?.label || String(category);
+                      return (
+                        <MenuItem
+                          key={`${label}-${idx}`}
+                          value={label}
+                          sx={{ whiteSpace: "normal", py: 1, maxWidth: "400px" }}
+                        >
+                          {label}
+                        </MenuItem>
+                      );
+                    })}
                   </TextField>
                   {loadingIndustryDetails && (
-                    <FormHelperText>Loading categories...</FormHelperText>
+                    <FormHelperText>Loading categories…</FormHelperText>
                   )}
                 </Box>
 
-                {/* Investment Amount */}
+                {/* ── Investment Amount ── */}
                 <Box>
                   <TextField
                     select
@@ -1663,11 +1433,7 @@ const InvestorRegister = () => {
                     {investmentAmountOptions.map((option) => (
                       <MenuItem
                         key={option}
-                        value={
-                          option === "Select preferred Investment Amount"
-                            ? ""
-                            : option
-                        }
+                        value={option === "Select preferred Investment Amount" ? "" : option}
                       >
                         {option}
                       </MenuItem>
@@ -1675,7 +1441,7 @@ const InvestorRegister = () => {
                   </TextField>
                 </Box>
 
-                {/* Investment Range */}
+                {/* ── Investment Readiness ── */}
                 <Box>
                   <TextField
                     select
@@ -1691,9 +1457,7 @@ const InvestorRegister = () => {
                     {investmentRangeOptions.map((option) => (
                       <MenuItem
                         key={option}
-                        value={
-                          option === "Select Preferred Readiness" ? "" : option
-                        }
+                        value={option === "Select Preferred Readiness" ? "" : option}
                       >
                         {option
                           .replace(/([A-Z])/g, " $1")
@@ -1703,12 +1467,9 @@ const InvestorRegister = () => {
                   </TextField>
                 </Box>
 
-                {/* Location Type */}
+                {/* ── Location Type ── */}
                 <Box>
-                  <Typography
-                    variant="subtitle1"
-                    sx={{ mb: 1, fontWeight: 500 }}
-                  >
+                  <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 500 }}>
                     Preferred Location Type
                   </Typography>
                   <FormControl component="fieldset">
@@ -1718,21 +1479,16 @@ const InvestorRegister = () => {
                       onChange={(e) => {
                         const value = e.target.value;
                         handlePreferenceChange("locationType", value);
-                        // Reset location fields
                         handlePreferenceChange(
                           "preferredCountry",
-                          value === "international" ? "" : "India",
+                          value === "international" ? "" : "India"
                         );
                         handlePreferenceChange("preferredState", "");
                         handlePreferenceChange("preferredDistrict", "");
                         handlePreferenceChange("preferredCity", "");
                       }}
                     >
-                      <MuiFormControlLabel
-                        value="domestic"
-                        control={<Radio />}
-                        label="India"
-                      />
+                      <MuiFormControlLabel value="domestic" control={<Radio />} label="India" />
                       <MuiFormControlLabel
                         value="international"
                         control={<Radio />}
@@ -1742,12 +1498,10 @@ const InvestorRegister = () => {
                   </FormControl>
                 </Box>
 
-                {/* Location Fields */}
+                {/* ── Location Fields ── */}
                 {formData.currentPreference.locationType && (
                   <>
-                    {/* For International: Country, State, City */}
-                    {formData.currentPreference.locationType ===
-                    "international" ? (
+                    {formData.currentPreference.locationType === "international" ? (
                       <>
                         <Box>
                           <TextField
@@ -1757,10 +1511,7 @@ const InvestorRegister = () => {
                             variant="outlined"
                             value={formData.currentPreference.preferredCountry}
                             onChange={(e) => {
-                              handlePreferenceChange(
-                                "preferredCountry",
-                                e.target.value,
-                              );
+                              handlePreferenceChange("preferredCountry", e.target.value);
                               handlePreferenceChange("preferredState", "");
                               handlePreferenceChange("preferredCity", "");
                             }}
@@ -1774,7 +1525,6 @@ const InvestorRegister = () => {
                             ))}
                           </TextField>
                         </Box>
-
                         <Box>
                           <TextField
                             select
@@ -1783,15 +1533,10 @@ const InvestorRegister = () => {
                             variant="outlined"
                             value={formData.currentPreference.preferredState}
                             onChange={(e) => {
-                              handlePreferenceChange(
-                                "preferredState",
-                                e.target.value,
-                              );
+                              handlePreferenceChange("preferredState", e.target.value);
                               handlePreferenceChange("preferredCity", "");
                             }}
-                            disabled={
-                              !formData.currentPreference.preferredCountry
-                            }
+                            disabled={!formData.currentPreference.preferredCountry}
                             sx={{ borderRadius: "8px" }}
                           >
                             <MenuItem value="">Select State</MenuItem>
@@ -1802,7 +1547,6 @@ const InvestorRegister = () => {
                             ))}
                           </TextField>
                         </Box>
-
                         <Box>
                           <TextField
                             select
@@ -1811,14 +1555,9 @@ const InvestorRegister = () => {
                             variant="outlined"
                             value={formData.currentPreference.preferredCity}
                             onChange={(e) =>
-                              handlePreferenceChange(
-                                "preferredCity",
-                                e.target.value,
-                              )
+                              handlePreferenceChange("preferredCity", e.target.value)
                             }
-                            disabled={
-                              !formData.currentPreference.preferredState
-                            }
+                            disabled={!formData.currentPreference.preferredState}
                             sx={{ borderRadius: "8px" }}
                           >
                             <MenuItem value="">Select City</MenuItem>
@@ -1831,7 +1570,6 @@ const InvestorRegister = () => {
                         </Box>
                       </>
                     ) : (
-                      /* For Domestic: State, District, City */
                       <>
                         <Box>
                           <TextField
@@ -1841,10 +1579,7 @@ const InvestorRegister = () => {
                             variant="outlined"
                             value={formData.currentPreference.preferredState}
                             onChange={(e) => {
-                              handlePreferenceChange(
-                                "preferredState",
-                                e.target.value,
-                              );
+                              handlePreferenceChange("preferredState", e.target.value);
                               handlePreferenceChange("preferredDistrict", "");
                               handlePreferenceChange("preferredCity", "");
                             }}
@@ -1858,37 +1593,33 @@ const InvestorRegister = () => {
                             ))}
                           </TextField>
                         </Box>
-
-                        <Box>
-                          <TextField
-                            select
-                            label="District"
-                            fullWidth
-                            variant="outlined"
-                            value={formData.currentPreference.preferredDistrict}
-                            onChange={(e) => {
-                              handlePreferenceChange(
-                                "preferredDistrict",
-                                e.target.value,
-                              );
-                              handlePreferenceChange("preferredCity", "");
-                            }}
-                            disabled={
-                              !formData.currentPreference.preferredState
-                            }
-                            sx={{ borderRadius: "8px" }}
-                          >
-                            <MenuItem value="">Select District</MenuItem>
-                            {getIndianDistricts(
-                              formData.currentPreference.preferredState,
-                            ).map((district) => (
-                              <MenuItem key={district} value={district}>
-                                {district}
-                              </MenuItem>
-                            ))}
-                          </TextField>
-                        </Box>
-
+    <Box>
+  <TextField
+    select
+    label="District"
+    fullWidth
+    variant="outlined"
+    value={formData.currentPreference.preferredDistrict}
+    onChange={(e) => {
+      handlePreferenceChange("preferredDistrict", e.target.value);
+      handlePreferenceChange("preferredCity", "");
+    }}
+    disabled={!formData.currentPreference.preferredState}
+    sx={{ borderRadius: "8px" }}
+  >
+    <MenuItem value="">Select District</MenuItem>
+    {getIndianDistricts(formData.currentPreference.preferredState).map((district) => {
+      const displayName = getDisplayName(district); // "Kanchipuram"
+      return (
+        // value = raw "Kanchipuram (Kancheepuram)" → stored in preferredDistrict
+        // label = "Kanchipuram" → shown to user
+        <MenuItem key={district} value={district}>
+          {displayName}
+        </MenuItem>
+      );
+    })}
+  </TextField>
+</Box>
                         <Box>
                           <TextField
                             select
@@ -1897,20 +1628,15 @@ const InvestorRegister = () => {
                             variant="outlined"
                             value={formData.currentPreference.preferredCity}
                             onChange={(e) =>
-                              handlePreferenceChange(
-                                "preferredCity",
-                                e.target.value,
-                              )
+                              handlePreferenceChange("preferredCity", e.target.value)
                             }
-                            disabled={
-                              !formData.currentPreference.preferredDistrict
-                            }
+                            disabled={!formData.currentPreference.preferredDistrict}
                             sx={{ borderRadius: "8px" }}
                           >
                             <MenuItem value="">Select City</MenuItem>
                             {getIndianCities(
                               formData.currentPreference.preferredState,
-                              formData.currentPreference.preferredDistrict,
+                              formData.currentPreference.preferredDistrict
                             ).map((city) => (
                               <MenuItem key={city} value={city}>
                                 {city}
@@ -1923,12 +1649,9 @@ const InvestorRegister = () => {
                   </>
                 )}
 
-                {/* Property Type */}
+                {/* ── Property Type ── */}
                 <Box sx={{ gridColumn: { xs: "span 1", sm: "span 2", md: "span 4" } }}>
-                  <Typography
-                    variant="subtitle1"
-                    sx={{ mb: 1, fontWeight: 500 }}
-                  >
+                  <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 500 }}>
                     Property Type
                   </Typography>
                   <RadioGroup
@@ -1950,9 +1673,7 @@ const InvestorRegister = () => {
                       value="Own Property"
                       control={<Radio color="primary" />}
                       label={
-                        <Box
-                          sx={{ display: "flex", alignItems: "center", gap: 1 }}
-                        >
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                           <HomeWork color="primary" />
                           <Typography>Own Property</Typography>
                         </Box>
@@ -1962,9 +1683,7 @@ const InvestorRegister = () => {
                       value="Rental Property"
                       control={<Radio color="primary" />}
                       label={
-                        <Box
-                          sx={{ display: "flex", alignItems: "center", gap: 1 }}
-                        >
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                           <MeetingRoom color="primary" />
                           <Typography>Rental Property</Typography>
                         </Box>
@@ -1973,45 +1692,38 @@ const InvestorRegister = () => {
                   </RadioGroup>
                 </Box>
 
-                {/* Property Size (for Own Property) */}
-                {formData.currentPreference.propertyType === "Own Property" && (
-                  <Box>
-                    <TextField
-                      select
-                      label="Property Size"
-                      fullWidth
-                      variant="outlined"
-                      value={formData.currentPreference.propertySize}
-                      onChange={(e) =>
-                        handlePreferenceChange("propertySize", e.target.value)
-                      }
-                      sx={{ borderRadius: "8px" }}
-                    >
-                      {propertySizeOptions.map((option) => (
-                        <MenuItem
-                          key={option}
-                          value={option === "Select Total Area" ? "" : option}
-                        >
-                          {option}
-                        </MenuItem>
-                      ))}
-                    </TextField>
-                  </Box>
-                )}
-
-                {/* Property Location (for Own Property) */}
+                {/* ── Own Property fields ── */}
                 {formData.currentPreference.propertyType === "Own Property" && (
                   <>
+                    <Box>
+                      <TextField
+                        select
+                        label="Property Size"
+                        fullWidth
+                        variant="outlined"
+                        value={formData.currentPreference.propertySize}
+                        onChange={(e) =>
+                          handlePreferenceChange("propertySize", e.target.value)
+                        }
+                        sx={{ borderRadius: "8px" }}
+                      >
+                        {propertySizeOptions.map((option) => (
+                          <MenuItem
+                            key={option}
+                            value={option === "Select Total Area" ? "" : option}
+                          >
+                            {option}
+                          </MenuItem>
+                        ))}
+                      </TextField>
+                    </Box>
                     <Box>
                       <Autocomplete
                         freeSolo
                         options={propertyCountries}
                         value={formData.currentPreference.propertyCountry}
                         onChange={(_, newValue) => {
-                          handlePreferenceChange(
-                            "propertyCountry",
-                            newValue || "",
-                          );
+                          handlePreferenceChange("propertyCountry", newValue || "");
                           handlePreferenceChange("propertyState", "");
                           handlePreferenceChange("propertyCity", "");
                         }}
@@ -2027,17 +1739,13 @@ const InvestorRegister = () => {
                         )}
                       />
                     </Box>
-
                     <Box>
                       <Autocomplete
                         freeSolo
                         options={propertyStates}
                         value={formData.currentPreference.propertyState}
                         onChange={(_, newValue) => {
-                          handlePreferenceChange(
-                            "propertyState",
-                            newValue || "",
-                          );
+                          handlePreferenceChange("propertyState", newValue || "");
                           handlePreferenceChange("propertyCity", "");
                         }}
                         disabled={!formData.currentPreference.propertyCountry}
@@ -2052,17 +1760,13 @@ const InvestorRegister = () => {
                         )}
                       />
                     </Box>
-
                     <Box>
                       <Autocomplete
                         freeSolo
                         options={propertyCities}
                         value={formData.currentPreference.propertyCity}
                         onChange={(_, newValue) => {
-                          handlePreferenceChange(
-                            "propertyCity",
-                            newValue || "",
-                          );
+                          handlePreferenceChange("propertyCity", newValue || "");
                         }}
                         disabled={!formData.currentPreference.propertyState}
                         renderInput={(params) => (
@@ -2091,9 +1795,7 @@ const InvestorRegister = () => {
                     px: 4,
                     py: 1.5,
                     fontWeight: "bold",
-                    "&:hover": {
-                      backgroundColor: "#5a9e2a",
-                    },
+                    "&:hover": { backgroundColor: "#5a9e2a" },
                   }}
                 >
                   Add Preference
@@ -2116,64 +1818,40 @@ const InvestorRegister = () => {
                       }}
                     >
                       <thead>
-                        <tr
-                          style={{ backgroundColor: "#7ad03a", color: "white" }}
-                        >
-                          <th
-                            style={{
-                              padding: "12px",
-                              textAlign: "left",
-                              fontWeight: "bold",
-                            }}
-                          >
-                            #
-                          </th>
-                          <th style={{ padding: "12px", textAlign: "left" }}>
-                            Industry
-                          </th>
-                          <th style={{ padding: "12px", textAlign: "left" }}>
-                            Category
-                          </th>
-                          <th style={{ padding: "12px", textAlign: "left" }}>
-                            Investment Amount
-                          </th>
-                          <th style={{ padding: "12px", textAlign: "left" }}>
-                            Location Type
-                          </th>
-                          <th style={{ padding: "12px", textAlign: "left" }}>
-                            State/Country
-                          </th>
-                          <th style={{ padding: "12px", textAlign: "left" }}>
-                            District/State
-                          </th>
-                          <th style={{ padding: "12px", textAlign: "left" }}>
-                            City
-                          </th>
-                          <th style={{ padding: "12px", textAlign: "left" }}>
-                            Property Type
-                          </th>
-                          <th style={{ padding: "12px", textAlign: "left" }}>
-                            Actions
-                          </th>
+                        <tr style={{ backgroundColor: "#7ad03a", color: "white" }}>
+                          {[
+                            "#",
+                            "Industry",
+                            "Category",
+                            "Investment Amount",
+                            "Location Type",
+                            "State/Country",
+                            "District/State",
+                            "City",
+                            "Property Type",
+                            "Actions",
+                          ].map((h) => (
+                            <th
+                              key={h}
+                              style={{ padding: "12px", textAlign: "left", fontWeight: "bold" }}
+                            >
+                              {h}
+                            </th>
+                          ))}
                         </tr>
                       </thead>
                       <tbody>
                         {formData.preferences.map((pref, idx) => (
-                          <tr
-                            key={idx}
-                            style={{ borderBottom: "1px solid #e0e0e0" }}
-                          >
+                          <tr key={idx} style={{ borderBottom: "1px solid #e0e0e0" }}>
                             <td style={{ padding: "12px" }}>{idx + 1}</td>
                             <td style={{ padding: "12px" }}>{pref.industry}</td>
                             <td style={{ padding: "12px" }}>{pref.category}</td>
-                            <td style={{ padding: "12px" }}>
-                              {pref.investmentAmount}
-                            </td>
-                            <td style={{ padding: "12px" }}>
-                              {pref.locationType === "domestic"
-                                ? "India"
-                                : "International"}
-                            </td>
+                            <td style={{ padding: "12px" }}>{pref.investmentAmount}</td>
+                           <td style={{ padding: "12px" }}>
+  {pref.locationType === "domestic"
+    ? getDisplayName(pref.preferredDistrict)  // ← show "Kanchipuram" not "Kanchipuram (Kancheepuram)"
+    : pref.preferredState}
+</td>
                             <td style={{ padding: "12px" }}>
                               {pref.locationType === "domestic"
                                 ? pref.preferredState
@@ -2184,12 +1862,8 @@ const InvestorRegister = () => {
                                 ? pref.preferredDistrict
                                 : pref.preferredState}
                             </td>
-                            <td style={{ padding: "12px" }}>
-                              {pref.preferredCity}
-                            </td>
-                            <td style={{ padding: "12px" }}>
-                              {pref.propertyType}
-                            </td>
+                            <td style={{ padding: "12px" }}>{pref.preferredCity}</td>
+                            <td style={{ padding: "12px" }}>{pref.propertyType}</td>
                             <td style={{ padding: "12px" }}>
                               <Box sx={{ display: "flex", gap: 1 }}>
                                 <Button
@@ -2219,7 +1893,7 @@ const InvestorRegister = () => {
               )}
             </Box>
 
-            {/* Terms and Submit */}
+            {/* ── Terms & Submit ─────────────────────────────────────────── */}
             <Box
               sx={{
                 mt: 4,
@@ -2233,9 +1907,7 @@ const InvestorRegister = () => {
                 control={
                   <Checkbox
                     checked={formData.terms}
-                    onChange={(e) =>
-                      handleInputChange("terms", e.target.checked)
-                    }
+                    onChange={(e) => handleInputChange("terms", e.target.checked)}
                     color="primary"
                   />
                 }
@@ -2246,10 +1918,7 @@ const InvestorRegister = () => {
                       component={RouterLink}
                       to="/termsandconditions"
                       color="primary"
-                      sx={{
-                        textDecoration: "none",
-                        "&:hover": { textDecoration: "underline" },
-                      }}
+                      sx={{ textDecoration: "none", "&:hover": { textDecoration: "underline" } }}
                     >
                       terms and conditions
                     </Link>
@@ -2257,7 +1926,6 @@ const InvestorRegister = () => {
                 }
                 sx={{ mb: 3 }}
               />
-           
               <Button
                 type="submit"
                 variant="contained"
@@ -2271,13 +1939,8 @@ const InvestorRegister = () => {
                   fontWeight: "bold",
                   fontSize: "1.1rem",
                   backgroundColor: "#7ad03a",
-                  "&:hover": {
-                    backgroundColor: "#5a9e2a",
-                  },
-                  "&:disabled": {
-                    backgroundColor: "#cccccc",
-                    color: "#666666",
-                  },
+                  "&:hover": { backgroundColor: "#5a9e2a" },
+                  "&:disabled": { backgroundColor: "#cccccc", color: "#666666" },
                 }}
               >
                 REGISTER
@@ -2300,7 +1963,7 @@ const InvestorRegister = () => {
             </Box>
           </form>
 
-          {/* Email Verification Dialog */}
+          {/* ── Email OTP Dialog ─────────────────────────────────────────── */}
           <Dialog
             open={verificationState.email.showDialog}
             onClose={() => handleVerificationDialog("email", false)}
@@ -2328,32 +1991,20 @@ const InvestorRegister = () => {
                   helperText={verificationState.email.error}
                   sx={{ borderRadius: "8px" }}
                 />
-                <Box
-                  sx={{
-                    mt: 2,
-                    display: "flex",
-                    justifyContent: "space-between",
-                  }}
-                >
+                <Box sx={{ mt: 2, display: "flex", justifyContent: "space-between" }}>
                   <Button
                     onClick={() => handleSendOtp("email")}
                     disabled={verificationState.email.loading}
                     sx={{ color: "primary.main" }}
                   >
-                    {verificationState.email.loading
-                      ? "Sending..."
-                      : "Resend OTP"}
+                    {verificationState.email.loading ? "Sending…" : "Resend OTP"}
                   </Button>
                   <Button
                     variant="contained"
                     onClick={() => handleVerifyOtp("email")}
-                    disabled={
-                      otpInput.length !== 6 || verificationState.email.loading
-                    }
+                    disabled={otpInput.length !== 6 || verificationState.email.loading}
                     startIcon={
-                      verificationState.email.loading ? (
-                        <CircularProgress size={14} />
-                      ) : null
+                      verificationState.email.loading ? <CircularProgress size={14} /> : null
                     }
                     sx={{
                       borderRadius: "8px",
@@ -2361,16 +2012,14 @@ const InvestorRegister = () => {
                       "&:hover": { backgroundColor: "#5a9e2a" },
                     }}
                   >
-                    {verificationState.email.loading
-                      ? "Verifying..."
-                      : "Verify"}
+                    {verificationState.email.loading ? "Verifying…" : "Verify"}
                   </Button>
                 </Box>
               </Box>
             </DialogContent>
           </Dialog>
 
-          {/* Registration Success Dialog */}
+          {/* ── Registration Success Dialog ──────────────────────────────── */}
           <Dialog
             open={registrationSuccess}
             onClose={handleSuccessRedirect}
@@ -2409,7 +2058,7 @@ const InvestorRegister = () => {
             </DialogActions>
           </Dialog>
 
-          {/* WhatsApp Snackbar */}
+          {/* ── WhatsApp Snackbar ────────────────────────────────────────── */}
           <Snackbar
             open={showWhatsappSnackbar}
             autoHideDuration={6000}
@@ -2434,10 +2083,7 @@ const InvestorRegister = () => {
                     variant="contained"
                     size="medium"
                     onClick={() => {
-                      handleInputChange(
-                        "whatsappNumber",
-                        formData.mobileNumber,
-                      );
+                      handleInputChange("whatsappNumber", formData.mobileNumber);
                       setShowWhatsappSnackbar(false);
                       showSnackbar("WhatsApp number auto-filled.", "success");
                     }}
@@ -2461,7 +2107,7 @@ const InvestorRegister = () => {
             </Alert>
           </Snackbar>
 
-          {/* General Snackbar */}
+          {/* ── General Snackbar ─────────────────────────────────────────── */}
           <Snackbar
             open={snackbar.open}
             autoHideDuration={6000}
@@ -2482,14 +2128,8 @@ const InvestorRegister = () => {
           </Snackbar>
         </Box>
 
-        {!isMobile && (
-          <Box>
-            {/* <RegisterationMediaHandling /> */}
-            {/* <AdSlot {...ADS.HOME.FILTER_BOTTOM_RECTANGLE}/> */}
-          </Box>
-        )}
+        {!isMobile && <Box />}
       </Box>
-      {/* <AdSlot {...ADS.HOME.FOOTER_RECTANGLE}/> */}
 
       <Box>
         <Footer />

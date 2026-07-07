@@ -59,7 +59,7 @@ const API = "http://localhost:5000/api/v1/instantapply/all?page=1&limit=100";
 
 export default function InstantApplyPage() {
   const [leads, setLeads] = useState([]);
-      console.log("fetchBranddetailsenquiry",leads);
+  console.log("fetchBranddetailsenquiry", leads);
 
   const [filtered, setFiltered] = useState([]);
   const [open, setOpen] = useState(false);
@@ -129,7 +129,6 @@ export default function InstantApplyPage() {
     fetch(API)
       .then((res) => res.json())
       .then((data) => {
-
         setLeads(data.data || data);
         setFiltered(data.data || data);
         setLoading(false);
@@ -139,7 +138,6 @@ export default function InstantApplyPage() {
 
   useEffect(() => {
     fetchLeads();
-    
   }, []);
 
   useEffect(() => {
@@ -336,7 +334,7 @@ export default function InstantApplyPage() {
           mt: 18,
         }}
       >
-              <BrandPackageLeadDashboard/>
+        <BrandPackageLeadDashboard />
 
         {loading && (
           <LinearProgress
@@ -974,48 +972,48 @@ export default function InstantApplyPage() {
                             {label}
                           </Typography>
                           <Box
-  sx={{
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: 1,
-  }}
->
-  <Typography
-    fontWeight={600}
-    color="#1e293b"
-    fontSize={15}
-    sx={{
-      flex: 1,
-      wordBreak: "break-word",
-    }}
-  >
-    {key === "createdAt"
-      ? new Date(value).toLocaleString("en-US", {
-          month: "long",
-          day: "numeric",
-          year: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
-        })
-      : String(value)}
-  </Typography>
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "space-between",
+                              gap: 1,
+                            }}
+                          >
+                            <Typography
+                              fontWeight={600}
+                              color="#1e293b"
+                              fontSize={15}
+                              sx={{
+                                flex: 1,
+                                wordBreak: "break-word",
+                              }}
+                            >
+                              {key === "createdAt"
+                                ? new Date(value).toLocaleString("en-US", {
+                                    month: "long",
+                                    day: "numeric",
+                                    year: "numeric",
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  })
+                                : String(value)}
+                            </Typography>
 
-  {/* Mobile Actions */}
-  {key === "investorPhone" && (
-    <Stack direction="row" spacing={0.5}>
-      <Tooltip title="Call">
-        <IconButton
-          size="small"
-          color="primary"
-          component="a"
-          href={`tel:${value}`}
-        >
-          <PhoneIcon fontSize="small" />
-        </IconButton>
-      </Tooltip>
+                            {/* Mobile Actions */}
+                            {key === "investorPhone" && (
+                              <Stack direction="row" spacing={0.5}>
+                                <Tooltip title="Call">
+                                  <IconButton
+                                    size="small"
+                                    color="primary"
+                                    component="a"
+                                    href={`tel:${value}`}
+                                  >
+                                    <PhoneIcon fontSize="small" />
+                                  </IconButton>
+                                </Tooltip>
 
-      {/* <Tooltip title="WhatsApp">
+                                {/* <Tooltip title="WhatsApp">
         <IconButton
           size="small"
           color="success"
@@ -1027,46 +1025,46 @@ export default function InstantApplyPage() {
         </IconButton>
       </Tooltip> */}
 
-      <Tooltip title="Copy Number">
-        <IconButton
-          size="small"
-          onClick={() => {
-            navigator.clipboard.writeText(value);
-          }}
-        >
-          <ContentCopyIcon fontSize="small" />
-        </IconButton>
-      </Tooltip>
-    </Stack>
-  )}
+                                <Tooltip title="Copy Number">
+                                  <IconButton
+                                    size="small"
+                                    onClick={() => {
+                                      navigator.clipboard.writeText(value);
+                                    }}
+                                  >
+                                    <ContentCopyIcon fontSize="small" />
+                                  </IconButton>
+                                </Tooltip>
+                              </Stack>
+                            )}
 
-  {/* Email Actions */}
-  {key === "investorEmail" && (
-    <Stack direction="row" spacing={0.5}>
-      <Tooltip title="Send Email">
-        <IconButton
-          size="small"
-          color="primary"
-          component="a"
-          href={`mailto:${value}`}
-        >
-          <EmailIcon fontSize="small" />
-        </IconButton>
-      </Tooltip>
+                            {/* Email Actions */}
+                            {key === "investorEmail" && (
+                              <Stack direction="row" spacing={0.5}>
+                                <Tooltip title="Send Email">
+                                  <IconButton
+                                    size="small"
+                                    color="primary"
+                                    component="a"
+                                    href={`mailto:${value}`}
+                                  >
+                                    <EmailIcon fontSize="small" />
+                                  </IconButton>
+                                </Tooltip>
 
-      <Tooltip title="Copy Email">
-        <IconButton
-          size="small"
-          onClick={() => {
-            navigator.clipboard.writeText(value);
-          }}
-        >
-          <ContentCopyIcon fontSize="small" />
-        </IconButton>
-      </Tooltip>
-    </Stack>
-  )}
-</Box>
+                                <Tooltip title="Copy Email">
+                                  <IconButton
+                                    size="small"
+                                    onClick={() => {
+                                      navigator.clipboard.writeText(value);
+                                    }}
+                                  >
+                                    <ContentCopyIcon fontSize="small" />
+                                  </IconButton>
+                                </Tooltip>
+                              </Stack>
+                            )}
+                          </Box>
                         </Box>
                       </Box>
                     );
