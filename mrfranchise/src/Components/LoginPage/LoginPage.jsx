@@ -23,7 +23,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import { useMediaQuery, useTheme } from "@mui/system";
 import Image from "next/image";
 
-function LoginPage({ open, onClose }) {
+function LoginPage({ open, onClose, onSuccess }) {
   const router = useRouter();
   const dispatch = useDispatch();
   const theme = useTheme();
@@ -206,8 +206,13 @@ function LoginPage({ open, onClose }) {
           setResendDisabled(false);
           setTimer(30);
           setErrors({});
-          router.push("/");
-          window.location.reload();
+
+          if (typeof onSuccess === "function") {
+            onSuccess();
+          } else {
+            router.push("/");
+            window.location.reload();
+          }
         }, 1000);
       } else {
         throw new Error(response.data.message || "Invalid OTP");

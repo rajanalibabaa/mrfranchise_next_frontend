@@ -198,7 +198,7 @@ export default async function BrandLayout({ children, params }) {
 
 //     while (hasMore) {
 //       const res = await fetch(
-//         `https://mrfranchisebackend.mrfranchise.in/api/v1/overAllPlatformOnlyMainCategory?page=${page}&limit=20`,
+//         `http://localhost:5000/api/v1/overAllPlatformOnlyMainCategory?page=${page}&limit=20`,
 //         { next: { revalidate: 3600 } }
 //       );
 

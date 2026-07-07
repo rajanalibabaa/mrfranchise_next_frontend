@@ -50,11 +50,17 @@ import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import DateRangeIcon from "@mui/icons-material/DateRange";
 import Footer from "@/Components/Footers/Footer";
 import Navbar from "@/Components/Navbar/NavBar";
+import WhatsAppIcon from "@mui/icons-material/WhatsApp";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import LoginPage from "@/Components/LoginPage/LoginPage";
+import BrandPackageLeadDashboard from "@/Components/marketPlace_manualLead_enquiry/packagesDetailsLeadsCount";
 
-const API = "https://mrfranchisebackend.mrfranchise.in/api/v1/instantapply/all?page=1&limit=100";
+const API = "http://localhost:5000/api/v1/instantapply/all?page=1&limit=100";
 
 export default function InstantApplyPage() {
   const [leads, setLeads] = useState([]);
+      console.log("fetchBranddetailsenquiry",leads);
+
   const [filtered, setFiltered] = useState([]);
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState(null);
@@ -74,12 +80,56 @@ export default function InstantApplyPage() {
   });
 
   const theme = useTheme();
+  const [showLogin, setShowLogin] = useState(false);
+
+  const [showCaptcha, setShowCaptcha] = useState(false);
+  const [captchaText, setCaptchaText] = useState("");
+  const [captchaInput, setCaptchaInput] = useState("");
+  const [pendingLead, setPendingLead] = useState(null);
+
+  const onLoginSuccess = () => {
+    setShowLogin(false);
+
+    if (!isBrandUser()) {
+      window.alert(
+        "You are an investor. Only brand users can unlock and view these details.",
+      );
+      return;
+    }
+
+    const cap = generateCaptcha();
+
+    setCaptchaText(cap);
+    setCaptchaInput("");
+    setShowCaptcha(true);
+  };
+
+  const generateCaptcha = () => {
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
+
+    let result = "";
+
+    for (let i = 0; i < 6; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+
+    return result;
+  };
+
+  const isLoggedIn = () => {
+    return Boolean(localStorage.getItem("accessToken"));
+  };
+
+  const isBrandUser = () => {
+    return Boolean(localStorage.getItem("brandUUID"));
+  };
 
   const fetchLeads = () => {
     setLoading(true);
     fetch(API)
       .then((res) => res.json())
       .then((data) => {
+
         setLeads(data.data || data);
         setFiltered(data.data || data);
         setLoading(false);
@@ -89,6 +139,7 @@ export default function InstantApplyPage() {
 
   useEffect(() => {
     fetchLeads();
+    
   }, []);
 
   useEffect(() => {
@@ -192,11 +243,6 @@ export default function InstantApplyPage() {
     phone ? phone.slice(0, 2) + "••••••" + phone.slice(-2) : "N/A";
   const maskName = (name) =>
     name ? name.slice(0, 2) + "••••••" + name.slice(-2) : "N/A";
-  const maskEmail = (email) => {
-    if (!email) return "N/A";
-    const [name, domain] = email.split("@");
-    return name.slice(0, 2) + "•••••@" + domain;
-  };
 
   const getInitials = (name) => {
     if (!name) return "?";
@@ -228,23 +274,6 @@ export default function InstantApplyPage() {
     return colors[Math.abs(hash) % colors.length];
   };
 
-  const stats = useMemo(() => {
-    const industries = new Set(leads.map((l) => l.industry).filter(Boolean));
-    const states = new Set(leads.map((l) => l.state).filter(Boolean));
-    const today = new Date();
-    const todayCount = leads.filter((l) => {
-      const d = new Date(l.createdAt);
-      return d.toDateString() === today.toDateString();
-    }).length;
-    return {
-      total: leads.length,
-      filtered: filtered.length,
-      industries: industries.size,
-      states: states.size,
-      today: todayCount,
-    };
-  }, [leads, filtered]);
-
   const detailFields = [
     { key: "investorName", label: "Investor Name", icon: <PersonIcon /> },
     { key: "investorPhone", label: "Phone", icon: <PhoneIcon /> },
@@ -261,6 +290,42 @@ export default function InstantApplyPage() {
     { key: "createdAt", label: "Applied On", icon: <CalendarTodayIcon /> },
   ];
 
+  const handleUnlock = (item) => {
+    if (!isLoggedIn()) {
+      setPendingLead(item);
+      setShowLogin(true);
+      return;
+    }
+
+    if (!isBrandUser()) {
+      window.alert(
+        "You are an investor. Only brand users can unlock and view these details.",
+      );
+      return;
+    }
+
+    setPendingLead(item);
+
+    const cap = generateCaptcha();
+
+    setCaptchaText(cap);
+    setCaptchaInput("");
+    setShowCaptcha(true);
+  };
+
+  const verifyCaptcha = () => {
+    if (captchaInput.trim() !== captchaText) {
+      alert("Invalid Captcha");
+      return;
+    }
+
+    setShowCaptcha(false);
+
+    setSelected(pendingLead);
+
+    setOpen(true);
+  };
+
   return (
     <>
       <Navbar />
@@ -271,6 +336,8 @@ export default function InstantApplyPage() {
           mt: 18,
         }}
       >
+              <BrandPackageLeadDashboard/>
+
         {loading && (
           <LinearProgress
             sx={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 9999 }}
@@ -545,7 +612,7 @@ export default function InstantApplyPage() {
                             <DateRangeIcon fontSize="small" />
                           </InputAdornment>
                         ),
-                        sx: { borderRadius: 2 ,minWidth:'150px'},
+                        sx: { borderRadius: 2, minWidth: "150px" },
                       }}
                     />
                   </Grid>
@@ -567,7 +634,7 @@ export default function InstantApplyPage() {
                             <SortIcon fontSize="small" />
                           </InputAdornment>
                         ),
-                        sx: { borderRadius: 2,minWidth:'150px' },
+                        sx: { borderRadius: 2, minWidth: "150px" },
                       }}
                     >
                       <MenuItem value="">Default</MenuItem>
@@ -702,10 +769,6 @@ export default function InstantApplyPage() {
                           "linear-gradient(white, white) padding-box, linear-gradient(135deg, #ff9800, #10d406) border-box",
                       },
                     }}
-                    onClick={() => {
-                      setSelected(item);
-                      setOpen(true);
-                    }}
                   >
                     <CardContent
                       sx={{
@@ -765,41 +828,14 @@ export default function InstantApplyPage() {
                           </Typography>
                         </Box>
                       </Box>
-
-                      {/* Masked Info */}
-                      <Stack spacing={1.5}>
-                        <Stack
-                          direction="row"
-                          alignItems="center"
-                          spacing={1.5}
-                        >
-                          <PhoneIcon sx={{ fontSize: 16, color: "#94a3b8" }} />
-                          <Typography
-                            variant="body2"
-                            color="#475569"
-                            fontFamily="monospace"
-                            fontSize={13}
-                          >
-                            Phone : {maskPhone(item.investorPhone)}
-                          </Typography>
-                        </Stack>
-                        <Stack
-                          direction="row"
-                          alignItems="center"
-                          spacing={1.5}
-                        >
-                          <EmailIcon sx={{ fontSize: 16, color: "#94a3b8" }} />
-                          <Typography
-                            variant="body2"
-                            color="#475569"
-                            fontFamily="monospace"
-                            fontSize={13}
-                            noWrap
-                          >
-                            Email : {maskEmail(item.investorEmail)}
-                          </Typography>
-                        </Stack>
-                      </Stack>
+                      <Typography>
+                        Business Type: {item.investorEnquiryModel}
+                      </Typography>
+                      <Typography>
+                        Investment: {item.investmentRange}
+                      </Typography>
+                      <Typography>Industry: {item.industry}</Typography>
+                      <Typography>Category: {item.category}</Typography>
                     </CardContent>
 
                     <Box sx={{ p: 2, pt: 0 }}>
@@ -826,11 +862,10 @@ export default function InstantApplyPage() {
                         }}
                         onClick={(e) => {
                           e.stopPropagation();
-                          setSelected(item);
-                          setOpen(true);
+                          handleUnlock(item);
                         }}
                       >
-                        View Details
+                        Unloack Investor Details
                       </Button>
                     </Box>
                   </Card>
@@ -938,21 +973,100 @@ export default function InstantApplyPage() {
                           >
                             {label}
                           </Typography>
-                          <Typography
-                            fontWeight={600}
-                            color="#1e293b"
-                            fontSize={15}
-                          >
-                            {key === "createdAt"
-                              ? new Date(value).toLocaleString("en-US", {
-                                  month: "long",
-                                  day: "numeric",
-                                  year: "numeric",
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                })
-                              : String(value)}
-                          </Typography>
+                          <Box
+  sx={{
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 1,
+  }}
+>
+  <Typography
+    fontWeight={600}
+    color="#1e293b"
+    fontSize={15}
+    sx={{
+      flex: 1,
+      wordBreak: "break-word",
+    }}
+  >
+    {key === "createdAt"
+      ? new Date(value).toLocaleString("en-US", {
+          month: "long",
+          day: "numeric",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        })
+      : String(value)}
+  </Typography>
+
+  {/* Mobile Actions */}
+  {key === "investorPhone" && (
+    <Stack direction="row" spacing={0.5}>
+      <Tooltip title="Call">
+        <IconButton
+          size="small"
+          color="primary"
+          component="a"
+          href={`tel:${value}`}
+        >
+          <PhoneIcon fontSize="small" />
+        </IconButton>
+      </Tooltip>
+
+      {/* <Tooltip title="WhatsApp">
+        <IconButton
+          size="small"
+          color="success"
+          component="a"
+          target="_blank"
+          href={`https://wa.me/${value}`}
+        >
+          <WhatsAppIcon fontSize="small" />
+        </IconButton>
+      </Tooltip> */}
+
+      <Tooltip title="Copy Number">
+        <IconButton
+          size="small"
+          onClick={() => {
+            navigator.clipboard.writeText(value);
+          }}
+        >
+          <ContentCopyIcon fontSize="small" />
+        </IconButton>
+      </Tooltip>
+    </Stack>
+  )}
+
+  {/* Email Actions */}
+  {key === "investorEmail" && (
+    <Stack direction="row" spacing={0.5}>
+      <Tooltip title="Send Email">
+        <IconButton
+          size="small"
+          color="primary"
+          component="a"
+          href={`mailto:${value}`}
+        >
+          <EmailIcon fontSize="small" />
+        </IconButton>
+      </Tooltip>
+
+      <Tooltip title="Copy Email">
+        <IconButton
+          size="small"
+          onClick={() => {
+            navigator.clipboard.writeText(value);
+          }}
+        >
+          <ContentCopyIcon fontSize="small" />
+        </IconButton>
+      </Tooltip>
+    </Stack>
+  )}
+</Box>
                         </Box>
                       </Box>
                     );
@@ -1043,7 +1157,56 @@ export default function InstantApplyPage() {
           )}
         </Dialog>
       </Box>
+
       <Footer />
+
+      <LoginPage
+        open={showLogin}
+        onClose={() => setShowLogin(false)}
+        onSuccess={onLoginSuccess}
+      />
+      <Dialog open={showCaptcha} onClose={() => {}} maxWidth="xs" fullWidth>
+        <DialogTitle>Verify Captcha</DialogTitle>
+
+        <DialogContent>
+          <Box
+            sx={{
+              mt: 2,
+              p: 2,
+              background: "#f5f5f5",
+              borderRadius: 2,
+              textAlign: "center",
+            }}
+          >
+            <Typography variant="h5" fontWeight="bold" letterSpacing={5}>
+              {captchaText}
+            </Typography>
+          </Box>
+
+          <TextField
+            fullWidth
+            label="Enter Captcha"
+            value={captchaInput}
+            onChange={(e) => setCaptchaInput(e.target.value)}
+            sx={{ mt: 3 }}
+          />
+
+          <Button
+            onClick={() => {
+              setCaptchaText(generateCaptcha());
+            }}
+            sx={{ mt: 2 }}
+          >
+            Refresh Captcha
+          </Button>
+        </DialogContent>
+
+        <DialogActions>
+          <Button onClick={verifyCaptcha} variant="contained">
+            Verify
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 }

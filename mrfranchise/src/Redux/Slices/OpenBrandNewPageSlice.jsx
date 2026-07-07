@@ -112,7 +112,7 @@ export const openBrandDialog = (brand, openInNewTab = true) => async (dispatch) 
   let fullBrand = null;
   try {
     const res = await fetch(
-      `https://mrfranchisebackend.mrfranchise.in/api/v1/brandlisting/getBrandListingSlug/${brand.slug}`
+      `http://localhost:5000/api/v1/brandlisting/getBrandListingSlug/${brand.slug}`
     );
     const json = await res.json();
     fullBrand = Array.isArray(json?.data) ? json.data[0] : json.data;

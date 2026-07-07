@@ -192,7 +192,7 @@ const FranchiseDetails = ({ data = {}, errors = {}, onChange = () => {} }) => {
         `${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/getIndustryByIndustryName`,
       );
       const result = await response.json();
-
+console.log("Fetched industries from cms:", result); // Debugging line
       if (result.success && result.data?.Industry) {
         setIndustriesWithHeadings(result.data.Industry); // ← Store grouped data
       }
