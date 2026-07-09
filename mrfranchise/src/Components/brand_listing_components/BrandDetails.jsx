@@ -68,6 +68,9 @@ const BrandDetails = ({ data = {}, errors = {}, onChange }) => {
         }
       });
   }, []);
+
+
+  
   useEffect(() => {
     if (
       data.mobileNumber?.length === 10 &&

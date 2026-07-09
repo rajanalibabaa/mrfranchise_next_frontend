@@ -752,7 +752,9 @@ const handleBack = () => {
 
   return (
     <>
-    <Button variant="contained" onClick={handleBack}>Back</Button>
+    <Button variant="contained" onClick={handleBack} sx={{ backgroundColor: "#e8a81e"}}>
+      Back
+    </Button>
     <Box>
       {/* OTP Verification Dialog */}
       <Dialog open={showOtpDialog} onClose={handleCloseOtpDialog}>
@@ -800,7 +802,8 @@ const handleBack = () => {
           <Button
             onClick={handleCloseOtpDialog}
             disabled={otpVerifying}
-            variant="outlined"
+            variant="contained"
+            sx={{ bgcolor: "#be3737" }}
           >
             Cancel
           </Button>
@@ -819,8 +822,8 @@ const handleBack = () => {
               }
             }}
             disabled={otpSending || otpVerifying}
-            variant="outlined"
-            sx={{ ml: "auto" }}
+            variant="contained"
+            sx={{ ml: "auto",bgcolor: "#e8a81e" }}
           >
             {otpSending ? <CircularProgress size={20} /> : "Resend OTP"}
           </Button>
@@ -828,6 +831,7 @@ const handleBack = () => {
             onClick={verifyOtp}
             color="primary"
             variant="contained"
+             sx={{ bgcolor: "#537e1b" }}
             disabled={!otp || otp.length !== 6 || otpSending || otpVerifying}
           >
             {otpVerifying ? <CircularProgress size={20} /> : "Verify"}
@@ -836,9 +840,9 @@ const handleBack = () => {
       </Dialog>
 
       {/* Edit / Save Buttons */}
-      <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
+      <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
         {!isEditing ? (
-          <Button variant="outlined" onClick={handleEditClick}>
+          <Button variant="contained" sx={{ bgcolor: "#5d9612" }} onClick={handleEditClick}>
             Edit
           </Button>
         ) : (
@@ -871,6 +875,7 @@ const handleBack = () => {
       <Accordion
         expanded={expanded === "panel1"}
         onChange={handleAccordionChange("panel1")}
+        sx={{ mb: 1 }}
       >
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
           <Typography fontWeight="bold">Brand Details</Typography>
@@ -889,6 +894,7 @@ const handleBack = () => {
       <Accordion
         expanded={expanded === "panel2"}
         onChange={handleAccordionChange("panel2")}
+         sx={{ mb: 1 }}
       >
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
           <Typography fontWeight="bold">Franchise Details</Typography>
@@ -910,6 +916,7 @@ const handleBack = () => {
       <Accordion
         expanded={expanded === "panel3"}
         onChange={handleAccordionChange("panel3")}
+        sx={{ mb: 1 }}
       >
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
           <Typography fontWeight="bold">Expansion Location</Typography>
