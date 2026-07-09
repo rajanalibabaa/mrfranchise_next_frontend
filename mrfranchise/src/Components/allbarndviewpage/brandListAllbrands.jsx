@@ -32,6 +32,7 @@ import {
   resetFilters,
   fetchFilteredBrands,
   setPage,
+  buildBrandFetchKey,
 } from "@/Redux/Slices/FilterBrandSlice";
 import { fetchFilterOptions } from "@/Redux/Slices/filterDropdownData";
 import { getLocalStorageData } from "@/Utils/localStorage";
@@ -251,6 +252,7 @@ function BrandList({ maincat, subcat, slug, subslug }) {
   const lastFetchKeyRef = useRef("");
   const abortControllerRef = useRef(null);
   const isMountedRef = useRef(true);
+  const isFirstLoadRef = useRef(true);
   const resolvedMaincatRef = useRef(resolvedMaincat);
   const resolvedSubcatRef = useRef(resolvedSubcat);
   resolvedMaincatRef.current = resolvedMaincat;
@@ -391,186 +393,181 @@ function BrandList({ maincat, subcat, slug, subslug }) {
   // ============================================
   // FETCH FUNCTION
   // ============================================
+  // NOTE ON THE FIX: fetchBrands and the "filter changed" effect below used
+  // to build their dedup key with two DIFFERENT shapes — this function used
+  // a plain JSON.stringify(filtersToFetch) of whatever partial object was
+  // passed in (e.g. just {maincat} on initial mount), while the effect used
+  // a JSON.stringify of the FULL redux filters object (every key, including
+  // nulls and `page`). Those strings could never match, so ~150ms after
+  // every mount (and after every maincat/subcat click, which remounts this
+  // component via router.push) a second, redundant request fired, aborting
+  // the first — doubling the wait before brands appeared. Both places now
+  // use the same `buildBrandFetchKey` normalizer, so a fetch that already
+  // covers the current filters is correctly recognized and skipped.
+  //
+  // fetchBrands' own identity is now also stable (deps = [dispatch] only)
+  // instead of depending on `isFirstLoad`, so it no longer changes identity
+  // mid-flight and re-trigger the debounce effect below.
   const fetchBrands = useCallback(
     (filtersToFetch, forceRefresh = false) => {
       if (!isMountedRef.current) return;
-      const fetchKey = JSON.stringify(filtersToFetch);
+      const fetchKey = buildBrandFetchKey(filtersToFetch);
       if (!forceRefresh && lastFetchKeyRef.current === fetchKey) return;
       if (abortControllerRef.current) abortControllerRef.current.abort();
       abortControllerRef.current = new AbortController();
       lastFetchKeyRef.current = fetchKey;
       dispatch(fetchFilteredBrands(filtersToFetch));
-      if (isFirstLoad) setIsFirstLoad(false);
+      if (isFirstLoadRef.current) {
+        isFirstLoadRef.current = false;
+        setIsFirstLoad(false);
+      }
     },
-    [dispatch, isFirstLoad],
+    [dispatch],
   );
 
-  // ============================================
-  // INITIALIZATION
-  // ============================================
-  useEffect(() => {
-    if (isInitializedRef.current) return;
-    isInitializedRef.current = true;
-    isMountedRef.current = true;
+ // ============================================
+// INITIALIZATION — FIXED
+// ============================================
+useEffect(() => {
+  if (isInitializedRef.current) return;
+  isInitializedRef.current = true;
 
-    const urlMaincat = searchParams?.get("maincat");
-    const urlSubcat = searchParams?.get("subcat");
-    const urlState = searchParams?.get("state");
-    const urlInvestmentRange = searchParams?.get("investmentRange");
-    const urlAreaRequired = searchParams?.get("areaRequired");
-    const stored = getLocalStorageData();
-    const currentMaincat = resolvedMaincatRef.current;
-    const currentSubcat = resolvedSubcatRef.current;
-    const initialFilters = {};
-    const resolvedMainParam = urlMaincat || currentMaincat;
-    const resolvedSubParam = urlSubcat || currentSubcat;
-    if (resolvedMainParam) initialFilters.maincat = resolvedMainParam;
-    if (resolvedSubParam) initialFilters.subcat = resolvedSubParam;
-    if (urlState) initialFilters.state = urlState;
-    if (urlInvestmentRange) initialFilters.investmentRange = urlInvestmentRange;
-    if (urlAreaRequired) initialFilters.areaRequired = urlAreaRequired;
-    if (stored?.searchTerm) {
-      initialFilters.searchTerm = stored.searchTerm;
-      localStorage.removeItem("franchiseFilters");
-    }
-    const comparisonFlag =
-      stored?.enableComparison === "true" ||
-      window.localStorage.getItem("enableComparison") === "true";
-    if (comparisonFlag) {
-      setEnableComparison(true);
-      window.localStorage.removeItem("enableComparison");
-    }
-    Object.entries(initialFilters).forEach(([key, value]) => {
-      if (value) dispatch(setFilter({ filterName: key, value }));
-    });
-    if (initialFilters.subcat && initialFilters.maincat) {
-      dispatch(
-        fetchFilterOptions({
-          main: initialFilters.maincat,
-          sub: initialFilters.subcat,
-        }),
-      );
-    } else if (initialFilters.maincat) {
-      dispatch(fetchFilterOptions({ main: initialFilters.maincat }));
-    } else {
-      dispatch(fetchFilterOptions());
-    }
-    if (isMountedRef.current) {
-      fetchBrands(initialFilters, true);
-      setInitialFiltersApplied(true);
-    }
-    const img = new Image();
-    img.src = "/bg25.jpeg";
-    return () => {
-      isMountedRef.current = false;
-      if (abortControllerRef.current) abortControllerRef.current.abort();
-    };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  const urlParams = {
+    maincat: searchParams?.get("maincat"),
+    subcat: searchParams?.get("subcat"),
+    state: searchParams?.get("state"),
+    investmentRange: searchParams?.get("investmentRange"),
+    areaRequired: searchParams?.get("areaRequired"),
+    modelType: searchParams?.get("franchiseModel"),
+    franchiseType: searchParams?.get("franchiseType"),
+  };
 
+  const stored = getLocalStorageData();
+  const initialFilters = {};
+
+  // Prioritize URL params
+  if (urlParams.maincat) initialFilters.maincat = urlParams.maincat;
+  else if (resolvedMaincat) initialFilters.maincat = resolvedMaincat;
+
+  if (urlParams.subcat) initialFilters.subcat = urlParams.subcat;
+  else if (resolvedSubcat) initialFilters.subcat = resolvedSubcat;
+
+  if (urlParams.state) initialFilters.state = urlParams.state;
+  if (urlParams.investmentRange) initialFilters.investmentRange = urlParams.investmentRange;
+  if (urlParams.areaRequired) initialFilters.areaRequired = urlParams.areaRequired;
+  if (urlParams.modelType) initialFilters.modelType = urlParams.modelType;
+  if (urlParams.franchiseType) initialFilters.franchiseType = urlParams.franchiseType;
+
+  if (stored?.searchTerm) {
+    initialFilters.searchTerm = stored.searchTerm;
+    localStorage.removeItem("franchiseFilters");
+  }
+
+  // Apply filters
+  Object.entries(initialFilters).forEach(([key, value]) => {
+    if (value) dispatch(setFilter({ filterName: key, value }));
+  });
+
+  // Fetch dropdown data
+  if (initialFilters.maincat) {
+    dispatch(fetchFilterOptions({ main: initialFilters.maincat }));
+  } else {
+    dispatch(fetchFilterOptions());
+  }
+
+  fetchBrands(initialFilters, true);
+  setInitialFiltersApplied(true);
+
+  return () => {
+    isMountedRef.current = false;
+    if (abortControllerRef.current) abortControllerRef.current.abort();
+  };
+}, [searchParams, resolvedMaincat, resolvedSubcat, dispatch, fetchBrands]); // Added proper deps
   // ============================================
   // FILTER CHANGE EFFECT
   // ============================================
-// ============================================
-// FILTER CHANGE EFFECT
-// ============================================
-useEffect(() => {
-  if (!initialFiltersApplied) return;
+  useEffect(() => {
+    if (!initialFiltersApplied) return;
 
-  const filterKey = JSON.stringify({
-    maincat: filters.maincat,
-    subcat: filters.subcat,
-    childcat: filters.childcat,
-    modelType: filters.modelType,
-    franchiseType: filters.franchiseType,   // ← ADD THIS
-    investmentRange: filters.investmentRange,
-    areaRequired: filters.areaRequired,
-    state: filters.state,
-    district: filters.district,
-    city: filters.city,
-    searchTerm: filters.searchTerm,
-    page: filters.page,
-  });
+    const filterKey = buildBrandFetchKey(filters);
 
-  if (lastFetchKeyRef.current === filterKey) return;
+    if (lastFetchKeyRef.current === filterKey) return;
 
-  const timer = setTimeout(() => {
-    if (isMountedRef.current) {
-      console.log("🔄 Fetching brands due to filter change. franchiseType =", filters.franchiseType);
-      fetchBrands(filters);
-    }
-  }, 150);
+    const timer = setTimeout(() => {
+      if (isMountedRef.current) {
+        fetchBrands(filters);
+      }
+    }, 150);
 
-  return () => clearTimeout(timer);
-}, [
-  filters.maincat,
-  filters.subcat,
-  filters.childcat,
-  filters.modelType,
-  filters.franchiseType,        // ← Critical
-  filters.investmentRange,
-  filters.areaRequired,
-  filters.state,
-  filters.district,
-  filters.city,
-  filters.searchTerm,
-  filters.page,
-  initialFiltersApplied,
-  fetchBrands,
-]);
+    return () => clearTimeout(timer);
+  }, [
+    filters.maincat,
+    filters.subcat,
+    filters.childcat,
+    filters.modelType,
+    filters.franchiseType,
+    filters.investmentRange,
+    filters.areaRequired,
+    filters.state,
+    filters.district,
+    filters.city,
+    filters.searchTerm,
+    filters.page,
+    initialFiltersApplied,
+    fetchBrands,
+  ]);
 
   // ============================================
   // HANDLE FILTER CHANGE
   // ============================================
-  const handleFilterChange = useCallback(
-    (name, value) => {
+ // ============================================
+// HANDLE FILTER CHANGE — FIXED VERSION
+// ============================================
+const handleFilterChange = useCallback((name, value) => {
+  const normalizedValue = typeof value === "string" ? value.trim() : value;
 
-      console.log(`✅ handleFilterChange called: ${name} = ${value}`);
-      dispatch(setFilter({ filterName: name, value }));
+  // Update Redux immediately
+  dispatch(setFilter({ filterName: name, value: normalizedValue }));
 
+  // Handle navigation for category changes (use replace to avoid extra history)
+  if (name === "maincat" && normalizedValue) {
+    const mainSlug = slugifyForUrl(normalizedValue) + "-franchise-opportunities";
+    const newUrl = `/${mainSlug}`;
+    if (newUrl !== pathname) {
+      router.replace(newUrl, { scroll: false });
+      return;
+    }
+  }
 
-      if (name === "maincat") {
-        if (value) dispatch(fetchFilterOptions({ main: value }));
-        else dispatch(fetchFilterOptions());
-      } else if (name === "subcat") {
-        if (value)
-          dispatch(
-            fetchFilterOptions({
-              sub: value,
-              main: filtersRef.current?.maincat,
-            }),
-          );
-      } else if (name === "state") {
-        if (value) dispatch(fetchFilterOptions({ state: value }));
-        else dispatch(fetchFilterOptions());
-      } else if (name === "district") {
-        if (value)
-          dispatch(
-            fetchFilterOptions({
-              district: value,
-              state: filtersRef.current?.state,
-            }),
-          );
-      }
-      if (name === "subcat" && value) {
-        const currentMaincat =
-          filtersRef.current?.maincat || resolvedMaincatRef.current;
-        const newUrl = buildSubCategoryUrl(currentMaincat, value);
-        if (newUrl && newUrl !== pathname) {
-          router.push(newUrl);
-          return;
-        }
-      }
-      if (name === "maincat" && value) {
-        const mainSlug = slugifyForUrl(value) + "-franchise-opportunities";
-        const newUrl = `/${mainSlug}`;
-        if (newUrl !== pathname) {
-          router.push(newUrl);
-          return;
-        }
-      }
-    },
-    [dispatch, pathname, router],
-  );
+  if (name === "subcat" && normalizedValue) {
+    const currentMaincat = filters.maincat || resolvedMaincatRef.current;
+    const newUrl = buildSubCategoryUrl(currentMaincat, normalizedValue);
+    if (newUrl && newUrl !== pathname) {
+      router.replace(newUrl, { scroll: false });
+      return;
+    }
+  }
+
+  // Trigger dropdown data fetch
+  if (name === "maincat") {
+    if (normalizedValue) {
+      dispatch(fetchFilterOptions({ main: normalizedValue }));
+    } else {
+      dispatch(fetchFilterOptions());
+    }
+  } else if (name === "subcat") {
+    if (normalizedValue && filters.maincat) {
+      dispatch(fetchFilterOptions({ main: filters.maincat, sub: normalizedValue }));
+    }
+  } else if (name === "state") {
+    if (normalizedValue) dispatch(fetchFilterOptions({ state: normalizedValue }));
+    else dispatch(fetchFilterOptions());
+  } else if (name === "district") {
+    if (normalizedValue && filters.state) {
+      dispatch(fetchFilterOptions({ district: normalizedValue, state: filters.state }));
+    }
+  }
+}, [dispatch, pathname, router, filters.maincat]);   // ← Important: depend on current filters.maincat
 
   const handleMobileFilterChange = useCallback(
     (name, value) => handleFilterChange(name, value),

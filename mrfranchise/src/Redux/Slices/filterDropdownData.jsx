@@ -176,7 +176,6 @@
 // } = filterDropdownSlice.actions;
 
 // export default filterDropdownSlice.reducer;  
-
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import axios from 'axios';
 
@@ -205,13 +204,11 @@ export const fetchFilterOptions = createAsyncThunk(
       if (areaRequired)   queryParams.append('areaRequired', areaRequired);
       if (productTags)    queryParams.append('productTags', productTags);
       if (franchiseModel) queryParams.append('franchiseModel', franchiseModel);
-      
+
 
       const response = await axios.post(
         `${API_BASE_URL}filter/getAllBrandFiltersdata?${queryParams.toString()}`
       );
-
-      console.log("response from filter dropdata", response);
 
       // Return both the data and params so the reducer can branch correctly
       return {
@@ -224,11 +221,24 @@ export const fetchFilterOptions = createAsyncThunk(
     }
   },
   {
+    
     condition: (params = {}, { getState }) => {
       const { filterDropdown } = getState();
 
-      // Always allow franchiseModel requests — they fetch different data each time
-      if (params?.franchiseModel) return true;
+      if (params?.franchiseModel) {
+       
+        if (filterDropdown.loadingFranchiseTypes) return false;
+
+      
+        const sameModelAlreadyLoaded =
+          filterDropdown.activeFranchiseModel === params.franchiseModel &&
+          (filterDropdown.franchiseTypeData.length > 0 ||
+            Object.keys(filterDropdown.franchiseHeading || {}).length > 0);
+
+        if (sameModelAlreadyLoaded) return false;
+
+        return true;
+      }
 
       const isEmptyRequest = !params || Object.keys(params).length === 0;
       const alreadyLoaded =
@@ -255,9 +265,6 @@ const initialState = {
   cities: [],
   tags: [],
 
-  // ── Franchise Model/Type state ───────────────────────────────────────────
-  // Populated when ?franchiseModel=... is passed
-  // Backend returns: { franchiseModel, franchiseheading, franchiseTypedata }
   activeFranchiseModel: null,  // e.g. "FRANCHISE BUSINESS"
   franchiseHeading: {},        // grouped: { "CLOUD KITCHEN": ["CLOUD KITCHEN"], "COCO": [...] }
   franchiseTypeData: [],       // flat:    ["CLOUD KITCHEN", "COCO - Area Franchise", ...]
@@ -334,13 +341,7 @@ const filterDropdownSlice = createSlice({
         const { data: payload, params } = action.payload || {};
         const safe = payload || {};
 
-        // ── Branch 1: franchiseModel query ──
-        // Backend response shape:
-        // {
-        //   franchiseModel: "FRANCHISE BUSINESS",
-        //   franchiseheading: { "CLOUD KITCHEN": [...], "COCO": [...] },
-        //   franchiseTypedata: ["CLOUD KITCHEN", "COCO - Area Franchise", ...]
-        // }
+       
         if (params?.franchiseModel) {
           state.activeFranchiseModel  = safe.franchiseModel    ?? null;
           state.franchiseHeading      = safe.franchiseheading  ?? {};
@@ -363,8 +364,7 @@ const filterDropdownSlice = createSlice({
           return;
         }
 
-        // ── Branch 4: sub query → child categories / tags ──
-        // Backend returns: { productTags: [...], serviceTags: [...] }
+       
         if (params?.sub) {
           state.childCategories        = safe.productTags ?? state.childCategories;
           state.tags                   = safe.serviceTags ?? state.tags;
@@ -372,8 +372,6 @@ const filterDropdownSlice = createSlice({
           return;
         }
 
-        // ── Branch 5: main/industry query → sub-categories ──
-        // Backend returns: { subcat, investmentRange, areaRequired, franchiseModel, states }
         if (params?.main || params?.industry) {
           state.subCategories   = safe.subcat          ?? state.subCategories;
           state.investmentRanges = safe.investmentRange ?? state.investmentRanges;
@@ -410,7 +408,6 @@ const filterDropdownSlice = createSlice({
         if (params.franchiseModel) {
           state.franchiseTypesError   = errorMessage;
           state.loadingFranchiseTypes = false;
-          return;
         }
         if (params.sub) {
           state.childCategoriesError   = errorMessage;

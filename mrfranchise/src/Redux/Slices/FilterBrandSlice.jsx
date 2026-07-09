@@ -6,6 +6,21 @@ import { getUserId } from '@/Utils/autherId';
 const API_BASE_URL = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/`;
 
 
+export const buildBrandFetchKey = (f = {}) =>
+  JSON.stringify({
+    maincat: f.maincat || null,
+    subcat: f.subcat || null,
+    childcat: f.childcat || null,
+    modelType: f.modelType || null,
+    franchiseType: f.franchiseType || null,
+    investmentRange: f.investmentRange || null,
+    areaRequired: f.areaRequired || null,
+    state: f.state || null,
+    district: f.district || null,
+    city: f.city || null,
+    searchTerm: f.searchTerm || '',
+    page: f.page || 1,
+  });
 
 // ─── Async Thunk ──────────────────────────────────────────────────────────────
 export const fetchFilteredBrands = createAsyncThunk(
@@ -37,9 +52,7 @@ export const fetchFilteredBrands = createAsyncThunk(
       if (filters.investmentRange) params.append("investmentRange", filters.investmentRange);
       if (filters.areaRequired)    params.append("areaRequired", filters.areaRequired);
 
-      // ── Model Type & Franchise Type ──────────────────────────────────────
-      // Backend uses: modelType  → fico.franchiseModel
-      //               franchiseType → fico.franchiseType
+    
       if (filters.modelType)      params.append("modelType", filters.modelType);
       if (filters.franchiseType)  params.append("franchiseType", filters.franchiseType);
 
@@ -89,6 +102,20 @@ export const fetchFilteredBrands = createAsyncThunk(
         error?.response?.data?.message || "Failed to fetch brands"
       );
     }
+  },
+  {
+    // Second line of defense against duplicate requests (on top of the
+    // client-side lastFetchKeyRef check in BrandList.jsx). This mainly
+    // protects against React StrictMode's double-invoked effects in dev,
+    // and any future call site that forgets to dedup before dispatching.
+    condition: (filters, { getState }) => {
+      const { filterBrands } = getState();
+      const key = buildBrandFetchKey(filters);
+      if (filterBrands.loading && filterBrands._pendingKey === key) {
+        return false;
+      }
+      return true;
+    },
   }
 );
 
@@ -123,6 +150,7 @@ const initialState = {
     limit: 20,
   },
   cacheKey: Date.now(),
+  _pendingKey: null,
 };
 
 // ─── Slice ────────────────────────────────────────────────────────────────────
@@ -196,12 +224,14 @@ const filterBrandSlice = createSlice({
 
   extraReducers: (builder) => {
     builder
-      .addCase(fetchFilteredBrands.pending, (state) => {
+      .addCase(fetchFilteredBrands.pending, (state, action) => {
         state.loading = true;
         state.error = null;
+        state._pendingKey = buildBrandFetchKey(action.meta.arg);
       })
       .addCase(fetchFilteredBrands.fulfilled, (state, action) => {
         state.loading = false;
+        state._pendingKey = null;
 
         // Stable sort: brands with videos first, then by UUID
         const sortedBrands = [...action.payload.brands].sort((a, b) => {
@@ -224,6 +254,7 @@ const filterBrandSlice = createSlice({
       })
       .addCase(fetchFilteredBrands.rejected, (state, action) => {
         state.loading = false;
+        state._pendingKey = null;
         state.error = action.payload || 'Failed to fetch brands';
       });
   },
