@@ -308,6 +308,7 @@ function BrandList({ maincat, subcat, slug, subslug }) {
     (state) => state.filterBrands,
     shallowEqual,
   );
+console.log("filter applying fitler",filters);
 
   useEffect(() => {
     filtersRef.current = filters;

@@ -39,8 +39,8 @@ export const fetchFilteredBrands = createAsyncThunk(
       // Category filters
       if (filters.maincat)        params.append("maincat", filters.maincat);
       if (filters.subcat)         params.append("subcat", filters.subcat);
-      if (filters.childcat)       params.append("serchterm", filters.childcat);
-      if (filters.searchTerm)     params.append("serchterm", filters.searchTerm);
+      if (filters.childcat)       params.append("childcat", filters.childcat);
+      if (filters.searchTerm)     params.append("searchTerm", filters.searchTerm);
 
       // Location filters
       if (filters.country)        params.append("country", filters.country);
