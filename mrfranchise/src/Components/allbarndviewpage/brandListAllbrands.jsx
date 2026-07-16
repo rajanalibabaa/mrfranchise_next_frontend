@@ -77,7 +77,7 @@ function deslugifyMain(slug) {
     .replace(/-franchise-opportunities$/, "")
     .replace(/-/g, " ")
     .replace(/\band\b/g, "&")
-    .replace(/\b\w/g, (c) => c.toUpperCase())
+    .replace(/\b\w/g, (c) => c.toLowerCase())
     .trim();
 }
 
@@ -88,7 +88,7 @@ function deslugifySub(slug) {
     .replace(/-franchise$/, "")
     .replace(/-/g, " ")
     .replace(/\band\b/g, "&")
-    .replace(/\b\w/g, (c) => c.toUpperCase())
+    .replace(/\b\w/g, (c) => c.toLowerCase())
     .trim();
 }
 
