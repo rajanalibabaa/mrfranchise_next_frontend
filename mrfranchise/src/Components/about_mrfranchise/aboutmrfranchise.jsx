@@ -23,19 +23,19 @@ const aboutData = {
   opportunities: [
     {
       text: "Food Franchise Opportunities",
-      url: "/food-and-beverages-franchise-opportunities-/?maincat=Food%20%26%20Beverages",
+      url: "/food-and-beverages/?maincat=Food%20%26%20Beverages",
     },
     {
       text: "Retail Franchise Opportunities",
-      url: "/retail-franchise-opportunities-/?maincat=Retail",
+      url: "/retail/?maincat=Retail",
     },
     {
       text: "Salon Franchise Opportunities",
-      url: "/beauty-and-salon-franchise-opportunities-/?maincat=Beauty%20%26%20Salon",
+      url: "/beauty-and-salon/?maincat=Beauty%20%26%20Salon",
     },
     {
       text: "Education Franchise Opportunities",
-      url: "/education-franchise-opportunities-/?maincat=Education",
+      url: "/education/?maincat=Education",
     },
   ],
 };

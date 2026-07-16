@@ -49,7 +49,7 @@ const FloatingApplyButton = ({ isMobile, brand, toggleDrawer }) => {
 
   return (
     <Box
-      sx={{
+     component="section"   sx={{
         position: "fixed",
         bottom: 0,
         left: 0,
@@ -76,9 +76,11 @@ const FloatingApplyButton = ({ isMobile, brand, toggleDrawer }) => {
         whileTap={{ scale: 0.95 }}
       >
         <Button
+        component="button"
           fullWidth={isMobile}
           variant="contained"
           onClick={handleApplyClick}
+          aria-label="Apply Now"
           sx={{
             flex: 1,
               backgroundColor: "#25D366",
@@ -102,7 +104,7 @@ const FloatingApplyButton = ({ isMobile, brand, toggleDrawer }) => {
           <Box textAlign="center" display={'flex'} gap={1}> 
                         <WhatsAppIcon  />
 
-            <Typography fontSize="0.85rem"mt={0.4}> Chat with {brandName}</Typography>
+            <Typography component="span" fontSize="0.85rem"mt={0.4}> Chat with {brandName}</Typography>
           </Box>
         </Button>
       </motion.div>

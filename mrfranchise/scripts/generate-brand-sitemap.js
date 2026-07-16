@@ -1,11 +1,8 @@
 const fs = require("fs");
 
-const SITE_URL =
-  "https://mrfranchise.in" || "https://mrfranchisebackend.mrfranchise.in";
+const SITE_URL = "https://mrfranchise.in" || "http://localhost:5000";
 
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL ||
-  "https://mrfranchisebackend.mrfranchise.in";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 function slugify(text = "") {
   return text
@@ -137,7 +134,7 @@ async function generate() {
 <url>
 
 <loc>
-${SITE_URL}/franchise-business-opportunity/${slug}
+${SITE_URL}/brands/${slug}
 </loc>
 
 <lastmod>

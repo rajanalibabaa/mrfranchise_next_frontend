@@ -103,7 +103,7 @@ const Dashboard = () => {
 
     try {
       const res = await axios.post(
-        "https://mrfranchisebackend.mrfranchise.in/api/v1/instantapply",
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/instantapply`,
         { applyId: investorUUID },
         { headers: { "Content-Type": "application/json" } }
       );
@@ -329,7 +329,7 @@ const Dashboard = () => {
         brand?.originalItem?.brandDetails?.uuid;
 
       if (brandId) {
-        navigate.push(`/franchise-business-opportunity/${brandId}`);
+        navigate.push(`/brands/${brandId}`);
       } else {
         console.error("Brand ID not found:", brand);
       }

@@ -88,8 +88,6 @@ const BrandDetails = ({ brandData }) => {
   const theme = useTheme();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const uuid = searchParams.get("uuid");
- const pathname = usePathname();
   // Media queries
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const isTablet = useMediaQuery(theme.breakpoints.between("sm", "md"));
@@ -544,11 +542,13 @@ https://mrfranchise.in`
   return (
     <>
       {/* LAZY NAVBAR LOAD */}
-      <Suspense fallback={<div style={{height: 60, background: "#fff"}} />}>
+      {/* <Suspense fallback={<div style={{height: 60, background: "#fff"}} />}>
         <Navbar />
-      </Suspense>
+      </Suspense> */}
  
       <Box
+      component="section"
+      id="brand-franchise-details"
         ref={mainContainerRef}
         sx={{
           width: "90%",
@@ -649,6 +649,7 @@ https://mrfranchise.in`
  
       {/* EXPANSION LOCATIONS LAZY ON SCROLL */}
       <Box
+      component="section"
         sx={{
           width: isMobile ?"93%" : isTablet ? "94%" : "89%",
           mx: "auto",
@@ -671,9 +672,11 @@ https://mrfranchise.in`
       {/* <Suspense fallback={null}>
         <BackToTopButton show={showBackToTop} isMobile={isMobile} />
       </Suspense> */}
-      <Suspense fallback={<div style={{height: 300, background: "#eee"}} />}>
+
+
+      {/* <Suspense fallback={<div style={{height: 300, background: "#eee"}} />}>
         <Footer />
-      </Suspense>
+      </Suspense> */}
  
  
  

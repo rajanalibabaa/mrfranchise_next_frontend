@@ -24,9 +24,9 @@ import Typography from "@mui/material/Typography";
 
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { getApi } from "@/Api/DefaultApi";
-import { useParams,  useSearchParams,useRouter } from "next/navigation";
+import { useParams, useSearchParams, useRouter } from "next/navigation";
 import { getToken } from "@/Utils/autherId";
-const token=getToken();
+const token = getToken();
 const flattenBrandData = (brandDoc) => {
   if (!brandDoc) {
     // console.log("❌ flattenBrandData: No brandDoc provided");
@@ -37,11 +37,6 @@ const flattenBrandData = (brandDoc) => {
 
   const franchiseDetails = brandDoc.franchiseDetails || {};
   const franchiseTagsFromAPI = franchiseDetails.franchiseTags || {};
-
-  // console.log("🔄 FranchiseTags from API:", franchiseTagsFromAPI);
-  // console.log("🔄 FICO from API:", franchiseDetails.fico);
-  // console.log("🔄 FICO type:", typeof franchiseDetails.fico);
-  // console.log("🔄 FICO is array?", Array.isArray(franchiseDetails.fico));
 
   // Ensure fico is always an array
   const ficoData = Array.isArray(franchiseDetails.fico)
@@ -120,9 +115,12 @@ const BrandListingEdit = () => {
   const params = useParams();
   // const location = usePathname();
   const searchParams = useSearchParams();
-const router = useRouter();
+  const router = useRouter();
   const uuid =
-    params?.uuid ||    searchParams.get("uuid") ||  localStorage.getItem("brandUUID") || localStorage.getItem("investorUUID");
+    params?.uuid ||
+    searchParams.get("uuid") ||
+    localStorage.getItem("brandUUID") ||
+    localStorage.getItem("investorUUID");
 
   // console.log("🔍 UUID from different sources:", {
   //   params: params?.uuid,
@@ -400,7 +398,7 @@ const router = useRouter();
           headers: {
             "Content-Type": "application/json",
           },
-        }
+        },
       );
 
       if (response.data.token) {
@@ -433,7 +431,7 @@ const router = useRouter();
             Authorization: `Bearer ${otpToken}`,
             "Content-Type": "application/json",
           },
-        }
+        },
       );
 
       if (
@@ -539,23 +537,23 @@ const router = useRouter();
       // Append JSON data as strings
       formDataToSend.append(
         "brandDetails",
-        JSON.stringify(updateData.brandDetails)
+        JSON.stringify(updateData.brandDetails),
       );
       formDataToSend.append(
         "franchiseDetails",
-        JSON.stringify(updateData.franchiseDetails)
+        JSON.stringify(updateData.franchiseDetails),
       );
       formDataToSend.append(
         "addExpansionLocationData",
-        JSON.stringify(addExpansionData)
+        JSON.stringify(addExpansionData),
       );
       formDataToSend.append(
         "removeExpansionLocationData",
-        JSON.stringify(removeExpansionData)
+        JSON.stringify(removeExpansionData),
       );
       formDataToSend.append(
         "isInternationalExpansion",
-        formData.isInternationalExpansion
+        formData.isInternationalExpansion,
       );
       // console.log(
       //   "Saving franchiseTags:",
@@ -572,13 +570,13 @@ const router = useRouter();
             Authorization: `Bearer ${token}`,
             "Content-Type": "multipart/form-data",
           },
-        }
+        },
       );
       // console.log("API Response:", detailsResponse.data);
 
       if (!detailsResponse.data.success) {
         throw new Error(
-          detailsResponse.data.message || "Failed to save brand details."
+          detailsResponse.data.message || "Failed to save brand details.",
         );
       }
 
@@ -645,19 +643,19 @@ const router = useRouter();
             headers: {
               "Content-Type": "multipart/form-data",
             },
-          }
+          },
         );
 
         if (!uploadResponse.data.success) {
           throw new Error(
-            uploadResponse.data.message || "Failed to upload files."
+            uploadResponse.data.message || "Failed to upload files.",
           );
         }
       }
 
       // Refresh the data after successful update
       const refreshResponse = await getApi(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/brandlisting/getBrandById/${uuid}`
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/brandlisting/getBrandById/${uuid}`,
       );
       const updatedBrand = refreshResponse?.data?.data;
 
@@ -730,9 +728,9 @@ const router = useRouter();
     });
     setAwardsToDelete([]);
   };
-const handleBack = () => {
- router.back(); 
-}
+  const handleBack = () => {
+    router.back();
+  };
   const handleAccordionChange = (panel) => (event, isExpanded) => {
     setExpanded(isExpanded ? panel : false);
   };
@@ -752,225 +750,240 @@ const handleBack = () => {
 
   return (
     <>
-    <Button variant="contained" onClick={handleBack}>Back</Button>
-    <Box>
-      {/* OTP Verification Dialog */}
-      <Dialog open={showOtpDialog} onClose={handleCloseOtpDialog}>
-        <DialogTitle>Verify OTP</DialogTitle>
-        <DialogContent>
-          {otpSending && !otpSent && (
-            <Box textAlign="center" mb={2}>
-              <CircularProgress size={24} />
-              <DialogContentText sx={{ mt: 1 }}>
-                Sending OTP to {formData.email}...
-              </DialogContentText>
-            </Box>
-          )}
+      <Button
+        variant="contained"
+        onClick={handleBack}
+        sx={{ backgroundColor: "#e8a81e" }}
+      >
+        Back
+      </Button>
+      <Box>
+        {/* OTP Verification Dialog */}
+        <Dialog open={showOtpDialog} onClose={handleCloseOtpDialog}>
+          <DialogTitle>Verify OTP</DialogTitle>
+          <DialogContent>
+            {otpSending && !otpSent && (
+              <Box textAlign="center" mb={2}>
+                <CircularProgress size={24} />
+                <DialogContentText sx={{ mt: 1 }}>
+                  Sending OTP to {formData.email}...
+                </DialogContentText>
+              </Box>
+            )}
 
-          {otpSendError && (
-            <Alert severity="error" sx={{ mb: 2 }}>
-              {otpSendError}
-            </Alert>
-          )}
+            {otpSendError && (
+              <Alert severity="error" sx={{ mb: 2 }}>
+                {otpSendError}
+              </Alert>
+            )}
 
-          {otpSent && (
-            <Alert severity="success" sx={{ mb: 2 }}>
-              OTP has been sent to {formData.email}
-            </Alert>
-          )}
+            {otpSent && (
+              <Alert severity="success" sx={{ mb: 2 }}>
+                OTP has been sent to {formData.email}
+              </Alert>
+            )}
 
-          <TextField
-            autoFocus
-            margin="dense"
-            label="OTP *"
-            type="text"
-            fullWidth
-            variant="outlined"
-            value={otp}
-            onChange={handleOtpChange}
-            error={!!otpError}
-            helperText={otpError || "Enter 6-digit verification code"}
-            placeholder="Enter 6-digit code"
-            disabled={otpSending || otpVerifying}
-            inputProps={{ maxLength: 6 }}
-          />
-        </DialogContent>
-
-        <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button
-            onClick={handleCloseOtpDialog}
-            disabled={otpVerifying}
-            variant="outlined"
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={async () => {
-              setOtpSending(true);
-              setOtpSendError("");
-              setOtpSent(false);
-              try {
-                await sendOtp();
-                setOtpSent(true);
-              } catch (err) {
-                setOtpSendError(err.message);
-              } finally {
-                setOtpSending(false);
-              }
-            }}
-            disabled={otpSending || otpVerifying}
-            variant="outlined"
-            sx={{ ml: "auto" }}
-          >
-            {otpSending ? <CircularProgress size={20} /> : "Resend OTP"}
-          </Button>
-          <Button
-            onClick={verifyOtp}
-            color="primary"
-            variant="contained"
-            disabled={!otp || otp.length !== 6 || otpSending || otpVerifying}
-          >
-            {otpVerifying ? <CircularProgress size={20} /> : "Verify"}
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Edit / Save Buttons */}
-      <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
-        {!isEditing ? (
-          <Button variant="outlined" onClick={handleEditClick}>
-            Edit
-          </Button>
-        ) : (
-          <>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleSave}
-              disabled={saveStatus.loading}
-              startIcon={
-                saveStatus.loading ? <CircularProgress size={20} /> : null
-              }
-              sx={{ mr: 2 }}
-            >
-              {saveStatus.loading ? "Saving..." : "Save Changes"}
-            </Button>
-            <Button
+            <TextField
+              autoFocus
+              margin="dense"
+              label="OTP *"
+              type="text"
+              fullWidth
               variant="outlined"
-              color="secondary"
-              onClick={handleCancel}
-              disabled={saveStatus.loading}
+              value={otp}
+              onChange={handleOtpChange}
+              error={!!otpError}
+              helperText={otpError || "Enter 6-digit verification code"}
+              placeholder="Enter 6-digit code"
+              disabled={otpSending || otpVerifying}
+              inputProps={{ maxLength: 6 }}
+            />
+          </DialogContent>
+
+          <DialogActions sx={{ px: 3, pb: 2 }}>
+            <Button
+              onClick={handleCloseOtpDialog}
+              disabled={otpVerifying}
+              variant="contained"
+              sx={{ bgcolor: "#be3737" }}
             >
               Cancel
             </Button>
-          </>
-        )}
-      </Box>
+            <Button
+              onClick={async () => {
+                setOtpSending(true);
+                setOtpSendError("");
+                setOtpSent(false);
+                try {
+                  await sendOtp();
+                  setOtpSent(true);
+                } catch (err) {
+                  setOtpSendError(err.message);
+                } finally {
+                  setOtpSending(false);
+                }
+              }}
+              disabled={otpSending || otpVerifying}
+              variant="contained"
+              sx={{ ml: "auto", bgcolor: "#e8a81e" }}
+            >
+              {otpSending ? <CircularProgress size={20} /> : "Resend OTP"}
+            </Button>
+            <Button
+              onClick={verifyOtp}
+              color="primary"
+              variant="contained"
+              sx={{ bgcolor: "#537e1b" }}
+              disabled={!otp || otp.length !== 6 || otpSending || otpVerifying}
+            >
+              {otpVerifying ? <CircularProgress size={20} /> : "Verify"}
+            </Button>
+          </DialogActions>
+        </Dialog>
 
-      {/* Brand Details */}
-      <Accordion
-        expanded={expanded === "panel1"}
-        onChange={handleAccordionChange("panel1")}
-      >
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography fontWeight="bold">Brand Details</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <BrandDetailsEdit
-            data={formData}
-            onChange={handleFormChange}
-            errors={{}}
-            isEditing={isEditing}
-          />
-        </AccordionDetails>
-      </Accordion>
+        {/* Edit / Save Buttons */}
+        <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
+          {!isEditing ? (
+            <Button
+              variant="contained"
+              sx={{ bgcolor: "#5d9612" }}
+              onClick={handleEditClick}
+            >
+              Edit
+            </Button>
+          ) : (
+            <>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleSave}
+                disabled={saveStatus.loading}
+                startIcon={
+                  saveStatus.loading ? <CircularProgress size={20} /> : null
+                }
+                sx={{ mr: 2 }}
+              >
+                {saveStatus.loading ? "Saving..." : "Save Changes"}
+              </Button>
+              <Button
+                variant="outlined"
+                color="secondary"
+                onClick={handleCancel}
+                disabled={saveStatus.loading}
+              >
+                Cancel
+              </Button>
+            </>
+          )}
+        </Box>
 
-      {/* Franchise Details */}
-      <Accordion
-        expanded={expanded === "panel2"}
-        onChange={handleAccordionChange("panel2")}
-      >
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography fontWeight="bold">Franchise Details</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <FranchiseDetailsControl
-            data={formData}
-            onChange={handleFormChange}
-            onNestedChange={handleNestedFormChange}
-            onArrayChange={handleArrayChange}
-            onObjectChange={handleObjectChange}
-            errors={{}}
-            isEditing={isEditing}
-          />
-        </AccordionDetails>
-      </Accordion>
-
-      {/* Expansion Location */}
-      <Accordion
-        expanded={expanded === "panel3"}
-        onChange={handleAccordionChange("panel3")}
-      >
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography fontWeight="bold">Expansion Location</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <ExpansionLocationControl
-            data={formData}
-            onChange={handleFormChange}
-            onNestedChange={handleNestedFormChange}
-            onObjectChange={handleObjectChange}
-            onAddRemoveChange={(data) => {
-              setAddExpansionData(data.addExpansionLocationData);
-              setRemoveExpansionData(data.removeExpansionLocationData);
-            }}
-            errors={{}}
-            isEditing={isEditing}
-          />
-        </AccordionDetails>
-      </Accordion>
-
-      {/* Uploads */}
-      <Accordion
-        expanded={expanded === "panel4"}
-        onChange={handleAccordionChange("panel4")}
-      >
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography fontWeight="bold">Uploads</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <UploadsEdit
-            data={formData}
-            files={files}
-            onChange={handleFormChange}
-            onFileChange={handleFileChange}
-            onRemoveFile={handleRemoveFile}
-            onArrayChange={handleArrayChange}
-            onAwardDelete={handleAwardDelete}
-            errors={{}}
-            isEditing={isEditing}
-          />
-        </AccordionDetails>
-      </Accordion>
-
-      <Snackbar
-        open={saveStatus.success || !!saveStatus.error}
-        autoHideDuration={6000}
-        onClose={() =>
-          setSaveStatus((prev) => ({ ...prev, success: false, error: "" }))
-        }
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}
-      >
-        <Alert
-          severity={saveStatus.success ? "success" : "error"}
-          sx={{ width: "100%" }}
+        {/* Brand Details */}
+        <Accordion
+          expanded={expanded === "panel1"}
+          onChange={handleAccordionChange("panel1")}
+          sx={{ mb: 1 }}
         >
-          {saveStatus.success
-            ? "Changes saved successfully!"
-            : saveStatus.error}
-        </Alert>
-      </Snackbar>
-    </Box>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography fontWeight="bold">Brand Details</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <BrandDetailsEdit
+              data={formData}
+              onChange={handleFormChange}
+              errors={{}}
+              isEditing={isEditing}
+            />
+          </AccordionDetails>
+        </Accordion>
+
+        {/* Franchise Details */}
+        <Accordion
+          expanded={expanded === "panel2"}
+          onChange={handleAccordionChange("panel2")}
+          sx={{ mb: 1 }}
+        >
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography fontWeight="bold">Franchise Details</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <FranchiseDetailsControl
+              data={formData}
+              onChange={handleFormChange}
+              onNestedChange={handleNestedFormChange}
+              onArrayChange={handleArrayChange}
+              onObjectChange={handleObjectChange}
+              errors={{}}
+              isEditing={isEditing}
+            />
+          </AccordionDetails>
+        </Accordion>
+
+        {/* Expansion Location */}
+        <Accordion
+          expanded={expanded === "panel3"}
+          onChange={handleAccordionChange("panel3")}
+          sx={{ mb: 1 }}
+        >
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography fontWeight="bold">Expansion Location</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <ExpansionLocationControl
+              data={formData}
+              onChange={handleFormChange}
+              onNestedChange={handleNestedFormChange}
+              onObjectChange={handleObjectChange}
+              onAddRemoveChange={(data) => {
+                setAddExpansionData(data.addExpansionLocationData);
+                setRemoveExpansionData(data.removeExpansionLocationData);
+              }}
+              errors={{}}
+              isEditing={isEditing}
+            />
+          </AccordionDetails>
+        </Accordion>
+
+        {/* Uploads */}
+        <Accordion
+          expanded={expanded === "panel4"}
+          onChange={handleAccordionChange("panel4")}
+        >
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography fontWeight="bold">Uploads</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <UploadsEdit
+              data={formData}
+              files={files}
+              onChange={handleFormChange}
+              onFileChange={handleFileChange}
+              onRemoveFile={handleRemoveFile}
+              onArrayChange={handleArrayChange}
+              onAwardDelete={handleAwardDelete}
+              errors={{}}
+              isEditing={isEditing}
+            />
+          </AccordionDetails>
+        </Accordion>
+
+        <Snackbar
+          open={saveStatus.success || !!saveStatus.error}
+          autoHideDuration={6000}
+          onClose={() =>
+            setSaveStatus((prev) => ({ ...prev, success: false, error: "" }))
+          }
+          anchorOrigin={{ vertical: "top", horizontal: "center" }}
+        >
+          <Alert
+            severity={saveStatus.success ? "success" : "error"}
+            sx={{ width: "100%" }}
+          >
+            {saveStatus.success
+              ? "Changes saved successfully!"
+              : saveStatus.error}
+          </Alert>
+        </Snackbar>
+      </Box>
     </>
   );
 };

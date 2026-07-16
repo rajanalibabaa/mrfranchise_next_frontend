@@ -8,32 +8,33 @@ const SuggestionList = ({ suggestions, handleSelectedSuggestionData }) => {
 
   return (
     <List disablePadding>
-      <SuggestionSection
+      {/* <SuggestionSection
         title="Tags"
         items={suggestions.tags}
         labelKey="tag"
         handleSelectedSuggestionData={handleSelectedSuggestionData}
-      />
+      /> */}
 
-      <SuggestionSection
-        title="Categories"
-        items={suggestions.categories}
-        labelKey="category"
-        handleSelectedSuggestionData={handleSelectedSuggestionData}
-      />
+     
       <SuggestionSection
         title="Brands"
         items={suggestions.brands}
         labelKey="brandName"
         handleSelectedSuggestionData={handleSelectedSuggestionData}
       />
+       <SuggestionSection
+        title="Categories"
+        items={suggestions.categories}
+        labelKey="category"
+        handleSelectedSuggestionData={handleSelectedSuggestionData}
+      />
 
-      <SuggestionSection
+      {/* <SuggestionSection
         title="Companies"
         items={suggestions.companies}
         labelKey="companyName"
-        handleSelectedSuggestionData={handleSelectedSuggestionData}
-      />
+        handleSelectedSuggestionData={handleSelectedSuggestionData} */}
+      {/* /> */}
 
       <SuggestionSection
         title="Industries"

@@ -1,6 +1,6 @@
 import { keyframes } from "@mui/system";
 
-export const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://mrfranchisebackend.mrfranchise.in";
+export const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export const COLORS = {
   primary: "#FF9900",

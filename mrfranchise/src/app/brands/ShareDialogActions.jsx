@@ -52,7 +52,7 @@ const ShareDialogActions = ({ anchorEl, setAnchorEl, brand }) => {
   // Share URL (Direct Brand Page)
   const shareUrl =
     typeof window !== "undefined"
-      ? `${window.location.origin}/franchise-business-opportunity/${slug}`
+      ? `${window.location.origin}/brands/${slug}`
       : "";
 
   // Share Text

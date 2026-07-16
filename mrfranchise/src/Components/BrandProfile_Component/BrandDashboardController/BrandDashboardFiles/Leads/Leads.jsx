@@ -34,7 +34,7 @@ const Leads = () => {
     try {
       setLoading(true);
       const res = await axios.post(
-        `https://mrfranchisebackend.mrfranchise.in/api/v1/instantapply/getSentLeadsByBrandIdEnquires`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/instantapply/getSentLeadsByBrandIdEnquires`,
         { brandId }
       );
 

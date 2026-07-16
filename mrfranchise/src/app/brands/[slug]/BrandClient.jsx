@@ -5,6 +5,8 @@ import { CircularProgress, Box } from "@mui/material";
 import axios from "axios";
 import { getUserId } from "@/Utils/autherId.jsx";
 import BrandDetails from "../BrandDetail";
+import Navbar from "@/Components/Navbar/NavBar";
+import Footer from "@/Components/Footers/Footer";
 
 const userId = getUserId();
 
@@ -89,7 +91,12 @@ function BrandDetailsPage() {
         </Box>
       }
     >
-      <Box
+ <Suspense fallback={<div style={{height: 60, background: "#fff"}} />}>
+        <Navbar />
+      </Suspense> 
+           <Box
+      component="main"
+      id="brand-details"
         sx={{
           backgroundImage: `url(/bg25.jpeg)`,
           backgroundSize: "400px auto",  
@@ -107,7 +114,10 @@ function BrandDetailsPage() {
             />
         )}
       </Box>
-    </Suspense>
+ <Suspense fallback={<div style={{height: 300, background: "#eee"}} />}>
+        <Footer />
+      </Suspense>
+        </Suspense>
   );
 }
 

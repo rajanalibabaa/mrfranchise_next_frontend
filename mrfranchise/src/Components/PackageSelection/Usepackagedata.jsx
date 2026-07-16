@@ -67,7 +67,7 @@ const usePackageData = () => {
   const fetchPackages = async (ownerId) => {
     try {
       setLoadings(true);
-      const response = await axios.get(`https://mrfranchisebackend.mrfranchise.in/api/v1/brand-packages-plans/get/${ownerId}`);
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/brand-packages-plans/get/${ownerId}`);
       const apiData = response.data.data || response.data;
       setData(apiData);
       if (apiData?.packages && Array.isArray(apiData.packages)) {

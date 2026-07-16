@@ -1,5 +1,5 @@
-'use client'
-import React, { useState ,useEffect} from "react";
+"use client";
+import React, { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
 
 import Box from "@mui/material/Box";
@@ -37,8 +37,7 @@ const CreateRequestForm = () => {
     ],
   });
 
-
-   // ✅ SAFE: runs only in browser
+  // ✅ SAFE: runs only in browser
   useEffect(() => {
     const storedBrandId = localStorage.getItem("brandUUID");
     if (storedBrandId) {
@@ -46,7 +45,6 @@ const CreateRequestForm = () => {
       setFormData((prev) => ({ ...prev, brandId: storedBrandId }));
     }
   }, []);
-
 
   const handleAccordionChange = (panel) => (_, isExpanded) =>
     setExpanded(isExpanded ? panel : false);
@@ -60,8 +58,6 @@ const CreateRequestForm = () => {
     updatedContacts[index][name] = value;
     setFormData((prev) => ({ ...prev, contactDetails: updatedContacts }));
   };
-
-
 
   const removeContact = (index) => {
     const updatedContacts = [...formData.contactDetails];
@@ -208,9 +204,7 @@ const CreateRequestForm = () => {
                       type="number"
                       maxLength={10}
                       inputProps={{ maxLength: 10 }}
-                      
                       name="emergencyContactPhone"
-
                       value={contact.emergencyContactPhone}
                       onChange={(e) => handleContactChange(index, e)}
                       fullWidth
@@ -227,7 +221,7 @@ const CreateRequestForm = () => {
                   >
                     {index > 0 && (
                       <IconButton
-                          aria-label="Remove Contact"
+                        aria-label="Remove Contact"
                         color="error"
                         onClick={() => removeContact(index)}
                       >

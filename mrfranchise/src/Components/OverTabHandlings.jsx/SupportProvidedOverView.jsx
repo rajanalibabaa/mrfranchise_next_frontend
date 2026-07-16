@@ -31,6 +31,8 @@ const SupportProvided = ({ trainingSupport, aidFinancing, isInternationalExpansi
       >
         <CardContent>
           <Typography
+          component="h2"
+          variant="h5"
             gutterBottom
             display="flex"
             alignItems="center"
@@ -52,10 +54,11 @@ const SupportProvided = ({ trainingSupport, aidFinancing, isInternationalExpansi
           >
             {trainingSupport && trainingSupport.length > 0 && (
               <>
-                <Typography variant="body2" sx={{ color: "#212121", fontWeight: 600 }}>
+                <Typography component="h3" variant="body2" sx={{ color: "#212121", fontWeight: 600 }}>
                   Training Support:
                 </Typography>
                 <Typography
+                  component="h3"
                   variant="body2"
                   sx={{
                     color: "#212121",
@@ -74,18 +77,18 @@ const SupportProvided = ({ trainingSupport, aidFinancing, isInternationalExpansi
 
             {aidFinancing && (
               <>
-                <Typography variant="body2" sx={{ color: "#212121", fontWeight: 600 }}>
+                <Typography component="h3" variant="body2" sx={{ color: "#212121", fontWeight: 600 }}>
                   Financing Aid:
                 </Typography>
-                <Typography variant="body2" sx={{ color: "#212121" }}>
+                <Typography component="h3" variant="body2" sx={{ color: "#212121" }}>
                   {aidFinancing}
                 </Typography>
               </>
             )}
-            <Typography variant="body2" sx={{ color: "#212121", fontWeight: 600 }}>
+            <Typography component="h3" variant="body2" sx={{ color: "#212121", fontWeight: 600 }}>
               International Expansion:
             </Typography>
-            <Typography variant="body2" sx={{ color: "#212121" }}>
+            <Typography component="h3" variant="body2" sx={{ color: "#212121" }}>
               {isInternationalExpansion ? "Yes" : "No"}
             </Typography>
           </Box>

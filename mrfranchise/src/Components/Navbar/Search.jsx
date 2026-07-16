@@ -30,7 +30,7 @@ const INITIAL_SUGGESTIONS = {
   categories: [],
 };
 
-const DEBOUNCE_MS = 200;
+const DEBOUNCE_MS = 350;
 
 // ─────────────────────────────────────────────
 // Performance Logger (instance per mount)
@@ -98,20 +98,20 @@ const createPerfLogger = () => {
 // ─────────────────────────────────────────────
 // Speed badge helper
 // ─────────────────────────────────────────────
-const getSpeedChip = (ms) => {
-  if (ms === null) return null;
-  const n = parseFloat(ms);
-  const label =
-    n < 150 ? `⚡ ${ms}ms` :
-    n < 400 ? `🟡 ${ms}ms` :
-    n < 800 ? `🟠 ${ms}ms` : `🔴 ${ms}ms`;
+// const getSpeedChip = (ms) => {
+//   if (ms === null) return null;
+//   const n = parseFloat(ms);
+//   const label =
+//     n < 150 ? `⚡ ${ms}ms` :
+//     n < 400 ? `🟡 ${ms}ms` :
+//     n < 800 ? `🟠 ${ms}ms` : `🔴 ${ms}ms`;
 
-  const color =
-    n < 150 ? "success" :
-    n < 400 ? "warning" : "error";
+//   const color =
+//     n < 150 ? "success" :
+//     n < 400 ? "warning" : "error";
 
-  return { label, color };
-};
+//   return { label, color };
+// };
 
 // ─────────────────────────────────────────────
 // Component
@@ -150,14 +150,18 @@ const Search = ({ handleClose }) => {
 
   // ─── Fetch Suggestions ──────────────────────
   useEffect(() => {
-    if (!debouncedQuery) {
-      setSuggestions(INITIAL_SUGGESTIONS);
-      setLoading(false);
-      setIsOpen(false);
-      setResponseMs(null);
-      return;
-    }
+    const searchValue = debouncedQuery.trim();
 
+if (searchValue.length < 2) {
+  abortRef.current?.abort();
+
+  setSuggestions(INITIAL_SUGGESTIONS);
+  setLoading(false);
+  setIsOpen(false);
+  setResponseMs(null);
+
+  return;
+}
     const perf = perfRef.current;
 
     const fetchSuggestions = async () => {
@@ -175,11 +179,11 @@ const Search = ({ handleClose }) => {
 
       setLoading(true);
 
-      const totalStart   = perf.start(debouncedQuery);
+      const totalStart   = perf.start(searchValue);
       const preStart     = performance.now();
 
-      const url = `${api.user.get.search}?searchTerm=${encodeURIComponent(debouncedQuery)}`;
-      // console.log(`📡 [REQ #${reqId}] → ${url}`);
+const url =
+  `${api.user.get.search}?searchTerm=${encodeURIComponent(searchValue)}`;      // console.log(`📡 [REQ #${reqId}] → ${url}`);
 
       const preTime = (performance.now() - preStart).toFixed(1);
 
@@ -206,16 +210,16 @@ const Search = ({ handleClose }) => {
         const stateStart = performance.now();
         setSuggestions({
           brands:     data?.brandNamesMatches    || [],
-          companies:  data?.companyNamesMatches  || [],
+          // companies:  data?.companyNamesMatches  || [],
           industries: data?.industryMatches      || [],
-          tags:       data?.tagsMatches          || [],
+          // tags:       data?.tagsMatches          || [],
           categories: data?.categoriesMatches    || [],
         });
         setIsOpen(true);
         const stateTime = (performance.now() - stateStart).toFixed(1);
 
         // ── Logs ──────────────────────────────
-        const totalMs = perf.end(debouncedQuery, totalStart);
+        const totalMs = perf.end(searchValue, totalStart);
 
         perf.breakdown(debouncedQuery, {
           "Pre-request":    parseFloat(preTime),
@@ -247,16 +251,27 @@ const Search = ({ handleClose }) => {
         if (reqCountRef.current % 5 === 0) perf.summary();
 
       } catch (err) {
-        if (err?.name === "AbortError" || signal.aborted) {
-          console.warn(`🚫 [REQ #${reqId}] Aborted: "${debouncedQuery}"`);
-          return;
-        }
-        console.error(`❌ [REQ #${reqId}] Error:`, err);
-        setSuggestions(INITIAL_SUGGESTIONS);
-        perf.end(debouncedQuery, totalStart);
-      } finally {
-        if (!signal.aborted) setLoading(false);
-      }
+
+  if (err?.name === "AbortError" || signal.aborted) {
+    return;
+  }
+
+  if (err?.response?.status === 400) {
+    setSuggestions(INITIAL_SUGGESTIONS);
+    return;
+  }
+
+  console.error(err);
+
+  setSuggestions(INITIAL_SUGGESTIONS);
+
+} finally {
+
+  if (!signal.aborted) {
+    setLoading(false);
+  }
+
+}
     };
 
     fetchSuggestions();
@@ -342,7 +357,7 @@ const Search = ({ handleClose }) => {
       // Brand name → go to brand detail page
       if (selectedData.brandName) {
         window.open(
-          `/franchise-business-opportunity/${selectedData.brandName}`,
+          `/brands/${selectedData.brandName}`,
           "_blank",
           "noopener,noreferrer"
         );
@@ -389,7 +404,7 @@ const Search = ({ handleClose }) => {
         inputRef={inputRef}
         fullWidth
         size="medium"
-        placeholder="Search brands, companies, industries..."
+        placeholder="Search brands, categories, industries..."
         value={query}
         sx={{
           "& .MuiInputBase-root": {

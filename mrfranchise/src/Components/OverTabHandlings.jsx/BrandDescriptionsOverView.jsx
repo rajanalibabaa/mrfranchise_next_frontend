@@ -14,7 +14,10 @@ const BrandDescription = ({ brandDescription, uniqueSellingPoints }) => {
         boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
       }}
     >
-      <Typography   sx={{ mb: 2, color: "#000000ff",background:'#7cd13b',padding:'10px',borderRadius:'5px' }}>
+      <Typography component="h2"
+    variant="h5"
+    // fontWeight={700}
+      sx={{ mb: 2, color: "#000000ff",background:'#7cd13b',padding:'10px',borderRadius:'5px' }}>
         Brand Description
       </Typography>
       <Divider sx={{ mb: 2, borderColor: "rgba(0,0,0,0.1)" }} />
@@ -44,7 +47,7 @@ const BrandDescription = ({ brandDescription, uniqueSellingPoints }) => {
       >
         <Typography 
           variant={isMobile ? "body2" : "body2"} 
-          component="div" 
+          component="section" 
           sx={{ 
             color: "#212121",
             "& h1": {
@@ -66,7 +69,9 @@ const BrandDescription = ({ brandDescription, uniqueSellingPoints }) => {
       {uniqueSellingPoints && uniqueSellingPoints.length > 0 && (
         <>
           <Typography 
-           
+           component="h3"
+            variant="h6"
+            // fontWeight={600}
             sx={{ 
               mt: 2,
               mb: 1,

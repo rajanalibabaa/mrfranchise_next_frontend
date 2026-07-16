@@ -9,9 +9,7 @@ import CircularProgress from "@mui/material/CircularProgress";
 import {
   fetchFilterOptions,
   resetChildCategories,
-  
 } from "@/Redux/Slices/filterDropdownData";
-import { fetchFilteredBrands, setFilter } from "@/Redux/Slices/FilterBrandSlice";
 
 // Define the correct order for investment ranges
 
@@ -149,24 +147,6 @@ const filteredChildCategories = useMemo(() => {
 
 
 
-useEffect(() => {
-  if (loadingChildCategories) return;
-  // Avoid empty initial call
-  if (!filters.maincat && !filters.subcat && !filters.childcat) return;
-
-  const value = filters.childcat;
-
-  dispatch(
-    fetchFilteredBrands({
-      ...filters,
-      searchTerm: value,
-      page: 1,
-      limit: 20,
-    })
-  );
-}, [filters.maincat, loadingChildCategories, filters.subcat, filters.childcat, dispatch]);
-
-
   return (
   <>
     
@@ -217,7 +197,12 @@ useEffect(() => {
     {group.industries.map((industry) => (
       <Box
         key={industry}
-        onClick={() => onFilterChange("maincat", industry)}
+        onClick={() => {
+          onFilterChange("maincat", industry);
+          onFilterChange("subcat", "");
+          onFilterChange("childcat", "");
+          onFilterChange("searchTerm", "");
+        }}
         sx={{
           px: 1.5,
           py: 0.5,
@@ -258,7 +243,11 @@ useEffect(() => {
         {filteredSubCategories.map((subCategory) => (
           <Box
             key={subCategory}
-            onClick={() => onFilterChange("subcat", subCategory)}
+            onClick={() => {
+              onFilterChange("subcat", subCategory);
+              onFilterChange("childcat", "");
+              onFilterChange("searchTerm", "");
+            }}
             sx={{
               px: 1.5,
               py: 0.5,
@@ -306,8 +295,8 @@ useEffect(() => {
           <Box
             key={child}
             onClick={() => {
-              dispatch(setFilter({ searchTerm: child }));
-              dispatch(fetchFilteredBrands({ searchTerm: child, page: 1, limit: 20 }));
+              onFilterChange("childcat", child);
+              onFilterChange("searchTerm", "");
             }}
             sx={{
               px: 1.5,
@@ -318,9 +307,9 @@ useEffect(() => {
               cursor: "pointer",
               border: "1px solid #ff9800",
               backgroundColor:
-                filters.searchTerm === child ? "#ff9800" : "#fff",
+                filters.childcat === child ? "#ff9800" : "#fff",
               color:
-                filters.searchTerm === child ? "#fff" : "#333",
+                filters.childcat === child ? "#fff" : "#333",
               "&:hover": {
                 textDecoration: "underline",
                 // backgroundColor: "#f5f5f5",
