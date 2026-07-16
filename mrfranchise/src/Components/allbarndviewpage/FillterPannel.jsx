@@ -77,8 +77,6 @@ const HighlightedText = ({ text, highlight }) => {
   );
 };
 
-
-
 // ─── Franchise Heading label style ────────────────────────────────────────────
 const HeadingLabel = ({
   children,
@@ -256,8 +254,7 @@ const FillterPannel = React.memo(
           if (section === "mainCategory") industrySearchRef.current?.focus();
           if (section === "location") stateSearchRef.current?.focus();
           if (section === "modelType") modelTypeSearchRef.current?.focus();
-          if (section === "businessModel")
-            modelTypeSearchRef.current?.focus();
+          if (section === "businessModel") modelTypeSearchRef.current?.focus();
         }, 200);
       }
     };
@@ -265,9 +262,7 @@ const FillterPannel = React.memo(
     const updateSearch = (key, value) =>
       setSearchTerms((prev) => ({ ...prev, [key]: value }));
 
-
     const norm = (v) => (typeof v === "string" ? v.trim() : v);
-
 
     const dedupe = (list) => {
       const seen = new Set();
@@ -469,8 +464,6 @@ const FillterPannel = React.memo(
 
           <AccordionDetails sx={{ p: 0 }}>
             <StablePanel>
-             
-
               <Box sx={{ px: 1, maxHeight: 320, overflowY: "auto" }}>
                 <RadioGroup
                   value={filters.maincat || ""}
@@ -501,9 +494,7 @@ const FillterPannel = React.memo(
                       <HeadingLabel>{group.heading}</HeadingLabel>
 
                       {group.industries.map((industry) => (
-                        <Box
-                          key={`cat-container-${group.heading}-${industry}`}
-                        >
+                        <Box key={`cat-container-${group.heading}-${industry}`}>
                           <FormControlLabel
                             value={industry}
                             control={
@@ -529,7 +520,6 @@ const FillterPannel = React.memo(
 
                           {filters.maincat === industry && (
                             <Box ref={subCategoryRef} sx={{ ml: 2, pl: 1 }}>
-                            
                               <RadioGroup
                                 value={filters.subcat || ""}
                                 onChange={(e) => {
@@ -657,9 +647,7 @@ const FillterPannel = React.memo(
                     <FormControlLabel
                       key={`model-${model}`}
                       value={model}
-                      control={
-                        <Radio size="small" sx={{ color: "#ff9800" }} />
-                      }
+                      control={<Radio size="small" sx={{ color: "#ff9800" }} />}
                       label={
                         <Typography fontSize="0.75rem">{model}</Typography>
                       }

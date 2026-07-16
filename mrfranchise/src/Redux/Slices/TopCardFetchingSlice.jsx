@@ -185,7 +185,7 @@ export const homeSection6 = createAsyncThunk(
   async ({ page = 1 }, { rejectWithValue }) => {
     try {
       const response = await axios.get(
-        `${API_BASE_URL}/overAllPlatformOnlyMainCategory?main=${encodeURIComponent("Automobile")}&sub=${encodeURIComponent("Electric Vehicles EV")}`,
+        `${API_BASE_URL}/overAllPlatformOnlyMainCategory?main=${encodeURIComponent("Automobile")}&sub=${encodeURIComponent("Electric Vehicles")}`,
         {
           params: { page, id: userId, limit: 4 },
         },
