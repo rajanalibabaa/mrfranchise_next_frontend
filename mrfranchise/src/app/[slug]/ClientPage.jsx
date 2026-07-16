@@ -9,24 +9,19 @@ import Footer from "@/Components/Footers/Footer";
 const BrandListNew = dynamic(
   () => import("../../Components/allbarndviewpage/brandListAllbrands"),
   {
-    
     ssr: true,
-  }
+  },
 );
 
-
-
-
-export default function BrandCategoryViewPage({ slug, subslug, maincat, subcat, brands }) {
-
-
-
- 
-
+export default function BrandCategoryViewPage({
+  slug,
+  subslug,
+  maincat,
+  subcat,
+  brands,
+}) {
   return (
     <>
-    
-
       {/* Navbar */}
       <NavbarWrapper />
 
@@ -34,13 +29,18 @@ export default function BrandCategoryViewPage({ slug, subslug, maincat, subcat, 
       <Box
         component="main"
         sx={{
-          mt: { xs: "70px", sm: "12px",md:"135px" },
-          mx: { xs: 1,  },
+          mt: { xs: "70px", sm: "12px", md: "135px" },
+          mx: { xs: 1 },
           minHeight: "calc(100vh - 64px)",
         }}
       >
         <Suspense fallback={<div>Loading...</div>}>
-            <BrandListNew slug={slug} subslug={subslug} maincat={maincat} subcat={subcat} />
+          <BrandListNew
+            slug={slug}
+            subslug={subslug}
+            maincat={maincat}
+            subcat={subcat}
+          />
         </Suspense>
       </Box>
 

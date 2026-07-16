@@ -138,7 +138,7 @@ const BrandComparison = ({
 
     postView(brand?.uuid);
     // dispatch(openBrandDialog(brand));
-    window.open(`/franchise-business-opportunity/${brand?.uuid}`, "_blank");
+    window.open(`/brands/${brand?.uuid}`, "_blank");
   };
 
   const downloadPDF = async () => {

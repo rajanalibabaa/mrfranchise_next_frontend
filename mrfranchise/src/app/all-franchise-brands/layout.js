@@ -1,14 +1,13 @@
-
-const SITE_URL ="https://mrfranchise.in";
+const SITE_URL = "https://mrfranchise.in";
 const SITE_NAME = "Mr Franchise";
 const PAGE_PATH = "/all-franchise-brands";
 const CANONICAL_URL = `${SITE_URL}${PAGE_PATH}`;
 
-
 export const metadata = {
   // Title Configuration
   title: {
-    default: "All Franchise Opportunities in India 2026 | 1000+ Verified Brands | Mr Franchise",
+    default:
+      "All Franchise Opportunities in India 2026 | 1000+ Verified Brands | Mr Franchise",
     template: "%s | Mr Franchise - India's #1 Franchise Marketplace",
   },
 
@@ -24,7 +23,7 @@ export const metadata = {
     "franchise business opportunities india",
     "best franchise in india",
     "top franchise opportunities 2024",
-    
+
     // Investment-based
     "low investment franchise india",
     "high profit franchise business",
@@ -32,7 +31,7 @@ export const metadata = {
     "franchise under 10 lakh",
     "franchise under 20 lakh",
     "best franchise to invest in india",
-    
+
     // Category-based
     "food franchise opportunities india",
     "retail franchise india",
@@ -44,40 +43,40 @@ export const metadata = {
     "restaurant franchise opportunities",
     "clothing franchise india",
     "pharmacy franchise",
-    
+
     // Action-based
     "buy franchise in india",
     "franchise for sale india",
     "start franchise business",
     "how to get franchise in india",
     "franchise application online",
-    
+
     // Location-based
     "franchise opportunities in delhi",
     "franchise opportunities in mumbai",
     "franchise opportunities in bangalore",
     "franchise opportunities in pune",
     "franchise business in tier 2 cities",
-    
+
     // Marketplace
     "franchise marketplace india",
     "franchise portal india",
     "mr franchise india",
     "verified franchise opportunities",
     "trusted franchise brands",
-    
+
     // Business type
     "home based franchise",
     "online franchise business",
     "franchise without office",
     "mobile franchise business",
-    
+
     // Profitability
     "most profitable franchise in india",
     "high return franchise business",
     "franchise roi calculator",
     "franchise profit margin",
-    
+
     // Brand specific
     "international franchise in india",
     "indian franchise brands",
@@ -112,7 +111,8 @@ export const metadata = {
 
   // Open Graph (Enhanced)
   openGraph: {
-    title: "All Franchise Opportunities in India 2024 | 1000+ Verified Brands | Mr Franchise",
+    title:
+      "All Franchise Opportunities in India 2024 | 1000+ Verified Brands | Mr Franchise",
     description:
       "Discover India's largest collection of verified franchise opportunities. Browse 1000+ brands across 20+ categories. Compare investment (₹5L-₹5Cr+), ROI, area requirements & apply instantly. Get expert franchise guidance from Mr Franchise - India's #1 Franchise Marketplace.",
     url: CANONICAL_URL,
@@ -141,7 +141,8 @@ export const metadata = {
     card: "summary_large_image",
     site: "@mrfranchise",
     creator: "@mrfranchise",
-    title: "1000+ Franchise Opportunities in India | Compare & Apply | Mr Franchise",
+    title:
+      "1000+ Franchise Opportunities in India | Compare & Apply | Mr Franchise",
     description:
       "Browse India's largest franchise marketplace. 1000+ verified brands across Food, Retail, Education, Healthcare & more. Compare costs, ROI & apply directly.",
     images: [`${SITE_URL}/og-all-franchises.jpg`],
@@ -150,7 +151,6 @@ export const metadata = {
   // Verification Tags
   verification: {
     google: "",
-   
   },
 
   // Additional Meta Tags
@@ -161,11 +161,11 @@ export const metadata = {
     "franchise:min_investment": "₹5 Lakhs",
     "franchise:max_investment": "₹5 Crores+",
     "franchise:country": "India",
-    
+
     // Business Information
     "business:type": "Franchise Marketplace",
     "business:category": "All Categories",
-    
+
     // Mobile App Deep Link (if applicable)
     "al:android:url": "mrfranchise://allbrands",
     "al:android:package": "com.mrfranchise.app",
@@ -173,17 +173,17 @@ export const metadata = {
     "al:ios:url": "mrfranchise://allbrands",
     "al:ios:app_store_id": "123456789",
     "al:ios:app_name": "Mr Franchise",
-    
+
     // Rating (if applicable)
-    "rating": "4.5",
+    rating: "4.5",
     "rating:scale": "5",
-    
+
     // Geographic Target
     "geo.region": "IN",
     "geo.placename": "India",
-    
+
     // Language
-    "language": "English",
+    language: "English",
     "content-language": "en-IN",
   },
 
@@ -205,7 +205,6 @@ export const metadata = {
   category: "Business & Franchise Opportunities",
 };
 
-
 const generateStructuredData = () => {
   return {
     "@context": "https://schema.org",
@@ -214,14 +213,14 @@ const generateStructuredData = () => {
       {
         "@type": "WebSite",
         "@id": `${SITE_URL}#website`,
-        "url": SITE_URL,
-        "name": SITE_NAME,
-        "description": "India's #1 Franchise Marketplace",
-        "potentialAction": {
+        url: SITE_URL,
+        name: SITE_NAME,
+        description: "India's #1 Franchise Marketplace",
+        potentialAction: {
           "@type": "SearchAction",
-          "target": {
+          target: {
             "@type": "EntryPoint",
-            "urlTemplate": `${SITE_URL}/search?q={search_term_string}`,
+            urlTemplate: `${SITE_URL}/search?q={search_term_string}`,
           },
           "query-input": "required name=search_term_string",
         },
@@ -231,18 +230,20 @@ const generateStructuredData = () => {
       {
         "@type": "CollectionPage",
         "@id": `${CANONICAL_URL}#collectionpage`,
-        "url": CANONICAL_URL,
-        "name": "All Franchise Opportunities in India",
-        "description": "Browse 1000+ verified franchise opportunities across all categories in India",
-        "isPartOf": {
+        url: CANONICAL_URL,
+        name: "All Franchise Opportunities in India",
+        description:
+          "Browse 1000+ verified franchise opportunities across all categories in India",
+        isPartOf: {
           "@id": `${SITE_URL}#website`,
         },
-        "about": {
+        about: {
           "@type": "Thing",
-          "name": "Franchise Opportunities",
-          "description": "Business franchise opportunities across multiple industries",
+          name: "Franchise Opportunities",
+          description:
+            "Business franchise opportunities across multiple industries",
         },
-        "breadcrumb": {
+        breadcrumb: {
           "@id": `${CANONICAL_URL}#breadcrumb`,
         },
       },
@@ -251,24 +252,24 @@ const generateStructuredData = () => {
       {
         "@type": "BreadcrumbList",
         "@id": `${CANONICAL_URL}#breadcrumb`,
-        "itemListElement": [
+        itemListElement: [
           {
             "@type": "ListItem",
-            "position": 1,
-            "name": "Home",
-            "item": SITE_URL,
+            position: 1,
+            name: "Home",
+            item: SITE_URL,
           },
           {
             "@type": "ListItem",
-            "position": 2,
-            "name": "All Categories",
-            "item": `${SITE_URL}/allcategorypage`,
+            position: 2,
+            name: "All Categories",
+            item: `${SITE_URL}/allcategorypage`,
           },
           {
             "@type": "ListItem",
-            "position": 3,
-            "name": "All Franchise Brands",
-            "item": CANONICAL_URL,
+            position: 3,
+            name: "All Franchise Brands",
+            item: CANONICAL_URL,
           },
         ],
       },
@@ -277,28 +278,28 @@ const generateStructuredData = () => {
       {
         "@type": "Organization",
         "@id": `${SITE_URL}#organization`,
-        "name": SITE_NAME,
-        "url": SITE_URL,
-        "logo": {
+        name: SITE_NAME,
+        url: SITE_URL,
+        logo: {
           "@type": "ImageObject",
-          "url": `${SITE_URL}/mrfranchise_logo.avif`,
-          "width": 250,
-          "height": 60,
+          url: `${SITE_URL}/mrfranchise_logo.avif`,
+          width: 250,
+          height: 60,
         },
-        "description": "India's largest and most trusted franchise marketplace",
-        "address": {
+        description: "India's largest and most trusted franchise marketplace",
+        address: {
           "@type": "PostalAddress",
-          "addressCountry": "IN",
-          "addressLocality": "India",
+          addressCountry: "IN",
+          addressLocality: "India",
         },
-        "contactPoint": {
+        contactPoint: {
           "@type": "ContactPoint",
-          "telephone": "+91-XXXXXXXXXX",
-          "contactType": "Customer Service",
-          "availableLanguage": ["English", "Hindi"],
-          "areaServed": "IN",
+          telephone: "+91-XXXXXXXXXX",
+          contactType: "Customer Service",
+          availableLanguage: ["English", "Hindi"],
+          areaServed: "IN",
         },
-        "sameAs": [
+        sameAs: [
           "https://www.facebook.com/mrfranchise",
           "https://www.instagram.com/mrfranchise",
           "https://www.linkedin.com/company/mrfranchise",
@@ -311,57 +312,57 @@ const generateStructuredData = () => {
       {
         "@type": "ItemList",
         "@id": `${CANONICAL_URL}#itemlist`,
-        "name": "Franchise Categories",
-        "description": "Browse franchise opportunities by category",
-        "numberOfItems": 20,
-        "itemListElement": [
+        name: "Franchise Categories",
+        description: "Browse franchise opportunities by category",
+        numberOfItems: 20,
+        itemListElement: [
           {
             "@type": "ListItem",
-            "position": 1,
-            "name": "Food & Beverage Franchise",
-            "url": `${SITE_URL}/category/food-beverage`,
+            position: 1,
+            name: "Food & Beverage Franchise",
+            url: `${SITE_URL}/category/food-beverage`,
           },
           {
             "@type": "ListItem",
-            "position": 2,
-            "name": "Retail Franchise",
-            "url": `${SITE_URL}/category/retail`,
+            position: 2,
+            name: "Retail Franchise",
+            url: `${SITE_URL}/category/retail`,
           },
           {
             "@type": "ListItem",
-            "position": 3,
-            "name": "Education Franchise",
-            "url": `${SITE_URL}/category/education`,
+            position: 3,
+            name: "Education Franchise",
+            url: `${SITE_URL}/category/education`,
           },
           {
             "@type": "ListItem",
-            "position": 4,
-            "name": "Healthcare Franchise",
-            "url": `${SITE_URL}/category/healthcare`,
+            position: 4,
+            name: "Healthcare Franchise",
+            url: `${SITE_URL}/category/healthcare`,
           },
           {
             "@type": "ListItem",
-            "position": 5,
-            "name": "Fitness Franchise",
-            "url": `${SITE_URL}/category/fitness`,
+            position: 5,
+            name: "Fitness Franchise",
+            url: `${SITE_URL}/category/fitness`,
           },
           {
             "@type": "ListItem",
-            "position": 6,
-            "name": "Beauty & Salon Franchise",
-            "url": `${SITE_URL}/category/beauty-salon`,
+            position: 6,
+            name: "Beauty & Salon Franchise",
+            url: `${SITE_URL}/category/beauty-salon`,
           },
           {
             "@type": "ListItem",
-            "position": 7,
-            "name": "Cafe & Coffee Franchise",
-            "url": `${SITE_URL}/category/cafe-coffee`,
+            position: 7,
+            name: "Cafe & Coffee Franchise",
+            url: `${SITE_URL}/category/cafe-coffee`,
           },
           {
             "@type": "ListItem",
-            "position": 8,
-            "name": "Automotive Franchise",
-            "url": `${SITE_URL}/category/automotive`,
+            position: 8,
+            name: "Automotive Franchise",
+            url: `${SITE_URL}/category/automotive`,
           },
         ],
       },
@@ -370,53 +371,53 @@ const generateStructuredData = () => {
       {
         "@type": "FAQPage",
         "@id": `${CANONICAL_URL}#faq`,
-        "mainEntity": [
+        mainEntity: [
           {
             "@type": "Question",
-            "name": "How many franchise opportunities are available on Mr Franchise?",
-            "acceptedAnswer": {
+            name: "How many franchise opportunities are available on Mr Franchise?",
+            acceptedAnswer: {
               "@type": "Answer",
-              "text": "Mr Franchise features over 1000+ verified franchise opportunities across 20+ categories including Food & Beverage, Retail, Education, Healthcare, Fitness, and more. We continuously update our listings with new franchise brands.",
+              text: "Mr Franchise features over 1000+ verified franchise opportunities across 20+ categories including Food & Beverage, Retail, Education, Healthcare, Fitness, and more. We continuously update our listings with new franchise brands.",
             },
           },
           {
             "@type": "Question",
-            "name": "What is the minimum investment required to start a franchise in India?",
-            "acceptedAnswer": {
+            name: "What is the minimum investment required to start a franchise in India?",
+            acceptedAnswer: {
               "@type": "Answer",
-              "text": "Franchise investments on Mr Franchise range from as low as ₹5 lakhs to ₹5 crores and above. The investment varies based on the brand, category, location, and business model. You can filter franchises by investment range to find options that match your budget.",
+              text: "Franchise investments on Mr Franchise range from as low as ₹5 lakhs to ₹5 crores and above. The investment varies based on the brand, category, location, and business model. You can filter franchises by investment range to find options that match your budget.",
             },
           },
           {
             "@type": "Question",
-            "name": "How can I apply for a franchise on Mr Franchise?",
-            "acceptedAnswer": {
+            name: "How can I apply for a franchise on Mr Franchise?",
+            acceptedAnswer: {
               "@type": "Answer",
-              "text": "You can apply for any franchise by clicking on the brand listing, filling out the inquiry form with your details, and submitting it. The brand will receive your application and contact you directly with further information about the franchise opportunity.",
+              text: "You can apply for any franchise by clicking on the brand listing, filling out the inquiry form with your details, and submitting it. The brand will receive your application and contact you directly with further information about the franchise opportunity.",
             },
           },
           {
             "@type": "Question",
-            "name": "Are all franchises on Mr Franchise verified?",
-            "acceptedAnswer": {
+            name: "Are all franchises on Mr Franchise verified?",
+            acceptedAnswer: {
               "@type": "Answer",
-              "text": "Yes, Mr Franchise verifies all franchise listings before publishing them on our platform. We ensure that the brands listed are legitimate and provide accurate information about investment, ROI, and franchise terms.",
+              text: "Yes, Mr Franchise verifies all franchise listings before publishing them on our platform. We ensure that the brands listed are legitimate and provide accurate information about investment, ROI, and franchise terms.",
             },
           },
           {
             "@type": "Question",
-            "name": "Which are the most profitable franchise categories in India?",
-            "acceptedAnswer": {
+            name: "Which are the most profitable franchise categories in India?",
+            acceptedAnswer: {
               "@type": "Answer",
-              "text": "The most profitable franchise categories in India include Food & Beverage (QSR, Cafe, Cloud Kitchen), Education (Coaching, Preschool), Healthcare (Pharmacy, Diagnostic), Fitness (Gym, Yoga), and Retail (Fashion, Grocery). Profitability depends on location, investment, and operational efficiency.",
+              text: "The most profitable franchise categories in India include Food & Beverage (QSR, Cafe, Cloud Kitchen), Education (Coaching, Preschool), Healthcare (Pharmacy, Diagnostic), Fitness (Gym, Yoga), and Retail (Fashion, Grocery). Profitability depends on location, investment, and operational efficiency.",
             },
           },
           {
             "@type": "Question",
-            "name": "Can I get franchise opportunities for tier 2 and tier 3 cities?",
-            "acceptedAnswer": {
+            name: "Can I get franchise opportunities for tier 2 and tier 3 cities?",
+            acceptedAnswer: {
               "@type": "Answer",
-              "text": "Yes, many franchise brands on Mr Franchise are actively expanding to tier 2 and tier 3 cities. You can filter franchises by location preference and find opportunities suitable for your city. Smaller cities often have lower investment and operational costs.",
+              text: "Yes, many franchise brands on Mr Franchise are actively expanding to tier 2 and tier 3 cities. You can filter franchises by location preference and find opportunities suitable for your city. Smaller cities often have lower investment and operational costs.",
             },
           },
         ],
@@ -424,7 +425,6 @@ const generateStructuredData = () => {
     ],
   };
 };
-
 
 export default function BrandListingLayout({ children }) {
   const structuredData = generateStructuredData();
@@ -438,12 +438,10 @@ export default function BrandListingLayout({ children }) {
           __html: JSON.stringify(structuredData),
         }}
       />
-        <link rel="icon" href="/mrfranchise_logo.avif" type="image/jpeg" />
-
+      <link rel="icon" href="/mrfranchise_logo.avif" type="image/jpeg" />
 
       {/* Preconnect for Performance */}
-      
-      
+
       {/* DNS Prefetch */}
       <link rel="dns-prefetch" href="https://www.google-analytics.com" />
       <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
@@ -453,7 +451,6 @@ export default function BrandListingLayout({ children }) {
     </>
   );
 }
-
 
 export const viewport = {
   width: "device-width",

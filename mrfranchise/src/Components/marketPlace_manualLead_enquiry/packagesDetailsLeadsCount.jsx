@@ -2,21 +2,30 @@
 
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { Box, Card, CardContent, Typography, Grid, LinearProgress, Chip, CircularProgress, Stack, } from "@mui/material"; 
+import { Box, Card, CardContent, Typography, Grid, Chip, CircularProgress, Stack } from "@mui/material"; 
 import TrendingUpIcon from "@mui/icons-material/TrendingUp"; 
 import SendIcon from "@mui/icons-material/Send";
- import InventoryIcon from "@mui/icons-material/Inventory";
+import InventoryIcon from "@mui/icons-material/Inventory";
 
-const BRAND_OWNER_ID = localStorage.getItem("brandUUID");
+const getBrandOwnerId = () => {
+  if (typeof window === "undefined") return null;
+  return window.localStorage.getItem("brandUUID");
+};
 
 export default function BrandPackageLeadDashboard() {
-  const [loading, setLoading] = useState(!!BRAND_OWNER_ID);
+  const [brandOwnerId, setBrandOwnerId] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [packageData, setPackageData] = useState(null);
 
-  const getPackageDetails = async () => {
+  const getPackageDetails = async (id) => {
+    if (!id) {
+      setLoading(false);
+      return;
+    }
+
     try {
       const res = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/brand-packages-plans/active-lead-details/${BRAND_OWNER_ID}`
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/brand-packages-plans/active-lead-details/${id}`
       );
 
       setPackageData(res.data.data);
@@ -28,16 +37,19 @@ export default function BrandPackageLeadDashboard() {
   };
 
   useEffect(() => {
-    // Don't fetch if brandUUID is not available
-    if (!BRAND_OWNER_ID) {
+    const id = getBrandOwnerId();
+    setBrandOwnerId(id);
+
+    if (!id) {
       setLoading(false);
       return;
     }
 
-    getPackageDetails();
+    setLoading(true);
+    getPackageDetails(id);
   }, []);
 
-  if (!BRAND_OWNER_ID) {
+  if (!brandOwnerId) {
     // Investor or no brandUUID -> render nothing
     return null;
   }

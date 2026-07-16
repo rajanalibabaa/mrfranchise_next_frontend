@@ -357,7 +357,7 @@ const url =
       // Brand name → go to brand detail page
       if (selectedData.brandName) {
         window.open(
-          `/franchise-business-opportunity/${selectedData.brandName}`,
+          `/brands/${selectedData.brandName}`,
           "_blank",
           "noopener,noreferrer"
         );

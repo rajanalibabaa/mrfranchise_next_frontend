@@ -53,21 +53,7 @@ const ExpansionLocationGrid = ({ data }) => {
     return [parentName]; // Return parent name as single item if no items exist
   };
 
-  // Function to get cities or fallback to district name
- // Function to get cities or fallback to district name
-// Function to get cities or fallback to district name
-// const getCitiesOrDistrict = (stateIndex, districtIndex) => {
-//   const state = data.locations[stateIndex];
-//   if (!state || !state.districts || !state.districts[districtIndex]) return [];
   
-//   const district = state.districts[districtIndex];
-//   if (Array.isArray(district.cities)) {
-//     return district.cities.length > 0 
-//       ? district.cities 
-//       : [district.district || "Unknown District"];
-//   }
-//   return [district.district || "Unknown District"];
-// };
   return (
     <Box
       sx={{
@@ -119,6 +105,7 @@ const ExpansionLocationGrid = ({ data }) => {
               }}
             >
               <Typography
+              component="h2"
   variant="subtitle1"
   sx={{
     p: 2,
@@ -145,44 +132,7 @@ const ExpansionLocationGrid = ({ data }) => {
     pb: 2,   // ✅ ADD THIS
   }}
 >
-                {/* {renderItemsWithFallback(visibleLocations, "Country").map((loc, stateIndex) => (
-                  <Card
-                    key={`state-${stateIndex}`}
-                    onClick={() => toggleState(stateIndex)}
-                    sx={{
-                      mb: 1,
-                      cursor: "pointer",
-                      borderRadius: "6px",
-                      boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-                      borderLeft: `4px solid ${
-                        expandedState === stateIndex
-                          ? theme.palette.primary.main
-                          : "transparent"
-                      }`,
-                      bgcolor:
-                        expandedState === stateIndex
-                          ? "rgba(25, 118, 210, 0.08)"
-                          : "background.paper",
-                      transition: "all 0.2s ease",
-                      "&:hover": {
-                        transform: "translateY(-1px)",
-                        boxShadow: "0 4px 8px rgba(0,0,0,0.15)",
-                      },
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        p: 0.8,
-                        display: "flex",
-                        justifyContent: "space-between",
-                      }}
-                    >
-                      <Typography fontWeight={600}>
-                        {typeof loc === 'string' ? loc : (loc.state || "Unknown State")}
-                      </Typography>
-                    </Box>
-                  </Card>
-                ))} */}
+      
 {renderItemsWithFallback(visibleLocations, "Country").map((loc, stateIndex) => {
   const isEven = stateIndex % 2 === 0;
 
@@ -355,7 +305,7 @@ const ExpansionLocationGrid = ({ data }) => {
                             justifyContent: "space-between",
                           }}
                         >
-                          <Typography variant="subtitle1">
+                          <Typography component="h3" variant="subtitle1">
                             {typeof dist === 'string' ? dist : (dist.district || "N/A")}
                           </Typography>
                         </Box>
@@ -364,7 +314,7 @@ const ExpansionLocationGrid = ({ data }) => {
                   })
                 ) : (
                   <Box sx={{ p: 2, textAlign: "center" }}>
-                    <Typography variant="body2" color="text.secondary">
+                    <Typography component="h3" variant="body2" color="text.secondary">
                       {expandedState === null ? (
                         <>
                           <ArrowBack
@@ -386,120 +336,7 @@ const ExpansionLocationGrid = ({ data }) => {
               </Box>
             </Box>
 
-            {/* Cities Column */}
-            {/* <Box
-              sx={{
-                flex: 1,
-                bgcolor:
-                  expandedDistrict !== null
-                    ? "background.paper"
-                    : "rgba(0,0,0,0.02)",
-                display: isMobile
-                  ? expandedDistrict !== null
-                    ? "block"
-                    : "none"
-                  : "block",
-                transition: "background-color 0.3s ease",
-              }}
-            >
-              <Typography
-                variant="subtitle1"
-                sx={{
-                  p: 2,
-                  position: "sticky",
-                  top: 0,
-                  bgcolor: "#7ad03a",
-                  zIndex: 2,
-                  borderBottom: "1px solid #e0e0e0",
-                  display: "flex",
-                  alignItems: "center",
-                }}
-              >
-                <LocationCity sx={{ mr: 1, color: "#fff" }} />
-                {expandedDistrict !== null 
-                  ? `${data.locations[expandedDistrict.split("-")[0]]?.districts[expandedDistrict.split("-")[1]]?.name || 'Selected District'} Cities`
-                  : "Cities"}
-                {isMobile && expandedDistrict !== null && (
-                  <IconButton
-                    size="small"
-                    onClick={() => setExpandedDistrict(null)}
-                    sx={{ ml: "auto" }}
-                  >
-                    <ArrowBack fontSize="small" />
-                  </IconButton>
-                )}
-              </Typography>
-              <Box
-                sx={{
-                  p: 1,
-                  display: "grid",
-                  gridTemplateColumns: isMobile
-                    ? "1fr"
-                    : "repeat(auto-fill, minmax(200px, 1fr))",
-                  gap: 1,
-                  maxHeight: "calc(75vh - 200px)",
-                  overflowY: "auto",
-                }}
-              >
-                {expandedDistrict !== null ? (
-                  getCitiesOrDistrict(
-                    expandedDistrict.split("-")[0],
-                    expandedDistrict.split("-")[1]
-                  ).map((item, cityIndex) => (
-                    <Card
-                      key={`city-${cityIndex}`}
-                      sx={{
-                        borderRadius: "6px",
-                        boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-                        bgcolor: "background.paper",
-                        transition: "all 0.2s ease",
-                        "&:hover": {
-                          transform: "translateY(-1px)",
-                          boxShadow: "0 4px 8px rgba(0,0,0,0.15)",
-                        },
-                      }}
-                    >
-                      <Box
-                        sx={{
-                          p: 0.8,
-                          display: "flex",
-                          alignItems: "center",
-                        }}
-                      >
-                        <FiberManualRecord
-                          sx={{
-                            fontSize: 8,
-                            color: "primary.main",
-                            mr: 1,
-                          }}
-                        />
-                        <Typography variant="body2">{item}</Typography>
-                      </Box>
-                    </Card>
-                  ))
-                ) : (
-                  <Box sx={{ p: 2, textAlign: "center" }}>
-                    <Typography variant="body2" color="text.secondary">
-                      {expandedState === null ? (
-                        <>
-                          <ArrowBack
-                            sx={{
-                              fontSize: 40,
-                              color: "action.disabled",
-                              mb: 1,
-                            }}
-                          />
-                          <br />
-                          Select a district
-                        </>
-                      ) : (
-                        "Select a district to view cities"
-                      )}
-                    </Typography>
-                  </Box>
-                )}
-              </Box>
-            </Box> */}
+           
           </Box>
         </Box>
       )}
@@ -507,4 +344,4 @@ const ExpansionLocationGrid = ({ data }) => {
   );
 };
 
-export default ExpansionLocationGrid;
+export default ExpansionLocationGrid; 

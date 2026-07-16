@@ -1,4 +1,3 @@
-
 "use client";
 import React from "react";
 import {
@@ -20,7 +19,7 @@ import {
 } from "@mui/material";
 import { Phone, Favorite, ShareOutlined } from "@mui/icons-material";
 import { motion } from "framer-motion";
-import ShareDialogActions from "@/app/franchise-business-opportunity/ShareDialogActions";
+import ShareDialogActions from "@/app/brands/ShareDialogActions";
 import { RiBookmark3Fill } from "react-icons/ri";
 import { useRef, useState } from "react";
 import confetti from "canvas-confetti";
@@ -39,8 +38,8 @@ const BrandHeader = ({
 }) => {
   const likeButtonRef = useRef(null);
   const shortlistButtonRef = useRef(null);
-const [shareAnchorEl, setShareAnchorEl] = useState(null);
-  console.log('brand loading ', brand);
+  const [shareAnchorEl, setShareAnchorEl] = useState(null);
+  console.log("brand loading ", brand);
 
   const [open, setOpen] = React.useState(false);
   const { AccessToken } = useSelector((state) => state.auth);
@@ -90,13 +89,6 @@ const [shareAnchorEl, setShareAnchorEl] = useState(null);
     }
   };
 
-  // const handleMoreClick = (e) => {
-  //   e.preventDefault();
-  //   const element = document.getElementById("expansion-location");
-  //   if (element) {
-  //     element.scrollIntoView({ behavior: "smooth" });
-  //   }
-  // };
   const MobileRow = ({ label, value }) => (
     <Box
       sx={{
@@ -185,6 +177,8 @@ const [shareAnchorEl, setShareAnchorEl] = useState(null);
       transition={{ duration: 0.5 }}
     >
       <Box
+        component="section"
+        id="brand-header"
         display="flex"
         flexDirection={isMobile ? "column" : "row"}
         alignItems={isMobile ? "flex-start" : "center"}
@@ -194,6 +188,8 @@ const [shareAnchorEl, setShareAnchorEl] = useState(null);
       >
         {/* Brand logo and basic info */}
         <Box
+          component="section"
+          id="brand-logo-info"
           display="flex"
           alignItems="center"
           gap={isMobile ? 1 : 3}
@@ -206,6 +202,8 @@ const [shareAnchorEl, setShareAnchorEl] = useState(null);
           }}
         >
           <Box
+            component="section"
+            id="brand-logo"
             position="relative"
             sx={{
               border: "2px solid orange",
@@ -221,6 +219,7 @@ const [shareAnchorEl, setShareAnchorEl] = useState(null);
           >
             <Box
               component="img"
+              id="brand-logo-image"
               src={brand[0].uploads?.logo}
               alt={brand[0].brandDetails?.brandName}
               sx={{
@@ -231,7 +230,7 @@ const [shareAnchorEl, setShareAnchorEl] = useState(null);
             />
           </Box>
 
-          <Box width="100%">
+          <Box width="100%" component="section">
             {/* Brand name and actions */}
             <Box
               display="flex"
@@ -242,6 +241,7 @@ const [shareAnchorEl, setShareAnchorEl] = useState(null);
             >
               <Box>
                 <Typography
+                  component="h1"
                   variant={isMobile ? "h6" : "h5"}
                   sx={{
                     fontWeight: 600,
@@ -256,6 +256,7 @@ const [shareAnchorEl, setShareAnchorEl] = useState(null);
                   {brand[0]?.brandDetails?.brandName}
                 </Typography>
                 <Typography
+                  component="h2"
                   variant="body1"
                   color="black"
                   // sx={{backgroundColor: "#eedbbcff",p:1}}
@@ -265,6 +266,8 @@ const [shareAnchorEl, setShareAnchorEl] = useState(null);
                   {brand[0]?.brandDetails?.tagLine}
                 </Typography>
                 <Box
+                  component="section"
+                  id="brand-established-franchise"
                   sx={{
                     display: "flex",
                     flexWrap: "wrap",
@@ -276,33 +279,41 @@ const [shareAnchorEl, setShareAnchorEl] = useState(null);
                   }}
                 >
                   <Typography
+                    component="h2"
                     fontSize={isMobile ? "0.8rem" : "0.9rem"}
                     color="black"
                   >
                     Established Year:{" "}
-                    <label variant="body1">
+                    <label component="h2" variant="body1">
                       {brand?.[0]?.brandfranchisedetails?.franchiseDetails
                         ?.establishedYear || "N/A"}
                     </label>
                   </Typography>
                   <Typography
+                    component="h2"
                     fontSize={isMobile ? "0.8rem" : "0.9rem"}
                     color="black"
                   >
                     Franchise Since:{" "}
-                    <label variant="body1">
+                    <label component="h2" variant="body1">
                       {brand?.[0]?.brandfranchisedetails?.franchiseDetails
                         ?.franchiseSinceYear || "N/A"}
                     </label>
                   </Typography>
                 </Box>
               </Box>
-              <Box sx={{ mt: isMobile ? 1 : 0, ml: isMobile ? 0 : 2 }}>
+              <Box
+                sx={{ mt: isMobile ? 1 : 0, ml: isMobile ? 0 : 2 }}
+                component="section"
+              >
                 <Button
+                  component="button"
+                  id="view-contact-button"
                   variant="contained"
                   size={isMobile ? "small" : "medium"}
                   startIcon={<Phone />}
                   onClick={handleviewcontact}
+                  aria-label="View Contact"
                   sx={{
                     px: isMobile ? 1 : 1.5,
                     py: isMobile ? 1 : 2,
@@ -342,23 +353,28 @@ const [shareAnchorEl, setShareAnchorEl] = useState(null);
                 >
                   <RiBookmark3Fill />
                 </IconButton>
-                 <ShareDialogActions
-        anchorEl={shareAnchorEl}
-        setAnchorEl={setShareAnchorEl}
-        brand={brand[0]}
-      />
-               <IconButton
-        aria-label="Share"
-        onClick={(e) => setShareAnchorEl(e.currentTarget)} // Open the dialog
-        size={isMobile ? "small" : "medium"}
-      >
-        <ShareOutlined
-          sx={{ fontSize: isMobile ? "1.2rem" : "1.5rem", color: "rgba(0, 0, 0, 0.35)" }}
-        />
-      </IconButton>
+                <ShareDialogActions
+                  anchorEl={shareAnchorEl}
+                  setAnchorEl={setShareAnchorEl}
+                  brand={brand[0]}
+                />
+                <IconButton
+                  aria-label="Share"
+                  onClick={(e) => setShareAnchorEl(e.currentTarget)} // Open the dialog
+                  size={isMobile ? "small" : "medium"}
+                >
+                  <ShareOutlined
+                    sx={{
+                      fontSize: isMobile ? "1.2rem" : "1.5rem",
+                      color: "rgba(0, 0, 0, 0.35)",
+                    }}
+                  />
+                </IconButton>
               </Box>
             </Box>
             <Box
+              component="section"
+              id="brand-description"
               sx={{
                 mt: { xs: 1, sm: 2, md: 3 },
                 display: "flex",
@@ -391,6 +407,8 @@ const [shareAnchorEl, setShareAnchorEl] = useState(null);
                 return (
                   <>
                     <Box
+                      component="section"
+                      id="brand-description"
                       sx={{
                         display: "flex",
                         flexWrap: "wrap",
@@ -470,6 +488,7 @@ const [shareAnchorEl, setShareAnchorEl] = useState(null);
               <Box sx={{ width: "100%", overflow: "hidden", mt: 2, mb: 1 }}>
                 <TableContainer
                   component={Paper}
+                  id="brand-details-table"
                   sx={{
                     width: "100%",
                     borderRadius: "16px",
@@ -490,6 +509,9 @@ const [shareAnchorEl, setShareAnchorEl] = useState(null);
                   }}
                 >
                   <Table
+                    component="table"
+                    id="brand-details-table"
+                    aria-label="Brand Details Table"
                     size={isMobile ? "small" : "medium"}
                     sx={{
                       minWidth: isMobile ? 650 : "100%",
@@ -497,8 +519,9 @@ const [shareAnchorEl, setShareAnchorEl] = useState(null);
                       flexDirection: isMobile ? "column" : "row",
                     }}
                   >
-                    <TableHead>
+                    <TableHead component="thead" id="brand-details-table-head">
                       <TableRow
+                        component="tr"
                         sx={{
                           backgroundColor: "#7cd13b",
                           "& th": {
@@ -510,26 +533,53 @@ const [shareAnchorEl, setShareAnchorEl] = useState(null);
                           },
                         }}
                       >
-                        <TableCell sx={{ width: "25%", textAlign: "center" }}>
+                        <TableCell
+                          component="td"
+                          sx={{ width: "25%", textAlign: "center" }}
+                        >
                           <strong>Category</strong>
                         </TableCell>
-                        <TableCell sx={{ width: "18%", textAlign: "center" }}>
+                        <TableCell
+                          component="td"
+                          sx={{ width: "18%", textAlign: "center" }}
+                        >
                           <strong>Area</strong>
                         </TableCell>
-                        <TableCell sx={{ width: "20%", textAlign: "center" }}>
+                        <TableCell
+                          component="td"
+                          sx={{ width: "20%", textAlign: "center" }}
+                        >
                           <strong>Investment</strong>
                         </TableCell>
-                        <TableCell sx={{ width: "15%", textAlign: "center" }}>
+                        <TableCell
+                          component="td"
+                          sx={{ width: "15%", textAlign: "center" }}
+                        >
                           <strong>Total Outlets</strong>
                         </TableCell>
-                        <TableCell sx={{ width: "30%", textAlign: "center" }}>
+                        <TableCell
+                          component="td"
+                          sx={{ width: "30%", textAlign: "center" }}
+                        >
                           <strong>Origin Location</strong>
                         </TableCell>
                       </TableRow>
                     </TableHead>
-                    <TableBody>
-                      <TableRow>
+                    <TableBody component="tbody">
+                      <TableRow
+                        component="tr"
+                        sx={{
+                          "& td": {
+                            padding: isMobile ? "6px 8px" : "10px 12px",
+                            fontSize: isMobile ? "0.7rem" : "0.8rem",
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                          },
+                        }}
+                      >
                         <TableCell
+                          component="td"
                           sx={{
                             width: "25%",
                             textAlign: "center",
@@ -543,6 +593,7 @@ const [shareAnchorEl, setShareAnchorEl] = useState(null);
                             ?.brandCategories?.sub || "N/A"}
                         </TableCell>
                         <TableCell
+                          component="td"
                           sx={{
                             width: "18%",
                             textAlign: "center",
@@ -556,6 +607,7 @@ const [shareAnchorEl, setShareAnchorEl] = useState(null);
                             ?.fico?.[0]?.areaRequired || "N/A"}
                         </TableCell>
                         <TableCell
+                          component="td"
                           sx={{
                             width: "15%",
                             textAlign: "center",
@@ -569,6 +621,7 @@ const [shareAnchorEl, setShareAnchorEl] = useState(null);
                             ?.fico?.[0]?.investmentRange || "N/A"}
                         </TableCell>
                         <TableCell
+                          component="td"
                           sx={{
                             width: "15%",
                             textAlign: "center",
@@ -584,6 +637,7 @@ const [shareAnchorEl, setShareAnchorEl] = useState(null);
                           )}
                         </TableCell>
                         <TableCell
+                          component="td"
                           sx={{
                             width: "30%",
                             textAlign: "center",
@@ -593,44 +647,6 @@ const [shareAnchorEl, setShareAnchorEl] = useState(null);
                             backgroundColor: "#ffffffff",
                           }}
                         >
-                          {/* {(() => {
-                          const locations =
-                            brand?.[0]?.brandexpansionlocationdatas
-                              ?.expansionLocations?.domestic?.locations || [];
-
-                          const states = locations
-                            .map((loc) => loc.state)
-                            .filter(Boolean);
-                          const hasMore = states.length > 2;
-
-                          if (states.length === 0) {
-                            return "Multiple Locations";
-                          }
-
-                          const visibleStates = states.slice(0, 2).join(", ");
-
-                          return (
-                            <>
-                              {visibleStates}
-                              {hasMore && (
-                                <a
-                                  href="#expansion-location"
-                                  onClick={handleMoreClick}
-                                  style={{
-                                    marginLeft: 8,
-                                    fontSize: "0.7rem",
-                                    textDecoration: "none",
-                                    color: "#1976d2",
-                                    fontWeight: 500,
-                                    cursor: "pointer",
-                                  }}
-                                >
-                                  More
-                                </a>
-                              )}
-                            </>
-                          );
-                        })()} */}
                           {brand?.[0]?.brandDetails?.state || "N/A"} ,{" "}
                           {brand?.[0]?.brandDetails?.district || "N/A"}
                         </TableCell>
@@ -640,17 +656,6 @@ const [shareAnchorEl, setShareAnchorEl] = useState(null);
                 </TableContainer>
               </Box>
             )}
-
-            {/* <Typography
-  color="#000000ff"
-  mt={isMobile ? 2 : 2}
-  fontSize={isMobile ? "0.8rem" : "0.9rem"}
-  variant="body1"
-  sx={{ fontWeight: "bold",backgroundColor: "#eedbbcff",p:1 }}
->
-  Brand Tags :
-  
-</Typography> */}
           </Box>
         </Box>
       </Box>
@@ -660,4 +665,3 @@ const [shareAnchorEl, setShareAnchorEl] = useState(null);
 };
 
 export default BrandHeader;
-

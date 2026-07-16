@@ -21,9 +21,6 @@ const BrandDetailsEdit = ({ data = {}, errors = {}, onChange, isEditing }) => {
   const [selectedCountry, setSelectedCountry] = useState("");
   const [countryInputValue, setCountryInputValue] = useState("");
 
-  // ✅ Tracks whether the next selectedCountry change came from hydrating
-  // already-saved data (initial load) rather than a real user pick, so we
-  // can skip the auto pincode-lookup effect for that one render.
   const isInitialCountrySync = useRef(false);
 
   const formData = {
@@ -49,21 +46,16 @@ const BrandDetailsEdit = ({ data = {}, errors = {}, onChange, isEditing }) => {
               name: c.country,
               code: c.iso2,
               dial_code: c.phone_code ? `+${c.phone_code}` : "",
-            }))
+            })),
           );
         }
       });
   }, []);
 
-  // ✅ FIX: hydrate selectedCountry (and the visible input text) from the
-  // already-saved data.country once the countries list has loaded. Without
-  // this, selectedCountry stays "" forever on edit/initial load, so the
-  // Autocomplete's `value` lookup below always resolves to null and the
-  // Country field renders blank even though data.country has a value.
   useEffect(() => {
     if (data.country && supportedCountries.length > 0 && !selectedCountry) {
       const matched = supportedCountries.find(
-        (c) => c.name.toLowerCase() === data.country.toLowerCase()
+        (c) => c.name.toLowerCase() === data.country.toLowerCase(),
       );
       if (matched) {
         isInitialCountrySync.current = true;
@@ -82,7 +74,7 @@ const BrandDetailsEdit = ({ data = {}, errors = {}, onChange, isEditing }) => {
       try {
         const result = await fetchGlobalLocationByPostalCode(
           data.pincode,
-          selectedCountry
+          selectedCountry,
         );
 
         if (result.status === "success") {
@@ -171,7 +163,7 @@ const BrandDetailsEdit = ({ data = {}, errors = {}, onChange, isEditing }) => {
           if (data.whatsappNumber) {
             const numberWithoutCode = data.whatsappNumber.replace(
               /^\+?\d+/,
-              ""
+              "",
             );
             onChange("whatsappNumber", newValue.dial_code + numberWithoutCode);
           }

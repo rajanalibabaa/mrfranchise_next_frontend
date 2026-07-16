@@ -261,7 +261,7 @@ export default function PaymentButton({
         },
 
         handler: async function (response) {
-          console.log("RAZORPAY RESPONSE", response);
+          // console.log("RAZORPAY RESPONSE", response);
 
           try {
             const verifyResponse = await axios.post(
@@ -339,7 +339,7 @@ export default function PaymentButton({
                 packagePayload,
               );
 
-              console.log("ONLINE PACKAGE CREATED", packageCreateResponse.data);
+              // console.log("ONLINE PACKAGE CREATED", packageCreateResponse.data);
 
               toast.success("Payment and package created successfully");
 

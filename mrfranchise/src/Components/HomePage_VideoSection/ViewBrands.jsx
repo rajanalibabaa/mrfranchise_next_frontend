@@ -167,6 +167,7 @@ const ViewBrands = () => {
  
   return (
     <Box
+    component="section"
       ref={containerRef}
       sx={{
         py: isMobile ? 1 : 0,

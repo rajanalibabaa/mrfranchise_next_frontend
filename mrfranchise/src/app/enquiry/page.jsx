@@ -24,8 +24,15 @@ import LeadDetailDialog from "@/Components/marketPlace_manualLead_enquiry/market
 import CaptchaDialog from "@/Components/marketPlace_manualLead_enquiry/CaptchaDialog";
 
 // ─── Auth Helpers ─────────────────────────────────────────────────────────────
-const isLoggedIn = () => Boolean(localStorage.getItem("accessToken"));
-const isBrandUser = () => Boolean(localStorage.getItem("brandUUID"));
+const isLoggedIn = () => {
+  if (typeof window === "undefined") return false;
+  return Boolean(window.localStorage.getItem("accessToken"));
+};
+
+const isBrandUser = () => {
+  if (typeof window === "undefined") return false;
+  return Boolean(window.localStorage.getItem("brandUUID"));
+};
 
 const generateCaptcha = () => {
   const chars =

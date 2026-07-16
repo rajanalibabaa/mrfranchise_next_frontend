@@ -77,68 +77,7 @@ const HighlightedText = ({ text, highlight }) => {
   );
 };
 
-// ─── Reusable Search Box ──────────────────────────────────────────────────────
-const DropdownSearchBox = ({
-  value,
-  onChange,
-  onClear,
-  placeholder,
-  inputRef,
-}) => (
-  <Box
-    onKeyDown={(e) => e.stopPropagation()}
-    onMouseDown={(e) => e.stopPropagation()}
-    onClick={(e) => e.stopPropagation()}
-    sx={{
-      position: "sticky",
-      top: 0,
-      zIndex: 10,
-      bgcolor: "background.paper",
-      px: 1.5,
-      py: 1,
-      borderBottom: "1px solid #f0f0f0",
-    }}
-  >
-    <Box
-      sx={{
-        display: "flex",
-        alignItems: "center",
-        border: "1.5px solid #ff9800",
-        borderRadius: "8px",
-        px: 1.2,
-        py: 0.6,
-        gap: 1,
-        backgroundColor: "#fff",
-      }}
-    >
-      <SearchIcon sx={{ color: "#ff9800", fontSize: 20, flexShrink: 0 }} />
-      <InputBase
-        inputRef={inputRef}
-        fullWidth
-        placeholder={placeholder}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        onKeyDown={(e) => e.stopPropagation()}
-        sx={{ fontSize: "0.9rem", flex: 1, "& input": { padding: 0 } }}
-      />
-      {value && (
-        <Close
-          onMouseDown={(e) => {
-            e.preventDefault();
-            onClear();
-          }}
-          sx={{
-            color: "#aaa",
-            fontSize: 18,
-            cursor: "pointer",
-            flexShrink: 0,
-            "&:hover": { color: "#ff9800" },
-          }}
-        />
-      )}
-    </Box>
-  </Box>
-);
+
 
 // ─── Franchise Heading label style ────────────────────────────────────────────
 const HeadingLabel = ({
@@ -167,10 +106,6 @@ const HeadingLabel = ({
   </Box>
 );
 
-// Reusable "All ..." top row for a RadioGroup. Selecting it sets the value to
-// "" which is exactly what each onChange handler below already treats as
-// "clear this filter" — so it only ever clears the one filter it belongs to,
-// never anything else.
 const AllOption = ({ label }) => (
   <FormControlLabel
     value=""
@@ -534,13 +469,7 @@ const FillterPannel = React.memo(
 
           <AccordionDetails sx={{ p: 0 }}>
             <StablePanel>
-              {/* <DropdownSearchBox
-              inputRef={industrySearchRef}
-              value={searchTerms.mainCategory}
-              onChange={(v) => updateSearch("mainCategory", v)}
-              onClear={() => updateSearch("mainCategory", "")}
-              placeholder="Search industry..."
-            /> */}
+             
 
               <Box sx={{ px: 1, maxHeight: 320, overflowY: "auto" }}>
                 <RadioGroup
@@ -600,13 +529,7 @@ const FillterPannel = React.memo(
 
                           {filters.maincat === industry && (
                             <Box ref={subCategoryRef} sx={{ ml: 2, pl: 1 }}>
-                              {/* <DropdownSearchBox
-                              inputRef={subCategorySearchRef}
-                              value={searchTerms.subCategory}
-                              onChange={(v) => updateSearch("subCategory", v)}
-                              onClear={() => updateSearch("subCategory", "")}
-                              placeholder="Search subcategory..."
-                            /> */}
+                            
                               <RadioGroup
                                 value={filters.subcat || ""}
                                 onChange={(e) => {

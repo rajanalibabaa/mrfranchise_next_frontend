@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 
-const API = "http://localhost:5000/api/v1/instantapply/all?page=1&limit=100";
+const API = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/instantapply/all?page=1&limit=100`;
 
 export default function useLeadFilters() {
   const [leads, setLeads] = useState([]);

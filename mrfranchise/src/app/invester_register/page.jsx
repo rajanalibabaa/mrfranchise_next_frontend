@@ -474,13 +474,13 @@ const getIndianCities = (stateName, districtValue) => {
   const displayDistrict = getDisplayName(districtValue); // "Kanchipuram"
   const cleanDistrict = extractCleanName(districtValue);  // "Kancheepuram"
 
-  console.log("Matching district:", {
-    raw: districtValue,
-    display: displayDistrict,
-    clean: cleanDistrict,
-    totalCities: stateObj.cities.length,
-    sampleCityDistricts: stateObj.cities.slice(0, 5).map(c => c.district)
-  });
+  // console.log("Matching district:", {
+  //   raw: districtValue,
+  //   display: displayDistrict,
+  //   clean: cleanDistrict,
+  //   totalCities: stateObj.cities.length,
+  //   sampleCityDistricts: stateObj.cities.slice(0, 5).map(c => c.district)
+  // });
 
   const filtered = stateObj.cities.filter((city) => {
     const cd = (city.district || "").trim();
@@ -493,7 +493,7 @@ const getIndianCities = (stateName, districtValue) => {
     );
   });
 
-  console.log("Filtered cities count:", filtered.length);
+  // console.log("Filtered cities count:", filtered.length);
 
   const cityNames = filtered.map((city) => city.name);
   return [...new Set(cityNames)];

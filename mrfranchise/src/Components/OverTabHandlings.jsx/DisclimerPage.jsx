@@ -7,6 +7,7 @@ const Disclaimer = ({ isMobile }) => {
 
   return (
     <Box
+    component="section"
       sx={{
         ml: { xs: 2, md: 10.5 },
         mr: { xs: 2, md: 10.5 },
@@ -18,6 +19,7 @@ const Disclaimer = ({ isMobile }) => {
       }}
     >
       <Typography
+       component="h2"
         variant="caption"
         fontSize={9}
         color="#212121"

@@ -161,33 +161,33 @@ window.addEventListener("resize", debouncedResize);
 
   const easeInOutQuad = (t) => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t);
 
-  const smoothScrollTo = useCallback((target, immediate = false) => {
-    const container = scrollContainerRef.current;
-    if (!container) return;
-    if (scrollRequestRef.current) {
-      cancelAnimationFrame(scrollRequestRef.current);
-    }
+  // const smoothScrollTo = useCallback((target, immediate = false) => {
+  //   const container = scrollContainerRef.current;
+  //   if (!container) return;
+  //   if (scrollRequestRef.current) {
+  //     cancelAnimationFrame(scrollRequestRef.current);
+  //   }
 
-    const start = container.scrollLeft;
-    const change = target - start;
-    const duration = immediate ? 0 : 500;
-    const startTime = performance.now();
+  //   const start = container.scrollLeft;
+  //   const change = target - start;
+  //   const duration = immediate ? 0 : 500;
+  //   const startTime = performance.now();
 
-    const animateScroll = (currentTime) => {
-      const elapsed = currentTime - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      const ease = easeInOutQuad(progress);
-      container.scrollLeft = start + change * ease;
+  //   const animateScroll = (currentTime) => {
+  //     const elapsed = currentTime - startTime;
+  //     const progress = Math.min(elapsed / duration, 1);
+  //     const ease = easeInOutQuad(progress);
+  //     container.scrollLeft = start + change * ease;
 
-      if (progress < 1) {
-        scrollRequestRef.current = requestAnimationFrame(animateScroll);
-      } else {
-        handleScroll();
-      }
-    };
+  //     if (progress < 1) {
+  //       scrollRequestRef.current = requestAnimationFrame(animateScroll);
+  //     } else {
+  //       handleScroll();
+  //     }
+  //   };
 
-    scrollRequestRef.current = requestAnimationFrame(animateScroll);
-  }, [handleScroll]);
+  //   scrollRequestRef.current = requestAnimationFrame(animateScroll);
+  // }, [handleScroll]);
 
   const handleNextClick = () => {
   scrollContainerRef.current?.scrollBy({
@@ -213,7 +213,7 @@ const handlePrevClick = () => {
   });
 
   const subcat = encodeURIComponent(brandCategoriesName); // encode spaces/special chars
-  const url = `${slug}-franchise-opportunities?subcat=${subcat}&maincat=${encodeURIComponent(brands[0]?.brandCategories?.main || "")}`;
+  const url = `${slug}?subcat=${subcat}&maincat=${encodeURIComponent(brands[0]?.brandCategories?.main || "")}`;
 
   // Open in new tab
   const newWindow = window.open(url, "_blank"); 

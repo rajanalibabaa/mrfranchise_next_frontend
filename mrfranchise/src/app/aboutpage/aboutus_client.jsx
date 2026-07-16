@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import React, { useMemo } from "react";
 import Navbar from "@/Components/Navbar/NavBar";
 import Footer from "@/Components/Footers/Footer";
@@ -37,39 +37,12 @@ const fadeInUp = {
   }),
 };
 
-
 const AboutUs = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "ProfessionalService",
-    "@id": "https://mrfranchise.in/aboutpage",
-    "name": "MrFranchise",
-    "description": "Leading franchise consulting company in Chennai helping brands expand through structured franchise models and investor onboarding across India.",
-    "url": "https://mrfranchise.in",
-    "telephone": "+919841323388",
-    "address": {
-      "@type": "PostalAddress",
-      "addressLocality": "Chennai",
-      "addressRegion": "Tamil Nadu",
-      "addressCountry": "IN"
-    },
-    "areaServed": ["Chennai", "Tamil Nadu", "India"],
-    "serviceType": "Franchise Consulting",
-    "founder": {
-      "@type": "Person",
-      "name": "Suresh Muthuvel"
-    },
-    "foundingDate": "2020",
-    "sameAs": [
-      "https://www.facebook.com/profile.php?id=61575143466373",
-      "https://www.linkedin.com/company/mr-franchise-www-mrfranchise-in/",
-      "https://www.instagram.com/mrfranchise.in/"
-    ]
-  }; 
-  
+
+
   const renderList = useMemo(() => (items) => (
     <List>
       {items.map((item, index) => (

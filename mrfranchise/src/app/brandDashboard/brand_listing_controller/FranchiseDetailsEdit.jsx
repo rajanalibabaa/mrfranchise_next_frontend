@@ -55,7 +55,13 @@ import Close from "@mui/icons-material/Close";
 import CircularProgress from "@mui/material/CircularProgress"; // ✅ added
 
 // ✅ Reusable Search Box component to use inside all 3 dropdowns
-const DropdownSearchBox = ({ value, onChange, onClear, placeholder, inputRef }) => (
+const DropdownSearchBox = ({
+  value,
+  onChange,
+  onClear,
+  placeholder,
+  inputRef,
+}) => (
   <Box
     onKeyDown={(e) => e.stopPropagation()}
     onMouseDown={(e) => e.stopPropagation()}
@@ -1120,57 +1126,81 @@ const FranchiseDetailsEdit = ({
                   <CircularProgress size={28} />
                 </MenuItem>
               ) : industriesWithHeadings.length === 0 ? (
-                <MenuItem value="" disabled>No industries available</MenuItem>
+                <MenuItem value="" disabled>
+                  No industries available
+                </MenuItem>
               ) : (
                 (() => {
                   const lower = industrySearch.toLowerCase().trim();
-                  const filtered = industriesWithHeadings.flatMap((group, groupIndex) => {
-                    const matchedIndustries = (group.industries || []).filter(
-                      (name) => name.toLowerCase().includes(lower)
-                    );
-                    if (lower && matchedIndustries.length === 0) return [];
-                    return [
-                      <MenuItem
-                        key={`heading-${groupIndex}`}
-                        sx={{
-                          fontWeight: 700,
-                          backgroundColor: "#f8f8f8",
-                          color: "#ff9800",
-                          fontSize: "0.75rem",
-                          letterSpacing: "0.08em",
-                          textTransform: "uppercase",
-                          textAlign: "center",
-                          justifyContent: "center",
-                          pointerEvents: "none",
-                          cursor: "default",
-                          mt: groupIndex > 0 ? 1 : 0,
-                          opacity: 1,
-                        }}
-                      >
-                        {group.heading}
-                      </MenuItem>,
-                      ...matchedIndustries.map((industryName, idx) => (
-                        <MenuItem key={`industry-${groupIndex}-${idx}`} value={industryName} sx={{ pl: 3 }}>
-                          {lower ? (() => {
-                            const i = industryName.toLowerCase().indexOf(lower);
-                            if (i === -1) return industryName;
-                            return (
-                              <>
-                                {industryName.slice(0, i)}
-                                <span style={{ fontWeight: 700, color: "#ff9800" }}>
-                                  {industryName.slice(i, i + lower.length)}
-                                </span>
-                                {industryName.slice(i + lower.length)}
-                              </>
-                            );
-                          })() : industryName}
-                        </MenuItem>
-                      )),
-                    ];
-                  });
-                  return filtered.length > 0 ? filtered : (
+                  const filtered = industriesWithHeadings.flatMap(
+                    (group, groupIndex) => {
+                      const matchedIndustries = (group.industries || []).filter(
+                        (name) => name.toLowerCase().includes(lower),
+                      );
+                      if (lower && matchedIndustries.length === 0) return [];
+                      return [
+                        <MenuItem
+                          key={`heading-${groupIndex}`}
+                          sx={{
+                            fontWeight: 700,
+                            backgroundColor: "#f8f8f8",
+                            color: "#ff9800",
+                            fontSize: "0.75rem",
+                            letterSpacing: "0.08em",
+                            textTransform: "uppercase",
+                            textAlign: "center",
+                            justifyContent: "center",
+                            pointerEvents: "none",
+                            cursor: "default",
+                            mt: groupIndex > 0 ? 1 : 0,
+                            opacity: 1,
+                          }}
+                        >
+                          {group.heading}
+                        </MenuItem>,
+                        ...matchedIndustries.map((industryName, idx) => (
+                          <MenuItem
+                            key={`industry-${groupIndex}-${idx}`}
+                            value={industryName}
+                            sx={{ pl: 3 }}
+                          >
+                            {lower
+                              ? (() => {
+                                  const i = industryName
+                                    .toLowerCase()
+                                    .indexOf(lower);
+                                  if (i === -1) return industryName;
+                                  return (
+                                    <>
+                                      {industryName.slice(0, i)}
+                                      <span
+                                        style={{
+                                          fontWeight: 700,
+                                          color: "#ff9800",
+                                        }}
+                                      >
+                                        {industryName.slice(
+                                          i,
+                                          i + lower.length,
+                                        )}
+                                      </span>
+                                      {industryName.slice(i + lower.length)}
+                                    </>
+                                  );
+                                })()
+                              : industryName}
+                          </MenuItem>
+                        )),
+                      ];
+                    },
+                  );
+                  return filtered.length > 0 ? (
+                    filtered
+                  ) : (
                     <MenuItem disabled>
-                      <Typography variant="body2" color="text.secondary">No results found</Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        No results found
+                      </Typography>
                     </MenuItem>
                   );
                 })()
@@ -1224,34 +1254,45 @@ const FranchiseDetailsEdit = ({
                   <CircularProgress size={28} />
                 </MenuItem>
               ) : !industryData?.categories?.length ? (
-                <MenuItem value="" disabled>No categories available</MenuItem>
+                <MenuItem value="" disabled>
+                  No categories available
+                </MenuItem>
               ) : (
                 (() => {
                   const lower = categorySearch.toLowerCase().trim();
                   const filtered = industryData.categories.filter((cat) =>
-                    cat.toLowerCase().includes(lower)
+                    cat.toLowerCase().includes(lower),
                   );
                   return filtered.length > 0 ? (
                     filtered.map((category, index) => (
                       <MenuItem key={`${category}-${index}`} value={category}>
-                        {lower ? (() => {
-                          const i = category.toLowerCase().indexOf(lower);
-                          if (i === -1) return category;
-                          return (
-                            <>
-                              {category.slice(0, i)}
-                              <span style={{ fontWeight: 700, color: "#ff9800" }}>
-                                {category.slice(i, i + lower.length)}
-                              </span>
-                              {category.slice(i + lower.length)}
-                            </>
-                          );
-                        })() : category}
+                        {lower
+                          ? (() => {
+                              const i = category.toLowerCase().indexOf(lower);
+                              if (i === -1) return category;
+                              return (
+                                <>
+                                  {category.slice(0, i)}
+                                  <span
+                                    style={{
+                                      fontWeight: 700,
+                                      color: "#ff9800",
+                                    }}
+                                  >
+                                    {category.slice(i, i + lower.length)}
+                                  </span>
+                                  {category.slice(i + lower.length)}
+                                </>
+                              );
+                            })()
+                          : category}
                       </MenuItem>
                     ))
                   ) : (
                     <MenuItem disabled>
-                      <Typography variant="body2" color="text.secondary">No results found</Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        No results found
+                      </Typography>
                     </MenuItem>
                   );
                 })()
@@ -1260,55 +1301,55 @@ const FranchiseDetailsEdit = ({
           </FormControl>
         </Grid>
 
-      {/* Product Tags Button */}
-<Grid item xs={12} md={3}>
-  <Button
-    id="product-tag-button"
-    variant="outlined"
-    onClick={handleOpenDrawer}
-    disabled={!isEditing || !selectedCategory.sub}
-    sx={{
-      color: errors.productTags ? "error.main" : "#ff9800",
-      borderColor: errors.productTags ? "error.main" : "inherit",
-      height: 56,
-      width: "100%",
-      justifyContent: "flex-start",
-      textTransform: "none",
-    }}
-  >
-    <AddIcon sx={{ mr: 1 }} />
-    {totalProductTags
-      ? `${totalProductTags} Tags selected`
-      : "Select Product Tags"}
-  </Button>
-  {errors.productTags && (
-    <FormHelperText error>{errors.productTags}</FormHelperText>
-  )}
-</Grid>
-     <Grid item xs={12} md={3}>
-  <Button
-    id="service-tag-button"
-    variant="outlined"
-    onClick={handleOpenServiceTagDrawer}
-    disabled={!isEditing || !selectedCategory.sub}
-    sx={{
-      color: errors.serviceTags ? "error.main" : "#ff9800",
-      borderColor: errors.serviceTags ? "error.main" : "inherit",
-      height: 56,
-      width: "100%",
-      justifyContent: "flex-start",
-      textTransform: "none",
-    }}
-  >
-    <AddIcon sx={{ mr: 1 }} />
-    {totalServiceTags
-      ? `${totalServiceTags} Tags selected`
-      : "Select Service Tags"}
-  </Button>
-  {errors.serviceTags && (
-    <FormHelperText error>{errors.serviceTags}</FormHelperText>
-  )}
-</Grid>
+        {/* Product Tags Button */}
+        <Grid item xs={12} md={3}>
+          <Button
+            id="product-tag-button"
+            variant="outlined"
+            onClick={handleOpenDrawer}
+            disabled={!isEditing || !selectedCategory.sub}
+            sx={{
+              color: errors.productTags ? "error.main" : "#ff9800",
+              borderColor: errors.productTags ? "error.main" : "inherit",
+              height: 56,
+              width: "100%",
+              justifyContent: "flex-start",
+              textTransform: "none",
+            }}
+          >
+            <AddIcon sx={{ mr: 1 }} />
+            {totalProductTags
+              ? `${totalProductTags} Tags selected`
+              : "Select Product Tags"}
+          </Button>
+          {errors.productTags && (
+            <FormHelperText error>{errors.productTags}</FormHelperText>
+          )}
+        </Grid>
+        <Grid item xs={12} md={3}>
+          <Button
+            id="service-tag-button"
+            variant="outlined"
+            onClick={handleOpenServiceTagDrawer}
+            disabled={!isEditing || !selectedCategory.sub}
+            sx={{
+              color: errors.serviceTags ? "error.main" : "#ff9800",
+              borderColor: errors.serviceTags ? "error.main" : "inherit",
+              height: 56,
+              width: "100%",
+              justifyContent: "flex-start",
+              textTransform: "none",
+            }}
+          >
+            <AddIcon sx={{ mr: 1 }} />
+            {totalServiceTags
+              ? `${totalServiceTags} Tags selected`
+              : "Select Service Tags"}
+          </Button>
+          {errors.serviceTags && (
+            <FormHelperText error>{errors.serviceTags}</FormHelperText>
+          )}
+        </Grid>
       </Grid>
 
       {/* View Selected Product Tags Section */}
@@ -1954,12 +1995,13 @@ const FranchiseDetailsEdit = ({
                   ) : (
                     (() => {
                       const lower = franchiseTypeSearch.toLowerCase().trim();
-                      const groups = franchiseTypes[currentFicoModel.franchiseModel] || {};
+                      const groups =
+                        franchiseTypes[currentFicoModel.franchiseModel] || {};
                       const result = [];
 
                       Object.entries(groups).forEach(([groupLabel, items]) => {
                         const matchedItems = items.filter((type) =>
-                          type.toLowerCase().includes(lower)
+                          type.toLowerCase().includes(lower),
                         );
                         if (lower && matchedItems.length === 0) return;
 
@@ -1982,33 +2024,44 @@ const FranchiseDetailsEdit = ({
                             }}
                           >
                             {groupLabel}
-                          </MenuItem>
+                          </MenuItem>,
                         );
 
                         matchedItems.forEach((type) => {
                           result.push(
                             <MenuItem key={type} value={type} sx={{ pl: 3 }}>
-                              {lower ? (() => {
-                                const i = type.toLowerCase().indexOf(lower);
-                                if (i === -1) return type;
-                                return (
-                                  <>
-                                    {type.slice(0, i)}
-                                    <span style={{ fontWeight: 700, color: "#ff9800" }}>
-                                      {type.slice(i, i + lower.length)}
-                                    </span>
-                                    {type.slice(i + lower.length)}
-                                  </>
-                                );
-                              })() : type}
-                            </MenuItem>
+                              {lower
+                                ? (() => {
+                                    const i = type.toLowerCase().indexOf(lower);
+                                    if (i === -1) return type;
+                                    return (
+                                      <>
+                                        {type.slice(0, i)}
+                                        <span
+                                          style={{
+                                            fontWeight: 700,
+                                            color: "#ff9800",
+                                          }}
+                                        >
+                                          {type.slice(i, i + lower.length)}
+                                        </span>
+                                        {type.slice(i + lower.length)}
+                                      </>
+                                    );
+                                  })()
+                                : type}
+                            </MenuItem>,
                           );
                         });
                       });
 
-                      return result.length > 0 ? result : (
+                      return result.length > 0 ? (
+                        result
+                      ) : (
                         <MenuItem disabled>
-                          <Typography variant="body2" color="text.secondary">No results found</Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            No results found
+                          </Typography>
                         </MenuItem>
                       );
                     })()

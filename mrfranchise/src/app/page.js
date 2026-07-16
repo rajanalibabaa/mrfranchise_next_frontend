@@ -2,11 +2,9 @@
 
 import HomeBannerSec from "../Components/HomePages/HomeBannerSec";
 
-
-const SITE_URL =  "https://mrfranchise.in";
+const SITE_URL = "https://mrfranchise.in";
 const SITE_NAME = "Mr Franchise India";
 const CURRENT_YEAR = new Date().getFullYear();
-
 
 export const metadata = {
   metadataBase: new URL(SITE_URL),
@@ -18,8 +16,7 @@ export const metadata = {
   },
 
   // Enhanced Description
-  description:
-    `Discover top franchise opportunities in India across food, retail, education, services & more. Buy franchise business with low investment and connect with brands instantly via WhatsApp.`,
+  description: `Discover top franchise opportunities in India across food, retail, education, services & more. Buy franchise business with low investment and connect with brands instantly via WhatsApp.`,
 
   // Comprehensive Keywords
   keywords: [
@@ -28,14 +25,14 @@ export const metadata = {
     "mrfranchise",
     "mr franchise marketplace",
     "mr franchise official",
-    
+
     // Primary Keywords
     "franchise opportunities in india",
     "business opportunities india",
     "franchise marketplace india",
     "best franchise in india",
     "top franchise opportunities",
-    
+
     // Action Keywords
     "buy franchise in india",
     "sell franchise in india",
@@ -43,7 +40,7 @@ export const metadata = {
     "business for sale india",
     "invest in franchise",
     "franchise investment opportunities",
-    
+
     // Investment-based Keywords
     "low investment franchise",
     "franchise under 5 lakh",
@@ -51,7 +48,7 @@ export const metadata = {
     "high profit franchise business",
     "best franchise to invest",
     "franchise business ideas",
-    
+
     // Category Keywords
     "food franchise opportunities",
     "retail franchise india",
@@ -61,32 +58,32 @@ export const metadata = {
     "fitness franchise",
     "cafe franchise",
     "restaurant franchise",
-    
+
     // Location Keywords
     "franchise opportunities in delhi",
     "franchise opportunities in mumbai",
     "franchise opportunities in bangalore",
     "franchise in tier 2 cities",
-    
+
     // Business Type Keywords
     "home based franchise",
     "online franchise business",
     "franchise without investment",
     "franchise dealership",
     "distributorship opportunities",
-    
+
     // Comparison Keywords
     "compare franchise opportunities",
     "franchise cost comparison",
     "franchise roi calculator",
     "best franchise brands india",
-    
+
     // B2B Keywords
     "sell my business india",
     "business brokers india",
     "franchise consultants india",
     "business valuation india",
-    
+
     // Long-tail Keywords
     "how to start a franchise business in india",
     "which franchise is best in india",
@@ -96,10 +93,7 @@ export const metadata = {
   ].join(", "),
 
   // Authors & Publisher
-  authors: [
-    { name: SITE_NAME, url: SITE_URL },
-    { name: "Mr Franchise Team" }
-  ],
+  authors: [{ name: SITE_NAME, url: SITE_URL }, { name: "Mr Franchise Team" }],
   creator: SITE_NAME,
   publisher: SITE_NAME,
 
@@ -126,7 +120,6 @@ export const metadata = {
   // Verification Tags
   verification: {
     google: process.env.NEXT_PUBLIC_GOOGLE_VERIFICATION_ID,
-    
   },
 
   // Open Graph (Enhanced)
@@ -214,8 +207,6 @@ export const metadata = {
     },
   },
 
- 
-
   // Category
   category: "Franchise & Business Opportunities Marketplace",
 
@@ -234,68 +225,70 @@ const generateStructuredData = () => {
       {
         "@type": "WebSite",
         "@id": `${SITE_URL}#website`,
-        "url": SITE_URL,
-        "name": SITE_NAME,
-        "description": "India's #1 Franchise & Business Opportunities Marketplace",
-        "publisher": {
+        url: SITE_URL,
+        name: SITE_NAME,
+        description:
+          "India's #1 Franchise & Business Opportunities Marketplace",
+        publisher: {
           "@id": `${SITE_URL}#organization`,
         },
-        "potentialAction": [
+        potentialAction: [
           {
             "@type": "SearchAction",
-            "target": {
+            target: {
               "@type": "EntryPoint",
-              "urlTemplate": `${SITE_URL}/search?q={search_term_string}`,
+              urlTemplate: `${SITE_URL}/search?q={search_term_string}`,
             },
             "query-input": "required name=search_term_string",
           },
         ],
-        "inLanguage": "en-IN",
+        inLanguage: "en-IN",
       },
 
       // Organization
       {
         "@type": "Organization",
         "@id": `${SITE_URL}#organization`,
-        "name": SITE_NAME,
-        "alternateName": "Mr Franchise",
-        "url": SITE_URL,
-        "logo": {
+        name: SITE_NAME,
+        alternateName: "Mr Franchise",
+        url: SITE_URL,
+        logo: {
           "@type": "ImageObject",
           "@id": `${SITE_URL}#logo`,
-          "url": `${SITE_URL}/mrfranchise_logo.avif`,
-          "contentUrl": `${SITE_URL}/mrfranchise_logo.avif`,
-          "width": 250,
-          "height": 60,
-          "caption": SITE_NAME,
+          url: `${SITE_URL}/mrfranchise_logo.avif`,
+          contentUrl: `${SITE_URL}/mrfranchise_logo.avif`,
+          width: 250,
+          height: 60,
+          caption: SITE_NAME,
         },
-        "image": {
+        image: {
           "@id": `${SITE_URL}#logo`,
         },
-        "description": "India's largest and most trusted franchise & business opportunities marketplace with 10,000+ verified listings",
-        "address": {
+        description:
+          "India's largest and most trusted franchise & business opportunities marketplace with 10,000+ verified listings",
+        address: {
           "@type": "PostalAddress",
-          "addressCountry": "IN",
-          "addressLocality": "India",
+          addressCountry: "IN",
+          addressLocality: "India",
         },
-        "contactPoint": [
+        contactPoint: [
           {
             "@type": "ContactPoint",
-            "telephone": "+91-9841323388",
-            "contactType": "Customer Service",
-            "email": "support@mrfranchise.in",
-            "availableLanguage": ["English", "Hindi"],
-            "areaServed": "IN",
+            telephone: "+91-9841323388",
+            contactType: "Customer Service",
+            email: "support@mrfranchise.in",
+            availableLanguage: ["English", "Hindi"],
+            areaServed: "IN",
           },
           {
             "@type": "ContactPoint",
-            "contactType": "Sales",
-            "email": "sales@mrfranchise.in",
-            "availableLanguage": ["English", "Hindi"],
-            "areaServed": "IN",
+            contactType: "Sales",
+            email: "sales@mrfranchise.in",
+            availableLanguage: ["English", "Hindi"],
+            areaServed: "IN",
           },
         ],
-        "sameAs": [
+        sameAs: [
           "https://www.facebook.com/mrfranchise",
           "https://www.instagram.com/mrfranchise",
           "https://www.linkedin.com/company/mrfranchise",
@@ -308,23 +301,24 @@ const generateStructuredData = () => {
       {
         "@type": "WebPage",
         "@id": `${SITE_URL}#webpage`,
-        "url": SITE_URL,
-        "name": `${SITE_NAME} – India's #1 Franchise & Business Opportunities Marketplace`,
-        "description": "Discover 10,000+ verified franchise opportunities across 50+ categories. Compare investment, ROI & apply directly.",
-        "isPartOf": {
+        url: SITE_URL,
+        name: `${SITE_NAME} – India's #1 Franchise & Business Opportunities Marketplace`,
+        description:
+          "Discover 10,000+ verified franchise opportunities across 50+ categories. Compare investment, ROI & apply directly.",
+        isPartOf: {
           "@id": `${SITE_URL}#website`,
         },
-        "about": {
+        about: {
           "@id": `${SITE_URL}#organization`,
         },
-        "primaryImageOfPage": {
+        primaryImageOfPage: {
           "@id": `${SITE_URL}#primaryimage`,
         },
-        "inLanguage": "en-IN",
-        "potentialAction": [
+        inLanguage: "en-IN",
+        potentialAction: [
           {
             "@type": "ReadAction",
-            "target": [SITE_URL],
+            target: [SITE_URL],
           },
         ],
       },
@@ -333,68 +327,68 @@ const generateStructuredData = () => {
       {
         "@type": "ImageObject",
         "@id": `${SITE_URL}#primaryimage`,
-        "url": `${SITE_URL}/og-home.jpg`,
-        "contentUrl": `${SITE_URL}/og-home.jpg`,
-        "width": 1200,
-        "height": 630,
-        "caption": `${SITE_NAME} – Franchise Marketplace`,
+        url: `${SITE_URL}/og-home.jpg`,
+        contentUrl: `${SITE_URL}/og-home.jpg`,
+        width: 1200,
+        height: 630,
+        caption: `${SITE_NAME} – Franchise Marketplace`,
       },
 
       // ItemList (Categories)
       {
         "@type": "ItemList",
         "@id": `${SITE_URL}#categories`,
-        "name": "Franchise Categories",
-        "description": "Browse franchise opportunities by category",
-        "numberOfItems": 8,
-        "itemListElement": [
+        name: "Franchise Categories",
+        description: "Browse franchise opportunities by category",
+        numberOfItems: 8,
+        itemListElement: [
           {
             "@type": "ListItem",
-            "position": 1,
-            "name": "Food & Beverage Franchise",
-            "url": `${SITE_URL}/all-franchise-brands/food-beverages`,
+            position: 1,
+            name: "Food & Beverage Franchise",
+            url: `${SITE_URL}/all-franchise-brands/food-beverages`,
           },
           {
             "@type": "ListItem",
-            "position": 2,
-            "name": "Retail Franchise",
-            "url": `${SITE_URL}/all-franchise-brands/retail`,
+            position: 2,
+            name: "Retail Franchise",
+            url: `${SITE_URL}/all-franchise-brands/retail`,
           },
           {
             "@type": "ListItem",
-            "position": 3,
-            "name": "Education Franchise",
-            "url": `${SITE_URL}/all-franchise-brands/education`,
+            position: 3,
+            name: "Education Franchise",
+            url: `${SITE_URL}/all-franchise-brands/education`,
           },
           {
             "@type": "ListItem",
-            "position": 4,
-            "name": "Healthcare Franchise",
-            "url": `${SITE_URL}/all-franchise-brands/healthcare`,
+            position: 4,
+            name: "Healthcare Franchise",
+            url: `${SITE_URL}/all-franchise-brands/healthcare`,
           },
           {
             "@type": "ListItem",
-            "position": 5,
-            "name": "Fitness Franchise",
-            "url": `${SITE_URL}/all-franchise-brands/fitness`,
+            position: 5,
+            name: "Fitness Franchise",
+            url: `${SITE_URL}/all-franchise-brands/fitness`,
           },
           {
             "@type": "ListItem",
-            "position": 6,
-            "name": "Beauty & Salon Franchise",
-            "url": `${SITE_URL}/all-franchise-brands/beauty-salon`,
+            position: 6,
+            name: "Beauty & Salon Franchise",
+            url: `${SITE_URL}/all-franchise-brands/beauty-salon`,
           },
           {
             "@type": "ListItem",
-            "position": 7,
-            "name": "Cafe & Coffee Franchise",
-            "url": `${SITE_URL}/all-franchise-brands/cafe-coffee`,
+            position: 7,
+            name: "Cafe & Coffee Franchise",
+            url: `${SITE_URL}/all-franchise-brands/cafe-coffee`,
           },
           {
             "@type": "ListItem",
-            "position": 8,
-            "name": "Automotive Franchise",
-            "url": `${SITE_URL}/all-franchise-brands/automotive`,
+            position: 8,
+            name: "Automotive Franchise",
+            url: `${SITE_URL}/all-franchise-brands/automotive`,
           },
         ],
       },
@@ -403,53 +397,53 @@ const generateStructuredData = () => {
       {
         "@type": "FAQPage",
         "@id": `${SITE_URL}#faq`,
-        "mainEntity": [
+        mainEntity: [
           {
             "@type": "Question",
-            "name": "What is Mr Franchise India?",
-            "acceptedAnswer": {
+            name: "What is Mr Franchise India?",
+            acceptedAnswer: {
               "@type": "Answer",
-              "text": "Mr Franchise India is India's largest and most trusted franchise and business opportunities marketplace. We connect franchise seekers with 10,000+ verified franchise opportunities across 50+ categories including Food & Beverage, Retail, Education, Healthcare, and more. Our platform helps you compare investment costs, ROI, and connect directly with franchise owners.",
+              text: "Mr Franchise India is India's largest and most trusted franchise and business opportunities marketplace. We connect franchise seekers with 10,000+ verified franchise opportunities across 50+ categories including Food & Beverage, Retail, Education, Healthcare, and more. Our platform helps you compare investment costs, ROI, and connect directly with franchise owners.",
             },
           },
           {
             "@type": "Question",
-            "name": "How many franchise opportunities are available on Mr Franchise?",
-            "acceptedAnswer": {
+            name: "How many franchise opportunities are available on Mr Franchise?",
+            acceptedAnswer: {
               "@type": "Answer",
-              "text": "Mr Franchise features over 10,000+ verified franchise opportunities across 50+ categories. Our listings include popular brands like Zomato, Swiggy, Domino's, McDonald's, Subway, and many more. We regularly update our database with new franchise opportunities.",
+              text: "Mr Franchise features over 10,000+ verified franchise opportunities across 50+ categories. Our listings include popular brands like Zomato, Swiggy, Domino's, McDonald's, Subway, and many more. We regularly update our database with new franchise opportunities.",
             },
           },
           {
             "@type": "Question",
-            "name": "What is the minimum investment required to start a franchise?",
-            "acceptedAnswer": {
+            name: "What is the minimum investment required to start a franchise?",
+            acceptedAnswer: {
               "@type": "Answer",
-              "text": "Franchise investments on Mr Franchise range from as low as ₹50,000 to ₹5 Crores and above. The investment varies based on the brand, category, location, and business model. We have franchise opportunities for every budget - from low investment home-based franchises to large-scale retail and QSR franchises.",
+              text: "Franchise investments on Mr Franchise range from as low as ₹50,000 to ₹5 Crores and above. The investment varies based on the brand, category, location, and business model. We have franchise opportunities for every budget - from low investment home-based franchises to large-scale retail and QSR franchises.",
             },
           },
           {
             "@type": "Question",
-            "name": "How do I apply for a franchise on Mr Franchise?",
-            "acceptedAnswer": {
+            name: "How do I apply for a franchise on Mr Franchise?",
+            acceptedAnswer: {
               "@type": "Answer",
-              "text": "Applying for a franchise on Mr Franchise is simple: 1) Browse our franchise listings, 2) Select your preferred brand, 3) Fill out the inquiry form with your details, 4) Submit your application. The franchise owner will receive your application and contact you directly with detailed information about investment, requirements, and the application process.",
+              text: "Applying for a franchise on Mr Franchise is simple: 1) Browse our franchise listings, 2) Select your preferred brand, 3) Fill out the inquiry form with your details, 4) Submit your application. The franchise owner will receive your application and contact you directly with detailed information about investment, requirements, and the application process.",
             },
           },
           {
             "@type": "Question",
-            "name": "Are all franchises on Mr Franchise verified?",
-            "acceptedAnswer": {
+            name: "Are all franchises on Mr Franchise verified?",
+            acceptedAnswer: {
               "@type": "Answer",
-              "text": "Yes, all franchise listings on Mr Franchise go through a verification process before being published. We verify the authenticity of franchise brands, validate their business credentials, and ensure accurate information about investment, ROI, and terms. This makes Mr Franchise India's most trusted franchise marketplace.",
+              text: "Yes, all franchise listings on Mr Franchise go through a verification process before being published. We verify the authenticity of franchise brands, validate their business credentials, and ensure accurate information about investment, ROI, and terms. This makes Mr Franchise India's most trusted franchise marketplace.",
             },
           },
           {
             "@type": "Question",
-            "name": "Can I sell my business on Mr Franchise?",
-            "acceptedAnswer": {
+            name: "Can I sell my business on Mr Franchise?",
+            acceptedAnswer: {
               "@type": "Answer",
-              "text": "Yes, Mr Franchise is not just a franchise marketplace but also a platform to sell businesses. If you own a franchise or any business and want to sell it, you can list it on our platform. We connect you with genuine buyers and investors across India.",
+              text: "Yes, Mr Franchise is not just a franchise marketplace but also a platform to sell businesses. If you own a franchise or any business and want to sell it, you can list it on our platform. We connect you with genuine buyers and investors across India.",
             },
           },
         ],
@@ -489,10 +483,10 @@ export default function Home() {
           __html: JSON.stringify(structuredData),
         }}
       />
-  <link rel="icon" href="/mrfranchise_logo.avif" type="image/jpeg" />
+      <link rel="icon" href="/mrfranchise_logo.avif" type="image/jpeg" />
 
       {/* Preconnect for Performance */}
-      
+
       {/* DNS Prefetch */}
       <link rel="dns-prefetch" href="https://www.google-analytics.com" />
       <link rel="dns-prefetch" href="https://www.googletagmanager.com" />

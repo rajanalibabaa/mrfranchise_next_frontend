@@ -94,8 +94,8 @@ function deslugifySub(slug) {
 
 function buildSubCategoryUrl(maincat, subcat) {
   if (!maincat || !subcat) return null;
-  const mainSlug = slugifyForUrl(maincat) + "-franchise-opportunities";
-  const subSlug = slugifyForUrl(subcat) + "-franchise-opportunities";
+  const mainSlug = slugifyForUrl(maincat);
+  const subSlug = slugifyForUrl(subcat);
   return `/${mainSlug}/${subSlug}`;
 }
 
@@ -391,24 +391,7 @@ console.log("filter applying fitler",filters);
     [],
   );
 
-  // ============================================
-  // FETCH FUNCTION
-  // ============================================
-  // NOTE ON THE FIX: fetchBrands and the "filter changed" effect below used
-  // to build their dedup key with two DIFFERENT shapes — this function used
-  // a plain JSON.stringify(filtersToFetch) of whatever partial object was
-  // passed in (e.g. just {maincat} on initial mount), while the effect used
-  // a JSON.stringify of the FULL redux filters object (every key, including
-  // nulls and `page`). Those strings could never match, so ~150ms after
-  // every mount (and after every maincat/subcat click, which remounts this
-  // component via router.push) a second, redundant request fired, aborting
-  // the first — doubling the wait before brands appeared. Both places now
-  // use the same `buildBrandFetchKey` normalizer, so a fetch that already
-  // covers the current filters is correctly recognized and skipped.
-  //
-  // fetchBrands' own identity is now also stable (deps = [dispatch] only)
-  // instead of depending on `isFirstLoad`, so it no longer changes identity
-  // mid-flight and re-trigger the debounce effect below.
+  
   const fetchBrands = useCallback(
     (filtersToFetch, forceRefresh = false) => {
       if (!isMountedRef.current) return;
@@ -532,7 +515,7 @@ const handleFilterChange = useCallback((name, value) => {
 
   // Handle navigation for category changes (use replace to avoid extra history)
   if (name === "maincat" && normalizedValue) {
-    const mainSlug = slugifyForUrl(normalizedValue) + "-franchise-opportunities";
+    const mainSlug = slugifyForUrl(normalizedValue);
     const newUrl = `/${mainSlug}`;
     if (newUrl !== pathname) {
       router.replace(newUrl, { scroll: false });
