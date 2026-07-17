@@ -19,11 +19,15 @@ function deslugifyCategory(slug) {
 
 
 function deslugifySubCategory(slug) {
-  return slug
-    ?.replace(/-franchise-opportunities$/, "")
+  let text = slug
+    ?.replace(/-franchise$/, "")
     .replace(/-/g, " ")
     .replace(/\band\b/g, "&")
     .replace(/\b\w/g, (c) => c.toUpperCase());
+
+  return text
+    .replace(/\bIt\b/g, "IT")
+    
 }
 
 

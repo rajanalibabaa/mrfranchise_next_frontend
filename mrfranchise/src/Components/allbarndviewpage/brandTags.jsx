@@ -278,7 +278,7 @@ const filteredChildCategories = useMemo(() => {
 )}
 
 {/* CHILD CATEGORY LIST */}
-{filters.maincat && filters.subcat && (
+{/* {filters.maincat && filters.subcat && (
   <>
     {loadingChildCategories ? (
       <CircularProgress size={20} sx={{ color: "#ff9800" }} />
@@ -322,7 +322,7 @@ const filteredChildCategories = useMemo(() => {
       </Box>
     )}
   </>
-)}
+)} */}
 
 
 
