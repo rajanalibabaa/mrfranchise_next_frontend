@@ -641,7 +641,7 @@ const FillterPannel = React.memo(
                     if (!val) dispatch(resetFranchiseTypes());
                   }}
                 >
-                  <AllOption label="All Business Opportunities" />
+                  {/* <AllOption label="All Business Opportunities" /> */}
 
                   {dedupe(franchiseModels).map((model) => (
                     <FormControlLabel
