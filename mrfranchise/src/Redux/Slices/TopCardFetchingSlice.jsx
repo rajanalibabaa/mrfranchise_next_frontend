@@ -285,7 +285,7 @@ export const homeSection9 = createAsyncThunk(
   async ({ page = 1 }, { rejectWithValue }) => {
     try {
       const response = await axios.get(
-        `${API_BASE_URL}/overAllPlatformOnlyMainCategory?main=${encodeURIComponent("Food & Beverages")}&sub=${encodeURIComponent("Quick Service Restaurants QSR")}`,
+        `${API_BASE_URL}/overAllPlatformOnlyMainCategory?main=${encodeURIComponent("Food & Beverages")}&sub=${encodeURIComponent("Quick Service Restaurants Qsr")}`,
         {
           params: { page, id: userId, limit: 4 },
         },
