@@ -17,15 +17,7 @@ import FranchiseJourney from "@/Components/about_mrfranchise/franchisejourney";
 // Dynamic import for better code splitting
 import BrandListNew from "@/Components/allbarndviewpage/brandListAllbrands";
 
-
-
-
-
-
-export default  function BrandCategoryViewPage() {
- 
-
-  
+export default function BrandCategoryViewPage() {
   return (
     <>
       {/* JSON-LD Structured Data for SEO */}
@@ -71,24 +63,24 @@ export default  function BrandCategoryViewPage() {
       <Box
         component="main"
         sx={{
-          mt: { xs: "70px", sm: "12px",md:17 },
+          mt: { xs: "70px", sm: "12px", md: 17 },
           mx: { xs: 1, md: 2 },
           minHeight: "calc(100vh - 64px)",
         }}
       >
         <Suspense fallback={<Loading />}>
-            <BrandListNew />
+          <BrandListNew />
         </Suspense>
       </Box>
-      <BusinessOpportunities/>
-<AboutMrFranchise/>
-<ExploreIndustry/>
-<ExploreInvestment/>
-<ExploreLocation/>
-<Featurebrand/>
-<FreeFranchise/>
+      <BusinessOpportunities />
+      <AboutMrFranchise />
+      <ExploreIndustry />
+      <ExploreInvestment />
+      <ExploreLocation />
+      <Featurebrand />
+      <FreeFranchise />
 
-<FranchiseJourney/>
+      <FranchiseJourney />
       {/* Footer */}
       <Footer />
     </>

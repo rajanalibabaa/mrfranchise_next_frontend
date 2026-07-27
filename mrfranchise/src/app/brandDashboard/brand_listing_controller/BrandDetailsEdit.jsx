@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 import TextField from "@mui/material/TextField";
 import CircularProgress from "@mui/material/CircularProgress";
@@ -20,6 +20,8 @@ const BrandDetailsEdit = ({ data = {}, errors = {}, onChange, isEditing }) => {
   const [supportedCountries, setSupportedCountries] = useState([]);
   const [selectedCountry, setSelectedCountry] = useState("");
   const [countryInputValue, setCountryInputValue] = useState("");
+
+  const isInitialCountrySync = useRef(false);
 
   const formData = {
     companyName: "",
@@ -44,11 +46,25 @@ const BrandDetailsEdit = ({ data = {}, errors = {}, onChange, isEditing }) => {
               name: c.country,
               code: c.iso2,
               dial_code: c.phone_code ? `+${c.phone_code}` : "",
-            }))
+            })),
           );
         }
       });
   }, []);
+
+  useEffect(() => {
+    if (data.country && supportedCountries.length > 0 && !selectedCountry) {
+      const matched = supportedCountries.find(
+        (c) => c.name.toLowerCase() === data.country.toLowerCase(),
+      );
+      if (matched) {
+        isInitialCountrySync.current = true;
+        setSelectedCountry(matched.code);
+        setCountryInputValue(matched.name);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data.country, supportedCountries]);
 
   const fetchLocationDetails = async () => {
     if (data.pincode && data.pincode.length >= 4 && selectedCountry) {
@@ -58,7 +74,7 @@ const BrandDetailsEdit = ({ data = {}, errors = {}, onChange, isEditing }) => {
       try {
         const result = await fetchGlobalLocationByPostalCode(
           data.pincode,
-          selectedCountry
+          selectedCountry,
         );
 
         if (result.status === "success") {
@@ -82,6 +98,15 @@ const BrandDetailsEdit = ({ data = {}, errors = {}, onChange, isEditing }) => {
   };
 
   useEffect(() => {
+    // ✅ Skip the auto-fetch that would otherwise fire the moment we hydrate
+    // selectedCountry from existing saved data — that's not a real user
+    // edit, and re-fetching here could needlessly overwrite the already
+    // correct saved state/city/district (or flash a loading spinner) on load.
+    if (isInitialCountrySync.current) {
+      isInitialCountrySync.current = false;
+      return;
+    }
+
     const timer = setTimeout(() => {
       if (data.pincode && data.pincode.length >= 4 && selectedCountry) {
         fetchLocationDetails();
@@ -89,6 +114,7 @@ const BrandDetailsEdit = ({ data = {}, errors = {}, onChange, isEditing }) => {
     }, 1000);
 
     return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data.pincode, selectedCountry]);
 
   // State for country codes
@@ -137,7 +163,7 @@ const BrandDetailsEdit = ({ data = {}, errors = {}, onChange, isEditing }) => {
           if (data.whatsappNumber) {
             const numberWithoutCode = data.whatsappNumber.replace(
               /^\+?\d+/,
-              ""
+              "",
             );
             onChange("whatsappNumber", newValue.dial_code + numberWithoutCode);
           }

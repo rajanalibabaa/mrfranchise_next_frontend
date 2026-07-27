@@ -133,13 +133,32 @@ const BrandComparison = ({
     }
   };
 
-  const handleApply = (brand) => {
-    console.log(brand, "brnad data");
+const handleApply = (brand) => {
+  // ✅ Log everything
+  console.log("========== APPLY CLICKED ==========");
+  console.log("Full brand:", brand);
+  console.log("brand.uuid:", brand?.uuid);
+  console.log("brand.brandDetails:", brand?.brandDetails);
+  console.log("brand.brandDetails?.slug:", brand?.brandDetails?.slug);
+  console.log("===================================");
 
-    postView(brand?.uuid);
-    // dispatch(openBrandDialog(brand));
-    window.open(`/franchise-business-opportunity/${brand?.uuid}`, "_blank");
-  };
+  // ✅ Try to find slug
+  const slug =
+    brand?.brandDetails?.slug ||
+    brand?.slug ||
+    brand?.seoSlug ||
+    brand?.uuid; // fallback to uuid
+
+  // ✅ Guard
+  if (!slug) {
+    console.error("❌ NOTHING to navigate with!");
+    alert("Cannot open brand — no slug/uuid found");
+    return;
+  }
+
+  postView(brand?.uuid);
+  window.open(`/brands/${slug}`, "_blank");
+};
 
   const downloadPDF = async () => {
     if (!tableRef.current) return;

@@ -192,6 +192,7 @@ const sortedBrands = useMemo(() => {
  
   return (
     <Box
+    component="section"
       ref={containerRef}
       sx={{
         py: isMobile ? 1 : 0,
@@ -251,7 +252,7 @@ const sortedBrands = useMemo(() => {
           Your Liked Brands
         </Typography>
  
-        <Button
+        {/* <Button
   variant="contained"
   size="small"
   aria-label="view more brands"
@@ -275,7 +276,7 @@ const sortedBrands = useMemo(() => {
   onClick={() => window.open("/all-franchise-brands", "_blank")}
 >
   View More
-</Button>
+</Button> */}
  
       </Box>
  

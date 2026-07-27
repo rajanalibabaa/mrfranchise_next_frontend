@@ -478,10 +478,14 @@ function TopBrandVdoCards() {
     await handleShortList(mainBrand.uuid);
   };
 
-  const handleApply = (brand) => {
-    postView(brand.uuid);
-    dispatch(openBrandDialog(brand));
-  };
+ const handleApply = (brand) => {
+  if (!brand?.uuid) {
+    console.error("❌ Cannot open brand — missing uuid:", brand);
+    return;
+  }
+  postView(brand.uuid);
+  dispatch(openBrandDialog(brand));
+};
 
   const handleLoadMore = () => {
     if (!isLoading && hasMore) {

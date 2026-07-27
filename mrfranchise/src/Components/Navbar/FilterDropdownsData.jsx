@@ -18,11 +18,13 @@ import SearchIcon from "@mui/icons-material/Search";
 import ClearIcon from "@mui/icons-material/Clear";
 import { useSelector, useDispatch } from "react-redux";
 import { fetchFilterOptions, clearErrors } from "@/Redux/Slices/filterDropdownData";
+import { useRouter } from "next/navigation";
 
 const FilterDropdowns = ({ onFilterChange }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const dispatch = useDispatch();
+  const router = useRouter();
 
   const [filters, setFilters] = useState({
     selectedMainCategory: "",
@@ -199,7 +201,8 @@ const FilterDropdowns = ({ onFilterChange }) => {
       ? `/all-franchise-brands?${queryParams.toString()}`
       : "/all-franchise-brands";
 
-    window.open(url, "_blank", "noopener,noreferrer");
+    // window.open(url, "_blank", "noopener,noreferrer");
+    router.push(url);
     setIsNavigating(true);
     setTimeout(() => {
       if (isMountedRef.current) setIsNavigating(false);

@@ -1,5 +1,5 @@
 // app/all-franchise-brands/loading.js
-'use client';
+"use client";
 import { Box, Skeleton, Grid } from "@mui/material";
 
 export default function Loading() {

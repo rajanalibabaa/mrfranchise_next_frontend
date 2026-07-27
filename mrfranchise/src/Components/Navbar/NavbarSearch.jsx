@@ -18,15 +18,15 @@ import CloseIcon from "@mui/icons-material/Close";
 import { fetchFilterOptions } from "@/Redux/Slices/filterDropdownData";
 import { resetFilters } from "@/Redux/Slices/FilterBrandSlice";
 import Search from "./Search";
-
+import { useRouter } from "next/navigation";
 const NavbarSearch = ({ open, handleClose }) => {
   const dispatch = useDispatch();
+  const router = useRouter();
 
   const [tab, setTab] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-
   // Get filter options from Redux store
   const filterState = useSelector((state) => state.filterDropdown);
   
@@ -252,7 +252,8 @@ const filteredMainCategories = useMemo(() => {
       queryParams.append("investmentRange", selectedInvestmentRange);
 
     // Open new tab with filters in URL
-     window.open(`/all-franchise-brands?${queryParams.toString()}`, "_blank", "noopener,noreferrer");
+    //  window.open(`/all-franchise-brands?${queryParams.toString()}`, "_blank", "noopener,noreferrer");
+     router.push(`/all-franchise-brands?${queryParams.toString()}`);
 
 
     handleClose();

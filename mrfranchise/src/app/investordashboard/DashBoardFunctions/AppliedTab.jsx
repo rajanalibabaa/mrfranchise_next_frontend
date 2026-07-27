@@ -35,7 +35,7 @@ const AppliedTab = ({
 }) => {
   const dispatch = useDispatch();
 
-  console.log("AppliedTab Rendered with items:", items);
+  // console.log("AppliedTab Rendered with items:", items);
 
   const handleViewDetails = (brandId) => {
     if (brandId) {

@@ -31,8 +31,8 @@ import io from "socket.io-client";
 const RequestTable = () => {
   const dispatch = useDispatch();
   const { singleRequest, loading } = useSelector((state) => state.requests);
-const [brandUUID, setBrandUUID] = useState(null);
-useEffect(() => {
+  const [brandUUID, setBrandUUID] = useState(null);
+  useEffect(() => {
     const id = localStorage.getItem("brandUUID");
     setBrandUUID(id);
   }, []);
@@ -81,12 +81,12 @@ useEffect(() => {
   };
 
   // Delete Request
-  const handleDelete = useCallback(
-    (uuid) => {
-      if (window.confirm("Delete this request?")) dispatch(removeRequest(uuid));
-    },
-    [dispatch]
-  );
+  // const handleDelete = useCallback(
+  //   (uuid) => {
+  //     if (window.confirm("Delete this request?")) dispatch(removeRequest(uuid));
+  //   },
+  //   [dispatch],
+  // );
 
   const requestArray = useMemo(() => {
     if (!singleRequest) return [];

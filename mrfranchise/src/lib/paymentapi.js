@@ -1,4 +1,4 @@
-const BASE_URL = "http://localhost:5000/api";
+const BASE_URL = `${process.env.NEXT_PUBLIC_API_URL}/api`;
 
 export const createPayment = async (payload) => {
   const res = await fetch(`${BASE_URL}/v1/payment/create`, {

@@ -14,8 +14,8 @@ export const homeSection1 = createAsyncThunk(
       const response = await axios.get(
         `${API_BASE_URL}/overAllPlatformOnlyMainCategory?main=Food %26 Beverages`,
         {
-          params: { page, id: userId,limit: 4 },
-        }
+          params: { page, id: userId, limit: 4 },
+        },
       );
 
       if (!response.data.data || !response.data.data.brands) {
@@ -36,25 +36,63 @@ export const homeSection1 = createAsyncThunk(
     } catch (error) {
       console.error("API Error:", error.response?.data || error.message);
       return rejectWithValue(
-        error.response?.data || { message: error.message }
+        error.response?.data || { message: error.message },
       );
     }
-  }
+  },
 );
-// Top Beverage Franchises  
+// Top Beverage Franchises
+// export const homeSection2 = createAsyncThunk(
+//   "homeSection2/fetchAll",
+//   async ({ page = 1 }, { rejectWithValue }) => {
+//     try {
+//       const response = await axios.get(
+//         `${API_BASE_URL}/overAllPlatformOnlyMainCategory?main=Retail`,
+//         {
+//           params: { page, id: userId, limit: 4 },
+//         },
+//       );
+
+//       if (!response.data.data || !response.data.data.brands) {
+//         console.error("Unexpected API response structure:", response.data);
+//         throw new Error("Invalid API response structure");
+//       }
+
+//       return {
+//         brands: response.data.data.brands,
+//         pagination: response.data.data.pagination || {
+//           currentPage: page,
+//           totalPages: 1,
+//           totalItems: 0,
+//           hasNextPage: false,
+//           hasPreviousPage: false,
+//         },
+//       };
+//     } catch (error) {
+//       console.error("API Error:", error.response?.data || error.message);
+//       return rejectWithValue(
+//         error.response?.data || { message: error.message },
+//       );
+//     }
+//   },
+// );
 export const homeSection2 = createAsyncThunk(
   "homeSection2/fetchAll",
-  async ({ page = 1 }, { rejectWithValue }) => {
+  async ({ page = 1, main = "Retail" }, { rejectWithValue }) => {
     try {
       const response = await axios.get(
-        `${API_BASE_URL}/overAllPlatformOnlyMainCategory?main=Retail`,
+        `${API_BASE_URL}/overAllPlatformOnlyMainCategory`,
         {
-          params: { page, id: userId ,limit: 4},
+          params: {
+            main,
+            page,
+            id: userId,
+            limit: 4,
+          },
         }
       );
 
-      if (!response.data.data || !response.data.data.brands) {
-        console.error("Unexpected API response structure:", response.data);
+      if (!response.data?.data?.brands) {
         throw new Error("Invalid API response structure");
       }
 
@@ -69,9 +107,15 @@ export const homeSection2 = createAsyncThunk(
         },
       };
     } catch (error) {
-      console.error("API Error:", error.response?.data || error.message);
+      console.error(
+        "API Error:",
+        error.response?.data || error.message
+      );
+
       return rejectWithValue(
-        error.response?.data || { message: error.message }
+        error.response?.data || {
+          message: error.message,
+        }
       );
     }
   }
@@ -85,7 +129,7 @@ export const homeSection3 = createAsyncThunk(
         `${API_BASE_URL}/overAllPlatformOnlyMainCategory?main=Education`,
         {
           params: { page, id: userId, limit: 4 },
-        }
+        },
       );
 
       if (!response.data.data || !response.data.data.brands) {
@@ -106,10 +150,10 @@ export const homeSection3 = createAsyncThunk(
     } catch (error) {
       console.error("API Error:", error.response?.data || error.message);
       return rejectWithValue(
-        error.response?.data || { message: error.message }
+        error.response?.data || { message: error.message },
       );
     }
-  }
+  },
 );
 // Top Bakery, Confectionery %26 Traditional Sweets
 export const homeSection4 = createAsyncThunk(
@@ -120,10 +164,8 @@ export const homeSection4 = createAsyncThunk(
         `${API_BASE_URL}/overAllPlatformOnlyMainCategory?main=Automobile`,
         {
           params: { page, id: userId, limit: 4 },
-        }
+        },
       );
-
-      
 
       if (!response.data.data || !response.data.data.brands) {
         console.error("Unexpected API response structure:", response.data);
@@ -143,10 +185,10 @@ export const homeSection4 = createAsyncThunk(
     } catch (error) {
       console.error("API Error:", error.response?.data || error.message);
       return rejectWithValue(
-        error.response?.data || { message: error.message }
+        error.response?.data || { message: error.message },
       );
     }
-  }
+  },
 );
 export const homeSection5 = createAsyncThunk(
   "homeSection5/fetchAll",
@@ -156,7 +198,7 @@ export const homeSection5 = createAsyncThunk(
         `${API_BASE_URL}/overAllPlatformOnlyMainCategory?main=Service`,
         {
           params: { page, id: userId, limit: 4 },
-        }
+        },
       );
 
       if (!response.data.data || !response.data.data.brands) {
@@ -176,10 +218,10 @@ export const homeSection5 = createAsyncThunk(
     } catch (error) {
       console.error("API Error:", error.response?.data || error.message);
       return rejectWithValue(
-        error.response?.data || { message: error.message }
+        error.response?.data || { message: error.message },
       );
     }
-  }
+  },
 );
 // Top Cloud Kitchen
 export const homeSection6 = createAsyncThunk(
@@ -187,10 +229,10 @@ export const homeSection6 = createAsyncThunk(
   async ({ page = 1 }, { rejectWithValue }) => {
     try {
       const response = await axios.get(
-        `${API_BASE_URL}/overAllPlatformOnlyMainCategory?main=${encodeURIComponent("Automobile")}&sub=${encodeURIComponent("Electric Vehicles (EV)")}`,
+        `${API_BASE_URL}/overAllPlatformOnlyMainCategory?main=${encodeURIComponent("Automobile")}&sub=${encodeURIComponent("Electric Vehicles")}`,
         {
           params: { page, id: userId, limit: 4 },
-        }
+        },
       );
 
       if (!response.data.data || !response.data.data.brands) {
@@ -210,10 +252,10 @@ export const homeSection6 = createAsyncThunk(
     } catch (error) {
       console.error("API Error:", error.response?.data || error.message);
       return rejectWithValue(
-        error.response?.data || { message: error.message }
+        error.response?.data || { message: error.message },
       );
     }
-  }
+  },
 );
 // // Top HomeBased Business Services
 export const homeSection7 = createAsyncThunk(
@@ -221,10 +263,10 @@ export const homeSection7 = createAsyncThunk(
   async ({ page = 1 }, { rejectWithValue }) => {
     try {
       const response = await axios.get(
-        `${API_BASE_URL}/overAllPlatformOnlyMainCategory?main=${encodeURIComponent("Education")}&sub=${encodeURIComponent("Pre-School & Early Childhood Education")}`,
+        `${API_BASE_URL}/overAllPlatformOnlyMainCategory?main=${encodeURIComponent("Education")}&sub=${encodeURIComponent("Pre School & Early Childhood Education")}`,
         {
           params: { page, id: userId, limit: 4 },
-        }
+        },
       );
 
       if (!response.data.data || !response.data.data.brands) {
@@ -244,10 +286,10 @@ export const homeSection7 = createAsyncThunk(
     } catch (error) {
       console.error("API Error:", error.response?.data || error.message);
       return rejectWithValue(
-        error.response?.data || { message: error.message }
+        error.response?.data || { message: error.message },
       );
     }
-  }
+  },
 );
 export const homeSection8 = createAsyncThunk(
   "homeSection8/fetchAll",
@@ -257,7 +299,7 @@ export const homeSection8 = createAsyncThunk(
         `${API_BASE_URL}/overAllPlatformOnlyMainCategory?main=${encodeURIComponent("Food & Beverages")}&sub=${encodeURIComponent("Fine Dining & Casual Dining Restaurants")}`,
         {
           params: { page, id: userId, limit: 4 },
-        }
+        },
       );
 
       if (!response.data.data || !response.data.data.brands) {
@@ -277,20 +319,20 @@ export const homeSection8 = createAsyncThunk(
     } catch (error) {
       console.error("API Error:", error.response?.data || error.message);
       return rejectWithValue(
-        error.response?.data || { message: error.message }
+        error.response?.data || { message: error.message },
       );
     }
-  }
+  },
 );
 export const homeSection9 = createAsyncThunk(
   "homeSection9/fetchAll",
   async ({ page = 1 }, { rejectWithValue }) => {
     try {
       const response = await axios.get(
-        `${API_BASE_URL}/overAllPlatformOnlyMainCategory?main=${encodeURIComponent("Food & Beverages")}&sub=${encodeURIComponent("Quick Service Restaurants (QSR)")}`,
+        `${API_BASE_URL}/overAllPlatformOnlyMainCategory?main=${encodeURIComponent("Food & Beverages")}&sub=${encodeURIComponent("Quick Service Restaurants Qsr")}`,
         {
           params: { page, id: userId, limit: 4 },
-        }
+        },
       );
 
       if (!response.data.data || !response.data.data.brands) {
@@ -310,20 +352,20 @@ export const homeSection9 = createAsyncThunk(
     } catch (error) {
       console.error("API Error:", error.response?.data || error.message);
       return rejectWithValue(
-        error.response?.data || { message: error.message }
+        error.response?.data || { message: error.message },
       );
     }
-  }
+  },
 );
 export const homeSection10 = createAsyncThunk(
   "homeSection10/fetchAll",
   async ({ page = 1 }, { rejectWithValue }) => {
     try {
       const response = await axios.get(
-        `${API_BASE_URL}/overAllPlatformOnlyMainCategory?main=${encodeURIComponent("Food & Beverages")}&sub=${encodeURIComponent("Tea, Coffee & Cafe Chains")}`,
+        `${API_BASE_URL}/overAllPlatformOnlyMainCategory?main=${encodeURIComponent("Food & Beverages")}&sub=${encodeURIComponent("Tea Coffee & Cafe Chains")}`,
         {
           params: { page, id: userId, limit: 4 },
-        }
+        },
       );
 
       if (!response.data.data || !response.data.data.brands) {
@@ -343,20 +385,20 @@ export const homeSection10 = createAsyncThunk(
     } catch (error) {
       console.error("API Error:", error.response?.data || error.message);
       return rejectWithValue(
-        error.response?.data || { message: error.message }
+        error.response?.data || { message: error.message },
       );
     }
-  }
+  },
 );
 export const homeSection11 = createAsyncThunk(
   "homeSection11/fetchAll",
   async ({ page = 1 }, { rejectWithValue }) => {
     try {
       const response = await axios.get(
-        `${API_BASE_URL}/overAllPlatformOnlyMainCategory?main=${encodeURIComponent("Service")}&sub=${encodeURIComponent("Beauty, Lifestyle & Personal Care")}`,
+        `${API_BASE_URL}/overAllPlatformOnlyMainCategory?main=${encodeURIComponent("Service")}&sub=${encodeURIComponent("Beauty Lifestyle & Personal Care")}`,
         {
           params: { page, id: userId, limit: 4 },
-        }
+        },
       );
 
       if (!response.data.data || !response.data.data.brands) {
@@ -376,10 +418,10 @@ export const homeSection11 = createAsyncThunk(
     } catch (error) {
       console.error("API Error:", error.response?.data || error.message);
       return rejectWithValue(
-        error.response?.data || { message: error.message }
+        error.response?.data || { message: error.message },
       );
     }
-  }
+  },
 );
 export const homeSection12 = createAsyncThunk(
   "homeSection12/fetchAll",
@@ -389,7 +431,7 @@ export const homeSection12 = createAsyncThunk(
         `${API_BASE_URL}/overAllPlatformOnlyMainCategory?main=${encodeURIComponent("Service")}&sub=${encodeURIComponent("Healthcare & Wellness Services")}`,
         {
           params: { page, id: userId, limit: 4 },
-        }
+        },
       );
 
       if (!response.data.data || !response.data.data.brands) {
@@ -409,10 +451,10 @@ export const homeSection12 = createAsyncThunk(
     } catch (error) {
       console.error("API Error:", error.response?.data || error.message);
       return rejectWithValue(
-        error.response?.data || { message: error.message }
+        error.response?.data || { message: error.message },
       );
     }
-  }
+  },
 );
 export const homeSection13 = createAsyncThunk(
   "homeSection13/fetchAll",
@@ -422,7 +464,7 @@ export const homeSection13 = createAsyncThunk(
         `${API_BASE_URL}/overAllPlatformOnlyMainCategory?main=${encodeURIComponent("Others")}`,
         {
           params: { page, id: userId, limit: 4 },
-        }
+        },
       );
 
       if (!response.data.data || !response.data.data.brands) {
@@ -442,10 +484,10 @@ export const homeSection13 = createAsyncThunk(
     } catch (error) {
       console.error("API Error:", error.response?.data || error.message);
       return rejectWithValue(
-        error.response?.data || { message: error.message }
+        error.response?.data || { message: error.message },
       );
     }
-  }
+  },
 );
 
 const initialState = {
@@ -579,7 +621,7 @@ const initialState = {
     error: null,
     viewedBrandsCount: 0,
   },
-  homeSection11 : {
+  homeSection11: {
     brands: [],
     pagination: {
       currentPage: 1,
@@ -664,7 +706,6 @@ const OverAllPlatform = createSlice({
       state.homeSection13 = initialState.homeSection13;
     },
 
-   
     // ----------------------------------------------------
     homeSection1ViewedCount: (state) => {
       state.homeSection1.viewedBrandsCount += 1;
@@ -708,7 +749,7 @@ const OverAllPlatform = createSlice({
     homeSection13ViewedCount: (state) => {
       state.homeSection13.viewedBrandsCount += 1;
     },
-   
+
     // ------------------------------------------------------------
     resetHomeSection1ViewedCount: (state) => {
       state.homeSection1.viewedBrandsCount = 0;
@@ -824,7 +865,6 @@ const OverAllPlatform = createSlice({
         }
         return brand;
       });
-     
     },
 
     toggleHomeCardShortlist: (state, action) => {
@@ -901,7 +941,6 @@ const OverAllPlatform = createSlice({
         }
         return brand;
       });
-     
     },
   },
   extraReducers: (builder) => {
@@ -1034,7 +1073,7 @@ const OverAllPlatform = createSlice({
         state.homeSection8.error =
           action.payload?.message || action.error.message;
       })
-      
+
       .addCase(homeSection9.pending, (state) => {
         state.homeSection9.isLoading = true;
         state.homeSection9.error = null;
@@ -1049,8 +1088,6 @@ const OverAllPlatform = createSlice({
         state.homeSection9.error =
           action.payload?.message || action.error.message;
       })
-
-      
 
       .addCase(homeSection10.pending, (state) => {
         state.homeSection10.isLoading = true;
@@ -1067,7 +1104,6 @@ const OverAllPlatform = createSlice({
           action.payload?.message || action.error.message;
       })
 
-      
       .addCase(homeSection11.pending, (state) => {
         state.homeSection11.isLoading = true;
         state.homeSection11.error = null;
@@ -1083,8 +1119,6 @@ const OverAllPlatform = createSlice({
           action.payload?.message || action.error.message;
       })
 
-      
-      
       .addCase(homeSection12.pending, (state) => {
         state.homeSection12.isLoading = true;
         state.homeSection12.error = null;
@@ -1099,8 +1133,7 @@ const OverAllPlatform = createSlice({
         state.homeSection12.error =
           action.payload?.message || action.error.message;
       })
-      
-      
+
       .addCase(homeSection13.pending, (state) => {
         state.homeSection13.isLoading = true;
         state.homeSection13.error = null;
@@ -1114,9 +1147,7 @@ const OverAllPlatform = createSlice({
         state.homeSection13.isLoading = false;
         state.homeSection13.error =
           action.payload?.message || action.error.message;
-      })
-
-      
+      });
   },
 });
 
@@ -1129,7 +1160,6 @@ export const {
   resethomeSection6,
   resethomeSection7,
   resethomeSection8,
- 
 
   homeSection1ViewedCount,
   homeSection2ViewedCount,
@@ -1139,7 +1169,6 @@ export const {
   homeSection6ViewedCount,
   homeSection7ViewedCount,
   homeSection8ViewedCount,
-  
 
   resetHomeSection1ViewedCount,
   resetHomeSection2ViewedCount,
@@ -1149,7 +1178,6 @@ export const {
   resetHomeSection6ViewedCount,
   resetHomeSection7ViewedCount,
   resetHomeSection8ViewedCount,
- 
 
   toggleHomeCardLike,
   toggleHomeCardShortlist,

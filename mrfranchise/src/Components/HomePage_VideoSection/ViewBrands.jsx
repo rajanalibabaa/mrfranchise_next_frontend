@@ -167,6 +167,7 @@ const ViewBrands = () => {
  
   return (
     <Box
+    component="section"
       ref={containerRef}
       sx={{
         py: isMobile ? 1 : 0,
@@ -226,7 +227,7 @@ const ViewBrands = () => {
           Your Viewed Brands
         </Typography>
  
-        <Button
+        {/* <Button
   variant="contained"
   size="small"
   aria-label="view more brands"
@@ -250,7 +251,7 @@ const ViewBrands = () => {
   onClick={() => window.open("/all-franchise-brands", "_blank")}
 >
   View More
-</Button>
+</Button> */}
 
       </Box>
  

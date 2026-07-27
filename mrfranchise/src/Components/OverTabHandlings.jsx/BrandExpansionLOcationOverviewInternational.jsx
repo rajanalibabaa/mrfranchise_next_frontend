@@ -49,6 +49,7 @@ const ExpansionLocationGridInternational = ({ data }) => {
 
   return (
     <Box
+    component="section"
       sx={{
         mt: 2,
         border: "1px solid #e0e0e0",
@@ -102,6 +103,7 @@ const ExpansionLocationGridInternational = ({ data }) => {
               }}
             >
               <Typography
+              component="h3"
                 variant="subtitle1"
                 sx={{
                   p: 2,
@@ -114,7 +116,7 @@ const ExpansionLocationGridInternational = ({ data }) => {
                   alignItems: "center",
                 }}
               >
-                <Public sx={{ mr: 1, color: "#fff" }} />
+                <Public  sx={{ mr: 1, color: "#fff" }} />
                 Countries
               </Typography>
               <Box sx={{ p: 1 }}>
@@ -152,11 +154,12 @@ const ExpansionLocationGridInternational = ({ data }) => {
                       }}
                     >
                       <Box>
-                        <Typography fontWeight={600}>
+                        <Typography component="h3"  fontWeight={600}>
                           {countryItem.states || "Unknown Country"}
                         </Typography>
                         {countryItem.region && (
                           <Typography
+                          component="h4"
                             variant="caption"
                             color="text.secondary"
                           >
@@ -198,6 +201,7 @@ const ExpansionLocationGridInternational = ({ data }) => {
               }}
             >
               <Typography
+              component="h3"
                 variant="subtitle1"
                 sx={{
                   p: 2,
@@ -265,7 +269,7 @@ const ExpansionLocationGridInternational = ({ data }) => {
                                 alignItems: "center",
                               }}
                             >
-                              <Typography variant="subtitle1">
+                              <Typography component="h4" variant="subtitle1">
                                 {distItem.district || "N/A"}
                               </Typography>
                               <Chip
@@ -299,7 +303,7 @@ const ExpansionLocationGridInternational = ({ data }) => {
                   )
                 ) : (
                   <Box sx={{ p: 2, textAlign: "center" }}>
-                    <Typography variant="body2" color="text.secondary">
+                    <Typography component="h3" variant="body2" color="text.secondary">
                       {expandedCountry === null ? (
                         <>
                           <ArrowBack
@@ -338,6 +342,7 @@ const ExpansionLocationGridInternational = ({ data }) => {
               }}
             >
               <Typography
+                component="h3"
                 variant="subtitle1"
                 sx={{
                   p: 2,
@@ -416,7 +421,7 @@ const ExpansionLocationGridInternational = ({ data }) => {
                       ))
                     ) : (
                       <Box sx={{ p: 2, textAlign: "center" }}>
-                        <Typography variant="body2" color="text.secondary">
+                        <Typography component="h3" variant="body2" color="text.secondary">
                           <LocationOff
                             sx={{
                               fontSize: 40,
@@ -432,7 +437,7 @@ const ExpansionLocationGridInternational = ({ data }) => {
                   })()
                 ) : (
                   <Box sx={{ p: 2, textAlign: "center" }}>
-                    <Typography variant="body2" color="text.secondary">
+                    <Typography component="h3"   variant="body2" color="text.secondary">
                       {expandedCountry === null ? (
                         <>
                           <ArrowBack

@@ -24,6 +24,7 @@ import { useSelector, useDispatch } from "react-redux";
 import LoginPage from "@/Components/LoginPage/LoginPage.jsx";
 import HomePageBrandCard from "./HomePageBrandCard.jsx";
 import { homeSection1   } from '@/Redux/Slices/TopCardFetchingSlice.jsx';
+import { useRouter } from "next/navigation";
 
 const CARD_DIMENSIONS = {
   mobile: { width: 280, height: 520 },
@@ -45,6 +46,7 @@ const HomeSection1 = () => {
   const containerRef = useRef(null);
   const scrollContainerRef = useRef(null);
   const scrollRequestRef = useRef(null);
+  const router = useRouter();
 
   const [likeProcessing, setLikeProcessing] = useState({});
   const [showLogin, setShowLogin] = useState(false);
@@ -128,7 +130,7 @@ const debouncedHandleScroll = useMemo(
       handleScroll(); // Initial check
     }
     return () => {
-      container?.removeEventListener("scroll", handleScroll);
+      container?.removeEventListener("scroll", debouncedHandleScroll);
       if (scrollRequestRef.current) {
         cancelAnimationFrame(scrollRequestRef.current);
       }
@@ -160,33 +162,33 @@ window.addEventListener("resize", debouncedResize);
 
   const easeInOutQuad = (t) => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t);
 
-  const smoothScrollTo = useCallback((target, immediate = false) => {
-    const container = scrollContainerRef.current;
-    if (!container) return;
-    if (scrollRequestRef.current) {
-      cancelAnimationFrame(scrollRequestRef.current);
-    }
+  // const smoothScrollTo = useCallback((target, immediate = false) => {
+  //   const container = scrollContainerRef.current;
+  //   if (!container) return;
+  //   if (scrollRequestRef.current) {
+  //     cancelAnimationFrame(scrollRequestRef.current);
+  //   }
 
-    const start = container.scrollLeft;
-    const change = target - start;
-    const duration = immediate ? 0 : 500;
-    const startTime = performance.now();
+  //   const start = container.scrollLeft;
+  //   const change = target - start;
+  //   const duration = immediate ? 0 : 500;
+  //   const startTime = performance.now();
 
-    const animateScroll = (currentTime) => {
-      const elapsed = currentTime - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      const ease = easeInOutQuad(progress);
-      container.scrollLeft = start + change * ease;
+  //   const animateScroll = (currentTime) => {
+  //     const elapsed = currentTime - startTime;
+  //     const progress = Math.min(elapsed / duration, 1);
+  //     const ease = easeInOutQuad(progress);
+  //     container.scrollLeft = start + change * ease;
 
-      if (progress < 1) {
-        scrollRequestRef.current = requestAnimationFrame(animateScroll);
-      } else {
-        handleScroll();
-      }
-    };
+  //     if (progress < 1) {
+  //       scrollRequestRef.current = requestAnimationFrame(animateScroll);
+  //     } else {
+  //       handleScroll();
+  //     }
+  //   };
 
-    scrollRequestRef.current = requestAnimationFrame(animateScroll);
-  }, [handleScroll]);
+  //   scrollRequestRef.current = requestAnimationFrame(animateScroll);
+  // }, [handleScroll]);
 
   const handleNextClick = () => {
   scrollContainerRef.current?.scrollBy({
@@ -211,10 +213,11 @@ const handlePrevClick = () => {
     trim: true,
   });
 
-  const url = `${slug}-franchise-opportunities`;
+  const url = `${slug}`;
 
   // Open in new tab
-  const newWindow = window.open(url, "_blank");
+  // const newWindow = window.open(url, "_blank");
+  const newWindow=router.push(url); // Use Next.js router to navigate
 
   // Optional: focus the new tab
   if (newWindow) newWindow.focus();
@@ -381,18 +384,21 @@ onClick={handleClickOpenBrandCategories}
             "&::-webkit-scrollbar": { display: "none" },
           }}
         >
-          {brands.map((brand) => (
-            <Box key={brand.uuid || brand.id}>
-              <HomePageBrandCard
-                brand={brand}
-                likeProcessing={likeProcessing}
-                dimensions={dimensions}
-                theme={theme}
-                isMobile={isMobile}
-                isTablet={isTablet}
-              />
-            </Box>
-          ))}
+        {brands
+        
+  .filter((brand) => brand && brand.uuid)
+  .map((brand) => (
+    <Box key={brand.uuid}>
+      <HomePageBrandCard
+        brand={brand}
+        likeProcessing={likeProcessing}
+        dimensions={dimensions}
+        theme={theme}
+        isMobile={isMobile}
+        isTablet={isTablet}
+      />
+    </Box>
+  ))}
           {isLoading && brands.length > 0 && (
             <Box sx={{ display: "flex", alignItems: "center", pl: 2 }}>
               <CircularProgress size={24} />

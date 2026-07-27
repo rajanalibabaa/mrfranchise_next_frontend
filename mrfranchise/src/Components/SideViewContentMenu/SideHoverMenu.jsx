@@ -840,7 +840,7 @@ const SideViewContent = ({ hoverCategory, onHoverLeave, onBrandClick }) => {
       if (brandId) {
         const encodedBrandName = encodeURIComponent(brandName);
         navigate.push(
-          `/franchise-business-opportunity/${brandId}?name=${encodedBrandName}`,
+          `/brands/${brandId}?name=${encodedBrandName}`,
         );
       }
       if (onBrandClick) {
