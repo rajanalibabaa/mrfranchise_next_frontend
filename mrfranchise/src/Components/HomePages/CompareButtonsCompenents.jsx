@@ -17,7 +17,7 @@ const buttonRef = useRef(null);
   const buttonFontSize = isMobile ? 12 : isTablet ? 14 : 16;
 
   // Motion values for smooth drag
-  const x = useMotionValue(0);
+  // const x = useMotionValue(0);
   const y = useMotionValue(0);
 
   // Track drag state
@@ -29,37 +29,37 @@ const [cursor, setCursor] = useState("grab");
   useEffect(() => {
     const saved = localStorage.getItem("compareButtonPos");
     if (saved) {
-      const { savedX, savedY } = JSON.parse(saved);
-      x.set(savedX);
+      const {  savedY } = JSON.parse(saved);
+      // x.set(savedX);
       y.set(savedY);
     }
   }, []);
 
   // ✅ Snap to nearest edge (left or right)
-  const snapToEdge = () => {
-    const windowWidth = window.innerWidth;
-    const currentX = x.get();
-    const buttonMidX = currentX + buttonWidth / 2;
+  // const snapToEdge = () => {
+  //   const windowWidth = window.innerWidth;
+  //   const currentX = x.get();
+  //   const buttonMidX = currentX + buttonWidth / 2;
 
-    const snapRight = windowWidth / 2;
+  //   const snapRight = windowWidth / 2;
 
-    if (buttonMidX > snapRight) {
-      // Snap to right edge
-      const rightX = windowWidth - buttonWidth;
-      animate(x, rightX, { type: "spring", stiffness: 300, damping: 30 });
-      localStorage.setItem(
-        "compareButtonPos",
-        JSON.stringify({ savedX: rightX, savedY: y.get() })
-      );
-    } else {
-      // Snap to left edge
-      animate(x, 0, { type: "spring", stiffness: 300, damping: 30 });
-      localStorage.setItem(
-        "compareButtonPos",
-        JSON.stringify({ savedX: 0, savedY: y.get() })
-      );
-    }
-  };
+  //   if (buttonMidX > snapRight) {
+  //     // Snap to right edge
+  //     const rightX = windowWidth - buttonWidth;
+  //     animate(x, rightX, { type: "spring", stiffness: 300, damping: 30 });
+  //     localStorage.setItem(
+  //       "compareButtonPos",
+  //       JSON.stringify({ savedX: rightX, savedY: y.get() })
+  //     );
+  //   } else {
+  //     // Snap to left edge
+  //     animate(x, 0, { type: "spring", stiffness: 300, damping: 30 });
+  //     localStorage.setItem(
+  //       "compareButtonPos",
+  //       JSON.stringify({ savedX: 0, savedY: y.get() })
+  //     );
+  //   }
+  // };
 
   const handleClick = () => {
     localStorage.setItem("enableComparison", "true");
@@ -78,12 +78,12 @@ const [cursor, setCursor] = useState("grab");
     >
       <motion.button
         ref={buttonRef}
-        drag
+          drag="y"
         dragConstraints={constraintsRef}
         dragElastic={0.05}
         dragMomentum={false}
         style={{
-          x,
+          // x,
           y,
           position: "absolute",
           right: 0,
@@ -132,9 +132,14 @@ const [cursor, setCursor] = useState("grab");
           setCursor("grab");
           isDragging.current = false;
 
-          if (wasDragged.current) {
-            snapToEdge();
-          }
+        if (wasDragged.current) {
+  localStorage.setItem(
+    "compareButtonPos",
+    JSON.stringify({
+      savedY: y.get(),
+    })
+  );
+}
 
           // ✅ Reset wasDragged after small delay
           setTimeout(() => {
