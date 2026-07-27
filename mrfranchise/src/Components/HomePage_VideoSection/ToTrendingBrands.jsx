@@ -487,7 +487,7 @@ const navigate = useRouter();
             backgroundColor: "#333",
           },
         }}
-        onClick={()=>navigate('/brandViewPage')}
+        onClick={()=>navigate('/all-franchise-brands')}
       >
         View All Brands
       </Box>

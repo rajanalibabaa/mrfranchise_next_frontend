@@ -24,6 +24,7 @@ import LoginPage from "@/Components/LoginPage/LoginPage.jsx";
 import { motion } from "framer-motion";
 import HomePageBrandCard from "./HomePageBrandCard.jsx";
 import { homeSection11 } from '@/Redux/Slices/TopCardFetchingSlice.jsx';
+import { useRouter } from "next/navigation";
 
 const CARD_DIMENSIONS = {
   mobile: { width: 280, height: 520 },
@@ -52,6 +53,7 @@ const HomeSection11 = () => {
   const [showEndShadow, setShowEndShadow] = useState(true);
   const [visibleCardCount, setVisibleCardCount] = useState(4);
   const [currentPage, setCurrentPage] = useState(1);
+  const router = useRouter();
 
   const dimensions = useMemo(() => {
     if (isMobile) return CARD_DIMENSIONS.mobile;
@@ -215,7 +217,10 @@ const HomeSection11 = () => {
     const url = `${slug}?subcat=${subcat}&maincat=${encodeURIComponent(brands[0]?.brandCategories?.main || "")}`;
 
     // Open in new tab
-    const newWindow = window.open(url, "_blank"); 
+    // const newWindow = window.open(url, "_blank"); 
+
+      const newWindow=router.push(url); // Use Next.js router to navigate
+
 
     // Optional: focus the new tab
     if (newWindow) newWindow.focus();
@@ -373,10 +378,12 @@ const HomeSection11 = () => {
             "&::-webkit-scrollbar": { display: "none" },
           }}
         >
-          {brands.map((brand) => (
-            <Box key={brand.uuid || brand.id || brand._id}>
-              <HomePageBrandCard
-                brand={brand}
+       {brands
+  .filter((brand) => brand && brand.uuid)
+  .map((brand) => (
+    <Box key={brand.uuid}>
+      <HomePageBrandCard
+        brand={brand}
                 likeProcessing={likeProcessing}
                 dimensions={dimensions}
                 theme={theme}

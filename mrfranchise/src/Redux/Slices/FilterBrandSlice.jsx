@@ -55,7 +55,8 @@ export const fetchFilteredBrands = createAsyncThunk(
     
       if (filters.modelType)      params.append("modelType", filters.modelType);
       if (filters.franchiseType)  params.append("franchiseType", filters.franchiseType);
-
+console.log("Filters:", filters);
+console.log("Request URL:", `${API_BASE_URL}filter/getAllBrandsAndFilter?${params.toString()}`);
       const response = await axios.get(
         `${API_BASE_URL}filter/getAllBrandsAndFilter?${params.toString()}`,
         { signal }

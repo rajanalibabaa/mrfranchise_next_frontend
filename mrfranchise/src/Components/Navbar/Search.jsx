@@ -350,35 +350,48 @@ const url =
   );
 
   // ─── Suggestion Click ────────────────────────
-  const handleSelectedSuggestionData = useCallback(
-    (selectedData) => {
-      if (!selectedData) return;
+const handleSelectedSuggestionData = useCallback(
+  (selectedData) => {
+    if (!selectedData) return;
 
-      // Brand name → go to brand detail page
-      if (selectedData.brandName) {
-        window.open(
-          `/brands/${selectedData.brandName}`,
-          "_blank",
-          "noopener,noreferrer"
-        );
-        setIsOpen(false);
-        return;
-      }
+    // ✅ Debug first
+    console.log("🔍 Suggestion clicked:", selectedData);
 
-      // Tag / Industry / Category → trigger search
-      const searchValue =
-        selectedData.tag      ||
-        selectedData.industry ||
-        selectedData.category ||
-        "";
+    const slug =
+      selectedData?.slug ||
+      selectedData?.brandSlug ||
+      selectedData?.uuid;
 
-      if (searchValue) {
-        setQuery(searchValue);
-        handleOnSearch(searchValue);
-      }
-    },
-    [handleOnSearch]
-  );
+    // ✅ STRICT validation
+    const isValidSlug =
+      slug &&
+      slug !== "undefined" &&
+      slug !== "null" &&
+      slug.toString().trim() !== "";
+
+    if (isValidSlug) {
+      window.open(
+        `/brands/${encodeURIComponent(slug)}`,
+        "_blank",
+        "noopener,noreferrer"
+      );
+      return; // ✅ CRITICAL: stop here
+    }
+
+    // Fall through to search
+    const searchValue =
+      selectedData.tag ||
+      selectedData.industry ||
+      selectedData.category ||
+      "";
+
+    if (searchValue) {
+      setQuery(searchValue);
+      handleOnSearch(searchValue);
+    }
+  },
+  [handleOnSearch]
+);
 
   // ─── Speed chip ──────────────────────────────
   // const speedChip = getSpeedChip(responseMs);

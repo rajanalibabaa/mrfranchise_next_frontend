@@ -123,7 +123,6 @@ function Navbar() {
     setPopupLogout(true);
   };
 
-
   const handleVerifySignOut = async () => {
     setlogoutLoading(true);
 
@@ -181,7 +180,8 @@ function Navbar() {
       url = `/brandDashboard?id=${encodeURIComponent(brandUUID)}&name=${encodeURIComponent(userName)}`;
     }
 
-    window.open(url, "_blank", "noopener,noreferrer");
+    // window.open(url, "_blank", "noopener,noreferrer");
+    router.push(url);
     dispatch(toggleMenu(false));
   };
 
@@ -196,7 +196,6 @@ function Navbar() {
   };
 
   const handleLogoClick = () => {
-   
     router.push("/");
   };
 
@@ -229,23 +228,23 @@ function Navbar() {
       path: "https://consulting.mrfranchise.in",
       external: true,
     },
-   {
-  label: "Brand LISTING",
-  path: "/brand_listing_creation_form ",
-  external: true
-}
+    {
+      label: "Brand LISTING",
+      path: "/brand_listing_creation_form ",
+      external: true,
+    },
   ];
 
-   
   const handleNavigation = (item) => {
     if (item.external) {
       // ✅ open external site in new tab
-      window.open(item.path, "_blank", "noopener,noreferrer");
+      // window.open(item.path, "_blank", "noopener,noreferrer");
+ window.location.href = item.path;
     } else {
       // ✅ super fast client-side navigation
       router.push(item.path);
-      
     }
+     dispatch(toggleMenu(false));
   };
 
   return (
@@ -279,67 +278,63 @@ function Navbar() {
           sx={{
             display: { xs: "flex", sm: "flex" },
             flexWrap: "wrap",
-            ml: isMobile ? "50px":"40px",
+            ml: isMobile ? "50px" : "40px",
             gap: isMobile ? 2.5 : 1,
             position: "relative",
             zIndex: 1,
           }}
         >
-          {isMobile && (
-             menuItemsMobiles.map((item) => (
-            <motion.div
-              key={item.label}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Button
-                size="small"
-                aria-label={item.label}
-                onClick={() => handleNavigation(item)}
-                sx={{
-                  fontSize: "0.65rem" ,
-                  textTransform: "none",
-                  color: "black",
-                  background:"#6fff00fa",
-                  "&:hover": {
-                    color: "#ff9800",
-                    backgroundColor: "rgba(255, 255, 255, 0.1)",
-                  },
-                }}
+          {isMobile &&
+            menuItemsMobiles.map((item) => (
+              <motion.div
+                key={item.label}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
               >
-                {item.label}
-              </Button>
-            </motion.div>
-          ))
-          )}
-          {!isMobile && (
-             menuItems.map((item) => (
-            <motion.div
-              key={item.label}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Button
-                size="small"
-                aria-label={item.label}
-                onClick={() => handleNavigation(item)}
-                sx={{
-                  fontSize: isMobile ? "0.75rem" : "0.875rem",
-                  textTransform: "none",
-                  color: "black",
-                  "&:hover": {
-                    color: "#ff9800",
-                    backgroundColor: "rgba(255, 255, 255, 0.1)",
-                  },
-                }}
+                <Button
+                  size="small"
+                  aria-label={item.label}
+                  onClick={() => handleNavigation(item)}
+                  sx={{
+                    fontSize: "0.65rem",
+                    textTransform: "none",
+                    color: "black",
+                    background: "#6fff00fa",
+                    "&:hover": {
+                      color: "#ff9800",
+                      backgroundColor: "rgba(255, 255, 255, 0.1)",
+                    },
+                  }}
+                >
+                  {item.label}
+                </Button>
+              </motion.div>
+            ))}
+          {!isMobile &&
+            menuItems.map((item) => (
+              <motion.div
+                key={item.label}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
               >
-                {item.label}
-              </Button>
-            </motion.div>
-          ))
-          )}
-         
-          
+                <Button
+                  size="small"
+                  aria-label={item.label}
+                  onClick={() => handleNavigation(item)}
+                  sx={{
+                    fontSize: isMobile ? "0.75rem" : "0.875rem",
+                    textTransform: "none",
+                    color: "black",
+                    "&:hover": {
+                      color: "#ff9800",
+                      backgroundColor: "rgba(255, 255, 255, 0.1)",
+                    },
+                  }}
+                >
+                  {item.label}
+                </Button>
+              </motion.div>
+            ))}
         </Box>
         <Toolbar
           sx={{
@@ -375,70 +370,69 @@ function Navbar() {
               transition={{ type: "spring", stiffness: 400, damping: 10 }}
             >
               <Box
-  onClick={handleLogoClick}
-  sx={{
-    display: "flex",
-    alignItems: "center",
-    textDecoration: "none",
-    overflow: "visible",
-  }}
->
-  <Image
-    src="/mrfranchise_logo.avif"
-    alt="brand logo"
-    width={isMobile ? 145 : 175}
-    height={isMobile ? 60 : 100}
-    priority
-    loading="eager"
-    style={{
-      objectFit: "contain",
-      transform: "scale(1.25)", // zoom size
-      transition: "transform 0.3s ease",
-      transformOrigin: "center",
-    }}
-  />
-</Box>
+                onClick={handleLogoClick}
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  textDecoration: "none",
+                  overflow: "visible",
+                }}
+              >
+                <Image
+                  src="/mrfranchise_logo.avif"
+                  alt="MrFranchise Logo"
+                  width={isMobile ? 145 : 175}
+                  height={isMobile ? 60 : 100}
+                  priority
+                  loading="eager"
+                  style={{
+                    objectFit: "contain",
+                    transform: "scale(1.25)", // zoom size
+                    transition: "transform 0.3s ease",
+                    transformOrigin: "center",
+                  }}
+                />
+              </Box>
             </motion.div>
           </Box>
 
-
           <Link
-  href="https://consulting.mrfranchise.in"
-  target="_blank"
-  rel="noopener noreferrer"
->
-  {!isMobile && (
-    <Box
-      sx={{
-        display: {
-          sm: "none",
-          md: "block",
-          lg: "block",
-        },
-        width:{
-          md:180,
-          lg:350,
-          xl:500,
-        },
-        overflow:"hidden",
-      }}
-    >
-      <Image
-        src="/Blue Modern Corporate Profile LinkedIn Article Cover Image (1).jpg"
-        alt="brand logo"
-        width={500}
-        height={80}
-        loading="lazy"
-        style={{
-          width:"100%",
-          height:"auto",
-          objectFit:"contain",
-          borderRadius:"6px",
-        }}
-      />
-    </Box>
-  )}
-</Link>
+            href="https://consulting.mrfranchise.in"
+            // target="_blank"
+            // rel="noopener noreferrer"
+          >
+            {!isMobile && (
+              <Box
+                sx={{
+                  display: {
+                    sm: "none",
+                    md: "block",
+                    lg: "block",
+                  },
+                  width: {
+                    md: 180,
+                    lg: 350,
+                    xl: 500,
+                  },
+                  overflow: "hidden",
+                }}
+              >
+                <Image
+                  src="/Blue Modern Corporate Profile LinkedIn Article Cover Image (1).jpg"
+                  alt="MrFranchise Consulting"
+                  width={500}
+                  height={80}
+                  loading="lazy"
+                  style={{
+                    width: "100%",
+                    height: "auto",
+                    objectFit: "contain",
+                    borderRadius: "6px",
+                  }}
+                />
+              </Box>
+            )}
+          </Link>
 
           {/* <Box sx={{ flexGrow: isMobile ? 0 : 1 }} /> */}
 
@@ -452,44 +446,54 @@ function Navbar() {
             }}
           >
             <motion.div>
-              <IconButton aria-label="Search" onClick={() => setSearchOpen(true)}>
+              <IconButton
+                aria-label="Search"
+                onClick={() => setSearchOpen(true)}
+              >
                 <Search size={25} />
                 <Typography sx={{ display: { xs: "none", sm: "flex" } }}>
                   Search
                 </Typography>
               </IconButton>
             </motion.div>
-           {!isMobile && ( <motion.div whileHover={{ y: -2 }}>
-              <Button
-              aria-label="Add your franchise brands in mrfranchise"
-                onClick={() => {
-                  const url = `/brand_listing_creation_form?source=${encodeURIComponent("mr franchise")}&ref=${encodeURIComponent("homepage")}`;
-                  window.open(url, "_blank");
-                }}
-                // startIcon={<Plus size={20} />}
-                sx={{
-                  color: "black",
-                  backgroundColor: " #6fff00fa",
-                  borderRadius: "8px",
-                  px: { 4: 3, xs: 1.9 },
-                  py: isMobile ? 0 : 1,
-                  margin: { xs: "5px" },
-                  textTransform: "none",
-                  fontSize: isMobile ? "0.1" : "1rem",
-                  fontWeight: 600,
-                  "&:hover": {
-                    backgroundColor: "#7ad03a",
-                  },
-                }}
-              >
-                BRAND LISTING
-              </Button>
-            </motion.div>)}
+            {!isMobile && (
+              <motion.div whileHover={{ y: -2 }}>
+                <Button
+                  aria-label="Add your franchise brands in mrfranchise"
+                  onClick={() => {
+                    const url = `/brand_listing_creation_form?source=${encodeURIComponent("mr franchise")}&ref=${encodeURIComponent("homepage")}`;
+                    // window.open(url, "_blank");
+                    router.push(url);
+                  }}
+                  // startIcon={<Plus size={20} />}
+                  sx={{
+                    color: "black",
+                    backgroundColor: " #6fff00fa",
+                    borderRadius: "8px",
+                    px: { 4: 3, xs: 1.9 },
+                    py: isMobile ? 0 : 1,
+                    margin: { xs: "5px" },
+                    textTransform: "none",
+                    fontSize: isMobile ? "0.1" : "1rem",
+                    fontWeight: 600,
+                    "&:hover": {
+                      backgroundColor: "#7ad03a",
+                    },
+                  }}
+                >
+                  BRAND LISTING
+                </Button>
+              </motion.div>
+            )}
           </Box>
 
           <Box ref={avatarRef} sx={{ position: "relative" }}>
             <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-              <IconButton aria-label="account of current user" onClick={handleMenuOpen} sx={{ p: 0 }}>
+              <IconButton
+                aria-label="account of current user"
+                onClick={handleMenuOpen}
+                sx={{ p: 0 }}
+              >
                 <Avatar
                   sx={{
                     bgcolor: "rgba(255, 152, 0, 0.8)",
@@ -752,13 +756,13 @@ function Navbar() {
       />
       <Link
         href="https://consulting.mrfranchise.in"
-        target="_blank"
-        rel="noopener noreferrer"
+        // target="_blank"
+        // rel="noopener noreferrer"
       >
         {isMobile && (
           <Image
             src="/Blue Modern Corporate Profile LinkedIn Article Cover Image (1).jpg"
-            alt="brand logo"
+            alt="MrFranchise Consulting"
             loading="lazy"
             width={isMobile ? 370 : 720}
             height={isMobile ? 70 : 90}

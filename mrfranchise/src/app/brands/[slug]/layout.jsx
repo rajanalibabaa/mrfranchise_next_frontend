@@ -76,7 +76,7 @@ function getBrandName(brand) {
  * @returns {string} Logo URL
  */
 function getBrandLogo(brand) {
-  return brand?.uploads?.logo || DEFAULT_BRAND_IMAGE;
+  return brand?.uploads?.logo;
 }
 
 /**

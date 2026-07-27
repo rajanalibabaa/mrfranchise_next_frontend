@@ -1,6 +1,5 @@
 "use client";
 
-
 import React, { useState } from "react";
 import {
   Box,
@@ -11,7 +10,6 @@ import {
   useTheme,
   Divider,
 } from "@mui/material";
-
 
 const categories = [
   {
@@ -43,7 +41,7 @@ const categories = [
       "Kids, Baby & Toy Stores Franchise",
       "Books, Stationery & Gifts Franchise",
       "Sports, Fitness & Outdoor Retail Franchise",
-      "Specialty & Niche Retail Franchise"
+      "Specialty & Niche Retail Franchise",
     ],
   },
   {
@@ -60,14 +58,21 @@ const categories = [
       "Language & Personality Development Franchise",
       "Health, Medical & Paramedical Education Franchise",
       "Sports, Fitness & Physical Education Franchise",
-      "Special Education & Inclusive Learning Franchise"
+      "Special Education & Inclusive Learning Franchise",
     ],
   },
   {
     title: "Automobile Franchise",
     maincat: "Automobile",
-    items: ["Automobile Sales & Dealerships Franchise", "Electric Vehicles (EV) Franchise", "Automobile Service & Repair Franchise", "Car Care, Detailing & Accessories Franchise","Mobility, Rental & Fleet Services Franchise","Spare Parts & Components Franchise","Tyres, Batteries & Consumables Franchise",
-        "Commercial Vehicles & Industrial Mobility Franchise"
+    items: [
+      "Automobile Sales & Dealerships Franchise",
+      "Electric Vehicles (EV) Franchise",
+      "Automobile Service & Repair Franchise",
+      "Car Care, Detailing & Accessories Franchise",
+      "Mobility, Rental & Fleet Services Franchise",
+      "Spare Parts & Components Franchise",
+      "Tyres, Batteries & Consumables Franchise",
+      "Commercial Vehicles & Industrial Mobility Franchise",
     ],
   },
   {
@@ -84,10 +89,9 @@ const categories = [
       "Hospitality, Events & Entertainment Franchise",
       "Real Estate & Property Services Franchise",
       "Security, Manpower & Staffing Franchise",
-      "Repair, Maintenance & Technical Services Franchise"
+      "Repair, Maintenance & Technical Services Franchise",
     ],
-  }
- 
+  },
 ];
 
 const BusinessOpportunities = () => {
@@ -112,14 +116,14 @@ const BusinessOpportunities = () => {
         backgroundColor: "#f5f5f5",
         pl: { xs: 2, md: 8 },
         pr: { xs: 2, md: 8 },
-        py:{ xs: 1, md: 3 },
+        py: { xs: 1, md: 3 },
       }}
     >
       {/* Heading */}
       <Typography
         // variant={{ xs: "h2", md: "h3" }}
         // fontWeight="bold"
-        fontSize={{xs:'0.9 rem',md:"1.3rem"}}
+        fontSize={{ xs: "0.9 rem", md: "1.3rem" }}
         fontWeight={"bold"}
         sx={{ mb: 2, color: "#333", textAlign: "center" }}
       >
@@ -127,7 +131,7 @@ const BusinessOpportunities = () => {
       </Typography>
 
       {/* Grid */}
-      <Grid  spacing={1.3} >
+      <Grid spacing={1.3}>
         {categories.map((cat, index) => {
           const isExpanded = expanded[index];
 
@@ -149,42 +153,41 @@ const BusinessOpportunities = () => {
                 {cat.title}
               </Typography>
 
-             <Box
-  sx={{
-    display: "flex",
-    flexWrap: "wrap", // allows items to move to next row
-    gap: 1, // spacing between items
-  }}
->
-  {visibleItems.map((item, i) => {
-    const subcatParam = item.replace(/ Franchise$/, "");
+              <Box
+                sx={{
+                  display: "flex",
+                  flexWrap: "wrap", // allows items to move to next row
+                  gap: 1, // spacing between items
+                }}
+              >
+                {visibleItems.map((item, i) => {
+                  const subcatParam = item.replace(/ Franchise$/, "");
 
-    return (
-      <Link
-        key={i}
-        href={`/all-franchise-brands/?maincat=${encodeURIComponent(
-          cat.maincat
-        )}&subcat=${encodeURIComponent(subcatParam)}`}
-        target="_blank"
-        rel="noopener noreferrer"
-        underline="none"
-        sx={{
-          color: "#555",
-          cursor: "pointer",
-          variant: "body2", 
-          fontSize: { xs: "1.0rem", md: "0.95rem" },
-          "&:hover": {
-            color: "#000",
-            textDecoration: "underline",
-          },
-        }}
-      >
-        {item} |
-      </Link>
-    );
-  })}
-</Box>
-   
+                  return (
+                    <Link
+                      key={i}
+                      href={`/all-franchise-brands/?maincat=${encodeURIComponent(
+                        cat.maincat,
+                      )}&subcat=${encodeURIComponent(subcatParam)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      underline="none"
+                      sx={{
+                        color: "#555",
+                        cursor: "pointer",
+                        variant: "body2",
+                        fontSize: { xs: "1.0rem", md: "0.95rem" },
+                        "&:hover": {
+                          color: "#000",
+                          textDecoration: "underline",
+                        },
+                      }}
+                    >
+                      {item} |
+                    </Link>
+                  );
+                })}
+              </Box>
 
               {/* View More / View Less (Only Mobile/Tablet) */}
               {isMobileOrTablet && cat.items.length > 3 && (
@@ -193,7 +196,7 @@ const BusinessOpportunities = () => {
                   sx={{
                     cursor: "pointer",
                     color: "#ff9900",
-                      fontSize: { xs: "1.0rem", md: "0.7rem" },
+                    fontSize: { xs: "1.0rem", md: "0.7rem" },
                     fontWeight: 500,
                     mt: 1,
                     "&:hover": {
