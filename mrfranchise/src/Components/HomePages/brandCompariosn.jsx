@@ -35,7 +35,7 @@ import { postView } from "@/Utils/function/view.jsx";
 import { openBrandDialog } from "@/Redux/Slices/OpenBrandNewPageSlice.jsx";
 import html2canvas from "html2canvas";
 import dynamic from "next/dynamic";
-const jsPDF = dynamic(() => import("jspdf"), { ssr: false });
+// const jsPDF = dynamic(() => import("jspdf"), { ssr: false });
 
 const token = getToken();
 const userId = getUserId();
@@ -168,10 +168,13 @@ const handleApply = (brand) => {
     const element = tableRef.current;
 
     // 👉 store original width
-    const originalWidth = element.style.width;
-
+ const originalWidth = element.style.width;
+  const originalMaxHeight = element.style.maxHeight;
+  const originalOverflow = element.style.overflow;
     // 👉 force desktop width
-    element.style.width = "1400px";
+     element.style.width = "1400px";
+  element.style.maxHeight = "none";
+  element.style.overflow = "visible";
 
     try {
       const canvas = await html2canvas(element, {
@@ -181,6 +184,7 @@ const handleApply = (brand) => {
       });
 
       const imgData = canvas.toDataURL("image/png");
+      const { jsPDF } = await import("jspdf");
 
       const pdf = new jsPDF("landscape", "mm", "a4");
 
@@ -206,8 +210,10 @@ const handleApply = (brand) => {
       console.error(error);
     } finally {
       // 👉 restore width
-      element.style.width = originalWidth;
-      setPdfGenerating(false);
+ element.style.width = originalWidth;
+    element.style.maxHeight = originalMaxHeight;
+    element.style.overflow = originalOverflow;   
+       setPdfGenerating(false);
     }
   };
 
@@ -238,6 +244,7 @@ const handleApply = (brand) => {
       label: "Requirement Support",
       field: "brandfranchisedetails.franchiseDetails.consultationOrAssistance",
     },
+    
   ];
 
   const franchiseModelFields = [
