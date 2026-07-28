@@ -27,7 +27,7 @@ import { fetchFilterOptions } from "../../Redux/Slices/filterDropdownData";
 import { fetchFilteredBrands, setFilter } from "../../Redux/Slices/FilterBrandSlice";
 import LoginPage from "@/Components/LoginPage/LoginPage";
 import HomePageBrandCard from "./HomePageBrandCard";
-
+import { useRouter } from "next/navigation";
 const CARD_DIMENSIONS = {
    mobile: { width: 280, height: 520 },
   tablet: { width: 320, height: 560 },
@@ -47,7 +47,7 @@ const FindFranchiseLocations = () => {
   const containerRef = useRef(null);
   const scrollContainerRef = useRef(null);
   const scrollRequestRef = useRef(null);
-
+const router=useRouter()
   // Redux states
   const { states } = useSelector((state) => state.filterDropdown);
   const {
@@ -351,7 +351,7 @@ const FindFranchiseLocations = () => {
       boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
     },
   }}
-  onClick={() => window.open("/all-franchise-brands", "_blank")}
+  onClick={() => router.push("/all-franchise-brands", "_blank")}
 >
   View More
 </Button>
