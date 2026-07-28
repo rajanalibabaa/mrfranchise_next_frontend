@@ -28,6 +28,7 @@ import { addSortlist, removeSortList, toggleSortlistBrandLike } from "@/Redux/Sl
 import confetti from "canvas-confetti";
 import { useRouter } from "next/navigation";
 
+
 const token = getToken();
 const TopInvestVdocardround = () => {
   const [likeProcessing, setLikeProcessing] = useState({});
@@ -40,7 +41,7 @@ const TopInvestVdocardround = () => {
   const shortlistButtonRefs = useRef({});
 const navigate = useRouter();
   const dispatch = useDispatch();
- 
+ const router = useRouter();
   const {
     brands,
     isLoading,
@@ -146,7 +147,7 @@ const navigate = useRouter();
  
   const handleApply = (brand) => {
     postView(brand.uuid);
-    dispatch(openBrandDialog(brand));
+    dispatch(openBrandDialog(brand,router));
   };
  
   if (isLoading && allBrands.length === 0) {
@@ -487,7 +488,7 @@ const navigate = useRouter();
             backgroundColor: "#333",
           },
         }}
-        onClick={()=>navigate('/brandViewPage')}
+        onClick={()=>navigate('/all-franchise-brands')}
       >
         View All Brands
       </Box>

@@ -18,11 +18,14 @@ import SearchIcon from "@mui/icons-material/Search";
 import ClearIcon from "@mui/icons-material/Clear";
 import { useSelector, useDispatch } from "react-redux";
 import { fetchFilterOptions, clearErrors } from "@/Redux/Slices/filterDropdownData";
+import { useRouter } from "next/navigation";
+import { resetFilters } from "@/Redux/Slices/FilterBrandSlice";
 
 const FilterDropdowns = ({ onFilterChange }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const dispatch = useDispatch();
+  const router = useRouter();
 
   const [filters, setFilters] = useState({
     selectedMainCategory: "",
@@ -185,26 +188,42 @@ const FilterDropdowns = ({ onFilterChange }) => {
     return items;
   }, [mainCategories, industrySearch]);
 
-  const handleFindBrands = useCallback(() => {
-    if (isNavigating) return;
+const handleFindBrands = useCallback(() => {
+  if (isNavigating) return;
 
-    const { selectedMainCategory, selectedState, selectedInvestmentRange } = filters;
-    const queryParams = new URLSearchParams();
+  const { selectedMainCategory, selectedState, selectedInvestmentRange } = filters;
 
-    if (selectedMainCategory) queryParams.append("maincat", selectedMainCategory);
-    if (selectedState) queryParams.append("state", selectedState);
-    if (selectedInvestmentRange) queryParams.append("investmentRange", selectedInvestmentRange);
+  const queryParams = new URLSearchParams();
 
-    const url = queryParams.toString()
-      ? `/all-franchise-brands?${queryParams.toString()}`
-      : "/all-franchise-brands";
+  if (selectedMainCategory)
+    queryParams.append("maincat", selectedMainCategory);
 
-    window.open(url, "_blank", "noopener,noreferrer");
-    setIsNavigating(true);
-    setTimeout(() => {
-      if (isMountedRef.current) setIsNavigating(false);
-    }, 500);
-  }, [filters, isNavigating]);
+  if (selectedState)
+    queryParams.append("state", selectedState);
+
+  if (selectedInvestmentRange)
+    queryParams.append("investmentRange", selectedInvestmentRange);
+
+  const url = queryParams.toString()
+    ? `/all-franchise-brands?${queryParams.toString()}`
+    : "/all-franchise-brands";
+
+  // Clear previous page filters
+  dispatch(resetFilters());
+
+  setIsNavigating(true);
+
+  setTimeout(() => {
+    router.push(url);
+  }, 0);
+
+  setTimeout(() => {
+    if (isMountedRef.current) setIsNavigating(false);
+  }, 500);
+}, [dispatch, filters, isNavigating, router]);
+
+
+
 
   if (loading && !mainCategories.length && !states.length) {
     return (

@@ -42,19 +42,57 @@ export const homeSection1 = createAsyncThunk(
   },
 );
 // Top Beverage Franchises
+// export const homeSection2 = createAsyncThunk(
+//   "homeSection2/fetchAll",
+//   async ({ page = 1 }, { rejectWithValue }) => {
+//     try {
+//       const response = await axios.get(
+//         `${API_BASE_URL}/overAllPlatformOnlyMainCategory?main=Retail`,
+//         {
+//           params: { page, id: userId, limit: 4 },
+//         },
+//       );
+
+//       if (!response.data.data || !response.data.data.brands) {
+//         console.error("Unexpected API response structure:", response.data);
+//         throw new Error("Invalid API response structure");
+//       }
+
+//       return {
+//         brands: response.data.data.brands,
+//         pagination: response.data.data.pagination || {
+//           currentPage: page,
+//           totalPages: 1,
+//           totalItems: 0,
+//           hasNextPage: false,
+//           hasPreviousPage: false,
+//         },
+//       };
+//     } catch (error) {
+//       console.error("API Error:", error.response?.data || error.message);
+//       return rejectWithValue(
+//         error.response?.data || { message: error.message },
+//       );
+//     }
+//   },
+// );
 export const homeSection2 = createAsyncThunk(
   "homeSection2/fetchAll",
-  async ({ page = 1 }, { rejectWithValue }) => {
+  async ({ page = 1, main = "Retail" }, { rejectWithValue }) => {
     try {
       const response = await axios.get(
-        `${API_BASE_URL}/overAllPlatformOnlyMainCategory?main=Retail`,
+        `${API_BASE_URL}/overAllPlatformOnlyMainCategory`,
         {
-          params: { page, id: userId, limit: 4 },
-        },
+          params: {
+            main,
+            page,
+            id: userId,
+            limit: 4,
+          },
+        }
       );
 
-      if (!response.data.data || !response.data.data.brands) {
-        console.error("Unexpected API response structure:", response.data);
+      if (!response.data?.data?.brands) {
         throw new Error("Invalid API response structure");
       }
 
@@ -69,12 +107,18 @@ export const homeSection2 = createAsyncThunk(
         },
       };
     } catch (error) {
-      console.error("API Error:", error.response?.data || error.message);
+      console.error(
+        "API Error:",
+        error.response?.data || error.message
+      );
+
       return rejectWithValue(
-        error.response?.data || { message: error.message },
+        error.response?.data || {
+          message: error.message,
+        }
       );
     }
-  },
+  }
 );
 // Top Cafes & Teas Franchises
 export const homeSection3 = createAsyncThunk(

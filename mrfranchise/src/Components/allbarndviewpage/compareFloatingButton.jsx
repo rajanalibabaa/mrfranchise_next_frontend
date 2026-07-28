@@ -34,7 +34,7 @@ const CompareFloatingButton = ({
       ? isMobile
         ? window.innerWidth - 55 // right side on mobile
         : window.innerWidth - 145 // right side on desktop
-      : 0,
+      : 1350,
   );
 
   const y = useMotionValue(
@@ -53,47 +53,42 @@ const CompareFloatingButton = ({
   };
 
   return (
-    <motion.div
-      drag
-      dragMomentum={false}
-      dragElastic={0.1}
-      dragConstraints={{
-        top: 0,
-        left: 0,
-        right: windowSize.width ? windowSize.width - (isMobile ? 50 : 55) : 0,
-        bottom: windowSize.height
-          ? windowSize.height - (isMobile ? 130 : 140)
-          : 0,
-      }}
-      onDragStart={() => {
-        isDragging.current = true;
-        dragDistance.current = 0;
-      }}
-      onDrag={(_, info) => {
-        // ✅ Track how far user dragged to distinguish from tap
-        dragDistance.current =
-          Math.abs(info.offset.x) + Math.abs(info.offset.y);
-      }}
-      onDragEnd={() => {
-        // ✅ Reset after short delay so click doesn't fire
-        setTimeout(() => {
-          isDragging.current = false;
-          dragDistance.current = 0;
-        }, 100);
-      }}
-      style={{
-        position: "fixed",
-        zIndex: 9999,
-        x,
-        y,
-        cursor: "grab",
-        // ✅ Critical for mobile touch support
-        touchAction: "none",
-        userSelect: "none",
-        WebkitUserSelect: "none",
-      }}
-      whileDrag={{ cursor: "grabbing", scale: 1.05 }}
-    >
+   <motion.div
+  drag="y"                    // 👈 changed from `drag` to `drag="y"`
+  dragMomentum={false}
+  dragElastic={0.1}
+  dragConstraints={{
+    top: 0,
+    bottom: windowSize.height
+      ? windowSize.height - (isMobile ? 130 : 140)
+      : 0,
+  }}
+  onDragStart={() => {
+    isDragging.current = true;
+    dragDistance.current = 0;
+  }}
+  onDrag={(_, info) => {
+    // Only need to track y-offset now since x won't move
+    dragDistance.current = Math.abs(info.offset.y);
+  }}
+  onDragEnd={() => {
+    setTimeout(() => {
+      isDragging.current = false;
+      dragDistance.current = 0;
+    }, 100);
+  }}
+  style={{
+    position: "fixed",
+    zIndex: 9999,
+    x,   // keep this — it's just a fixed value now, never changes
+    y,
+    cursor: "grab",
+    touchAction: "none",
+    userSelect: "none",
+    WebkitUserSelect: "none",
+  }}
+  whileDrag={{ cursor: "grabbing", scale: 1.05 }}
+>
       <Badge
         badgeContent={selectedForComparison.length}
         color="primary"

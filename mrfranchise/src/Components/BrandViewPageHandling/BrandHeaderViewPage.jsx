@@ -221,7 +221,7 @@ const BrandHeader = ({
               component="img"
               id="brand-logo-image"
               src={brand[0].uploads?.logo}
-              alt={brand[0].brandDetails?.brandName}
+              alt={`${brand[0]?.brandDetails?.brandName} franchise logo`}
               sx={{
                 width: "100%",
                 height: "100%",

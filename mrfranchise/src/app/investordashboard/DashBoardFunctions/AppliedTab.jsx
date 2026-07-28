@@ -23,6 +23,7 @@ import AssignmentTurnedInIcon from "@mui/icons-material/AssignmentTurnedIn";
 
 import { useDispatch } from "react-redux";
 import { openBrandDialog } from "../../../Redux/Slices/OpenBrandNewPageSlice";
+import { useRouter } from "next/navigation";
 
 const AppliedTab = ({
   items = [],
@@ -36,10 +37,10 @@ const AppliedTab = ({
   const dispatch = useDispatch();
 
   // console.log("AppliedTab Rendered with items:", items);
-
+const router=useRouter();
   const handleViewDetails = (brandId) => {
     if (brandId) {
-      dispatch(openBrandDialog(brandId));
+      dispatch(openBrandDialog(brandId,router));
     }
   };
 

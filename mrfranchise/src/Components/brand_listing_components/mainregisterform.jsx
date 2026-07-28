@@ -295,19 +295,19 @@ const [activeStep, setActiveStep] = useState(0);
     if (data.franchisePromotionVideo.length === 0)
       errors.franchisePromotionVideo = "Franchise promotion video is required";
 
-    if (data.pancard.length === 0) errors.pancard = "PAN card is required";
-    if (data.gstCertificate.length === 0) errors.gstCertificate = "GST certificate is required";
+    // if (data.pancard.length === 0) errors.pancard = "PAN card is required";
+    // if (data.gstCertificate.length === 0) errors.gstCertificate = "GST certificate is required";
 
-    // PAN number validation
-    const pancardNumber = String(pancardNumbers || "")
-      .trim()
-      .toUpperCase();
+    // // PAN number validation
+    // const pancardNumber = String(pancardNumbers || "")
+    //   .trim()
+    //   .toUpperCase();
 
-    if (!pancardNumber) {
-      errors.pancardNumber = "PAN number is required";
-    } else if (pancardNumber.length !== 10) {
-      errors.pancardNumber = "PAN number must be exactly 10 characters";
-    }
+    // if (!pancardNumber) {
+    //   errors.pancardNumber = "PAN number is required";
+    // } else if (pancardNumber.length !== 10) {
+    //   errors.pancardNumber = "PAN number must be exactly 10 characters";
+    // }
 
     if (!data.exteriorOutlet || data.exteriorOutlet.length < 3) {
       errors.exteriorOutlet = `Minimum 3 exterior images required (${
@@ -325,15 +325,15 @@ const [activeStep, setActiveStep] = useState(0);
       errors.interiorOutlet = `Maximum 5 interior images allowed (${data.interiorOutlet.length} uploaded)`;
     }
 
-    const gst = String(gstNumber || "")
-      .trim()
-      .toUpperCase();
+    // const gst = String(gstNumber || "")
+    //   .trim()
+    //   .toUpperCase();
 
-    if (!gst) {
-      errors.gstNumber = "GST number is required";
-    } else if (gst.length !== 15) {
-      errors.gstNumber = "GST number must be 15 characters";
-    }
+    // if (!gst) {
+    //   errors.gstNumber = "GST number is required";
+    // } else if (gst.length !== 15) {
+    //   errors.gstNumber = "GST number must be 15 characters";
+    // }
     //  else if (!isValidGST(gst)) {
     //   errors.gstNumber = "Invalid GST number format (Expected: 22AAAAA0000A1Z5)";
     // }

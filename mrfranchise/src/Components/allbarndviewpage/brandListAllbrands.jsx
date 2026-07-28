@@ -397,6 +397,7 @@ console.log("filter applying fitler",filters);
       if (!isMountedRef.current) return;
       const fetchKey = buildBrandFetchKey(filtersToFetch);
       if (!forceRefresh && lastFetchKeyRef.current === fetchKey) return;
+      
       if (abortControllerRef.current) abortControllerRef.current.abort();
       abortControllerRef.current = new AbortController();
       lastFetchKeyRef.current = fetchKey;
@@ -570,14 +571,35 @@ const handleFilterChange = useCallback((name, value) => {
     fetchBrands({}, true);
   }, [dispatch, router, fetchBrands]);
 
+  // const handlePageChange = useCallback(
+  //   (_, page) => {
+  //     lastFetchKeyRef.current = "";
+  //     dispatch(setPage(page));
+  //     window.scrollTo({ top: 0, behavior: "smooth" });
+  //   },
+  //   [dispatch],
+  // );
+
   const handlePageChange = useCallback(
-    (_, page) => {
-      lastFetchKeyRef.current = "";
-      dispatch(setPage(page));
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    },
-    [dispatch],
-  );
+  (_, page) => {
+    lastFetchKeyRef.current = "";
+
+    // Update Redux
+    dispatch(setPage(page));
+
+    // Fetch immediately with the new page
+    fetchBrands(
+      {
+        ...filters,
+        page,
+      },
+      true
+    );
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  },
+  [dispatch, filters, fetchBrands]
+);
 
   const handleLikeClick = useCallback(
     async (brandId) => {

@@ -147,11 +147,29 @@ const PaymentSummaryTable = ({
     const calculatedTotalLeads = item.isListingPlan
       ? 0
       : item.totalLeads || itemSelectedLeads * itemStateCount;
+   console.log({
+  pricePerState: group.pricePerState,
+  minLead: group.minLead,
+  itemStateCount,
+  itemSelectedLeads,
+  itemTotalAmount: item.totalAmount,
+});   
     const calculatedTotalAmount =
       item.totalAmount && item.totalAmount > 0
         ? item.totalAmount
         : ((group.pricePerState || 0) / (group.minLead > 0 ? group.minLead : 1)) *
           itemStateCount * itemSelectedLeads;
+          if (Number.isNaN(calculatedTotalAmount)) {
+  console.log("NaN found");
+console.log("Item:", JSON.stringify(item, null, 2));
+console.log("Group:", JSON.stringify(group, null, 2));
+}planData.items.forEach((item) => {
+  console.log(
+    item.investmentRangeLabel,
+    item.totalAmount,
+    Number.isNaN(item.totalAmount)
+  );
+});
 
     planData.items.push({
       ...item,
@@ -270,7 +288,16 @@ Object.entries(labelGroupMap).forEach(([lbl, ranges]) => {
   const matched = paymentSummary.find((p) => p.groupKey === lookupKey);
   labelSubtotalMap[lbl] = matched?.amount ??
     ranges.reduce((sum, rg) => sum + (rg.totalAmount || 0), 0);
+    console.log({
+  lookupKey,
+  matchedAmount: matched?.amount,
+  calculatedAmount: ranges.reduce(
+    (sum, rg) => sum + (rg.totalAmount || 0),
+    0
+  ),
 });
+});
+
 return { sortedRanges, labelSubtotalMap, labelGroupMap };
   };
 

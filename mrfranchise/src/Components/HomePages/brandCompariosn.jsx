@@ -35,7 +35,7 @@ import { postView } from "@/Utils/function/view.jsx";
 import { openBrandDialog } from "@/Redux/Slices/OpenBrandNewPageSlice.jsx";
 import html2canvas from "html2canvas";
 import dynamic from "next/dynamic";
-const jsPDF = dynamic(() => import("jspdf"), { ssr: false });
+import { useRouter } from "next/navigation";// const jsPDF = dynamic(() => import("jspdf"), { ssr: false });
 
 const token = getToken();
 const userId = getUserId();
@@ -53,6 +53,7 @@ const BrandComparison = ({
   const [pdfGenerating, setPdfGenerating] = useState(false);
   const dispatch = useDispatch();
   const tableRef = useRef(null);
+const router = useRouter();
 
   useEffect(() => {
     const fetchBrandDetails = async () => {
@@ -133,13 +134,32 @@ const BrandComparison = ({
     }
   };
 
-  const handleApply = (brand) => {
-    console.log(brand, "brnad data");
+const handleApply = (brand) => {
+  // ✅ Log everything
+  console.log("========== APPLY CLICKED ==========");
+  console.log("Full brand:", brand);
+  console.log("brand.uuid:", brand?.uuid);
+  console.log("brand.brandDetails:", brand?.brandDetails);
+  console.log("brand.brandDetails?.slug:", brand?.brandDetails?.slug);
+  console.log("===================================");
 
-    postView(brand?.uuid);
-    // dispatch(openBrandDialog(brand));
-    window.open(`/brands/${brand?.uuid}`, "_blank");
-  };
+  // ✅ Try to find slug
+  const slug =
+    brand?.brandDetails?.slug ||
+    brand?.slug ||
+    brand?.seoSlug ||
+    brand?.uuid; // fallback to uuid
+
+  // ✅ Guard
+  if (!slug) {
+    console.error("❌ NOTHING to navigate with!");
+    alert("Cannot open brand — no slug/uuid found");
+    return;
+  }
+
+  postView(brand?.uuid);
+  window.open(`/brands/${slug}`, "_blank");
+};
 
   const downloadPDF = async () => {
     if (!tableRef.current) return;
@@ -149,10 +169,13 @@ const BrandComparison = ({
     const element = tableRef.current;
 
     // 👉 store original width
-    const originalWidth = element.style.width;
-
+ const originalWidth = element.style.width;
+  const originalMaxHeight = element.style.maxHeight;
+  const originalOverflow = element.style.overflow;
     // 👉 force desktop width
-    element.style.width = "1400px";
+     element.style.width = "1400px";
+  element.style.maxHeight = "none";
+  element.style.overflow = "visible";
 
     try {
       const canvas = await html2canvas(element, {
@@ -162,6 +185,7 @@ const BrandComparison = ({
       });
 
       const imgData = canvas.toDataURL("image/png");
+      const { jsPDF } = await import("jspdf");
 
       const pdf = new jsPDF("landscape", "mm", "a4");
 
@@ -187,8 +211,10 @@ const BrandComparison = ({
       console.error(error);
     } finally {
       // 👉 restore width
-      element.style.width = originalWidth;
-      setPdfGenerating(false);
+ element.style.width = originalWidth;
+    element.style.maxHeight = originalMaxHeight;
+    element.style.overflow = originalOverflow;   
+       setPdfGenerating(false);
     }
   };
 
@@ -219,6 +245,7 @@ const BrandComparison = ({
       label: "Requirement Support",
       field: "brandfranchisedetails.franchiseDetails.consultationOrAssistance",
     },
+    
   ];
 
   const franchiseModelFields = [

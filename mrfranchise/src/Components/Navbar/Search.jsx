@@ -18,6 +18,8 @@ import {
   fetchFilteredBrands,
   setFilter,
 } from "@/Redux/Slices/FilterBrandSlice";
+import { useRouter } from "next/navigation";
+
 
 // ─────────────────────────────────────────────
 // Constants
@@ -95,27 +97,7 @@ const createPerfLogger = () => {
   };
 };
 
-// ─────────────────────────────────────────────
-// Speed badge helper
-// ─────────────────────────────────────────────
-// const getSpeedChip = (ms) => {
-//   if (ms === null) return null;
-//   const n = parseFloat(ms);
-//   const label =
-//     n < 150 ? `⚡ ${ms}ms` :
-//     n < 400 ? `🟡 ${ms}ms` :
-//     n < 800 ? `🟠 ${ms}ms` : `🔴 ${ms}ms`;
 
-//   const color =
-//     n < 150 ? "success" :
-//     n < 400 ? "warning" : "error";
-
-//   return { label, color };
-// };
-
-// ─────────────────────────────────────────────
-// Component
-// ─────────────────────────────────────────────
 const Search = ({ handleClose }) => {
   const [query, setQuery]                   = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
@@ -123,7 +105,7 @@ const Search = ({ handleClose }) => {
   const [suggestions, setSuggestions]       = useState(INITIAL_SUGGESTIONS);
   const [isOpen, setIsOpen]                 = useState(false);
   const [responseMs, setResponseMs]         = useState(null); // ✅ track timing
-
+const router = useRouter();
   // Refs
   const abortRef       = useRef(null);
   const inputRef       = useRef(null);
@@ -350,35 +332,48 @@ const url =
   );
 
   // ─── Suggestion Click ────────────────────────
-  const handleSelectedSuggestionData = useCallback(
-    (selectedData) => {
-      if (!selectedData) return;
+const handleSelectedSuggestionData = useCallback(
+  (selectedData) => {
+    if (!selectedData) return;
 
-      // Brand name → go to brand detail page
-      if (selectedData.brandName) {
-        window.open(
-          `/brands/${selectedData.brandName}`,
-          "_blank",
-          "noopener,noreferrer"
-        );
-        setIsOpen(false);
-        return;
-      }
+    console.log("🔍 Suggestion clicked:", selectedData);
 
-      // Tag / Industry / Category → trigger search
-      const searchValue =
-        selectedData.tag      ||
-        selectedData.industry ||
-        selectedData.category ||
-        "";
+    const slug =
+      selectedData?.brandName
+ ||
+      selectedData?.brandSlug ||
+      selectedData?.uuid;
+console.log("slug was clicked",slug);
 
-      if (searchValue) {
-        setQuery(searchValue);
-        handleOnSearch(searchValue);
-      }
-    },
-    [handleOnSearch]
-  );
+    const isValidSlug =
+      slug &&
+      slug !== "undefined" &&
+      slug !== "null" &&
+      slug.toString().trim() !== "";
+
+
+      console.log("Navigating...");
+// router.push("/brands/test");
+
+
+    if (isValidSlug) {
+      router.push(`/brands/${slug}`);
+      return;
+    }
+
+    const searchValue =
+      selectedData?.tag ||
+      selectedData?.industry ||
+      selectedData?.category ||
+      "";
+
+    if (searchValue) {
+      setQuery(searchValue);
+      handleOnSearch(searchValue);
+    }
+  },
+  [router, handleOnSearch]
+);
 
   // ─── Speed chip ──────────────────────────────
   // const speedChip = getSpeedChip(responseMs);

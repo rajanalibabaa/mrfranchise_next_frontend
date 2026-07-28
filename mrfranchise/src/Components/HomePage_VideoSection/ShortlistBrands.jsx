@@ -222,7 +222,7 @@ const ShortlistBrands = () => {
           Your Shortlisted Brands
         </Typography>
  
-       <Button
+       {/* <Button
   variant="contained"
   size="small"
   aria-label="view more brands"
@@ -246,7 +246,7 @@ const ShortlistBrands = () => {
   onClick={() => window.open("/all-franchise-brands", "_blank")}
 >
   View More
-</Button>
+</Button> */}
 
       </Box>
       <Box sx={{ position: "relative" }}>

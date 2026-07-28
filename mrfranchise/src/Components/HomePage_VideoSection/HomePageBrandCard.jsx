@@ -47,7 +47,7 @@ import {
 } from "@/Redux/Slices/GetAllBrandsDataUpdationFile.jsx";
 
 import { likeApiFunction } from "@/Api/likeApi.jsx";
-
+import { getUserId } from "@/Utils/autherId.jsx";
 import {
   addLikedBrand,
   removeLikedBrand,
@@ -71,7 +71,7 @@ import confetti from "canvas-confetti";
 import { ShareOutlined } from "@mui/icons-material";
 import ShareDialogActions from "@/app/brands/ShareDialogActions";
 import { toggleSimilarBrandLike, toggleSimilarBrandShortList } from "@/Redux/Slices/SideMenuHoverBrandSlices";
-
+import { useRouter } from "next/navigation";
 const token = getToken();
 
 const cardVariants = {
@@ -85,7 +85,7 @@ const HomePageBrandCard = React.memo(
   ({ brand, likeProcessing, dimensions, theme }) => {
     const videoRef = useRef(null);
     const observerRef = useRef();
-
+const router=useRouter()
     const shortlistButtonRef = useRef(null);
     const likeButtonRef = useRef(null);
 
@@ -217,12 +217,16 @@ const HomePageBrandCard = React.memo(
       }
     };
 
-    const handleApply = (brand) => {
-      postView(brand?.uuid);
-      dispatch(openBrandDialog(brand));
-      dispatch(fetchViewBrandsById({ page: 1, limit: 10 }));
-    };
-
+const handleApply = (brand) => {
+  const snapshot = brand ? { ...brand } : null;
+  console.log("🔎 CLICK snapshot:", JSON.stringify(snapshot));
+  console.log("🔎 CLICK snapshot uuid:", snapshot?.uuid);
+  postView(snapshot?.uuid);
+  dispatch(openBrandDialog(snapshot,router));
+  if (getUserId()) {
+    dispatch(fetchViewBrandsById({ page: 1, limit: 10 }));
+  }
+};
     const handleOpenShareClick = useCallback(
       (event) => {
         setAnchorEl(event.currentTarget);
