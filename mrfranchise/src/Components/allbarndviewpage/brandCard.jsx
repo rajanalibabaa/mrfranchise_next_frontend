@@ -50,6 +50,7 @@
   import { VideoPlayer } from "@/services/VideoControllerMedia/VideoPlayercomponents.jsx";
   import confetti from "canvas-confetti";
   import { useSelector } from "react-redux";
+import { useRouter } from "next/navigation";
 
   const cardStyles = {
     width: { xs: "40vh", sm: "calc(50% - 10px)", md: 260 },
@@ -123,7 +124,7 @@
       const [likeProcessing, setLikeProcessing] = useState(false);
       const [shortlistProcessing, setShortlistProcessing] = useState(false);
 
-      
+const router = useRouter();
       const videoRef = useRef(null);
       const likeButtonRef = useRef(null);
       const shortlistButtonRef = useRef(null);
@@ -170,7 +171,7 @@
         } else {
           setTimeout(() => postView(uuid), 0);
         }
-        dispatch(openBrandDialog(brand));
+        dispatch(openBrandDialog(brand,router));
         // console.log('brndssssss',brand);
         
         

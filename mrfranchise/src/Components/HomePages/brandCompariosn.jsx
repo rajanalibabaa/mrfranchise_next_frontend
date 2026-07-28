@@ -35,7 +35,7 @@ import { postView } from "@/Utils/function/view.jsx";
 import { openBrandDialog } from "@/Redux/Slices/OpenBrandNewPageSlice.jsx";
 import html2canvas from "html2canvas";
 import dynamic from "next/dynamic";
-// const jsPDF = dynamic(() => import("jspdf"), { ssr: false });
+import { useRouter } from "next/navigation";// const jsPDF = dynamic(() => import("jspdf"), { ssr: false });
 
 const token = getToken();
 const userId = getUserId();
@@ -53,6 +53,7 @@ const BrandComparison = ({
   const [pdfGenerating, setPdfGenerating] = useState(false);
   const dispatch = useDispatch();
   const tableRef = useRef(null);
+const router = useRouter();
 
   useEffect(() => {
     const fetchBrandDetails = async () => {

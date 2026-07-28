@@ -58,6 +58,7 @@ import { toggleBrandShortListfilter } from "@/Redux/Slices/FilterBrandSlice.jsx"
 import { useInView } from 'react-intersection-observer';
 import confetti from "canvas-confetti";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 const token = getToken();
 
@@ -104,7 +105,7 @@ function TopBrandVdoCards() {
   const [hasMore, setHasMore] = useState(true);
   const [initialAutoplayDone, setInitialAutoplayDone] = useState(false);
   const [videoReady, setVideoReady] = useState(false); // ✅ Track when video ref is available
-
+const router = useRouter();
   const userPausedRef = useRef(false);
   const timeoutRef = useRef(null);
   const videoRefs = useRef([]);
@@ -484,7 +485,7 @@ function TopBrandVdoCards() {
     return;
   }
   postView(brand.uuid);
-  dispatch(openBrandDialog(brand));
+  dispatch(openBrandDialog(brand,router));
 };
 
   const handleLoadMore = () => {

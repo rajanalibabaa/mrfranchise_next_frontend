@@ -19,6 +19,7 @@ import { removeLikedBrand } from "@/Redux/Slices/likeSlice.jsx";
 import { likeApiFunction } from "@/Api/likeApi.jsx";
 import { removeSortList } from "@/Redux/Slices/shortlistslice.jsx";
 import { handleShortList } from "@/Api/shortListApi.jsx";
+import { useRouter } from "next/navigation";
 
 const BrandCard = memo(({ 
   item, 
@@ -39,7 +40,7 @@ const BrandCard = memo(({
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-
+const router = useRouter();
   if (!item || typeof item !== 'object') return null;
 
   const brandId = item.uuid || item.brandID?.uuid || item.brandID  || brandIdData;
@@ -48,7 +49,7 @@ const BrandCard = memo(({
 const dispatch = useDispatch();
   const OpenBrandDialog = useCallback (()=>{
     
-    dispatch(openBrandDialog(item));
+    dispatch(openBrandDialog(item,router));
   }, [item]);
 
   // Function to break text after a limit without splitting words

@@ -27,6 +27,9 @@ import { toggleHomeCardLike } from '@/Redux/Slices/TopCardFetchingSlice.jsx';
 import { toggleBrandLike } from "@/Redux/Slices/GetAllBrandsDataUpdationFile.jsx";
 import { likeApiFunction } from "@/Api/likeApi.jsx";
 import { getToken } from "@/Utils/autherId.jsx";
+
+import { useRouter } from "next/navigation";
+
 const token = getToken();
 const CARD_DIMENSIONS = {
   mobile: { width: 280, height: 520 },
@@ -47,7 +50,7 @@ const SimilarBrands = ({ brandData }) => {
   const [likeProcessing, setLikeProcessing] = useState({});
   const [removeMsg, setRemoveMsg] = useState("");
   const dispatch = useDispatch();
-
+const router = useRouter();
   // Get brands from Redux
   const { brands, loading, error } = useSelector((state) => state.brandCategory);
 
@@ -161,7 +164,7 @@ const SimilarBrands = ({ brandData }) => {
   };
 
   const handleApply = useCallback((brand) => {
-    dispatch(openBrandDialog(brand));
+    dispatch(openBrandDialog(brand,router));
   }, [dispatch]);
 
   if (!brandData) return null;

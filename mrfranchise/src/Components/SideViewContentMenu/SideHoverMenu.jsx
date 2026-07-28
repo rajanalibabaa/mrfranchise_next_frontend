@@ -43,7 +43,7 @@ const BrandCard = React.memo(
     const brandLogo = brand.uploads?.logo || brand.logo || "";
     const companyName = brand.brandDetails?.companyName || "";
     const initial = brandName[0]?.toUpperCase() || "B";
-
+const router = useRouter();
     const dispatch = useDispatch();
 
     const handleClick = (e) => {
@@ -53,7 +53,7 @@ const BrandCard = React.memo(
         onHoverLeave();
       }
       if (onClick) {
-        dispatch(openBrandDialog(brand));
+        dispatch(openBrandDialog(brand,router));
       }
     };
 
