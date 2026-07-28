@@ -165,22 +165,25 @@ const PaymentSummaryDesktopView = ({
                 });
 
                 let labelSubtotal = 0;
-
-                if (matchedSummary) {
-                  if (matchedSummary.packagesType === "LISTING") {
-                    // direct amount
-                    labelSubtotal = matchedSummary.amount;
-                  } else {
-                    // lead calculation
-                    labelSubtotal =
-                      (matchedSummary.pricePerState /
-                        matchedSummary.basicLeadCount) *
-                      matchedSummary.totalStates *
-                      matchedSummary.selectedLeads;
-                  }
-                }
+// console.log("MatchedSummary", matchedSummary);
+                // if (matchedSummary) {
+                //   if (matchedSummary.packagesType === "LISTING") {
+                //     // direct amount
+                //     labelSubtotal = matchedSummary.amount;
+                //   } else {
+                //     // lead calculation
+                //     labelSubtotal =
+                //       (matchedSummary.pricePerState /
+                //         matchedSummary.basicLeadCount) *
+                //       matchedSummary.totalStates *
+                //       matchedSummary.selectedLeads;
+                //   }
+                // }
 
                 // rowSpan for label-level cells
+             if (matchedSummary) {
+  labelSubtotal = matchedSummary.amount ?? 0;
+}
                 const labelRowSpan = groupRanges.length;
 
                 // ── render each range row inside this group ──────────────
