@@ -224,6 +224,24 @@ const FillterPannel = React.memo(
     }, []);
 
     useEffect(() => {
+  if (
+    !filters.modelType &&
+    franchiseModels?.length > 0
+  ) {
+    const firstModel = dedupe(franchiseModels)[0];
+
+    onFilterChange("modelType", firstModel);
+    onFilterChange("franchiseType", null);
+
+    setExpandedSections((prev) => ({
+      ...prev,
+      modelType: false,
+      businessModel: true,
+    }));
+  }
+}, [franchiseModels]);
+
+    useEffect(() => {
       if (filters.modelType) {
         if (activeFranchiseModel !== filters.modelType) {
           dispatch(fetchFilterOptions({ franchiseModel: filters.modelType }));
@@ -634,12 +652,23 @@ const FillterPannel = React.memo(
                 <RadioGroup
                   value={filters.modelType || ""}
                   onChange={(e) => {
-                    const val = norm(e.target.value);
-                    onFilterChange("modelType", val);
-                    onFilterChange("franchiseType", null);
-                    updateSearch("modelType", "");
-                    if (!val) dispatch(resetFranchiseTypes());
-                  }}
+  const val = norm(e.target.value);
+
+  onFilterChange("modelType", val);
+  onFilterChange("franchiseType", null);
+  updateSearch("modelType", "");
+
+  if (!val) {
+    dispatch(resetFranchiseTypes());
+    return;
+  }
+
+  setExpandedSections((prev) => ({
+    ...prev,
+    modelType: false,
+    businessModel: true,
+  }));
+}}
                 >
                   {/* <AllOption label="All Business Opportunities" /> */}
 

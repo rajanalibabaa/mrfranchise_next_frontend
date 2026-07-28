@@ -34,7 +34,7 @@ const CompareFloatingButton = ({
       ? isMobile
         ? window.innerWidth - 55 // right side on mobile
         : window.innerWidth - 145 // right side on desktop
-      : 0,
+      : 1350,
   );
 
   const y = useMotionValue(
