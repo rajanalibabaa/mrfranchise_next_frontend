@@ -6,11 +6,23 @@ export const revalidate = 86400;
 const API = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/filter/getAllBrandsAndFilter`;
 
 function deslugifyCategory(slug) {
+  const specialWords = {
+    fmcg: "FMCG",
+  };
+
   return slug
     ?.replace("-franchise-opportunities", "")
     .replace(/-/g, " ")
     .replace(/\band\b/g, "&")
-    .replace(/\b\w/g, (c) => c.toUpperCase());
+    .split(" ")
+    .map((word) => {
+      const lower = word.toLowerCase();
+      return (
+        specialWords[lower] ||
+        word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+      );
+    })
+    .join(" ");
 }
 
 function deslugifySubCategory(slug) {

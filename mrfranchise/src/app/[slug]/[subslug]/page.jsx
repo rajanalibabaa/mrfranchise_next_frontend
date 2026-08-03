@@ -9,13 +9,24 @@ const API =
 
 
 function deslugifyCategory(slug) {
+  const specialWords = {
+    fmcg: "FMCG",
+  };
+
   return slug
     ?.replace("-franchise-opportunities", "")
     .replace(/-/g, " ")
     .replace(/\band\b/g, "&")
-    .replace(/\b\w/g, (c) => c.toUpperCase());
+    .split(" ")
+    .map((word) => {
+      const lower = word.toLowerCase();
+      return (
+        specialWords[lower] ||
+        word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+      );
+    })
+    .join(" ");
 }
-
 
 
 function deslugifySubCategory(slug) {
@@ -27,6 +38,7 @@ function deslugifySubCategory(slug) {
 
   return text
     .replace(/\bIt\b/g, "IT")
+    .replace(/\bOtc Healthcare\b/g, "OTC Healthcare")
     
 }
 

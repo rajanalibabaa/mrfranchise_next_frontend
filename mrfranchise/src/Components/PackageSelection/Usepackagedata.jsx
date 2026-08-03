@@ -57,8 +57,17 @@ const usePackageData = () => {
   const [brandOwnerId, setBrandOwnerId] = useState(null);
 
   const { brandUUID: reduxBrandUUID, token: reduxToken } = useSelector((state) => state.auth);
-  const [localBrandUUID, setLocalBrandUUID] = useState(null);
-  const [localAccessToken, setLocalAccessToken] = useState(null);
+const [localBrandUUID, setLocalBrandUUID] = useState(() =>
+  typeof window !== "undefined"
+    ? localStorage.getItem("brandUUID")
+    : null
+);
+
+const [localAccessToken, setLocalAccessToken] = useState(() =>
+  typeof window !== "undefined"
+    ? localStorage.getItem("accessToken")
+    : null
+);
 
   const finalBrandUUID = reduxBrandUUID || localBrandUUID;
   const finalToken = reduxToken || localAccessToken;
@@ -208,6 +217,9 @@ const usePackageData = () => {
     if (typeof window !== "undefined") {
       setLocalBrandUUID(localStorage.getItem("brandUUID"));
       setLocalAccessToken(localStorage.getItem("accessToken"));
+        if (finalToken) {
+    return;
+  }
       const savedStates = localStorage.getItem("investmentRangeStates");
       if (savedStates) {
         try { setStatesByInvestmentRange(JSON.parse(savedStates)); }
@@ -245,7 +257,7 @@ const usePackageData = () => {
       }
       hasDraftChecked.current = true;
     }
-  }, []);
+  }, [finalToken]);
 
   useEffect(() => {
     statesByInvestmentRangeRef.current = statesByInvestmentRange;
@@ -256,12 +268,27 @@ const usePackageData = () => {
       localStorage.setItem("movedGroupKeys", JSON.stringify(movedGroupKeys));
   }, [movedGroupKeys]);
 
+  // useEffect(() => {
+  //   if (typeof window !== "undefined") {
+  //     if (paymentSummary.length > 0) localStorage.setItem("paymentSummaryDraft", JSON.stringify(paymentSummary));
+  //     else localStorage.removeItem("paymentSummaryDraft");
+  //   }
+  // }, [paymentSummary]);
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      if (paymentSummary.length > 0) localStorage.setItem("paymentSummaryDraft", JSON.stringify(paymentSummary));
-      else localStorage.removeItem("paymentSummaryDraft");
-    }
-  }, [paymentSummary]);
+  if (typeof window === "undefined") return;
+
+  // Logged in user -> Don't save guest draft
+  if (finalToken) return;
+
+  if (paymentSummary.length > 0) {
+    localStorage.setItem(
+      "paymentSummaryDraft",
+      JSON.stringify(paymentSummary)
+    );
+  } else {
+    localStorage.removeItem("paymentSummaryDraft");
+  }
+}, [paymentSummary, finalToken]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
