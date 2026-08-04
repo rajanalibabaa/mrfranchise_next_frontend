@@ -33,4 +33,4 @@ jobs:
             git clean -fd
             cd mrfranchise
             npm run build
-            pm2 restart mrfranchise-frontend || pm2 start npm --name "mrfranchise-frontend" -- start
+            pm2 restart franchise_frontend || pm2 start npm --name "franchise_frontend" -- start
