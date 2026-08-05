@@ -1,3 +1,5 @@
+const redirects = require("./redirects.json")
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // output: "export",
@@ -13,31 +15,9 @@ const nextConfig = {
     workerThreads: false,
     cpus: 2,
   },
- async redirects() {
-    return [
-      {
-        source: "/franchise-business-opportunity/:slug",
-        destination: "/brands/:slug",
-        permanent: true, // 301 redirect
-      },
-      {
-        source: "/franchise-brands/:slug",
-        destination: "/brands/:slug",
-        permanent: true, // 301 redirect
-      },
-      {
-        source:
-          "/:main((?!.*\\.).*)-franchise-opportunities/:sub((?!.*\\.).*)-franchise-opportunities",
-        destination: "/:main/:sub",
-        permanent: true,
-      },
-      {
-        source: "/:slug((?!.*\\.).*)-franchise-opportunities",
-        destination: "/:slug",
-        permanent: true,
-      },
-    ];
-  }
+  async redirects() {
+    return redirects;
+  },
  
 };
 
