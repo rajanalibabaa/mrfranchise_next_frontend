@@ -1,0 +1,143 @@
+[
+  {
+    "source": "/franchise-business-opportunity/:slug",
+    "destination": "/brands/:slug",
+    "permanent": true
+  },
+  {
+    "source": "/franchise-brands/:slug",
+    "destination": "/brands/:slug",
+    "permanent": true
+  },
+  {
+    "source": "/:main((?!.*\\.).*)-franchise-opportunities/:sub((?!.*\\.).*)-franchise-opportunities",
+    "destination": "/:main/:sub",
+    "permanent": true
+  },
+  {
+    "source": "/:slug((?!.*\\.).*)-franchise-opportunities",
+    "destination": "/:slug",
+    "permanent": true
+  },
+  {
+    "source":"/brand-listing",
+    "destination":"/brand_listing_creation_form",
+    "permanent":true
+  },
+  {
+    "source":"/otherindustries",
+    "destination":"/others",
+    "permanent":true
+  },
+  {
+    "source":"/contact",
+    "destination":"/contactus",
+    "permanent":true
+  },
+  {
+    "source":"/%24",
+    "destination":"/",
+    "permanent":true
+  },
+  {
+    "source":"/aboutus",
+    "destination":"/aboutpage",
+    "permanent":true
+  },
+  {
+    "source":"/terms",
+    "destination":"/termsandconditions",
+    "permanent":true
+  },
+  {
+    "source":"/aenean-sed-pulvinar-et-diam",
+    "destination":"/",
+    "permanent":true
+  },
+  {
+    "source":"/find-right-brand",
+    "destination":"/",
+    "permanent":true
+  },
+  {
+    "source":"/tips-for-renting-a-house",
+    "destination":"/",
+    "permanent":true
+  },
+  {
+    "source":"/starting-a-small-business",
+    "destination":"/",
+    "permanent":true
+  },
+  {
+    "source":"/listing-category",
+    "destination":"/",
+    "permanent":true
+  },
+    {
+        "source":"/allcategorypage",
+        "destination":"/",
+        "permanent":true
+    },
+    {
+        "source":"/healthcare-franchise-india",
+        "destination":"/",
+        "permanent":true
+    },
+    {
+        "source":"/$",
+        "destination":"/",
+        "permanent":true
+    },
+    {
+        "source":"/hi",
+        "destination":"/",
+        "permanent":true
+    },
+    {
+        "source":"/listing/:slug",
+        "destination":"brands/:slug",
+        "permanent":true
+    },
+    {
+        "source":"/listing-category/:slug",
+        "destination":"/",
+        "permanent":true
+    },
+    {
+        "source":"/disclaimer",
+        "destination":"/",
+        "permanent":true
+    },
+    {
+        "source":"/advertise",
+        "destination":"/advertisewithus",
+        "permanent":true
+    },
+   
+    {
+        "source":"/tag/:slug",
+        "destination":"/",
+        "permanent":true
+    }
+    ,
+    {
+        "source":"/category/:slug",
+        "destination":"/",
+        "permanent":true
+    }
+    ,
+    {
+        "source":"/all-franchise-brands/:slug",
+        "destination":"/all-franchise-brands",
+        "permanent":true
+    }
+    ,
+    {
+        "source":"/vendor/:slug",
+        "destination":"/",
+        "permanent":true
+    }
+    
+    
+]
